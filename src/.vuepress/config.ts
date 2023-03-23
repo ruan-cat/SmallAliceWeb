@@ -6,7 +6,7 @@ export default defineUserConfig({
 
   locales: {
     '/': {
-      lang: 'en-US',
+      lang: 'zh-CN',
       title: 'Docs Demo',
       description: 'A docs demo for vuepress-theme-hope',
     },
