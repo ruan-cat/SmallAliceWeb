@@ -3,3 +3,6 @@ node_modules/
 src/.vuepress/.cache/
 src/.vuepress/.temp/
 src/.vuepress/dist/
+
+# 忽略掉电脑层面上的工作区配置 每一个工作区都应该自行实现对应的配置
+this-proj.code-workspace
