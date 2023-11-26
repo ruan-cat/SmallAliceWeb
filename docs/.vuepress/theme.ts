@@ -3,7 +3,7 @@ import navbar from "./navbar.js";
 import sidebar from "./sidebar.js";
 
 export default hopeTheme({
-	hostname: "https://small-alice-web.ruan-cat.com",
+	hostname: "https://www.ruan-cat.com",
 
 	author: {
 		name: "Mr.Hope",
