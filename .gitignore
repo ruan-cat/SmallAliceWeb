@@ -22,19 +22,7 @@ static/*
 # .gitkeep不会被忽略 该文件被文件系统版本控制
 !.gitkeep
 
-# 忽略掉自建的测试脚本
-/tests-rzn
-
-# 忽略掉常用office办公文件生成的缓存文件
-~$*
-
 node_modules/
 docs/.vuepress/.cache/
 docs/.vuepress/.temp/
 docs/.vuepress/dist/
-
-# 忽略掉模板内全部解压出来的文件
-docs/一平台OA过程文档/参考模板/**/*
-
-# 直属子目录下的全部压缩文件 不包含子目录 全部参与版本控制
-!docs/一平台OA过程文档/参考模板/*.zip
