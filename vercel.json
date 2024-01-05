@@ -1,0 +1,6 @@
+{
+	"buildCommand": "vuepress build docs",
+	"installCommand": "pnpm install",
+	"outputDirectory": "docs/.vuepress/dist",
+	"devCommand": "vuepress dev docs --clean-cache"
+}
