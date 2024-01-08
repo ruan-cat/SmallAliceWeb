@@ -1,6 +1,6 @@
 # 参考资料
+# https://github.com/marketplace/actions/vercel-action
 # https://vercel.com/guides/how-can-i-use-github-actions-with-vercel
-# https://vercel.com/guides/how-to-alias-a-preview-deployment-using-the-cli
 
 name: Vercel Preview Deployment
 env:
@@ -8,25 +8,16 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 on:
   push:
-    branches:
-      - dev
+    branches-ignore:
+      - main
 jobs:
-  install:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8.14.0
-
-  Deploy-Preview:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest pnpm@8.14.0
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} && vercel alias set dev-test ruan-cat.com
+      - uses: amondnet/vercel-action@v19
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
+          vercel-org-id: ${{ secrets.ORG_ID}} #Required
+          vercel-project-id: ${{ secrets.PROJECT_ID}} #Required
+          alias-domains: dev-test.ruan-cat.com
