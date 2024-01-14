@@ -20,4 +20,4 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
           vercel-org-id: ${{ secrets.ORG_ID}} #Required
           vercel-project-id: ${{ secrets.PROJECT_ID}} #Required
-          alias-domains: dev-test.ruancat6312.top
+          alias-domains: small-alice-web-dev.ruancat6312.top
