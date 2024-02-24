@@ -5,6 +5,6 @@
 	"devCommand": "vuepress dev docs --clean-cache",
 	"public": true,
 	"git": {
-		"deploymentEnabled": false
+		"deploymentEnabled": true
 	}
 }
