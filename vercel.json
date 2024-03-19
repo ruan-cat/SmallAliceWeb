@@ -1,8 +1,8 @@
 {
-	"buildCommand": "vuepress build docs",
+	"buildCommand": "vuepress-vite build docs",
 	"installCommand": "pnpm install",
 	"outputDirectory": "docs/.vuepress/dist",
-	"devCommand": "vuepress dev docs --clean-cache",
+	"devCommand": "vuepress-vite dev docs --clean-cache",
 	"public": true,
 	"git": {
 		"deploymentEnabled": true
