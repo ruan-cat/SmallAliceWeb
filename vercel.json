@@ -1,4 +1,5 @@
 {
+	"framework": "vuepress",
 	"buildCommand": "vuepress-vite build docs",
 	"installCommand": "pnpm install",
 	"outputDirectory": "docs/.vuepress/dist",
