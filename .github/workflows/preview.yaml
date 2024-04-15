@@ -20,4 +20,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
           vercel-org-id: ${{ secrets.ORG_ID}} #Required
           vercel-project-id: ${{ secrets.PROJECT_ID}} #Required
+          scope: ${{ secrets.PROJECT_ID }}
           alias-domains: small-alice-web-dev.ruancat6312.top
