@@ -14,9 +14,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: show VERCEL_TOKEN
-        run: echo -n "${{ secrets.VERCEL_TOKEN }}" | xxd -ps
-
       - uses: actions/checkout@v2
       - uses: amondnet/vercel-action@v25.1.1
         with:
