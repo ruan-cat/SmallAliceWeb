@@ -23,4 +23,6 @@ jobs:
           vercel-org-id: ${{ secrets.vercel_orgId}} #Required
           vercel-project-id: ${{ secrets.vercel_projectId}} #Required
           # scope: ${{ secrets.PROJECT_ID }}
-          alias-domains: small-alice-web-dev.ruancat6312.top
+          # alias-domains: small-alice-web-dev.ruancat6312.top
+          # 尝试部署到其他的域名下面
+          alias-domains: dev-test.ruan-cat.com
