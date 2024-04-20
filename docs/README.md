@@ -4,6 +4,8 @@
 
 触发提交。看看移动到个人域之后，是否还能触发正常的 vercel 部署？
 
+看看 small-alice-web-dev.ruancat6312.top 的 github action 是否正常工作？已经把 ruancat6312.top 域名移动到用户名下面了。
+
 ```json
 {
 	"buildCommand": "vuepress build docs",
