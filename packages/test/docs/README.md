@@ -4,6 +4,8 @@
 
 在 test 分支做部署
 
+vuepress-vite build docs。不清楚为什么 github action 仍旧可以自行部署？是谁提供的部署命令呢？
+
 ```json
 {
 	"buildCommand": "vuepress build docs",
