@@ -2,6 +2,8 @@
 
 这是正在开发维护的项目。
 
+在 test 分支做部署
+
 ```json
 {
 	"buildCommand": "vuepress build docs",
