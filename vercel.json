@@ -1,6 +1,6 @@
 {
 	"framework": null,
-	"buildCommand": "",
+	"buildCommand": "vuepress-vite build docs",
 	"installCommand": "pnpm install",
 	"outputDirectory": "docs/.vuepress/dist",
 	"devCommand": "vuepress-vite dev docs --clean-cache",
