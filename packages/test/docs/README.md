@@ -6,6 +6,10 @@
 
 vuepress-vite build docs。不清楚为什么 github action 仍旧可以自行部署？是谁提供的部署命令呢？
 
+在 vercel 项目配置内，手动移除了 "buildCommand": "vuepress build docs",
+
+看看 github action 是否会自动部署？
+
 ```json
 {
 	"buildCommand": "vuepress build docs",
