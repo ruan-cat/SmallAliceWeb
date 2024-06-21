@@ -21,4 +21,6 @@ jobs:
           vercel-org-id: ${{ secrets.vercel_orgId}} #Required
           vercel-project-id: ${{ secrets.vercel_projectId}} #Required
           working-directory: ./packages/test
-          alias-domains: small-alice-web-test-2.ruancat6312.top
+          alias-domains: |
+            small-alice-web.ruancat6312.top
+            small-alice-web.ruan-cat.com
