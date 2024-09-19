@@ -1,4 +1,4 @@
-import { type Config } from "@ruan-cat/vercel-deploy-tool/config.ts";
+import { type Config } from "@ruan-cat/vercel-deploy-tool/src/config.ts";
 
 const config: Config = {
 	vercelProjetName: "small-alice-web-odse",
