@@ -22,7 +22,6 @@
 	"devDependencies": {
 		"@vue/repl": "^2.9.0",
 		"@vuepress/bundler-vite": "2.0.0-rc.8",
-		"@waline/client": "3.0.0-alpha.2",
 		"chart.js": "^4.4.2",
 		"echarts": "^5.5.0",
 		"flowchart.ts": "^1.0.1",
