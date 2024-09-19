@@ -21,7 +21,7 @@
 		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
 	},
 	"devDependencies": {
-		"@ruan-cat/vercel-deploy-tool": "^0.0.5",
+		"@ruan-cat/vercel-deploy-tool": "^0.0.6",
 		"@vue/repl": "^2.9.0",
 		"@vuepress/bundler-vite": "2.0.0-rc.15",
 		"chart.js": "^4.4.4",
