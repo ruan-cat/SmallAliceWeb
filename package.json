@@ -1,14 +1,17 @@
 {
-	"name": "vuepress-theme-hope-template",
-	"version": "2.0.0",
-	"description": "A project of vuepress-theme-hope",
+	"name": "@ruan-cat/drill-doc",
+	"description": "阮喵喵维护的钻头文档。",
+	"version": "0.0.1",
+	"author": {
+		"name": "ruan-cat"
+	},
 	"license": "MIT",
 	"type": "module",
-	"packageManager": "pnpm@8.0.0",
+	"packageManager": "pnpm@9.10.0",
 	"engines": {
-		"node": ">=16.0.0",
+		"node": ">=22.6.0",
 		"vscode": "^1.22.0",
-		"pnpm": ">=8.0.0"
+		"pnpm": ">=9"
 	},
 	"scripts": {
 		"docs:build": "vuepress-vite build docs",
