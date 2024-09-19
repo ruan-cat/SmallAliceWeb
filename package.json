@@ -17,7 +17,8 @@
 		"docs:build": "vuepress-vite build docs",
 		"docs:clean-dev": "vuepress-vite dev docs --clean-cache",
 		"docs:dev": "vuepress-vite dev docs",
-		"docs:update-package": "pnpm dlx vp-update"
+		"docs:update-package": "pnpm dlx vp-update",
+		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
 	},
 	"devDependencies": {
 		"@ruan-cat/vercel-deploy-tool": "^0.0.2",
