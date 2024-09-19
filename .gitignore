@@ -27,5 +27,15 @@ docs/.vuepress/.cache/
 docs/.vuepress/.temp/
 docs/.vuepress/dist/
 
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
 pnpm-lock.yaml
 .vercel
+
+# 忽略自动生成vercel部署配置文件
+vercel.null.def.json
