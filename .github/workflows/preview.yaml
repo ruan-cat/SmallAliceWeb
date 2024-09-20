@@ -2,6 +2,9 @@
 # https://github.com/marketplace/actions/vercel-action
 # https://vercel.com/guides/how-can-i-use-github-actions-with-vercel
 
+# 不再使用
+# 为了适应更加通用的场景，我们不使用别人封装的action了。
+
 name: Vercel Preview Deployment
 
 # env:
