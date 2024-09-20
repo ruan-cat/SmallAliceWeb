@@ -1,8 +1,8 @@
 name: 自写的vercel部署工具
 env:
   VERCEL_TOKEN: ${{ secrets.vercel_token }}
-  VERCEL_ORG_ID: ${{ secrets.vercel_orgId }}
-  VERCEL_PROJECT_ID: ${{ secrets.vercel_projectId }}
+  # VERCEL_ORG_ID: ${{ secrets.vercel_orgId }}
+  # VERCEL_PROJECT_ID: ${{ secrets.vercel_projectId }}
 
 on:
   push:
