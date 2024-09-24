@@ -14,6 +14,9 @@
 		"pnpm": ">=9.5.0"
 	},
 	"scripts": {
+		"git:fetch": "git fetch -p",
+		"git:dev-2-main": "git rebase dev main",
+		"git:main-2-dev": "git rebase main dev",
 		"docs:build": "vuepress-vite build docs",
 		"docs:clean-dev": "vuepress-vite dev docs --clean-cache",
 		"docs:dev": "vuepress-vite dev docs",
