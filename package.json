@@ -22,6 +22,7 @@
 	},
 	"devDependencies": {
 		"@ruan-cat/vercel-deploy-tool": "latest",
+		"@ruan-cat/vuepress-preset-config": "^0.1.1",
 		"@vue/repl": "^2.9.0",
 		"@vuepress/bundler-vite": "2.0.0-rc.15",
 		"chart.js": "^4.4.4",
