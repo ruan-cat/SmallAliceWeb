@@ -42,7 +42,7 @@ export default defineRuanCatVuepressConfig({
 
 		repo: "vuepress-theme-hope/vuepress-theme-hope",
 
-		docsDir: "src",
+		docsDir: "docs",
 
 		sidebar: "structure",
 		headerDepth: 5,
