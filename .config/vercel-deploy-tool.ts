@@ -12,8 +12,10 @@ const config: Config = {
 			outputDirectory: "docs/.vuepress/dist/**/*",
 			targetCWD: "./",
 			url: [
-				"small-alice-web-dev.ruancat6312.top",
+				"small-alice-web.ruancat6312.top",
 				"small-alice-web.ruan-cat.com",
+				"drill.ruancat6312.top",
+				"drill.ruan-cat.com",
 			],
 			userCommands: ["pnpm -C=./ vuepress-vite build docs"],
 		},
