@@ -26,7 +26,7 @@
 		"docs:clean-dev": "vuepress-vite dev docs --clean-cache",
 		"docs:dev": "vuepress-vite dev docs",
 		"docs:update-package": "pnpm dlx vp-update",
-		"nuxi-prepare": "npx nuxi prepare",
+		"postinstall": "npx nuxi prepare",
 		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
 	},
 	"devDependencies": {
