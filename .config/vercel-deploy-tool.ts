@@ -9,7 +9,7 @@ const config: Config = {
 	deployTargets: [
 		{
 			type: "userCommands",
-			outputDirectory: "docs/.vuepress/dist/**/*",
+			outputDirectory: "docs/.vuepress/dist",
 			targetCWD: "./",
 			url: [
 				"small-alice-web.ruancat6312.top",
@@ -17,7 +17,7 @@ const config: Config = {
 				"drill.ruancat6312.top",
 				"drill.ruan-cat.com",
 			],
-			userCommands: ["pnpm -C=./ vuepress-vite build docs"],
+			userCommands: ["pnpm -C=./ docs:build"],
 		},
 	],
 };
