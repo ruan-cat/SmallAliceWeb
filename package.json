@@ -25,23 +25,24 @@
 		"docs:build": "vuepress-vite build docs",
 		"docs:dev": "vuepress-vite dev docs --clean-cache --open",
 		"docs:update-package": "pnpm dlx vp-update",
+		"up-ruan-cat": "pnpm -F=* up @ruan-cat/*@latest",
 		"postinstall": "npx nuxi prepare",
 		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
 	},
 	"devDependencies": {
-		"@ruan-cat/vercel-deploy-tool": "latest",
-		"@ruan-cat/vuepress-preset-config": "latest",
-		"@vuepress/bundler-vite": "2.0.0-rc.15",
-		"chart.js": "^4.4.4",
+		"@ruan-cat/vercel-deploy-tool": "^0.5.6",
+		"@ruan-cat/vuepress-preset-config": "^0.1.18",
+		"@vuepress/bundler-vite": "2.0.0-rc.19",
+		"chart.js": "^4.4.7",
 		"commitizen": "^4.3.1",
-		"cz-git": "^1.10.1",
-		"echarts": "^5.5.1",
+		"cz-git": "^1.11.0",
+		"echarts": "^5.6.0",
 		"flowchart.ts": "^1.0.1",
-		"katex": "^0.16.11",
-		"mermaid": "^10.9.1",
-		"nuxt": "^3.13.2",
-		"tsx": "^4.19.1",
-		"vue": "^3.5.8",
-		"vuepress": "2.0.0-rc.15"
+		"katex": "^0.16.21",
+		"mermaid": "^10.9.3",
+		"nuxt": "^3.15.4",
+		"tsx": "^4.19.2",
+		"vue": "^3.5.13",
+		"vuepress": "2.0.0-rc.19"
 	}
 }
