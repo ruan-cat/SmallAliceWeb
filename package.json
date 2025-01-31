@@ -23,8 +23,7 @@
 		"git:dev-2-main": "git rebase dev main",
 		"git:main-2-dev": "git rebase main dev",
 		"docs:build": "vuepress-vite build docs",
-		"docs:clean-dev": "vuepress-vite dev docs --clean-cache",
-		"docs:dev": "vuepress-vite dev docs",
+		"docs:dev": "vuepress-vite dev docs --clean-cache --open",
 		"docs:update-package": "pnpm dlx vp-update",
 		"postinstall": "npx nuxi prepare",
 		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
