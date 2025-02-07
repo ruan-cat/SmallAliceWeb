@@ -29,7 +29,7 @@
 		"up-ruan-cat": "pnpm -F=* up @ruan-cat/*@latest",
 		"postinstall": "npx nuxi prepare",
 		"rm:node_modules": "rimraf node_modules pnpm-lock.yaml .nuxt .vercel",
-		"deploy-vercel": "node --import=tsx ./bin/vercel-deploy-tool.ts"
+		"deploy-vercel": "node --import=tsx ./scripts/vercel-deploy-tool.ts"
 	},
 	"devDependencies": {
 		"@ruan-cat/commitlint-config": "^0.1.3",
