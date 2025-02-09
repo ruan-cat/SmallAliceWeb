@@ -37,6 +37,8 @@
 
 看看有没有合适的 node 库，压缩全部的图片资源，且失真率较低，原地修改文件，且不更改后缀名和文件名。
 
+- https://github.com/lovell/sharp
+
 ## 用 vitepress 渲染页面
 
 不使用 vuepress，用 vitepress 提高效率。因为钻头文档有着非常多的静态文件和网页。必须要提高部署和运行速度。
