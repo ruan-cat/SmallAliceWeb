@@ -17,6 +17,7 @@ import fs, {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+import {} from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
 import { concat, isEmpty, isUndefined } from "lodash-es";
@@ -33,7 +34,7 @@ import {
  * @description
  * 封装 spawnSync 函数
  */
-function generateExeca(execaSimpleParams: {
+function generateSpawn(execaSimpleParams: {
 	command: string;
 	parameters: string[];
 }) {
@@ -55,3 +56,8 @@ function generateExeca(execaSimpleParams: {
 		return result;
 	});
 }
+
+executePromiseTasks({
+	type: "queue",
+	tasks: [],
+});

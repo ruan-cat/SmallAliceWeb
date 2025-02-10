@@ -14,6 +14,8 @@
 
 使用 degit 完成项目克隆。用 degit 的 api 实现克隆。也可以考虑用 cli 完成。
 
+- https://github.com/Rich-Harris/degit/blob/master/README.md#javascript-api
+
 ## 将 docx 生成为 html 文件
 
 使用该库完成。
