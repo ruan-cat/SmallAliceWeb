@@ -20,6 +20,7 @@ const __dirname = dirname(__filename);
 import degit from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
+import { globSync } from "glob";
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
 	isConditionsEvery,
@@ -31,6 +32,9 @@ import {
 
 import { catalog } from "./catalog";
 import { prepareDist } from "./prepare-dist";
+
+/** 全部 txt 和 doc 文件的地址 */
+const allFiles: string[] = [];
 
 /**
  * 生成简单的执行命令函数
@@ -99,6 +103,43 @@ function cloneDrillDocxRepoWithGitTask() {
 	return generateSpawn({ command, parameters });
 }
 
+/**
+ * 获取全部文件的路径
+ * @description
+ * 1.
+ */
+// function getFliesPath() {}
+
+function getFilesPath() {
+	const pattern = join(catalog.drillDocx, "**/*.{docx,txt}");
+	return new Promise<string[]>((resolve, reject) => {
+		const files = globSync(pattern);
+		if (isEmpty(files)) {
+			reject(new Error("No files found"));
+		}
+		resolve(files);
+	});
+}
+
+/**
+ * 获取全部文件路径的任务
+ * @description
+ */
+function getFilesPathTask() {
+	return generateSimpleAsyncTask(async () => {
+		consola.start(` 开始查询全部文件任务 `);
+
+		const files = await getFilesPath();
+		allFiles.push(...files);
+
+		consola.success(` 完成查询全部文件任务 `);
+	});
+}
+
+function docx2html() {}
+
+function txt2md() {}
+
 /** 准备dist目录任务 */
 function prepareDistTask() {
 	return generateSimpleAsyncTask(prepareDist);
@@ -114,5 +155,10 @@ function cloneDrillDocxRepoTask() {
 
 executePromiseTasks({
 	type: "queue",
-	tasks: [prepareDistTask(), cloneDrillDocxRepoWithGitTask()],
+	tasks: [
+		// 先跳过这两个任务 先模拟已经完成克隆的场景
+		// prepareDistTask(),
+		// cloneDrillDocxRepoWithGitTask(),
+		getFilesPathTask(),
+	],
 });
