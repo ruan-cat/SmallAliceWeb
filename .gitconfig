@@ -1,0 +1,6 @@
+# https://blog.csdn.net/u014374009/article/details/141883095
+[http]
+	sslVerify = false
+	postBuffer = 1048576000
+	lowSpeedLimit = 0
+	lowSpeedTime = 999999
