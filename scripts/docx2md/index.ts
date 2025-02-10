@@ -83,8 +83,12 @@ async function cloneDrillDocxRepo() {
 
 /**
  * 用 git clone 命令克隆钻头的docx文档仓库
+ * @description
+ * 1. 用 git clone --depth=1 https://github.com/ruan-cat/drill-docx 命令，实现克隆项目
+ * 2. 克隆到 catalog.drillDocx 目录内
+ * 3. 用 generateSpawn 函数包装运行命令
  */
-function cloneDrillDocxRepoWithGit() {
+function cloneDrillDocxRepoWithGitTask() {
 	const command = "git";
 	const parameters = [
 		"clone",
@@ -98,17 +102,6 @@ function cloneDrillDocxRepoWithGit() {
 /** 准备dist目录任务 */
 function prepareDistTask() {
 	return generateSimpleAsyncTask(prepareDist);
-}
-
-/**
- * 克隆钻头的docx文档仓库任务
- * @description
- * 1. 用 git clone --depth=1 https://github.com/ruan-cat/drill-docx 命令，实现克隆项目
- * 2. 克隆到 catalog.drillDocx 目录内
- * 3. 用 generateSpawn 函数包装运行命令
- */
-function cloneDrillDocxRepoWithGitTask() {
-	return generateSimpleAsyncTask(cloneDrillDocxRepoWithGit);
 }
 
 /**
