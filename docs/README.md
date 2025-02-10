@@ -8,6 +8,8 @@
 
 新建一个独立的 docx 仓库，专门存储 drill 的 docx 文件。不做版本划分。
 
+- https://github.com/ruan-cat/drill-docx
+
 ## 克隆项目
 
 使用 degit 完成项目克隆。用 degit 的 api 实现克隆。也可以考虑用 cli 完成。
