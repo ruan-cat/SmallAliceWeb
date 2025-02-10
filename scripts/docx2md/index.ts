@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 import degit from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
-import { globSync } from "glob";
+import { sync } from "glob";
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
 	isConditionsEvery,
@@ -35,6 +35,13 @@ import { prepareDist } from "./prepare-dist";
 
 /** 全部 txt 和 doc 文件的地址 */
 const allFiles: string[] = [];
+
+/**
+ * 路径转换工具
+ */
+function pathChange(path: string) {
+	return path.replace(/\\/g, "/");
+}
 
 /**
  * 生成简单的执行命令函数
@@ -111,9 +118,11 @@ function cloneDrillDocxRepoWithGitTask() {
 // function getFliesPath() {}
 
 function getFilesPath() {
-	const pattern = join(catalog.drillDocx, "**/*.{docx,txt}");
+	const matchedPath = pathChange(
+		join(process.cwd(), catalog.drillDocx, "**/*.{docx,txt}")
+	);
 	return new Promise<string[]>((resolve, reject) => {
-		const files = globSync(pattern);
+		const files = sync(matchedPath);
 		if (isEmpty(files)) {
 			reject(new Error("No files found"));
 		}
@@ -131,6 +140,7 @@ function getFilesPathTask() {
 
 		const files = await getFilesPath();
 		allFiles.push(...files);
+		console.log(allFiles);
 
 		consola.success(` 完成查询全部文件任务 `);
 	});
