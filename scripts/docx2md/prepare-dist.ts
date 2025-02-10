@@ -4,6 +4,7 @@ import { consola } from "consola";
 
 const distPath = path.join(process.cwd(), "dist");
 
+/** 准备dist目录 */
 export function prepareDist() {
 	if (fs.existsSync(distPath)) {
 		fs.rmSync(distPath, { recursive: true, force: true });

@@ -17,7 +17,7 @@ import fs, {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-import {} from "degit";
+import degit from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
 import { concat, isEmpty, isUndefined } from "lodash-es";
@@ -28,6 +28,9 @@ import {
 	definePromiseTasks,
 	executePromiseTasks,
 } from "@ruan-cat/utils";
+
+import { catalog } from "./catalog";
+import { prepareDist } from "./prepare-dist";
 
 /**
  * 生成简单的执行命令函数
@@ -57,7 +60,37 @@ function generateSpawn(execaSimpleParams: {
 	});
 }
 
+/**
+ * 用degit克隆钻头的docx文档仓库
+ */
+async function cloneDrillDocxRepo() {
+	const emitter = degit("ruan-cat/drill-docx", {
+		cache: false,
+		force: true,
+		verbose: true,
+	});
+
+	const dest = resolve(process.cwd(), catalog.drillDocx);
+
+	try {
+		await emitter.clone(dest);
+		consola.success(`Successfully cloned to ${dest}`);
+	} catch (error) {
+		consola.error(`Failed to clone repository: ${error.message}`);
+	}
+}
+
+/** 准备dist目录任务 */
+function prepareDistTask() {
+	return generateSimpleAsyncTask(prepareDist);
+}
+
+/** 克隆任务 */
+function cloneDrillDocxRepoTask() {
+	return generateSimpleAsyncTask(cloneDrillDocxRepo);
+}
+
 executePromiseTasks({
 	type: "queue",
-	tasks: [],
+	tasks: [prepareDistTask(), cloneDrillDocxRepoTask()],
 });
