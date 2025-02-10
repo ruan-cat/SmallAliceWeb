@@ -62,6 +62,7 @@ function generateSpawn(execaSimpleParams: {
 
 /**
  * 用degit克隆钻头的docx文档仓库
+ * @deprecated
  */
 async function cloneDrillDocxRepo() {
 	const emitter = degit("ruan-cat/drill-docx", {
@@ -80,17 +81,41 @@ async function cloneDrillDocxRepo() {
 	}
 }
 
+/**
+ * 用 git clone 命令克隆钻头的docx文档仓库
+ */
+function cloneDrillDocxRepoWithGit() {
+	const command = "git";
+	const parameters = [
+		"clone",
+		"--depth=1",
+		"https://github.com/ruan-cat/drill-docx",
+		catalog.drillDocx,
+	];
+	return generateSpawn({ command, parameters });
+}
+
 /** 准备dist目录任务 */
 function prepareDistTask() {
 	return generateSimpleAsyncTask(prepareDist);
 }
 
-/** 克隆任务 */
+/**
+ * 克隆钻头的docx文档仓库任务
+ */
+function cloneDrillDocxRepoWithGitTask() {
+	return generateSimpleAsyncTask(cloneDrillDocxRepoWithGit);
+}
+
+/**
+ * 克隆任务
+ * @deprecated
+ */
 function cloneDrillDocxRepoTask() {
 	return generateSimpleAsyncTask(cloneDrillDocxRepo);
 }
 
 executePromiseTasks({
 	type: "queue",
-	tasks: [prepareDistTask(), cloneDrillDocxRepoTask()],
+	tasks: [prepareDistTask(), cloneDrillDocxRepoWithGitTask()],
 });
