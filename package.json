@@ -36,7 +36,7 @@
 		"@ruan-cat/commitlint-config": "^0.2.0",
 		"@ruan-cat/domains": "^0.1.4",
 		"@ruan-cat/utils": "^1.5.0",
-		"@ruan-cat/vercel-deploy-tool": "^0.6.1",
+		"@ruan-cat/vercel-deploy-tool": "^0.6.2",
 		"@ruan-cat/vuepress-preset-config": "^0.1.19",
 		"@types/degit": "^2.8.6",
 		"@types/lodash-es": "^4.17.12",
