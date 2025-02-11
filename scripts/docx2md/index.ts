@@ -248,8 +248,10 @@ async function doChange(params: DoChangeParams) {
  * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
  * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
  * 3. 使用 convertToHtml 函数完成转换。
+ *
+ * TODO: 未来可以试着改成上传文件的方式 上传图片到服务器上面
+ * @see https://selenamona.github.io/project/2020/07/13/deal-word/
  */
-// https://selenamona.github.io/project/2020/07/13/deal-word/
 const docx2html: FileChange = async function (params) {
 	const { filePath } = params;
 	if (filePath.endsWith(".docx")) {
