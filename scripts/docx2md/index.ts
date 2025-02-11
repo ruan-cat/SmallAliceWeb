@@ -275,17 +275,17 @@ const docx2html: FileChange = async function (params) {
 				{
 					convertImage: images.imgElement(async function (image) {
 						const imageBuffer = await image.read("base64");
-						const imageType = image.contentType.split("/")[1];
+						// const imageType = image.contentType.split("/")[1];
 						const imageName = `${Date.now()}-${Math.random()
 							.toString(36)
-							.substring(7)}.${imageType}`;
+							.substring(7)}.png`;
 						const imagePath = join(imagesDir, imageName);
 
 						// Use sharp to compress the image
 						const compressedImageBuffer = await sharp(
 							Buffer.from(imageBuffer, "base64")
 						)
-							.toFormat(imageType as keyof FormatEnum)
+							.png()
 							.toBuffer();
 
 						fs.writeFileSync(imagePath, compressedImageBuffer);
@@ -298,7 +298,7 @@ const docx2html: FileChange = async function (params) {
 
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
-			consola.success(`Converted ${filePath} to HTML.`);
+			// consola.success(`Converted ${filePath} to HTML.`);
 			htmlFilesPath.push(htmlFilePath);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
