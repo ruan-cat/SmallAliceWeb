@@ -419,39 +419,36 @@ function cloneDrillDocxRepoTask() {
 function moveFilesTask() {
 	return generateSimpleAsyncTask(async () => {
 		const sourceDir = catalog.drillDocx;
+		const tempDir = catalog.drillCopy;
 		const destDir = catalog.md;
 
-		// 删除并重建目标目录
-		if (existsSync(destDir)) {
-			rmSync(destDir, { recursive: true, force: true });
+		// 删除并重建临时目录
+		if (existsSync(tempDir)) {
+			rmSync(tempDir, { recursive: true, force: true });
 		}
-		mkdir(destDir, { recursive: true }, (err) => {
+		mkdir(tempDir, { recursive: true }, (err) => {
 			if (err) throw err;
 		});
 
-		// 匹配文件
-		const matchedPath = normalizePath(join(process.cwd(), catalog.drillDocx, "**/*.{jpeg,png,md}"));
-		const matchedFiles = sync(matchedPath).map(normalizePath);
+		// 复制文件到临时目录
+		cpSync(sourceDir, tempDir, { recursive: true });
 
-		// 移动文件
-		matchedFiles.forEach((filePath) => {
-			const relativePath = filePath.substring(sourceDir.length);
-
-			// consola.warn(" sourceDir = ", sourceDir);
-			// consola.warn(" relativePath = ", relativePath);
-
-			const destPath = join(normalizePath(destDir), normalizePath(relativePath));
-			const destDirPath = dirname(normalizePath(destPath));
-
-			if (!existsSync(destDirPath)) {
-				mkdir(destDirPath, { recursive: true }, (err) => {
-					if (err) throw err;
-				});
+		// 删除临时目录内非 jpeg,png,md 文件
+		const allFilesPath = normalizePath(join(process.cwd(), tempDir, "**/*"));
+		const allFiles = sync(allFilesPath).map(normalizePath);
+		allFiles.forEach((filePath) => {
+			if (!filePath.match(/\.(jpeg|png|md)$/)) {
+				rmSync(filePath, { recursive: true, force: true });
 			}
-
-			copyFileSync(normalizePath(filePath), normalizePath(destPath));
-			consola.success(`Moved ${filePath} to ${destPath}`);
 		});
+
+		// 移动文件到目标目录
+		cpSync(tempDir, destDir, { recursive: true });
+
+		// 删除临时目录
+		rmSync(tempDir, { recursive: true, force: true });
+
+		consola.success(`Moved files to ${destDir}`);
 	});
 }
 

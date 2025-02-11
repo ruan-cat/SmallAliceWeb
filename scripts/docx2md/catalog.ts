@@ -8,6 +8,8 @@ export const catalog = {
 	/** 钻头文档项目 docx文件地址 */
 	drillDocx: resolve(process.cwd(), "dist/drill-docx"),
 
+	drillCopy: resolve(process.cwd(), "dist/copy"),
+
 	/** 最终生成全部md文件的地址 */
 	md: resolve(process.cwd(), "docs/docx"),
 };
