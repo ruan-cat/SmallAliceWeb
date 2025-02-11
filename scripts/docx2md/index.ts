@@ -379,7 +379,49 @@ function html2mdTask() {
 	});
 }
 
-function txt2md() {}
+/**
+ * 将全部txt转换成md文件
+ * @description
+ * 1. 根据形参 filesPath 路径数组，将路径内全部的txt文件，根据文件路径，转换成md文件。形参 filesPath 的实参预期为 txtAndDocxFilesPath 。
+ * 2. 转换的md文件存储在txt附近，不需要移动到其他位置。和txt保持同样的文件夹目录即可。
+ * 3. txt 文件都默认不包含有意义的标题。请根据txt的文件名，写入md的一级标题。
+ * 4. txt文本文件的文本段，中间缺乏换行符。请在转化的时候添加换行符。
+ */
+const txt2md: FileChange = async function (params) {
+	const { filePath } = params;
+	if (filePath.endsWith(".txt")) {
+		try {
+			const txtContent = fs.readFileSync(filePath, "utf-8");
+			const fileName =
+				filePath
+					.split("/")
+					.pop()
+					?.replace(/\.txt$/, "") || "Untitled";
+			const mdContent = `# ${fileName}\n\n${txtContent.replace(
+				/(.{80})/g,
+				"$1\n"
+			)}`;
+
+			const mdFilePath = filePath.replace(/\.txt$/, ".md");
+			fs.writeFileSync(mdFilePath, mdContent);
+			consola.success(`Converted ${filePath} to Markdown.`);
+		} catch (error) {
+			consola.error(`Failed to convert ${filePath}: ${error.message}`);
+			params.errorFilesPath.push(filePath);
+		}
+	}
+};
+
+/**
+ * 将全部txt转换成md文件的任务
+ */
+function txt2mdTask() {
+	return generateSimpleAsyncTask(async () => {
+		consola.start(` 开始txt转换为md的任务 `);
+		await doChange({ onChange: txt2md });
+		consola.success(` 完成txt转换为md的任务 `);
+	});
+}
 
 /** 准备dist目录任务 */
 function prepareDistTask() {
@@ -402,6 +444,6 @@ executePromiseTasks({
 		// cloneDrillDocxRepoWithGitTask(),
 		getFilesPathTask(),
 		docx2htmlTask(),
-		// html2mdTask(),
+		html2mdTask(),
 	],
 });
