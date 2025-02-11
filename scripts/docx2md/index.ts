@@ -288,13 +288,13 @@ const docx2html: FileChange = async function (params) {
 							.substring(7)}.png`;
 						const imagePath = join(imagesDir, imageName);
 
-						// 如果是jpeg格式的图片 直接返回base64格式的图片
 						// jpeg 格式没有错
-						// if (imageType === "jpeg") {
-						// 	return {
-						// 		src: "data:" + image.contentType + ";base64," + imageBuffer,
-						// 	};
-						// }
+						// 如果是 x-emf 格式的图片 即矢量图 直接返回base64格式的图片
+						if (imageType === "x-emf") {
+							return {
+								src: "data:" + image.contentType + ";base64," + imageBuffer,
+							};
+						}
 
 						// Use sharp to compress the image
 						await sharp(Buffer.from(imageBuffer, "base64"))
