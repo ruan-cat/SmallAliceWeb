@@ -33,6 +33,7 @@ import {
 	generateSimpleAsyncTask,
 	definePromiseTasks,
 	executePromiseTasks,
+	pathChange,
 	type TasksConfig,
 	type Task,
 } from "@ruan-cat/utils";
@@ -45,13 +46,6 @@ const txtAndDocxFilesPath: string[] = [];
 
 /** 全部 html 文件的地址 */
 const htmlFilesPath: string[] = [];
-
-/**
- * 路径转换工具
- */
-function pathChange(path: string) {
-	return path.replace(/\\/g, "/");
-}
 
 /**
  * 生成简单的执行命令函数
