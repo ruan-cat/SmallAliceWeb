@@ -21,6 +21,7 @@ import degit from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
 import { sync } from "glob";
+import { convertToHtml } from "mammoth";
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
 	isConditionsEvery,
@@ -113,10 +114,10 @@ function cloneDrillDocxRepoWithGitTask() {
 /**
  * 获取全部文件的路径
  * @description
- * 1.
+ * 1. 使用glob库，扫描 catalog.drillDocx 目录内全部的后缀为 .docx 和 .txt 的文件。
+ * 2. 并将这些文件的文件路径都记录到一个数组内
+ * 3. 该函数返回路径数组
  */
-// function getFliesPath() {}
-
 function getFilesPath() {
 	const matchedPath = pathChange(
 		join(process.cwd(), catalog.drillDocx, "**/*.{docx,txt}")
@@ -146,7 +147,34 @@ function getFilesPathTask() {
 	});
 }
 
-function docx2html() {}
+/**
+ * 将路径内全部的docx转换成html文件
+ * @description
+ * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
+ * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
+ * 3. 使用 convertToHtml 函数完成转换。
+ */
+async function docx2html(filesPath: string[]) {
+	filesPath.forEach(async (filePath) => {
+		if (filePath.endsWith(".docx")) {
+			try {
+				const fileBuffer = fs.readFileSync(filePath);
+				const result = await convertToHtml({ buffer: fileBuffer });
+				const htmlFilePath = filePath.replace(/\.docx$/, ".html");
+				fs.writeFileSync(htmlFilePath, result.value);
+				consola.success(`Converted ${filePath} to HTML.`);
+			} catch (error) {
+				consola.error(`Failed to convert ${filePath}: ${error.message}`);
+			}
+		}
+	});
+}
+
+function docx2htmlTask() {
+	return generateSimpleAsyncTask(async () => {
+		await docx2html(allFiles);
+	});
+}
 
 function txt2md() {}
 
