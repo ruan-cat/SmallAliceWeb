@@ -22,6 +22,8 @@ import { consola } from "consola";
 import gradient from "gradient-string";
 import { sync } from "glob";
 import { convertToHtml, images } from "mammoth";
+import sharp from "sharp";
+
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
 	isConditionsEvery,
@@ -246,6 +248,7 @@ async function doChange(params: DoChangeParams) {
  * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
  * 3. 使用 convertToHtml 函数完成转换。
  */
+// https://selenamona.github.io/project/2020/07/13/deal-word/
 const docx2html: FileChange = async function (params) {
 	const { filePath } = params;
 	if (filePath.endsWith(".docx")) {
@@ -254,11 +257,12 @@ const docx2html: FileChange = async function (params) {
 
 			const imagesDir = join(dirname(filePath), "images");
 
-			if (!existsSync(imagesDir)) {
-				mkdir(imagesDir, { recursive: true }, (err) => {
-					if (err) throw err;
-				});
+			if (existsSync(imagesDir)) {
+				rmSync(imagesDir, { recursive: true, force: true });
 			}
+			mkdir(imagesDir, { recursive: true }, (err) => {
+				if (err) throw err;
+			});
 
 			const result = await convertToHtml(
 				{ buffer: fileBuffer },
