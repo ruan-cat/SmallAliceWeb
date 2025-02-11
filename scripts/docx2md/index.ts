@@ -392,10 +392,7 @@ const txt2md: FileChange = async function (params) {
 					.split("/")
 					.pop()
 					?.replace(/\.txt$/, "") || "Untitled";
-			const mdContent = `# ${fileName}\n\n${txtContent.replace(
-				/(.{80})/g,
-				"$1\n"
-			)}`;
+			const mdContent = `# ${fileName}\n${txtContent}`;
 
 			const mdFilePath = filePath.replace(/\.txt$/, ".md");
 			fs.writeFileSync(mdFilePath, mdContent);
