@@ -285,7 +285,8 @@ const docx2html: FileChange = async function (params) {
 						const compressedImageBuffer = await sharp(
 							Buffer.from(imageBuffer, "base64")
 						)
-							.png()
+							// .png()
+							.toFormat("png")
 							.toBuffer();
 
 						fs.writeFileSync(imagePath, compressedImageBuffer);
@@ -298,7 +299,7 @@ const docx2html: FileChange = async function (params) {
 
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
-			// consola.success(`Converted ${filePath} to HTML.`);
+			consola.success(`Converted ${filePath} to HTML.`);
 			htmlFilesPath.push(htmlFilePath);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
