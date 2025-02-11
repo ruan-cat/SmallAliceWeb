@@ -434,12 +434,29 @@ function moveFilesTask() {
 		cpSync(sourceDir, tempDir, { recursive: true });
 
 		// 删除临时目录内非 jpeg,png,md 文件
-		const allFilesPath = normalizePath(join(process.cwd(), tempDir, "**/*"));
-		const allFiles = sync(allFilesPath).map(normalizePath);
-		allFiles.forEach((filePath) => {
-			if (!filePath.match(/\.(jpeg|png|md)$/)) {
-				rmSync(filePath, { recursive: true, force: true });
-			}
+		function deleteNonTargetFiles(dir: string) {
+			const files = fs.readdirSync(dir);
+			files.forEach((file) => {
+				const filePath = join(dir, file);
+				const stat = fs.statSync(filePath);
+				if (stat.isDirectory()) {
+					deleteNonTargetFiles(filePath);
+				} else {
+					const ext = file.split(".").pop();
+					if (!["jpeg", "png", "md"].includes(ext || "")) {
+						fs.unlinkSync(filePath);
+					}
+				}
+			});
+		}
+		deleteNonTargetFiles(tempDir);
+
+		// 删除并重建目标目录
+		if (existsSync(destDir)) {
+			rmSync(destDir, { recursive: true, force: true });
+		}
+		mkdir(destDir, { recursive: true }, (err) => {
+			if (err) throw err;
 		});
 
 		// 移动文件到目标目录
