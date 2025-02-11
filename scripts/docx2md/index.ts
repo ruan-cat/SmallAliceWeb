@@ -21,7 +21,7 @@ import degit from "degit";
 import { consola } from "consola";
 import gradient from "gradient-string";
 import { sync } from "glob";
-import { convertToHtml } from "mammoth";
+import { convertToHtml, images } from "mammoth";
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
 	isConditionsEvery,
@@ -251,7 +251,33 @@ const docx2html: FileChange = async function (params) {
 	if (filePath.endsWith(".docx")) {
 		try {
 			const fileBuffer = fs.readFileSync(filePath);
-			const result = await convertToHtml({ buffer: fileBuffer });
+
+			const imagesDir = join(dirname(filePath), "images");
+
+			if (!existsSync(imagesDir)) {
+				mkdir(imagesDir, { recursive: true }, (err) => {
+					if (err) throw err;
+				});
+			}
+
+			const result = await convertToHtml(
+				{ buffer: fileBuffer },
+				{
+					convertImage: images.imgElement(function (image) {
+						return image.read("base64").then(function (imageBuffer) {
+							const imageName = `${Date.now()}-${Math.random()
+								.toString(36)
+								.substring(7)}.png`;
+							const imagePath = join(imagesDir, imageName);
+							fs.writeFileSync(imagePath, imageBuffer, "base64");
+							return {
+								src: `./images/${imageName}`,
+							};
+						});
+					}),
+				}
+			);
+
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
 			consola.success(`Converted ${filePath} to HTML.`);
