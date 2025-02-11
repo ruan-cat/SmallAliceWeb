@@ -289,11 +289,16 @@ const docx2html: FileChange = async function (params) {
 						const imagePath = join(imagesDir, imageName);
 
 						// jpeg 格式没有错
-						// 如果是 x-emf 格式的图片 即矢量图 直接返回base64格式的图片
+						// 如果是 x-emf 格式的图片 即矢量图
+						// FIXME: 尝试用 rust 调用 C++ 库，实现 emf 转 png。未来再说。
 						if (imageType === "x-emf") {
-							return {
-								src: "data:" + image.contentType + ";base64," + imageBuffer,
-							};
+							// base64格式的图片 也不行。不能显示出来内容。
+							// return {
+							// 	src: "data:" + image.contentType + ";base64," + imageBuffer,
+							// };
+							consola.warn(
+								` 目前无法处理 ${imageType} 格式的图片。默认放弃。 `
+							);
 						}
 
 						// Use sharp to compress the image
@@ -397,6 +402,6 @@ executePromiseTasks({
 		// cloneDrillDocxRepoWithGitTask(),
 		getFilesPathTask(),
 		docx2htmlTask(),
-		html2mdTask(),
+		// html2mdTask(),
 	],
 });
