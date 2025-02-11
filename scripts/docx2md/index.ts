@@ -126,7 +126,7 @@ function getFilesPath() {
 		join(process.cwd(), catalog.drillDocx, "**/*.{docx,txt}")
 	);
 	return new Promise<string[]>((resolve, reject) => {
-		const files = sync(matchedPath);
+		const files = sync(matchedPath).map(pathChange);
 		if (isEmpty(files)) {
 			reject(new Error("No files found"));
 		}
@@ -384,6 +384,7 @@ function html2mdTask() {
 const txt2md: FileChange = async function (params) {
 	const { filePath } = params;
 	if (filePath.endsWith(".txt")) {
+		consola.log(" filePath = ?  ", filePath);
 		try {
 			const txtContent = fs.readFileSync(filePath, "utf-8");
 			const fileName =
@@ -442,10 +443,10 @@ executePromiseTasks({
 			type: "parallel",
 			tasks: [
 				txt2mdTask(),
-				{
-					type: "queue",
-					tasks: [docx2htmlTask(), html2mdTask()],
-				},
+				// {
+				// 	type: "queue",
+				// 	tasks: [docx2htmlTask(), html2mdTask()],
+				// },
 			],
 		},
 	],
