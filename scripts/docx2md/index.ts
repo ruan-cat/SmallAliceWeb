@@ -52,15 +52,10 @@ const htmlFilesPath: string[] = [];
  * @description
  * 封装 spawnSync 函数
  */
-function generateSpawn(execaSimpleParams: {
-	command: string;
-	parameters: string[];
-}) {
+function generateSpawn(execaSimpleParams: { command: string; parameters: string[] }) {
 	const { command, parameters } = execaSimpleParams;
 
-	const coloredCommand = gradient(["rgb(0, 153, 247)", "rgb(241, 23, 18)"])(
-		`${command} ${parameters.join(" ")}`
-	);
+	const coloredCommand = gradient(["rgb(0, 153, 247)", "rgb(241, 23, 18)"])(`${command} ${parameters.join(" ")}`);
 	consola.info(` 当前运行的命令为： ${coloredCommand} \n`);
 
 	return generateSimpleAsyncTask(() => {
@@ -105,12 +100,7 @@ async function cloneDrillDocxRepo() {
  */
 function cloneDrillDocxRepoWithGitTask() {
 	const command = "git";
-	const parameters = [
-		"clone",
-		"--depth=1",
-		"https://github.com/ruan-cat/drill-docx",
-		catalog.drillDocx,
-	];
+	const parameters = ["clone", "--depth=1", "https://github.com/ruan-cat/drill-docx", catalog.drillDocx];
 	return generateSpawn({ command, parameters });
 }
 
@@ -122,9 +112,7 @@ function cloneDrillDocxRepoWithGitTask() {
  * 3. 该函数返回路径数组
  */
 function getFilesPath() {
-	const matchedPath = pathChange(
-		join(process.cwd(), catalog.drillDocx, "**/*.{docx,txt}")
-	);
+	const matchedPath = pathChange(join(process.cwd(), catalog.drillDocx, "**/*.{docx,txt}"));
 	return new Promise<string[]>((resolve, reject) => {
 		const files = sync(matchedPath).map(pathChange);
 		if (isEmpty(files)) {
@@ -197,11 +185,7 @@ const defPrintError: DoChangeParams["printError"] = function (errorFilesPath) {
  * 会分批次地生成文件转换任务，相当于一个异步任务调度器
  */
 async function doChange(params: DoChangeParams) {
-	const {
-		onChange,
-		filesPath = txtAndDocxFilesPath,
-		printError = defPrintError,
-	} = params;
+	const { onChange, filesPath = txtAndDocxFilesPath, printError = defPrintError } = params;
 
 	/** 预期被回调函数修改的数组 */
 	const errorFilesPath: FileChangeParams["errorFilesPath"] = [];
@@ -277,9 +261,7 @@ const docx2html: FileChange = async function (params) {
 						 * 其返回格式类似于 image/x-emf ，所以这里要做数组切割 取第二个元素
 						 */
 						const imageType = image.contentType.split("/")[1];
-						const imageName = `${Date.now()}-${Math.random()
-							.toString(36)
-							.substring(7)}.png`;
+						const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
 						const imagePath = join(imagesDir, imageName);
 
 						// jpeg 格式没有错
@@ -290,9 +272,7 @@ const docx2html: FileChange = async function (params) {
 							// return {
 							// 	src: "data:" + image.contentType + ";base64," + imageBuffer,
 							// };
-							consola.warn(
-								` 目前无法处理 ${imageType} 格式的图片。默认放弃。 `
-							);
+							consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。 `);
 						}
 
 						// Use sharp to compress the image
@@ -426,6 +406,47 @@ function prepareDistTask() {
  */
 function cloneDrillDocxRepoTask() {
 	return generateSimpleAsyncTask(cloneDrillDocxRepo);
+}
+
+/**
+ * 移动md文件任务
+ * @description
+ * 1. 移动 jpeg 、png、md 文件到指定目录
+ * 2. 数据源： catalog.drillDocx
+ * 3. 复制地址：catalog.md
+ */
+function moveFilesTask() {
+	return generateSimpleAsyncTask(async () => {
+		const sourceDir = resolve(process.cwd(), catalog.drillDocx);
+		const destDir = resolve(process.cwd(), catalog.md);
+
+		// 删除并重建目标目录
+		if (existsSync(destDir)) {
+			rmSync(destDir, { recursive: true, force: true });
+		}
+		mkdir(destDir, { recursive: true }, (err) => {
+			if (err) throw err;
+		});
+
+		// 匹配文件
+		const matchedFiles = sync(join(sourceDir, "**/*.{jpeg,png,md}"));
+
+		// 移动文件
+		matchedFiles.forEach((filePath) => {
+			const relativePath = filePath.replace(sourceDir, "");
+			const destPath = join(destDir, relativePath);
+			const destDirPath = dirname(destPath);
+
+			if (!existsSync(destDirPath)) {
+				mkdir(destDirPath, { recursive: true }, (err) => {
+					if (err) throw err;
+				});
+			}
+
+			copyFileSync(filePath, destPath);
+			consola.success(`Moved ${filePath} to ${destPath}`);
+		});
+	});
 }
 
 executePromiseTasks({

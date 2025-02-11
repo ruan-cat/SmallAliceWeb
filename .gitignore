@@ -40,6 +40,8 @@ pnpm-lock.yaml
 # 忽略自动生成vercel部署配置文件
 vercel.null.def.json
 
-
 # 忽略nuxt生成的结果
 .nuxt
+
+# 忽略来自docx的文件，这些文件都是移动生成的
+docs/docx
