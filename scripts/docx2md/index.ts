@@ -154,22 +154,58 @@ function getFilesPathTask() {
 	});
 }
 
+/** 文件变更函数的参数 */
+interface FileChangeParams {
+	/** 文件地址 */
+	filePath: string;
+
+	/** 文件处理失败的数组 */
+	errorFilesPath: string[];
+}
+
+/**
+ * 执行文件变更操作的函数
+ * @description
+ * 要求是一个异步函数
+ */
+type FileChange = (params: FileChangeParams) => Promise<void>;
+
+interface DoChangeParams {
+	/**
+	 * 文件地址
+	 * @description 默认传值为全部的文件地址
+	 * @default allFiles
+	 */
+	filesPath?: string[];
+
+	onChange: FileChange;
+
+	/** 打印文件处理失败的数组 */
+	printError?(errorFilesPath: string[]): void;
+}
+
+/** 默认的错误打印函数 */
+const defPrintError: DoChangeParams["printError"] = function (errorFilesPath) {
+	if (errorFilesPath.length > 0) {
+		consola.error(` 文件转换失败的文件路径： `);
+		console.log(errorFilesPath);
+	} else {
+		consola.success(` 全部文件转换成功 `);
+	}
+};
+
 /**
  * 执行文件转换任务
  * @description
  * 该任务不执行具体的任务细节，是一个包装函数，用于包装具体的文件转换任务。
  * 会分批次地生成文件转换任务，相当于一个异步任务调度器
  */
-function doChange() {}
+async function doChange(params: DoChangeParams) {
+	const { onChange, filesPath = allFiles, printError = defPrintError } = params;
 
-/**
- * 将路径内全部的docx转换成html文件
- * @description
- * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
- * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
- * 3. 使用 convertToHtml 函数完成转换。
- */
-async function docx2html(filesPath: string[]) {
+	/** 预期被回调函数修改的数组 */
+	const errorFilesPath: FileChangeParams["errorFilesPath"] = [];
+
 	/** 全部的串行任务 */
 	const tasks: Task[] = [];
 
@@ -189,18 +225,7 @@ async function docx2html(filesPath: string[]) {
 		// 按照批次 逐个组装生成一个批次的并发任务
 		task.tasks = batch.map((filePath) =>
 			generateSimpleAsyncTask(async () => {
-				if (filePath.endsWith(".docx")) {
-					try {
-						const fileBuffer = fs.readFileSync(filePath);
-						const result = await convertToHtml({ buffer: fileBuffer });
-						const htmlFilePath = filePath.replace(/\.docx$/, ".html");
-						fs.writeFileSync(htmlFilePath, result.value);
-						consola.success(`Converted ${filePath} to HTML.`);
-					} catch (error) {
-						consola.error(`Failed to convert ${filePath}: ${error.message}`);
-						docx2htmlErrorPaths.push(filePath);
-					}
-				}
+				await onChange({ filePath, errorFilesPath });
 			})
 		);
 
@@ -210,13 +235,33 @@ async function docx2html(filesPath: string[]) {
 
 	await executePromiseTasks({ type: "queue", tasks });
 
-	if (docx2htmlErrorPaths.length > 0) {
-		consola.error("Conversion errors occurred for the following files:");
-		console.log(docx2htmlErrorPaths);
-	} else {
-		consola.success("All files converted successfully.");
-	}
+	// 打印错误
+	printError?.(errorFilesPath);
 }
+
+/**
+ * 将路径内全部的docx转换成html文件
+ * @description
+ * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
+ * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
+ * 3. 使用 convertToHtml 函数完成转换。
+ */
+const docx2html: FileChange = async function (params) {
+	const { filePath } = params;
+	if (filePath.endsWith(".docx")) {
+		try {
+			const fileBuffer = fs.readFileSync(filePath);
+			const result = await convertToHtml({ buffer: fileBuffer });
+			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
+			fs.writeFileSync(htmlFilePath, result.value);
+			consola.success(`Converted ${filePath} to HTML.`);
+		} catch (error) {
+			consola.error(`Failed to convert ${filePath}: ${error.message}`);
+			// 写入数组的过程不使用解构赋值 因为需要直接修改原数组
+			params.errorFilesPath.push(filePath);
+		}
+	}
+};
 
 /**
  * 将全部docx转换成html文件的任务
@@ -224,7 +269,7 @@ async function docx2html(filesPath: string[]) {
 function docx2htmlTask() {
 	return generateSimpleAsyncTask(async () => {
 		consola.start(` 开始docx转换为html的任务 `);
-		await docx2html(allFiles);
+		await doChange({ onChange: docx2html });
 		consola.success(` 完成docx转换为html的任务 `);
 	});
 }
