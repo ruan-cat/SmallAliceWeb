@@ -282,14 +282,14 @@ const docx2html: FileChange = async function (params) {
 						const imagePath = join(imagesDir, imageName);
 
 						// Use sharp to compress the image
-						const compressedImageBuffer = await sharp(
-							Buffer.from(imageBuffer, "base64")
-						)
+						await sharp(Buffer.from(imageBuffer, "base64"))
 							// .png()
 							.toFormat("png")
-							.toBuffer();
+							.toBuffer()
+							.then((outputBuffer) => {
+								fs.writeFileSync(imagePath, outputBuffer);
+							});
 
-						fs.writeFileSync(imagePath, compressedImageBuffer);
 						return {
 							src: `./images/${imageName}`,
 						};
