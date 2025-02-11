@@ -24,6 +24,7 @@ import { sync } from "glob";
 import { convertToHtml, images } from "mammoth";
 import sharp from "sharp";
 import { type FormatEnum } from "sharp";
+import htmlToMd from "html-to-md";
 
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
@@ -40,12 +41,10 @@ import { catalog } from "./catalog";
 import { prepareDist } from "./prepare-dist";
 
 /** 全部 txt 和 doc 文件的地址 */
-const allFiles: string[] = [];
+const txtAndDocxFilesPath: string[] = [];
 
-/**
- * docx2html 转换失败的文件路径
- */
-const docx2htmlErrorPaths: string[] = [];
+/** 全部 html 文件的地址 */
+const htmlFilesPath: string[] = [];
 
 /**
  * 路径转换工具
@@ -150,8 +149,8 @@ function getFilesPathTask() {
 		consola.start(` 开始查询全部文件任务 `);
 
 		const files = await getFilesPath();
-		allFiles.push(...files);
-		console.log(allFiles);
+		txtAndDocxFilesPath.push(...files);
+		console.log(txtAndDocxFilesPath);
 
 		consola.success(` 完成查询全部文件任务 `);
 	});
@@ -177,7 +176,7 @@ interface DoChangeParams {
 	/**
 	 * 文件地址
 	 * @description 默认传值为全部的文件地址
-	 * @default allFiles
+	 * @default txtAndDocxFilesPath
 	 */
 	filesPath?: string[];
 
@@ -204,7 +203,11 @@ const defPrintError: DoChangeParams["printError"] = function (errorFilesPath) {
  * 会分批次地生成文件转换任务，相当于一个异步任务调度器
  */
 async function doChange(params: DoChangeParams) {
-	const { onChange, filesPath = allFiles, printError = defPrintError } = params;
+	const {
+		onChange,
+		filesPath = txtAndDocxFilesPath,
+		printError = defPrintError,
+	} = params;
 
 	/** 预期被回调函数修改的数组 */
 	const errorFilesPath: FileChangeParams["errorFilesPath"] = [];
@@ -245,7 +248,7 @@ async function doChange(params: DoChangeParams) {
 /**
  * 将路径内全部的docx转换成html文件
  * @description
- * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
+ * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 txtAndDocxFilesPath 。
  * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
  * 3. 使用 convertToHtml 函数完成转换。
  *
@@ -296,6 +299,7 @@ const docx2html: FileChange = async function (params) {
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
 			consola.success(`Converted ${filePath} to HTML.`);
+			htmlFilesPath.push(htmlFilePath);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
 			// 写入数组的过程不使用解构赋值 因为需要直接修改原数组
