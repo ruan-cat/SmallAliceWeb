@@ -155,6 +155,14 @@ function getFilesPathTask() {
 }
 
 /**
+ * 执行文件转换任务
+ * @description
+ * 该任务不执行具体的任务细节，是一个包装函数，用于包装具体的文件转换任务。
+ * 会分批次地生成文件转换任务，相当于一个异步任务调度器
+ */
+function doChange() {}
+
+/**
  * 将路径内全部的docx转换成html文件
  * @description
  * 1. 根据形参 filesPath 路径数组，将路径内全部的docx文件，根据文件路径，转换成html文件。形参 filesPath 的实参预期为 allFiles 。
@@ -220,6 +228,8 @@ function docx2htmlTask() {
 		consola.success(` 完成docx转换为html的任务 `);
 	});
 }
+
+function html2md() {}
 
 function txt2md() {}
 
