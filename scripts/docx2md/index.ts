@@ -436,7 +436,9 @@ function moveFilesTask() {
 
 		// 移动文件
 		matchedFiles.forEach((filePath) => {
-			const relativePath = filePath.replace(sourceDir, "");
+			const relativePath = filePath.replace(pathChange(sourceDir), "");
+			// consola.warn(" sourceDir = ", sourceDir);
+			// consola.warn(" relativePath = ", relativePath);
 			const destPath = join(destDir, relativePath);
 			const destDirPath = dirname(destPath);
 
