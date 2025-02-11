@@ -378,5 +378,6 @@ executePromiseTasks({
 		// cloneDrillDocxRepoWithGitTask(),
 		getFilesPathTask(),
 		docx2htmlTask(),
+		html2mdTask(),
 	],
 });
