@@ -443,7 +443,16 @@ executePromiseTasks({
 		// prepareDistTask(),
 		// cloneDrillDocxRepoWithGitTask(),
 		getFilesPathTask(),
-		docx2htmlTask(),
-		html2mdTask(),
+
+		{
+			type: "parallel",
+			tasks: [
+				txt2mdTask(),
+				{
+					type: "queue",
+					tasks: [docx2htmlTask(), html2mdTask()],
+				},
+			],
+		},
 	],
 });
