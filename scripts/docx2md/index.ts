@@ -29,6 +29,8 @@ import {
 	generateSimpleAsyncTask,
 	definePromiseTasks,
 	executePromiseTasks,
+	type TasksConfig,
+	type Task,
 } from "@ruan-cat/utils";
 
 import { catalog } from "./catalog";
@@ -160,12 +162,24 @@ function getFilesPathTask() {
  * 3. 使用 convertToHtml 函数完成转换。
  */
 async function docx2html(filesPath: string[]) {
+	/** 全部的串行任务 */
+	const tasks: Task[] = [];
+
+	/** 批次 */
 	const BATCH_SIZE = 15;
 
+	// 生成全部的串行任务
 	for (let i = 0; i < filesPath.length; i += BATCH_SIZE) {
 		const batch = filesPath.slice(i, i + BATCH_SIZE);
 
-		const tasks = batch.map((filePath) =>
+		/** 一个并发任务 */
+		const task: TasksConfig = {
+			type: "parallel",
+			tasks: [],
+		};
+
+		// 按照批次 逐个组装生成一个批次的并发任务
+		task.tasks = batch.map((filePath) =>
 			generateSimpleAsyncTask(async () => {
 				if (filePath.endsWith(".docx")) {
 					try {
@@ -182,8 +196,11 @@ async function docx2html(filesPath: string[]) {
 			})
 		);
 
-		await executePromiseTasks({ type: "queue", tasks });
+		// 一个批次的任务加入到串行任务内
+		tasks.push(task);
 	}
+
+	await executePromiseTasks({ type: "queue", tasks });
 
 	if (docx2htmlErrorPaths.length > 0) {
 		consola.error("Conversion errors occurred for the following files:");
