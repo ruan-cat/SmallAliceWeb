@@ -252,6 +252,8 @@ async function doChange(params: DoChangeParams) {
  * 2. 转换的html文件存储在docx附近，不需要移动到其他位置。和docx保持同样的文件夹目录即可。
  * 3. 使用 convertToHtml 函数完成转换。
  *
+ * @see https://github.com/mwilliamson/mammoth.js/blob/master/README.md#image-converters
+ *
  * TODO: 未来可以试着改成上传文件的方式 上传图片到服务器上面
  * @see https://selenamona.github.io/project/2020/07/13/deal-word/
  */
@@ -274,12 +276,20 @@ const docx2html: FileChange = async function (params) {
 				{ buffer: fileBuffer },
 				{
 					convertImage: images.imgElement(async function (image) {
-						const imageBuffer = await image.read("base64");
+						const imageBuffer = await image.readAsBase64String();
 						// const imageType = image.contentType.split("/")[1];
+						const imageType = image.contentType;
 						const imageName = `${Date.now()}-${Math.random()
 							.toString(36)
 							.substring(7)}.png`;
 						const imagePath = join(imagesDir, imageName);
+
+						// 如果是jpeg格式的图片 直接返回base64格式的图片
+						if (imageType === "jpeg") {
+							return {
+								src: "data:" + image.contentType + ";base64," + imageBuffer,
+							};
+						}
 
 						// Use sharp to compress the image
 						await sharp(Buffer.from(imageBuffer, "base64"))
@@ -288,7 +298,6 @@ const docx2html: FileChange = async function (params) {
 						// .then((outputBuffer) => {
 						// 	fs.writeFileSync(imagePath, outputBuffer);
 						// });
-
 						return {
 							src: `./images/${imageName}`,
 						};
