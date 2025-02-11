@@ -319,7 +319,41 @@ function docx2htmlTask() {
 	});
 }
 
-function html2md() {}
+/**
+ * 将全部html转换成md文件
+ * @description
+ * 1. 使用库提供的 htmlToMd 函数实现md文件转换。
+ * 2. 生成的md文件就在html文件附近，保持在同文件夹内。
+ * 3. 该函数满足类型 FileChange 。
+ * 4. 写法格式模仿已有的 docx2html 函数。
+ */
+const html2md: FileChange = async function (params) {
+	const { filePath } = params;
+	if (filePath.endsWith(".html")) {
+		try {
+			const htmlContent = fs.readFileSync(filePath, "utf-8");
+			const mdContent = htmlToMd(htmlContent);
+
+			const mdFilePath = filePath.replace(/\.html$/, ".md");
+			fs.writeFileSync(mdFilePath, mdContent);
+			consola.success(`Converted ${filePath} to Markdown.`);
+		} catch (error) {
+			consola.error(`Failed to convert ${filePath}: ${error.message}`);
+			params.errorFilesPath.push(filePath);
+		}
+	}
+};
+
+/**
+ * 将全部html转换成md文件的任务
+ */
+function html2mdTask() {
+	return generateSimpleAsyncTask(async () => {
+		consola.start(` 开始html转换为md的任务 `);
+		await doChange({ onChange: html2md, filesPath: htmlFilesPath });
+		consola.success(` 完成html转换为md的任务 `);
+	});
+}
 
 function txt2md() {}
 
