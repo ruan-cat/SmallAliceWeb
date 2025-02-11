@@ -38,6 +38,11 @@ import { prepareDist } from "./prepare-dist";
 const allFiles: string[] = [];
 
 /**
+ * docx2html 转换失败的文件路径
+ */
+const docx2htmlErrorPaths: string[] = [];
+
+/**
  * 路径转换工具
  */
 function pathChange(path: string) {
@@ -155,24 +160,47 @@ function getFilesPathTask() {
  * 3. 使用 convertToHtml 函数完成转换。
  */
 async function docx2html(filesPath: string[]) {
-	filesPath.forEach(async (filePath) => {
-		if (filePath.endsWith(".docx")) {
-			try {
-				const fileBuffer = fs.readFileSync(filePath);
-				const result = await convertToHtml({ buffer: fileBuffer });
-				const htmlFilePath = filePath.replace(/\.docx$/, ".html");
-				fs.writeFileSync(htmlFilePath, result.value);
-				consola.success(`Converted ${filePath} to HTML.`);
-			} catch (error) {
-				consola.error(`Failed to convert ${filePath}: ${error.message}`);
-			}
-		}
-	});
+	const BATCH_SIZE = 15;
+
+	for (let i = 0; i < filesPath.length; i += BATCH_SIZE) {
+		const batch = filesPath.slice(i, i + BATCH_SIZE);
+
+		const tasks = batch.map((filePath) =>
+			generateSimpleAsyncTask(async () => {
+				if (filePath.endsWith(".docx")) {
+					try {
+						const fileBuffer = fs.readFileSync(filePath);
+						const result = await convertToHtml({ buffer: fileBuffer });
+						const htmlFilePath = filePath.replace(/\.docx$/, ".html");
+						fs.writeFileSync(htmlFilePath, result.value);
+						consola.success(`Converted ${filePath} to HTML.`);
+					} catch (error) {
+						consola.error(`Failed to convert ${filePath}: ${error.message}`);
+						docx2htmlErrorPaths.push(filePath);
+					}
+				}
+			})
+		);
+
+		await executePromiseTasks({ type: "queue", tasks });
+	}
+
+	if (docx2htmlErrorPaths.length > 0) {
+		consola.error("Conversion errors occurred for the following files:");
+		console.log(docx2htmlErrorPaths);
+	} else {
+		consola.success("All files converted successfully.");
+	}
 }
 
+/**
+ * 将全部docx转换成html文件的任务
+ */
 function docx2htmlTask() {
 	return generateSimpleAsyncTask(async () => {
+		consola.start(` 开始docx转换为html的任务 `);
 		await docx2html(allFiles);
+		consola.success(` 完成docx转换为html的任务 `);
 	});
 }
 
@@ -198,5 +226,6 @@ executePromiseTasks({
 		// prepareDistTask(),
 		// cloneDrillDocxRepoWithGitTask(),
 		getFilesPathTask(),
+		docx2htmlTask(),
 	],
 });
