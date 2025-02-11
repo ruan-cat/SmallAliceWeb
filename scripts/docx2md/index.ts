@@ -417,8 +417,8 @@ function cloneDrillDocxRepoTask() {
  */
 function moveFilesTask() {
 	return generateSimpleAsyncTask(async () => {
-		const sourceDir = resolve(process.cwd(), catalog.drillDocx);
-		const destDir = resolve(process.cwd(), catalog.md);
+		const sourceDir = catalog.drillDocx;
+		const destDir = catalog.md;
 
 		// 删除并重建目标目录
 		if (existsSync(destDir)) {
@@ -429,7 +429,10 @@ function moveFilesTask() {
 		});
 
 		// 匹配文件
-		const matchedFiles = sync(join(sourceDir, "**/*.{jpeg,png,md}"));
+		const matchedPath = pathChange(join(process.cwd(), catalog.drillDocx, "**/*.{jpeg,png,md}"));
+		const matchedFiles = sync(matchedPath).map(pathChange);
+
+		// consola.error(` 匹配？ `, matchedFiles);
 
 		// 移动文件
 		matchedFiles.forEach((filePath) => {
@@ -461,10 +464,10 @@ executePromiseTasks({
 			type: "parallel",
 			tasks: [
 				txt2mdTask(),
-				{
-					type: "queue",
-					tasks: [docx2htmlTask(), html2mdTask()],
-				},
+				// {
+				// 	type: "queue",
+				// 	tasks: [docx2htmlTask(), html2mdTask()],
+				// },
 			],
 		},
 
