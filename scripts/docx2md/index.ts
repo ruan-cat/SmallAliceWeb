@@ -23,6 +23,7 @@ import gradient from "gradient-string";
 import { sync } from "glob";
 import { convertToHtml, images } from "mammoth";
 import sharp from "sharp";
+import { type FormatEnum } from "sharp";
 
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
@@ -267,17 +268,25 @@ const docx2html: FileChange = async function (params) {
 			const result = await convertToHtml(
 				{ buffer: fileBuffer },
 				{
-					convertImage: images.imgElement(function (image) {
-						return image.read("base64").then(function (imageBuffer) {
-							const imageName = `${Date.now()}-${Math.random()
-								.toString(36)
-								.substring(7)}.png`;
-							const imagePath = join(imagesDir, imageName);
-							fs.writeFileSync(imagePath, imageBuffer, "base64");
-							return {
-								src: `./images/${imageName}`,
-							};
-						});
+					convertImage: images.imgElement(async function (image) {
+						const imageBuffer = await image.read("base64");
+						const imageType = image.contentType.split("/")[1];
+						const imageName = `${Date.now()}-${Math.random()
+							.toString(36)
+							.substring(7)}.${imageType}`;
+						const imagePath = join(imagesDir, imageName);
+
+						// Use sharp to compress the image
+						const compressedImageBuffer = await sharp(
+							Buffer.from(imageBuffer, "base64")
+						)
+							.toFormat(imageType as keyof FormatEnum)
+							.toBuffer();
+
+						fs.writeFileSync(imagePath, compressedImageBuffer);
+						return {
+							src: `./images/${imageName}`,
+						};
 					}),
 				}
 			);
