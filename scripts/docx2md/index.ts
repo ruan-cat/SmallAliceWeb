@@ -277,24 +277,34 @@ const docx2html: FileChange = async function (params) {
 				{
 					convertImage: images.imgElement(async function (image) {
 						const imageBuffer = await image.readAsBase64String();
-						// const imageType = image.contentType.split("/")[1];
-						const imageType = image.contentType;
+						/**
+						 * 图片格式
+						 * @description
+						 * 其返回格式类似于 image/x-emf ，所以这里要做数组切割 取第二个元素
+						 */
+						const imageType = image.contentType.split("/")[1];
 						const imageName = `${Date.now()}-${Math.random()
 							.toString(36)
 							.substring(7)}.png`;
 						const imagePath = join(imagesDir, imageName);
 
 						// 如果是jpeg格式的图片 直接返回base64格式的图片
-						if (imageType === "jpeg") {
-							return {
-								src: "data:" + image.contentType + ";base64," + imageBuffer,
-							};
-						}
+						// jpeg 格式没有错
+						// if (imageType === "jpeg") {
+						// 	return {
+						// 		src: "data:" + image.contentType + ";base64," + imageBuffer,
+						// 	};
+						// }
 
 						// Use sharp to compress the image
 						await sharp(Buffer.from(imageBuffer, "base64"))
 							.toFormat("png")
-							.toFile(imagePath);
+							.toFile(imagePath)
+							.catch((error) => {
+								consola.error(`Failed to process image: ${error.message}`);
+								consola.error(` 错误的文件格式为： ${imageType} `);
+								params.errorFilesPath.push(`${filePath}   ${imageType} `);
+							});
 						// .then((outputBuffer) => {
 						// 	fs.writeFileSync(imagePath, outputBuffer);
 						// });
