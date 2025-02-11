@@ -25,6 +25,7 @@ import { convertToHtml, images } from "mammoth";
 import sharp from "sharp";
 import { type FormatEnum } from "sharp";
 import htmlToMd from "html-to-md";
+import { normalizePath } from "vite";
 
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
@@ -429,18 +430,18 @@ function moveFilesTask() {
 		});
 
 		// 匹配文件
-		const matchedPath = pathChange(join(process.cwd(), catalog.drillDocx, "**/*.{jpeg,png,md}"));
-		const matchedFiles = sync(matchedPath).map(pathChange);
-
-		// consola.error(` 匹配？ `, matchedFiles);
+		const matchedPath = normalizePath(join(process.cwd(), catalog.drillDocx, "**/*.{jpeg,png,md}"));
+		const matchedFiles = sync(matchedPath).map(normalizePath);
 
 		// 移动文件
 		matchedFiles.forEach((filePath) => {
-			const relativePath = filePath.replace(pathChange(sourceDir), "");
+			const relativePath = filePath.substring(sourceDir.length);
+
 			// consola.warn(" sourceDir = ", sourceDir);
 			// consola.warn(" relativePath = ", relativePath);
-			const destPath = join(destDir, relativePath);
-			const destDirPath = dirname(destPath);
+
+			const destPath = join(normalizePath(destDir), normalizePath(relativePath));
+			const destDirPath = dirname(normalizePath(destPath));
 
 			if (!existsSync(destDirPath)) {
 				mkdir(destDirPath, { recursive: true }, (err) => {
@@ -448,7 +449,7 @@ function moveFilesTask() {
 				});
 			}
 
-			copyFileSync(filePath, destPath);
+			copyFileSync(normalizePath(filePath), normalizePath(destPath));
 			consola.success(`Moved ${filePath} to ${destPath}`);
 		});
 	});
