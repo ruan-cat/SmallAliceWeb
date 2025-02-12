@@ -26,6 +26,7 @@ import sharp from "sharp";
 import { type FormatEnum } from "sharp";
 import htmlToMd from "html-to-md";
 import { normalizePath } from "vite";
+import prettier from "prettier";
 
 import { concat, isEmpty, isUndefined } from "lodash-es";
 import {
@@ -211,7 +212,7 @@ async function doChange(params: DoChangeParams) {
 		task.tasks = batch.map((filePath) =>
 			generateSimpleAsyncTask(async () => {
 				await onChange({ filePath, errorFilesPath });
-			})
+			}),
 		);
 
 		// 一个批次的任务加入到串行任务内
@@ -292,7 +293,7 @@ const docx2html: FileChange = async function (params) {
 							src: `./images/${imageName}`,
 						};
 					}),
-				}
+				},
 			);
 
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
@@ -469,7 +470,22 @@ function moveFilesTask() {
 	});
 }
 
-function formatMdTask() {}
+function formatMdTask() {
+	return generateSimpleAsyncTask(async () => {
+		consola.start(` 开始格式化md文件的任务 `);
+
+		const mdFiles = sync(pathChange(join(catalog.md, "**/*.md")));
+
+		mdFiles.forEach(async (filePath) => {
+			const content = fs.readFileSync(filePath, "utf-8");
+			const formatted = await prettier.format(content, { parser: "markdown" });
+			fs.writeFileSync(filePath, formatted);
+			consola.success(`Formatted ${filePath}`);
+		});
+
+		consola.success(` 完成格式化md文件的任务 `);
+	});
+}
 
 executePromiseTasks({
 	type: "queue",
