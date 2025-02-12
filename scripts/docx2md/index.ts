@@ -57,6 +57,9 @@ const txtAndDocxFilesPath: string[] = [];
 /** 全部 html 文件的地址 */
 const htmlFilesPath: string[] = [];
 
+/** 记录遇到的全部图片格式 */
+const imageTypesSet = new Set<string>();
+
 /**
  * 生成简单的执行命令函数
  * @description
@@ -142,7 +145,7 @@ function getFilesPathTask() {
 
 		const files = await getFilesPath();
 		txtAndDocxFilesPath.push(...files);
-		console.log(txtAndDocxFilesPath);
+		// console.log(txtAndDocxFilesPath);
 
 		consola.success(` 完成查询全部文件任务 `);
 	});
@@ -275,26 +278,31 @@ const docx2html: FileChange = async function (params) {
 						 * 其返回格式类似于 image/x-emf ，所以这里要做数组切割 取第二个元素
 						 */
 						const imageType = image.contentType.split("/")[1];
-						const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+						const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType}`;
 						const imagePath = join(imagesDir, imageName);
 
 						// jpeg 格式没有错
 						// 如果是 x-emf 格式的图片 即矢量图
 						// FIXME: 尝试用 rust 调用 C++ 库，实现 emf 转 png。未来再说。
-						if (imageType === "x-emf") {
+						// 暂时跳过gif的处理
+						if (imageType === "x-emf" || imageType === "gif") {
 							// base64格式的图片 也不行。不能显示出来内容。
 							// return {
 							// 	src: "data:" + image.contentType + ";base64," + imageBuffer,
 							// };
-							consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。提供占位符图片。 `);
+							// consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。提供占位符图片。 `);
 							return {
 								src: errorImgUrl,
 							};
 						}
 
+						// consola.log(` 图片格式为： ${imageType} in ${filePath} `);
+						// consola.log(` 图片格式为： ${imageType} `);
+						imageTypesSet.add(imageType);
+
 						// Use sharp to compress the image
 						await sharp(Buffer.from(imageBuffer, "base64"))
-							.toFormat("png")
+							.toFormat(imageType as keyof FormatEnum)
 							.toFile(imagePath)
 							.catch((error) => {
 								consola.error(`Failed to process image: ${error.message}`);
@@ -313,7 +321,7 @@ const docx2html: FileChange = async function (params) {
 
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
-			consola.success(`Converted ${filePath} to HTML.`);
+			// consola.success(`Converted ${filePath} to HTML.`);
 			htmlFilesPath.push(htmlFilePath);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
@@ -331,6 +339,11 @@ function docx2htmlTask() {
 		consola.start(` 开始docx转换为html的任务 `);
 		await doChange({ onChange: docx2html });
 		consola.success(` 完成docx转换为html的任务 `);
+
+		consola.info(` 目前获取到的全部的图片格式为：`);
+		for (const imageType of imageTypesSet) {
+			consola.info(` - ${imageType}`);
+		}
 	});
 }
 
@@ -351,7 +364,7 @@ const html2md: FileChange = async function (params) {
 
 			const mdFilePath = filePath.replace(/\.html$/, ".md");
 			fs.writeFileSync(mdFilePath, mdContent);
-			consola.success(`Converted ${filePath} to Markdown.`);
+			// consola.success(`Converted ${filePath} to Markdown.`);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
 			params.errorFilesPath.push(filePath);
@@ -392,7 +405,7 @@ const txt2md: FileChange = async function (params) {
 
 			const mdFilePath = filePath.replace(/\.txt$/, ".md");
 			fs.writeFileSync(mdFilePath, mdContent);
-			consola.success(`Converted ${filePath} to Markdown.`);
+			// consola.success(`Converted ${filePath} to Markdown.`);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
 			params.errorFilesPath.push(filePath);
@@ -500,7 +513,7 @@ function formatMdTask() {
 				const content = fs.readFileSync(filePath, "utf-8");
 				const formatted = await prettier.format(content, { ...prettierConfig, parser: "markdown" });
 				fs.writeFileSync(filePath, formatted);
-				consola.success(`Formatted ${filePath}`);
+				// consola.success(`Formatted ${filePath}`);
 			} catch (error) {
 				consola.error(`Failed to format ${filePath}: ${error.message}`);
 				params.errorFilesPath.push(filePath);
