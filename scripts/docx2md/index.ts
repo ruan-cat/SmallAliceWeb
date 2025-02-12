@@ -44,6 +44,13 @@ import { catalog } from "./catalog";
 import { prepareDist } from "./prepare-dist";
 import prettierConfig from "../../prettier.config";
 
+/**
+ * 错误图片占位符
+ * @description
+ * 一个图片地址 用于替换错误的图片地址
+ */
+const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png";
+
 /** 全部 txt 和 doc 文件的地址 */
 const txtAndDocxFilesPath: string[] = [];
 
@@ -279,7 +286,10 @@ const docx2html: FileChange = async function (params) {
 							// return {
 							// 	src: "data:" + image.contentType + ";base64," + imageBuffer,
 							// };
-							consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。 `);
+							consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。提供占位符图片。 `);
+							return {
+								src: errorImgUrl,
+							};
 						}
 
 						// Use sharp to compress the image
@@ -517,7 +527,7 @@ executePromiseTasks({
 		{
 			type: "parallel",
 			tasks: [
-				txt2mdTask(),
+				// txt2mdTask(),
 				{
 					type: "queue",
 					tasks: [docx2htmlTask(), html2mdTask()],
@@ -525,7 +535,7 @@ executePromiseTasks({
 			],
 		},
 
-		moveFilesTask(),
-		formatMdTask(),
+		// moveFilesTask(),
+		// formatMdTask(),
 	],
 });

@@ -56,3 +56,9 @@ biome 目前（2025-2-12）还不能格式化 md 文档。
 ## 部署策略
 
 只使用 vercel 平台的服务器来完成，不使用 vercel output api 来实现。预期的部署文件和数量会非常大，容易超出限制。
+
+## 失败的图片
+
+vitepress 严格的机制，决定了我们不能给 md 文件生成出不存在的静态图片，故这里打算提供一个固定的图片，作为占位符。
+
+![2025-02-12-18-13-41](https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png)
