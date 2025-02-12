@@ -153,6 +153,8 @@ interface FileChangeParams {
  * 执行文件变更操作的函数
  * @description
  * 要求是一个异步函数
+ *
+ * 这里的文件变更，可以是格式变化，也可以是文件格式化等行为。
  */
 type FileChange = (params: FileChangeParams) => Promise<void>;
 
@@ -185,6 +187,8 @@ const defPrintError: DoChangeParams["printError"] = function (errorFilesPath) {
  * @description
  * 该任务不执行具体的任务细节，是一个包装函数，用于包装具体的文件转换任务。
  * 会分批次地生成文件转换任务，相当于一个异步任务调度器
+ *
+ * 文件转换任务，包括但不限于格式转换、文本格式化等。具体业务由形参传递进来的函数实现。
  */
 async function doChange(params: DoChangeParams) {
 	const { onChange, filesPath = txtAndDocxFilesPath, printError = defPrintError } = params;
@@ -479,11 +483,23 @@ function formatMdTask() {
 
 		const mdFiles = sync(pathChange(join(catalog.md, "**/*.md")));
 
-		mdFiles.forEach(async (filePath) => {
-			const content = fs.readFileSync(filePath, "utf-8");
-			const formatted = await prettier.format(content, { parser: "markdown" });
-			fs.writeFileSync(filePath, formatted);
-			consola.success(`Formatted ${filePath}`);
+		/** 执行文件格式化任务 */
+		const doFormatMd: FileChange = async function (params) {
+			const { filePath } = params;
+			try {
+				const content = fs.readFileSync(filePath, "utf-8");
+				const formatted = await prettier.format(content, { parser: "markdown" });
+				fs.writeFileSync(filePath, formatted);
+				consola.success(`Formatted ${filePath}`);
+			} catch (error) {
+				consola.error(`Failed to format ${filePath}: ${error.message}`);
+				params.errorFilesPath.push(filePath);
+			}
+		};
+
+		await doChange({
+			filesPath: mdFiles,
+			onChange: doFormatMd,
 		});
 
 		consola.success(` 完成格式化md文件的任务 `);
