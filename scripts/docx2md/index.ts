@@ -469,6 +469,8 @@ function moveFilesTask() {
 	});
 }
 
+function formatMdTask() {}
+
 executePromiseTasks({
 	type: "queue",
 	tasks: [

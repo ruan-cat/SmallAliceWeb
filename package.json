@@ -30,7 +30,8 @@
 		"postinstall": "npx nuxi prepare",
 		"init-biome-config": "biome init",
 		"biome-migrate-prettier": "biome migrate prettier --write",
-		"format:docs": "biome format --write ./docs/**/*.md",
+		"format:docs-biome": "biome format --write ./docs/**/*.md",
+		"format:docs-prettier": "prettier --write ./docs/**/*.md",
 		"rm:node_modules": "rimraf node_modules pnpm-lock.yaml .nuxt .vercel",
 		"deploy-vercel": "node --import=tsx ./scripts/vercel-deploy-tool.ts",
 		"build:drill-docx2md": "node --import=tsx ./scripts/docx2md/index.ts"
@@ -56,6 +57,8 @@
 		"mammoth": "^1.9.0",
 		"mermaid": "^10.9.3",
 		"nuxt": "^3.15.4",
+		"prettier": "^3.5.0",
+		"prettier-plugin-lint-md": "^1.0.1",
 		"sharp": "^0.33.5",
 		"tsx": "^4.19.2",
 		"vite": "^6.1.0",
