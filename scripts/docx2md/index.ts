@@ -42,6 +42,7 @@ import {
 
 import { catalog } from "./catalog";
 import { prepareDist } from "./prepare-dist";
+import prettierConfig from "../../prettier.config";
 
 /** 全部 txt 和 doc 文件的地址 */
 const txtAndDocxFilesPath: string[] = [];
@@ -488,7 +489,7 @@ function formatMdTask() {
 			const { filePath } = params;
 			try {
 				const content = fs.readFileSync(filePath, "utf-8");
-				const formatted = await prettier.format(content, { parser: "markdown" });
+				const formatted = await prettier.format(content, { ...prettierConfig, parser: "markdown" });
 				fs.writeFileSync(filePath, formatted);
 				consola.success(`Formatted ${filePath}`);
 			} catch (error) {
