@@ -518,10 +518,10 @@ executePromiseTasks({
 			type: "parallel",
 			tasks: [
 				txt2mdTask(),
-				// {
-				// 	type: "queue",
-				// 	tasks: [docx2htmlTask(), html2mdTask()],
-				// },
+				{
+					type: "queue",
+					tasks: [docx2htmlTask(), html2mdTask()],
+				},
 			],
 		},
 
