@@ -371,7 +371,6 @@ function html2mdTask() {
 const txt2md: FileChange = async function (params) {
 	const { filePath } = params;
 	if (filePath.endsWith(".txt")) {
-		consola.log(" filePath = ?  ", filePath);
 		try {
 			const txtContent = fs.readFileSync(filePath, "utf-8");
 			const fileName =
