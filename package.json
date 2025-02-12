@@ -23,11 +23,11 @@
 		"git:fetch": "git fetch -p",
 		"git:dev-2-main": "git rebase dev main",
 		"git:main-2-dev": "git rebase main dev",
-		"docs:build": "vuepress-vite build docs",
-		"docs:dev": "vuepress-vite dev docs --clean-cache --open",
+		"docs:dev": "vitepress dev docs --port 8080 --open",
+		"docs:build": "vitepress build docs",
+		"docs:build-vp": "vuepress-vite build docs",
+		"docs:dev-vp": "vuepress-vite dev docs --clean-cache --open",
 		"docs:update-package": "pnpm dlx vp-update",
-		"vip:dev": "vitepress dev docs --port 8080 --open",
-		"vip:build": "vitepress build docs",
 		"up-ruan-cat": "pnpm -F=* up @ruan-cat/*@latest",
 		"postinstall": "npx nuxi prepare",
 		"init-biome-config": "biome init",
@@ -36,7 +36,8 @@
 		"format:docs-prettier": "prettier --write ./docs/**/*.md",
 		"rm:node_modules": "rimraf node_modules pnpm-lock.yaml .nuxt .vercel",
 		"deploy-vercel": "node --import=tsx ./scripts/vercel-deploy-tool.ts",
-		"build:drill-docx2md": "node --import=tsx ./scripts/docx2md/index.ts"
+		"build:drill-docx2md": "node --import=tsx ./scripts/docx2md/index.ts",
+		"predocs:build": "pnpm run build:drill-docx2md"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
