@@ -37,6 +37,12 @@
 
 预期文件很多，为了提高格式化效率，故使用 biome 完成格式化。
 
+## 继续用 prettier 完成格式化
+
+- https://biomejs.dev/zh-cn/internals/language-support
+
+biome 目前（2025-2-12）还不能格式化 md 文档。
+
 ## 图片压缩
 
 看看有没有合适的 node 库，压缩全部的图片资源，且失真率较低，原地修改文件，且不更改后缀名和文件名。
