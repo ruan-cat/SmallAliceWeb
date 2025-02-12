@@ -470,6 +470,9 @@ function moveFilesTask() {
 	});
 }
 
+/**
+ * 格式化md文件任务
+ */
 function formatMdTask() {
 	return generateSimpleAsyncTask(async () => {
 		consola.start(` 开始格式化md文件的任务 `);
@@ -507,5 +510,6 @@ executePromiseTasks({
 		},
 
 		moveFilesTask(),
+		formatMdTask(),
 	],
 });
