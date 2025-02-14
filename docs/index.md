@@ -18,10 +18,22 @@
 
 ## 将 docx 生成为 html 文件
 
+### mammoth
+
 使用该库完成。
 
 - https://github.com/mwilliamson/mammoth.js
 - https://www.npmjs.com/package/mammoth
+
+经过试验，效果不好。很多图片都不能生成出有效的内容。生成的 png 图片直接失败了。
+
+### onlyoffice
+
+### libreoffice
+
+### 腾讯云
+
+- https://cloud.tencent.com/document/product/1250/109280
 
 ## 将 html 生成为 md 文件
 
