@@ -1,63 +1,24 @@
-import { defineConfig } from "vitepress";
-import { GitChangelog, GitChangelogMarkdownSection } from "@nolebase/vitepress-plugin-git-changelog/vite";
+import { setUserConfig, setGenerateSidebar, addChangelog2doc } from "@ruan-cat/vitepress-preset-config/config";
 
-import { generateSidebar } from "vitepress-sidebar";
+// 为文档添加自动生成的changelog
+addChangelog2doc({
+	// 设置changelog的目标文件夹
+	target: "./docs",
+	// 设置changelog顶部的yaml数据。通常是排序
+	data: {
+		order: 1000,
+		dir: {
+			order: 1000,
+		},
+	},
+});
 
-// https://vitepress.dev/reference/site-config
-export default defineConfig({
-	// title: "monorepo-1-vitepress原版主题",
-	// description: "vitepress原版主题测试",
-	// lang: "zh",
-
-	// base: `/${name}/`,
-	// srcDir: `../../../.docs/${name}`,
-	// outDir: `../../../dist/${name}`,
-	// cacheDir: `../../../.cache/${name}`,
-
+const userConfig = setUserConfig({
 	title: "阮喵喵的01星球笔记",
 	description: "阮喵喵在01星球内的一些公用文档",
 	lang: "zh",
 
-	// srcDir: "../docs",
-
-	vite: {
-		server: {
-			open: true,
-		},
-
-		plugins: [
-			GitChangelog({
-				// 填写在此处填写您的仓库链接
-				repoURL: () => "https://github.com/nolebase/integrations",
-			}),
-			GitChangelogMarkdownSection(),
-		],
-
-		optimizeDeps: {
-			exclude: [
-				"@nolebase/vitepress-plugin-breadcrumbs/client",
-				"@nolebase/vitepress-plugin-enhanced-readabilities/client",
-				"vitepress",
-				"@nolebase/ui",
-			],
-		},
-
-		ssr: {
-			noExternal: [
-				// 如果还有别的依赖需要添加的话，并排填写和配置到这里即可
-				"@nolebase/vitepress-plugin-breadcrumbs",
-
-				"@nolebase/vitepress-plugin-enhanced-readabilities",
-				"@nolebase/ui",
-
-				"@nolebase/vitepress-plugin-highlight-targeted-heading",
-			],
-		},
-	},
-
 	themeConfig: {
-		i18nRouting: true,
-
 		outline: {
 			label: "本页目录",
 			level: "deep",
@@ -66,11 +27,10 @@ export default defineConfig({
 		socialLinks: [
 			{
 				icon: "github",
-				link: "https://github.com/ruan-cat/vercel-monorepo-test/blob/dev/tests/monorepo-1/docs/index.md",
+				link: "https://github.com/ruan-cat",
 			},
 		],
 
-		// https://vitepress.dev/reference/default-theme-config
 		nav: [
 			{ text: "首页", link: "/" },
 			{
@@ -78,10 +38,14 @@ export default defineConfig({
 				link: "https://github.com/ruan-cat/vercel-monorepo-test/blob/dev/tests/monorepo-1/docs/index.md",
 			},
 		],
-
-		sidebar: generateSidebar({
-			documentRootPath: "docs",
-			collapsed: true,
-		}),
 	},
 });
+
+// 侧边栏配置必须单独赋值
+// @ts-ignore
+userConfig.themeConfig.sidebar = setGenerateSidebar({
+	documentRootPath: "./docs",
+	collapsed: true,
+});
+
+export default userConfig;
