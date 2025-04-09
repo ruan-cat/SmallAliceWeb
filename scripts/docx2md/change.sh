@@ -46,11 +46,18 @@ find . -type f \( -name "*.docx" -o -name "*.doc" -o -name "*.txt" \) | while re
   name_without_ext="${filename%.*}"
   output="$dir/$name_without_ext.md"
 
+  # 创建图片存储目录
+  image_dir="$dir/images"
+  if [ ! -d "$image_dir" ]; then
+    echo "创建图片目录: $image_dir"
+    mkdir -p "$image_dir"
+  fi
+
   # 输出正在转换的文件
   echo "正在转换: $file -> $output"
 
-  # 使用pandoc进行转换
-  pandoc -s "$file" -o "$output"
+  # 使用pandoc进行转换，并提取图片到images文件夹
+  pandoc -s "$file" -o "$output" --extract-media="$dir/images"
 
   # 输出生成的md文件路径
   echo "已生成: $output"
