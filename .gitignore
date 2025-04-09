@@ -50,3 +50,6 @@ vercel.null.def.json
 
 # 忽略来自docx的文件，这些文件都是移动生成的
 docs/docx
+
+# 忽略根目录的 drill-docx 文件夹。该文件夹默认认为是外部复制粘贴的docx元数据
+drill-docx
