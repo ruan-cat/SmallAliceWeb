@@ -7,7 +7,8 @@
 3. 安装 node 环境、pnpm 包管理器、以及全局的 node 包 degit，并输出 node 和 pnpm 的版本号。
 4. 使用 node 库 degit，克隆 https://github.com/ruan-cat/drill-docx 仓库到根目录下的 drill-docx 文件夹内。
 5. 输出全部 `*.docx` `*.doc` `*.txt` 格式的文件名名称，按照文件夹目录结构输出。
-6. 运行 `scripts/docx2md/change.sh` 文件，完成文件格式转换。
+6. 为 `scripts/docx2md/change.sh` 脚本增加运行权限，使文件变为可执行文件。
+7. 运行 `scripts/docx2md/change.sh` 文件，完成文件格式转换。
 
 你编写的 github workflow 工作流文件，主要工作是搭建环境、准备文件，而不是完成格式转换。
 
