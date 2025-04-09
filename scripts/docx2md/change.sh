@@ -17,42 +17,32 @@ echo "开始将 docx/doc/txt 文件转换为 Markdown 格式..."
 # 计数器
 CONVERTED_COUNT=0
 
-# 递归函数，用于遍历目录
-process_directory() {
-  local dir=$1
-  # 进入指定目录
-  cd "$dir"
-
-  # 遍历当前目录下的所有文件和子目录
-  for item in *; do
-    # 检查项目是否存在（避免通配符展开为*）
-    if [ -e "$item" ]; then
-      if [ -d "$item" ]; then
-        # 如果是目录，递归处理
-        echo "进入目录: $dir/$item"
-        process_directory "$item"
-        cd ..  # 返回上级目录
-      elif [[ "$item" == *.docx ]] || [[ "$item" == *.doc ]] || [[ "$item" == *.txt ]]; then
-        # 如果是docx/doc/txt文件，进行转换
-        filename="${item%.*}"
-        output="$filename.md"
-        echo "正在转换: $dir/$item -> $dir/$output"
-
-        # 使用pandoc进行转换
-        pandoc -s "$item" -o "$output"
-
-        # 输出生成的md文件路径
-        echo "已生成: $dir/$output"
-        ((CONVERTED_COUNT++))
-      fi
-    fi
-  done
-}
-
-# 开始处理
-cd "$TARGET_DIR"
+# 保存原始目录
 ORIGINAL_DIR=$(pwd)
-process_directory "."
+
+# 进入目标目录
+cd "$TARGET_DIR"
+
+# 使用find命令查找所有docx、doc和txt文件
+find . -type f \( -name "*.docx" -o -name "*.doc" -o -name "*.txt" \) | while read -r file; do
+  # 获取目录和文件名
+  dir=$(dirname "$file")
+  filename=$(basename "$file")
+  name_without_ext="${filename%.*}"
+  output="$dir/$name_without_ext.md"
+
+  # 输出正在转换的文件
+  echo "正在转换: $file -> $output"
+
+  # 使用pandoc进行转换
+  pandoc -s "$file" -o "$output"
+
+  # 输出生成的md文件路径
+  echo "已生成: $output"
+  CONVERTED_COUNT=$((CONVERTED_COUNT+1))
+done
+
+# 返回原始目录
 cd "$ORIGINAL_DIR"
 
 echo "转换完成！共转换 $CONVERTED_COUNT 个文件为Markdown格式。"
