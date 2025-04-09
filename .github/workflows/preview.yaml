@@ -19,7 +19,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: 检出分支
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: amondnet/vercel-action@v25.1.1
         with:
           vercel-token: ${{ secrets.vercel_token }} # Required
