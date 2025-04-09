@@ -14,16 +14,11 @@ addChangelog2doc({
 });
 
 const userConfig = setUserConfig({
-	title: "阮喵喵的01星球笔记",
-	description: "阮喵喵在01星球内的一些公用文档",
+	title: "小爱丽丝官网",
+	description: "天才小爱丽丝，冲鸭！",
 	lang: "zh",
 
 	themeConfig: {
-		outline: {
-			label: "本页目录",
-			level: "deep",
-		},
-
 		socialLinks: [
 			{
 				icon: "github",
@@ -32,10 +27,9 @@ const userConfig = setUserConfig({
 		],
 
 		nav: [
-			{ text: "首页", link: "/" },
 			{
 				text: "仓库地址",
-				link: "https://github.com/ruan-cat/vercel-monorepo-test/blob/dev/tests/monorepo-1/docs/index.md",
+				link: "https://github.com/ruan-cat/SmallAliceWeb",
 			},
 		],
 	},
