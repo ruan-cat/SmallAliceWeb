@@ -19,7 +19,7 @@ interface BuildConfig {
 
 // 默认配置
 const defaultConfig: BuildConfig = {
-	isSkipClone: false,
+	isSkipClone: true,
 	isSkipTransform: false,
 	isSkipClean: false,
 };
