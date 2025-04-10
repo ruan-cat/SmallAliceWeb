@@ -1,12 +1,13 @@
 import fs from "fs";
 import { consola } from "consola";
+import prettier from "prettier";
 
 /**
  * 清理插件接口
  */
 interface CleanerPlugin {
 	name: string;
-	clean: (content: string) => string;
+	clean: (content: string) => string | Promise<string>;
 }
 
 /**
@@ -33,11 +34,37 @@ const dimensionCleaner: CleanerPlugin = {
 };
 
 /**
+ * 使用Prettier格式化Markdown文件
+ */
+const prettierFormatter: CleanerPlugin = {
+	name: "Prettier格式化器",
+	clean: async (content: string) => {
+		try {
+			// 获取项目中的prettier配置
+			const prettierConfig = await prettier.resolveConfig(process.cwd());
+
+			// 使用prettier格式化内容
+			const formattedContent = await prettier.format(content, {
+				...prettierConfig,
+				parser: "markdown",
+			});
+
+			return formattedContent;
+		} catch (error) {
+			consola.warn(`Prettier格式化失败: ${error.message}`);
+			// 如果格式化失败，返回原内容
+			return content;
+		}
+	},
+};
+
+/**
  * 清理器插件列表
  */
 const cleanerPlugins: CleanerPlugin[] = [
 	anchorCleaner,
 	dimensionCleaner,
+	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
 
@@ -58,12 +85,13 @@ export async function cleanMdFiles(mdFiles: string[]): Promise<string[]> {
 
 			// 应用所有清理插件
 			for (const plugin of cleanerPlugins) {
+				consola.debug(`应用 ${plugin.name} 到文件: ${filePath}`);
 				const originalLength = content.length;
-				content = plugin.clean(content);
+				content = await plugin.clean(content);
 				const newLength = content.length;
 
 				if (originalLength !== newLength) {
-					consola.info(`${plugin.name}移除了 ${originalLength - newLength} 个字符`);
+					consola.info(`${plugin.name}处理后，文件长度从 ${originalLength} 变为 ${newLength}`);
 				}
 			}
 
