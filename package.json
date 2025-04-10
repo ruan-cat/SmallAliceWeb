@@ -32,7 +32,7 @@
 		"rm:node_modules": "rimraf node_modules pnpm-lock.yaml .nuxt .vercel",
 		"deploy-vercel": "node --import=tsx ./scripts/vercel-deploy-tool.ts",
 		"build:drill-docx2md": "node --import=tsx ./scripts/docx2md/index.ts",
-		"predocs:build": "pnpm run build:drill-docx2md"
+		"notuse-predocs:build": "pnpm run build:drill-docx2md"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
