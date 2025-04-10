@@ -109,6 +109,9 @@ async function processDocxFiles(docxFiles: string[], outputDir: string): Promise
 		}
 	}
 
+	// 输出图片处理统计信息
+	consola.info(`处理的图片类型: ${Array.from(imageTypesSet).join(", ") || "无"}`);
+
 	return errorFiles;
 }
 
@@ -153,43 +156,87 @@ async function docx2html(params: {
 			{ buffer: fileBuffer },
 			{
 				convertImage: images.imgElement(async function (image) {
-					const imageBuffer = await image.readAsBase64String();
-					/**
-					 * 图片格式
-					 * @description
-					 * 其返回格式类似于 image/x-emf ，所以这里要做数组切割 取第二个元素
-					 */
-					const imageType = image.contentType.split("/")[1];
-					const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType}`;
-					const imagePath = path.join(imagesDir, imageName);
-
-					// 如果是 x-emf 格式的图片 即矢量图
-					// 暂时跳过gif的处理
-					if (imageType === "x-emf" || imageType === "gif") {
-						return {
-							src: errorImgUrl,
-						};
-					}
-
-					imageTypesSet.add(imageType);
-
-					// 使用 sharp 压缩图片
 					try {
-						await sharp(Buffer.from(imageBuffer, "base64"))
-							.toFormat(imageType as keyof FormatEnum)
-							.toFile(imagePath);
+						const imageBuffer = await image.readAsBase64String();
+						/**
+						 * 图片格式
+						 * @description
+						 * 其返回格式类似于 image/x-emf ，所以这里要做数组切割 取第二个元素
+						 */
+						let contentType = image.contentType || "image/png";
+						consola.debug(`处理图片，格式: ${contentType}`);
+
+						// 确保contentType包含"/"，如果不含则默认为png
+						if (!contentType.includes("/")) {
+							consola.warn(`图片contentType格式异常: ${contentType}, 将使用默认值image/png`);
+							contentType = "image/png";
+						}
+
+						const imageType = contentType.split("/")[1];
+						let imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType === "jpeg" ? "jpg" : imageType}`;
+						const imagePath = path.join(imagesDir, imageName);
+
+						// 处理特殊格式的图片
+						const unsupportedFormats = ["x-emf", "gif", "wmf", "emf"];
+						if (unsupportedFormats.includes(imageType)) {
+							consola.warn(`跳过不支持的图片格式: ${imageType}，使用占位图片`);
+							return {
+								src: errorImgUrl,
+							};
+						}
+
+						imageTypesSet.add(imageType);
+
+						// 如果是图片数据为空，使用占位图片
+						if (!imageBuffer || imageBuffer.length < 10) {
+							consola.warn(`图片数据为空或太小: ${imageName}`);
+							return {
+								src: errorImgUrl,
+							};
+						}
+
+						// 使用sharp压缩图片
+						try {
+							const imageData = Buffer.from(imageBuffer, "base64");
+
+							// 根据不同图片类型做不同处理
+							if (imageType === "png" || imageType === "jpeg" || imageType === "jpg") {
+								await sharp(imageData)
+									.toFormat(imageType === "jpg" ? "jpeg" : (imageType as keyof FormatEnum))
+									.toFile(imagePath);
+							} else {
+								// 对于其他格式，尝试转换为png
+								consola.info(`未明确支持的图片格式: ${imageType}，尝试转换为PNG`);
+								const newImagePath = imagePath.replace(/\.[^.]+$/, ".png");
+								await sharp(imageData).toFormat("png").toFile(newImagePath);
+
+								// 更新imageName为新生成的png文件名
+								imageName = imageName.replace(/\.[^.]+$/, ".png");
+							}
+
+							consola.debug(`图片处理成功: ${imageName}`);
+						} catch (error) {
+							consola.error(`处理图片失败 [${imageName}]: ${error.message}`);
+							consola.error(`错误的图片格式: ${imageType}`);
+
+							// 记录错误但继续处理
+							errorFilesPath.push(`${filePath} - 图片处理失败 [${imageType}]: ${error.message}`);
+
+							return {
+								src: errorImgUrl,
+							};
+						}
+
+						// 返回相对路径的图片链接
+						return {
+							src: `./images/${imageName}`,
+						};
 					} catch (error) {
-						consola.error(`处理图片失败: ${error.message}`);
-						consola.error(` 错误的文件格式为： ${imageType} `);
-						errorFilesPath.push(`${filePath}   ${imageType} `);
+						consola.error(`图片转换过程中出错: ${error.message}`);
 						return {
 							src: errorImgUrl,
 						};
 					}
-
-					return {
-						src: `./images/${imageName}`,
-					};
 				}),
 			},
 		);
