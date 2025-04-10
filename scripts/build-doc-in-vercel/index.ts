@@ -67,14 +67,25 @@ async function cloneRepository() {
 }
 
 /**
- * 确保输出目录存在
+ * 确保输出目录存在并清空
+ * @description
+ * 检查目录是否存在，如不存在则创建。
+ * 如果目录已存在，则清空目录内容并重新创建
  */
 function ensureOutputDirectoryExists() {
 	const outputDir = path.join("docs", "docx");
-	if (!fs.existsSync(outputDir)) {
-		consola.info(`创建输出目录: ${outputDir}`);
-		fs.mkdirSync(outputDir, { recursive: true });
+
+	// 如果目录存在，先清空它
+	if (fs.existsSync(outputDir)) {
+		consola.info(`输出目录 ${outputDir} 已存在，清空目录...`);
+		// 删除整个目录及其内容
+		fs.rmSync(outputDir, { recursive: true, force: true });
 	}
+
+	// 重新创建目录
+	consola.info(`创建输出目录: ${outputDir}`);
+	fs.mkdirSync(outputDir, { recursive: true });
+
 	return outputDir;
 }
 
@@ -86,6 +97,10 @@ async function main(config: BuildConfig = defaultConfig) {
 	const errorFiles: string[] = [];
 
 	try {
+		// 确保输出目录存在且为空
+		consola.info("=== 准备输出目录 ===");
+		const outputDir = ensureOutputDirectoryExists();
+
 		// 1. 克隆仓库阶段
 		if (!config.isSkipClone) {
 			consola.info("=== 开始文件获取阶段 ===");
@@ -93,9 +108,6 @@ async function main(config: BuildConfig = defaultConfig) {
 		} else {
 			consola.info("跳过文件获取阶段");
 		}
-
-		// 确保输出目录存在
-		const outputDir = ensureOutputDirectoryExists();
 
 		// 2. 格式转换阶段
 		if (!config.isSkipTransform) {
