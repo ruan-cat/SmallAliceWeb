@@ -35,10 +35,11 @@ import {
 	generateSimpleAsyncTask,
 	definePromiseTasks,
 	executePromiseTasks,
-	pathChange,
 	type TasksConfig,
 	type Task,
 } from "@ruan-cat/utils";
+
+import { pathChange } from "@ruan-cat/utils/src/node-cjs/tools.ts";
 
 import { catalog } from "./catalog";
 import { prepareDist } from "./prepare-dist";
@@ -257,16 +258,13 @@ const docx2html: FileChange = async function (params) {
 	if (filePath.endsWith(".docx")) {
 		try {
 			const fileBuffer = fs.readFileSync(filePath);
-
 			const imagesDir = join(dirname(filePath), "images");
-
 			if (existsSync(imagesDir)) {
 				rmSync(imagesDir, { recursive: true, force: true });
 			}
 			mkdir(imagesDir, { recursive: true }, (err) => {
 				if (err) throw err;
 			});
-
 			const result = await convertToHtml(
 				{ buffer: fileBuffer },
 				{
@@ -280,24 +278,14 @@ const docx2html: FileChange = async function (params) {
 						const imageType = image.contentType.split("/")[1];
 						const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType}`;
 						const imagePath = join(imagesDir, imageName);
-
 						// jpeg 格式没有错
 						// 如果是 x-emf 格式的图片 即矢量图
-						// FIXME: 尝试用 rust 调用 C++ 库，实现 emf 转 png。未来再说。
 						// 暂时跳过gif的处理
 						if (imageType === "x-emf" || imageType === "gif") {
-							// base64格式的图片 也不行。不能显示出来内容。
-							// return {
-							// 	src: "data:" + image.contentType + ";base64," + imageBuffer,
-							// };
-							// consola.warn(` 目前无法处理 ${imageType} 格式的图片。默认放弃。提供占位符图片。 `);
 							return {
 								src: errorImgUrl,
 							};
 						}
-
-						// consola.log(` 图片格式为： ${imageType} in ${filePath} `);
-						// consola.log(` 图片格式为： ${imageType} `);
 						imageTypesSet.add(imageType);
 
 						// Use sharp to compress the image
@@ -309,9 +297,6 @@ const docx2html: FileChange = async function (params) {
 								consola.error(` 错误的文件格式为： ${imageType} `);
 								params.errorFilesPath.push(`${filePath}   ${imageType} `);
 							});
-						// .then((outputBuffer) => {
-						// 	fs.writeFileSync(imagePath, outputBuffer);
-						// });
 						return {
 							src: `./images/${imageName}`,
 						};
@@ -321,7 +306,6 @@ const docx2html: FileChange = async function (params) {
 
 			const htmlFilePath = filePath.replace(/\.docx$/, ".html");
 			fs.writeFileSync(htmlFilePath, result.value);
-			// consola.success(`Converted ${filePath} to HTML.`);
 			htmlFilesPath.push(htmlFilePath);
 		} catch (error) {
 			consola.error(`Failed to convert ${filePath}: ${error.message}`);
