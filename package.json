@@ -20,6 +20,7 @@
 		"git:main-2-dev": "git rebase main dev",
 		"docs:dev": "vitepress dev docs --port 8080 --open",
 		"docs:build": "vitepress build docs",
+		"docs:preview": "vitepress preview docs",
 		"docs:build-vp": "vuepress-vite build docs",
 		"docs:dev-vp": "vuepress-vite dev docs --clean-cache --open",
 		"docs:update-package": "pnpm dlx vp-update",
