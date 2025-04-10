@@ -33,6 +33,11 @@ const userConfig = setUserConfig({
 			},
 		],
 	},
+
+	// 钻头项目有很多emf矢量图 需要添加到vite的assetsInclude中
+	vite: {
+		assetsInclude: ["**/*.emf"],
+	},
 });
 
 // 侧边栏配置必须单独赋值
