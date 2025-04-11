@@ -8,7 +8,7 @@ import { htmlStandardTags } from "./utils";
  */
 interface CleanerPlugin {
 	name: string;
-	clean: (content: string) => string | Promise<string>;
+	clean: (content: string, filePath?: string) => string | Promise<string>;
 }
 
 /**
@@ -183,9 +183,106 @@ const summaryStarCleaner: CleanerPlugin = {
 };
 
 /**
+ * 删除`## 概述`文本
+ */
+const removeOverviewCleaner: CleanerPlugin = {
+	name: "概述删除器",
+	clean: (content: string) => {
+		// 匹配"## 概述"文本，包括可能的换行符
+		const overviewRegex = /##\s*概述\s*\n?/g;
+
+		let replacedContent = content;
+		let matches = 0;
+
+		// 直接删除匹配到的文本
+		replacedContent = replacedContent.replace(overviewRegex, () => {
+			matches++;
+			return "";
+		});
+
+		if (matches > 0) {
+			consola.info(`删除了 ${matches} 处"## 概述"文本`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
+ * 调整标题层级，删除多余的`#`号
+ */
+const adjustHeadingLevelCleaner: CleanerPlugin = {
+	name: "标题层级调整器",
+	clean: (content: string) => {
+		// 首先检查是否已经有一级标题
+		const hasH1 = /^#\s+[^#\n]+$/m.test(content);
+
+		if (hasH1) {
+			consola.info("文档已有一级标题，无需调整标题层级");
+			return content;
+		}
+
+		// 匹配所有markdown标题行
+		const headingRegex = /^(#{2,})\s+(.+)$/gm;
+
+		let replacedContent = content;
+		let matches = 0;
+
+		// 将每个标题的层级提升一级（删除一个#号）
+		replacedContent = replacedContent.replace(headingRegex, (match, hashes, title) => {
+			matches++;
+			return `${hashes.slice(1)} ${title}`;
+		});
+
+		if (matches > 0) {
+			consola.info(`调整了 ${matches} 处标题层级`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
+ * 根据文件名增加一级标题
+ */
+const addH1FromFilenameCleaner: CleanerPlugin = {
+	name: "一级标题添加器",
+	clean: (content: string, filePath?: string) => {
+		if (!filePath) {
+			consola.warn("未提供文件路径，无法添加一级标题");
+			return content;
+		}
+
+		// 检查是否已经有一级标题
+		const hasH1 = /^#\s+[^#\n]+$/m.test(content);
+
+		if (hasH1) {
+			consola.info("文档已有一级标题，无需添加");
+			return content;
+		}
+
+		// 从文件路径中提取文件名（不含扩展名）
+		const filename =
+			filePath
+				.split("/")
+				.pop()
+				?.replace(/\.[^/.]+$/, "") || "";
+
+		// 在文件开头添加一级标题
+		const newContent = `# ${filename}\n\n${content}`;
+		consola.info(`已添加一级标题: # ${filename}`);
+
+		return newContent;
+	},
+};
+
+/**
  * 清理器插件列表
  */
 const cleanerPlugins: CleanerPlugin[] = [
+	removeOverviewCleaner, // 最先删除"## 概述"文本
+	adjustHeadingLevelCleaner, // 然后调整标题层级
+	addH1FromFilenameCleaner, // 最后添加一级标题
 	anchorCleaner,
 	dimensionCleaner,
 	unclosedTagCleaner,
@@ -215,7 +312,8 @@ export async function cleanMdFiles(mdFiles: string[]): Promise<string[]> {
 			for (const plugin of cleanerPlugins) {
 				consola.debug(`应用 ${plugin.name} 到文件: ${filePath}`);
 				const originalLength = content.length;
-				content = await plugin.clean(content);
+				// 传入文件路径作为第二个参数，供需要使用文件名的清理器使用
+				content = await plugin.clean(content, filePath);
 				const newLength = content.length;
 
 				if (originalLength !== newLength) {
