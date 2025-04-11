@@ -210,6 +210,7 @@ const removeOverviewCleaner: CleanerPlugin = {
 
 /**
  * 调整标题层级，删除多余的`#`号
+ * 不删减二级标题，只处理三级及以上的标题
  */
 const adjustHeadingLevelCleaner: CleanerPlugin = {
 	name: "标题层级调整器",
@@ -222,8 +223,8 @@ const adjustHeadingLevelCleaner: CleanerPlugin = {
 			return content;
 		}
 
-		// 匹配所有markdown标题行
-		const headingRegex = /^(#{2,})\s+(.+)$/gm;
+		// 匹配所有三级及以上的markdown标题行（不处理二级标题）
+		const headingRegex = /^(#{3,})\s+(.+)$/gm;
 
 		let replacedContent = content;
 		let matches = 0;
@@ -235,7 +236,7 @@ const adjustHeadingLevelCleaner: CleanerPlugin = {
 		});
 
 		if (matches > 0) {
-			consola.info(`调整了 ${matches} 处标题层级`);
+			consola.info(`调整了 ${matches} 处标题层级（不包括二级标题）`);
 		}
 
 		return replacedContent;
