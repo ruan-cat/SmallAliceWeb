@@ -75,6 +75,35 @@ const unclosedTagCleaner: CleanerPlugin = {
 };
 
 /**
+ * 处理`@type struct<XXX>`格式的脏数据
+ * 将这种格式的文本转换为代码块
+ */
+const structTypeCleaner: CleanerPlugin = {
+	name: "@type struct清理器",
+	clean: (content: string) => {
+		// 匹配@type struct<XXX>格式，但排除已经在代码块中的文本
+		const structTypeRegex = /(?<!`)([@]type\s+struct<[^>]*>)(?!`)/g;
+
+		let replacedContent = content;
+		let matches = 0;
+		const matchedTypes = new Set<string>();
+
+		// 替换为代码块格式
+		replacedContent = replacedContent.replace(structTypeRegex, (match) => {
+			matches++;
+			matchedTypes.add(match);
+			return `\`${match}\``;
+		});
+
+		if (matches > 0) {
+			consola.info(`替换了 ${matches} 个@type struct<XXX>为代码块: ${Array.from(matchedTypes).join(", ")}`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
  * 使用Prettier格式化Markdown文件
  */
 const prettierFormatter: CleanerPlugin = {
@@ -106,6 +135,7 @@ const cleanerPlugins: CleanerPlugin[] = [
 	anchorCleaner,
 	dimensionCleaner,
 	unclosedTagCleaner,
+	structTypeCleaner,
 	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
