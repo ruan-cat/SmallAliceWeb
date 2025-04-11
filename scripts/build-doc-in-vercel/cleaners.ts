@@ -262,12 +262,17 @@ const addH1FromFilenameCleaner: CleanerPlugin = {
 			return content;
 		}
 
+		// 处理文件路径中的分隔符，兼容Windows和Unix风格
+		const normalizedPath = filePath.replace(/\\/g, "/");
+
 		// 从文件路径中提取文件名（不含扩展名）
 		const filename =
-			filePath
+			normalizedPath
 				.split("/")
 				.pop()
 				?.replace(/\.[^/.]+$/, "") || "";
+
+		consola.debug(`从路径 ${filePath} 提取出文件名: ${filename}`);
 
 		// 在文件开头添加一级标题
 		const newContent = `# ${filename}\n\n${content}`;
