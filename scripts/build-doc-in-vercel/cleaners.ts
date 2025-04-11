@@ -2,6 +2,7 @@ import fs from "fs";
 import { consola } from "consola";
 import prettier from "prettier";
 import { htmlStandardTags } from "./utils";
+import * as indexStore from "./indexStore";
 
 /**
  * 清理插件接口
@@ -302,6 +303,9 @@ const docLinkGenerator: CleanerPlugin = {
 		let matches = 0;
 		const matchedLinks = new Set<string>();
 
+		// 获取指向文件名索引对象
+		const pointingFileNameIndex = indexStore.getPointingFileNameIndex();
+
 		// 替换为 markdown 链接格式
 		replacedContent = replacedContent.replace(docLinkRegex, (match, dirName, fileName) => {
 			// 额外验证确保目录名不包含.png字样
@@ -312,8 +316,15 @@ const docLinkGenerator: CleanerPlugin = {
 			matches++;
 			matchedLinks.add(match);
 
-			// 构建链接 - 保持原始格式中的空格
-			return `[\`${dirName} > ${fileName}.docx\`](/docx/插件详细手册/${dirName}/${fileName}.md)`;
+			// 检查在指向文件名索引对象中是否能找到该文件名
+			const isPointingFile = pointingFileNameIndex[dirName] && pointingFileNameIndex[dirName].includes(fileName.trim());
+
+			// 构建链接 - 根据是否是指向文件生成不同的链接
+			if (isPointingFile) {
+				return `[\`${dirName} > ${fileName}.docx\`](/docx/插件详细手册/${dirName}/（指向）${fileName}.md)`;
+			} else {
+				return `[\`${dirName} > ${fileName}.docx\`](/docx/插件详细手册/${dirName}/${fileName}.md)`;
+			}
 		});
 
 		if (matches > 0) {
