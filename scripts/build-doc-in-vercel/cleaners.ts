@@ -290,8 +290,9 @@ const docLinkGenerator: CleanerPlugin = {
 	name: "文档链接生成器",
 	clean: (content: string) => {
 		// 匹配 "目录名 > 文件名.docx" 格式的文本
-		// 目录名通常是形如 "0.基本定义"、"1.系统"、"21.管理器" 等
-		const docLinkRegex = /(\d+\.[^>]+)\s*>\s*([^.]+)\.docx/g;
+		// 目录名必须满足 "${number}.${text}" 格式
+		// 严格匹配空格模式，确保不匹配过大范围的文本
+		const docLinkRegex = /(\d+\.[^\s>]+(?:\s+[^\s>]+)*) > ([^\s.]+(?:\s+[^\s.]+)*)\.docx/g;
 
 		let replacedContent = content;
 		let matches = 0;
@@ -302,12 +303,8 @@ const docLinkGenerator: CleanerPlugin = {
 			matches++;
 			matchedLinks.add(match);
 
-			// 去除目录名和文件名前后可能的空格
-			const trimmedDirName = dirName.trim();
-			const trimmedFileName = fileName.trim();
-
-			// 构建链接
-			return `[\`${trimmedDirName} > ${trimmedFileName}.docx\`](/docx/插件详细手册/${trimmedDirName}/${trimmedFileName}.md)`;
+			// 构建链接 - 保持原始格式中的空格
+			return `[\`${dirName} > ${fileName}.docx\`](/docx/插件详细手册/${dirName}/${fileName}.md)`;
 		});
 
 		if (matches > 0) {
