@@ -16,7 +16,7 @@
 	},
 	"scripts": {
 		"git:fetch": "git fetch -p",
-		"git:dev-2-main": "git rebase dev main",
+		"git:dev-2-main": "git rebase dev main && git push --follow-tags",
 		"git:main-2-dev": "git rebase main dev",
 		"docs:dev": "vitepress dev docs --port 8080 --open",
 		"docs:build": "vitepress build docs",
