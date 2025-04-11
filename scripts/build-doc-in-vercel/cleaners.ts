@@ -190,8 +190,8 @@ const cleanerPlugins: CleanerPlugin[] = [
 	dimensionCleaner,
 	unclosedTagCleaner,
 	structTypeCleaner,
-	colonStarCleaner,
 	summaryStarCleaner,
+	colonStarCleaner,
 	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
