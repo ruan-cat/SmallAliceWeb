@@ -7,7 +7,8 @@ import { spawnSync } from "child_process";
 import { fileTransformers } from "./transformers";
 import { cleanMdFiles } from "./cleaners";
 import { generateSimpleAsyncTask } from "./utils";
-import prepareData, { FileNameIndexObject } from "./dataPreparation";
+import prepareData from "./dataPreparation";
+import * as indexStore from "./indexStore";
 
 // ======================================
 // 配置类型和默认值
@@ -44,10 +45,6 @@ const defaultConfig: BuildConfig = {
 	/** 默认忽略的文件 */
 	ignoredFiles: [],
 };
-
-// 全局索引对象
-let globalFileNameIndex: FileNameIndexObject = {};
-let globalPointingFileNameIndex: FileNameIndexObject = {};
 
 // ======================================
 // 工具函数
@@ -154,13 +151,12 @@ async function runDataPreparationStage(): Promise<void> {
 
 	const { fileNameIndex, pointingFileNameIndex } = prepareData(docxDir);
 
-	// 将生成的索引对象保存到全局变量
-	globalFileNameIndex = fileNameIndex;
-	globalPointingFileNameIndex = pointingFileNameIndex;
+	// 更新索引存储模块中的索引对象
+	indexStore.updateIndexes(fileNameIndex, pointingFileNameIndex);
 
 	// 输出索引对象大小信息
-	consola.info(`文件名称索引对象包含 ${Object.keys(globalFileNameIndex).length} 个目录`);
-	consola.info(`指向文件名索引对象包含 ${Object.keys(globalPointingFileNameIndex).length} 个目录`);
+	consola.info(`文件名称索引对象包含 ${Object.keys(fileNameIndex).length} 个目录`);
+	consola.info(`指向文件名索引对象包含 ${Object.keys(pointingFileNameIndex).length} 个目录`);
 }
 
 /**
@@ -345,4 +341,4 @@ function outputProcessReport(errorFiles: string[]): void {
 main();
 
 // 导出模块接口
-export { defaultConfig, globalFileNameIndex, globalPointingFileNameIndex };
+export { defaultConfig };
