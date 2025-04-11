@@ -34,6 +34,34 @@ const dimensionCleaner: CleanerPlugin = {
 };
 
 /**
+ * 处理非闭合标签脏数据
+ * 将形如 <XXX> 的内容替换为代码块 `<XXX>`
+ */
+const unclosedTagCleaner: CleanerPlugin = {
+	name: "非闭合标签清理器",
+	clean: (content: string) => {
+		// 匹配形如 <XXX> 的各种非闭合标签，但排除已经在代码块中的标签
+		// 注意：正则表达式使用了负向前瞻和负向后瞻来确保不匹配已经被反引号包裹的标签
+		const tagRegex = /(?<!`)<([^<>]*?:[^<>]*?|[a-zA-Z0-9\u4e00-\u9fa5]+)>(?!`)/g;
+
+		let replacedContent = content;
+		let matches = 0;
+
+		// 替换为代码块格式
+		replacedContent = replacedContent.replace(tagRegex, (match) => {
+			matches++;
+			return `\`${match}\``;
+		});
+
+		if (matches > 0) {
+			consola.info(`替换了 ${matches} 个非闭合标签为代码块`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
  * 使用Prettier格式化Markdown文件
  */
 const prettierFormatter: CleanerPlugin = {
@@ -64,6 +92,7 @@ const prettierFormatter: CleanerPlugin = {
 const cleanerPlugins: CleanerPlugin[] = [
 	anchorCleaner,
 	dimensionCleaner,
+	unclosedTagCleaner,
 	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
