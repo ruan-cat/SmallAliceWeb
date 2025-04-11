@@ -1,6 +1,7 @@
 import fs from "fs";
 import { consola } from "consola";
 import prettier from "prettier";
+import { htmlStandardTags } from "./utils";
 
 /**
  * 清理插件接口
@@ -40,21 +41,33 @@ const dimensionCleaner: CleanerPlugin = {
 const unclosedTagCleaner: CleanerPlugin = {
 	name: "非闭合标签清理器",
 	clean: (content: string) => {
-		// 匹配形如 <XXX> 的各种非闭合标签，但排除已经在代码块中的标签
-		// 注意：正则表达式使用了负向前瞻和负向后瞻来确保不匹配已经被反引号包裹的标签
-		const tagRegex = /(?<!`)<([^<>]*?:[^<>]*?|[a-zA-Z0-9\u4e00-\u9fa5]+)>(?!`)/g;
+		// 创建一个排除HTML标准标签的正则表达式部分
+		const htmlTagsPattern = htmlStandardTags.join("|");
+
+		// 匹配形如 <XXX> 的各种非闭合标签，但排除以下情况:
+		// 1. 已经在代码块中的标签 (通过负向前瞻和负向后瞻)
+		// 2. HTML标准标签 (通过负向前瞻)
+		// 3. 闭合标签 </xxx> (通过排除斜杠开头)
+		// 4. 自闭合标签 <xxx/> (通过排除斜杠结尾)
+		// 5. 带属性的标签 <xxx attr="value"> (通过排除包含空格的情况)
+		const tagRegex = new RegExp(
+			`(?<![\`\\w])<(?!\\/|(?:${htmlTagsPattern})\\b)([^<>\\s\\/]*?(?:\\:[^<>\\s\\/]*?)*)>(?![\`\\w])`,
+			"g",
+		);
 
 		let replacedContent = content;
 		let matches = 0;
+		const matchedTags = new Set<string>();
 
 		// 替换为代码块格式
 		replacedContent = replacedContent.replace(tagRegex, (match) => {
 			matches++;
+			matchedTags.add(match);
 			return `\`${match}\``;
 		});
 
 		if (matches > 0) {
-			consola.info(`替换了 ${matches} 个非闭合标签为代码块`);
+			consola.info(`替换了 ${matches} 个非闭合标签为代码块: ${Array.from(matchedTags).join(", ")}`);
 		}
 
 		return replacedContent;
