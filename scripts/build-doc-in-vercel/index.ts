@@ -313,13 +313,7 @@ function outputProcessReport(errorFiles: string[]): void {
 	}
 }
 
-// 当直接运行此脚本时执行主函数
-if (require.main === module) {
-	main().catch((error) => {
-		consola.error(`执行过程中发生错误: ${error.message}`);
-		process.exit(1);
-	});
-}
+main();
 
 // 导出模块接口
 export { defaultConfig };
