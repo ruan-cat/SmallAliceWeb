@@ -290,9 +290,10 @@ const docLinkGenerator: CleanerPlugin = {
 	name: "文档链接生成器",
 	clean: (content: string) => {
 		// 匹配 "目录名 > 文件名.docx" 格式的文本
-		// 目录名必须满足 "${number}.${text}" 格式
+		// 目录名必须满足 "${number}.${text}" 格式，且text不包含换行符
 		// 严格匹配空格模式，确保不匹配过大范围的文本
-		const docLinkRegex = /(\d+\.[^\s>]+(?:\s+[^\s>]+)*) > ([^\s.]+(?:\s+[^\s.]+)*)\.docx/g;
+		// (?:[^\s\n>] 使用非捕获组匹配非空白、非换行、非>的字符
+		const docLinkRegex = /(\d+\.[^\s\n>]+(?:[ \t]+[^\s\n>]+)*) > ([^\s\n.]+(?:[ \t]+[^\s\n.]+)*)\.docx/g;
 
 		let replacedContent = content;
 		let matches = 0;
