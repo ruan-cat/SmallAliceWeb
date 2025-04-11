@@ -178,4 +178,4 @@ export async function ensureTargetDirectoryExists(filePath: string): Promise<voi
  * @description
  * 一个图片地址 用于替换错误的图片地址
  */
-export const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png";
+export const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-04-11-16-41-34.png";

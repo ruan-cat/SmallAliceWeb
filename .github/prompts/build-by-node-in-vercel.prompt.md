@@ -75,7 +75,7 @@
     * @description
     * 一个图片地址 用于替换错误的图片地址
     */
-   const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png";
+   const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-04-11-16-41-34.png";
    ```
 
 6. 生成相对路径的图片
