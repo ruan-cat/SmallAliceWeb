@@ -129,6 +129,60 @@ const prettierFormatter: CleanerPlugin = {
 };
 
 /**
+ * 处理包含冒号的 `：**` 格式脏数据
+ * 在匹配到的文本后添加一个空格
+ */
+const colonStarCleaner: CleanerPlugin = {
+	name: "冒号星号清理器",
+	clean: (content: string) => {
+		// 匹配：**格式的文本
+		const colonStarRegex = /：\*\*/g;
+
+		let replacedContent = content;
+		let matches = 0;
+
+		// 替换为带空格的格式
+		replacedContent = replacedContent.replace(colonStarRegex, (match) => {
+			matches++;
+			return `${match} `;
+		});
+
+		if (matches > 0) {
+			consola.info(`在 ${matches} 处添加了空格`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
+ * 处理 `**小结\*\*` 格式的脏数据
+ * 将其替换为正确的 markdown 加粗语法并添加空格
+ */
+const summaryStarCleaner: CleanerPlugin = {
+	name: "小结星号清理器",
+	clean: (content: string) => {
+		// 匹配**小结\*\*格式的文本
+		const summaryStarRegex = /\*\*小结\\\*\\\*/g;
+
+		let replacedContent = content;
+		let matches = 0;
+
+		// 替换为正确的markdown加粗语法并添加空格
+		replacedContent = replacedContent.replace(summaryStarRegex, (match) => {
+			matches++;
+			return "**小结** ";
+		});
+
+		if (matches > 0) {
+			consola.info(`修复了 ${matches} 处小结格式`);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
  * 清理器插件列表
  */
 const cleanerPlugins: CleanerPlugin[] = [
@@ -136,6 +190,8 @@ const cleanerPlugins: CleanerPlugin[] = [
 	dimensionCleaner,
 	unclosedTagCleaner,
 	structTypeCleaner,
+	colonStarCleaner,
+	summaryStarCleaner,
 	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
