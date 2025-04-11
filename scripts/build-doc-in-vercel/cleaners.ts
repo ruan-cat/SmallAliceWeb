@@ -283,6 +283,44 @@ const addH1FromFilenameCleaner: CleanerPlugin = {
 };
 
 /**
+ * 生成文档跳转链接
+ * 将 "${目录名} > ${文件名}.docx" 格式的文本转换为 markdown 链接
+ */
+const docLinkGenerator: CleanerPlugin = {
+	name: "文档链接生成器",
+	clean: (content: string) => {
+		// 匹配 "目录名 > 文件名.docx" 格式的文本
+		// 目录名通常是形如 "0.基本定义"、"1.系统"、"21.管理器" 等
+		const docLinkRegex = /(\d+\.[^>]+)\s*>\s*([^.]+)\.docx/g;
+
+		let replacedContent = content;
+		let matches = 0;
+		const matchedLinks = new Set<string>();
+
+		// 替换为 markdown 链接格式
+		replacedContent = replacedContent.replace(docLinkRegex, (match, dirName, fileName) => {
+			matches++;
+			matchedLinks.add(match);
+
+			// 去除目录名和文件名前后可能的空格
+			const trimmedDirName = dirName.trim();
+			const trimmedFileName = fileName.trim();
+
+			// 构建链接
+			return `[\`${trimmedDirName} > ${trimmedFileName}.docx\`](/docx/插件详细手册/${trimmedDirName}/${trimmedFileName}.md)`;
+		});
+
+		if (matches > 0) {
+			consola.info(
+				`生成了 ${matches} 个文档跳转链接: ${Array.from(matchedLinks).slice(0, 3).join(", ")}${matches > 3 ? "..." : ""}`,
+			);
+		}
+
+		return replacedContent;
+	},
+};
+
+/**
  * 清理器插件列表
  */
 const cleanerPlugins: CleanerPlugin[] = [
@@ -295,6 +333,7 @@ const cleanerPlugins: CleanerPlugin[] = [
 	structTypeCleaner,
 	summaryStarCleaner,
 	colonStarCleaner,
+	docLinkGenerator, // 新增文档链接生成器
 	prettierFormatter,
 	// 可以在此处添加更多的清理插件
 ];
