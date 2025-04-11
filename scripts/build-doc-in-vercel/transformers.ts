@@ -161,12 +161,24 @@ async function docx2html(params: {
 		// 确保目标目录存在
 		await ensureTargetDirectoryExists(targetHtmlPath);
 
-		// 创建图片目录
-		const imagesDir = path.join(path.dirname(targetHtmlPath), "images");
-		if (fs.existsSync(imagesDir)) {
-			fs.rmSync(imagesDir, { recursive: true, force: true });
+		// 创建图片主目录
+		const imagesBaseDir = path.join(path.dirname(targetHtmlPath), "images");
+		if (!fs.existsSync(imagesBaseDir)) {
+			fs.mkdirSync(imagesBaseDir, { recursive: true });
 		}
-		fs.mkdirSync(imagesDir, { recursive: true });
+
+		// 创建文档专属的图片子目录
+		const documentImagesDir = path.join(imagesBaseDir, safeFileName);
+
+		// 如果已经存在有对应的文件图片文件夹，先删除再新建
+		if (fs.existsSync(documentImagesDir)) {
+			consola.info(`图片目录 ${documentImagesDir} 已存在，清空目录...`);
+			fs.rmSync(documentImagesDir, { recursive: true, force: true });
+		}
+
+		// 创建文档专属的图片目录
+		fs.mkdirSync(documentImagesDir, { recursive: true });
+		consola.info(`创建图片目录: ${documentImagesDir}`);
 
 		// 初始化图片计数器
 		let imageCounter = 1;
@@ -202,7 +214,7 @@ async function docx2html(params: {
 						// 递增图片计数器
 						imageCounter++;
 
-						const imagePath = path.join(imagesDir, imageName);
+						const imagePath = path.join(documentImagesDir, imageName);
 
 						// 处理特殊格式的图片
 						const unsupportedFormats = ["x-emf", "gif", "wmf", "emf"];
@@ -238,7 +250,7 @@ async function docx2html(params: {
 
 								// 更新扩展名为png
 								imageName = imageName.replace(/\.[^.]+$/, ".png");
-								const newImagePath = path.join(imagesDir, imageName);
+								const newImagePath = path.join(documentImagesDir, imageName);
 
 								await sharp(imageData).toFormat("png").toFile(newImagePath);
 							}
@@ -256,9 +268,9 @@ async function docx2html(params: {
 							};
 						}
 
-						// 返回相对路径的图片链接
+						// 返回相对路径的图片链接，使用 images/文档名/图片名 的格式
 						return {
-							src: `./images/${imageName}`,
+							src: `./images/${safeFileName}/${imageName}`,
 						};
 					} catch (error) {
 						consola.error(`图片转换过程中出错: ${error.message}`);
