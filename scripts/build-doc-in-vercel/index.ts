@@ -17,6 +17,8 @@ interface BuildConfig {
 	isSkipClean: boolean;
 	/** 忽略的文件夹列表 */
 	ignoredFolders: string[];
+	/** 忽略的文件列表（精确匹配文件路径） */
+	ignoredFiles: string[];
 }
 
 // 默认配置
@@ -30,6 +32,12 @@ const defaultConfig: BuildConfig = {
 		"drill-docx/.git",
 		// 0.基本定义 生成的数据有脏数据 无法生成出图片。
 		"drill-docx/插件详细手册/0.基本定义",
+	],
+	/** 默认忽略的文件 */
+	ignoredFiles: [
+		// 添加需要忽略的特定文件路径
+		"drill-docx/插件详细手册/常见问题解答集合.md",
+		"drill-docx/插件详细手册/贡献代码.md",
 	],
 };
 
@@ -119,6 +127,25 @@ function isInIgnoredFolder(filePath: string, ignoredFolders: string[]): boolean 
 }
 
 /**
+ * 检查文件是否在忽略的文件列表中
+ * @param filePath 文件路径
+ * @param ignoredFiles 忽略的文件列表
+ * @returns 如果文件在忽略列表中，则返回true
+ */
+function isIgnoredFile(filePath: string, ignoredFiles: string[]): boolean {
+	const normalizedPath = path.normalize(filePath);
+
+	for (const ignoredFile of ignoredFiles) {
+		const normalizedIgnoredFile = path.normalize(ignoredFile);
+		if (normalizedPath === normalizedIgnoredFile) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * 主函数：按顺序执行所有任务
  */
 async function main(config: BuildConfig = defaultConfig) {
@@ -159,6 +186,22 @@ async function main(config: BuildConfig = defaultConfig) {
 
 				if (ignoredTxtCount > 0 || ignoredDocxCount > 0) {
 					consola.info(`忽略了 ${ignoredTxtCount} 个TXT文件和 ${ignoredDocxCount} 个DOCX/DOC文件（位于忽略文件夹内）`);
+				}
+			}
+
+			// 过滤掉忽略的特定文件
+			if (config.ignoredFiles && config.ignoredFiles.length > 0) {
+				const originalTxtCount = txtFiles.length;
+				const originalDocxCount = docxFiles.length;
+
+				txtFiles = txtFiles.filter((file) => !isIgnoredFile(file, config.ignoredFiles));
+				docxFiles = docxFiles.filter((file) => !isIgnoredFile(file, config.ignoredFiles));
+
+				const ignoredTxtCount = originalTxtCount - txtFiles.length;
+				const ignoredDocxCount = originalDocxCount - docxFiles.length;
+
+				if (ignoredTxtCount > 0 || ignoredDocxCount > 0) {
+					consola.info(`忽略了 ${ignoredTxtCount} 个TXT文件和 ${ignoredDocxCount} 个DOCX/DOC文件（在忽略文件列表中）`);
 				}
 			}
 
