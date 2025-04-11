@@ -116,6 +116,19 @@ async function processDocxFiles(docxFiles: string[], outputDir: string): Promise
 }
 
 /**
+ * 清理文件名，移除无效字符，确保文件名安全
+ * @param filename 原始文件名
+ * @returns 清理后的安全文件名
+ */
+function sanitizeFilename(filename: string): string {
+	// 移除非法字符，替换为下划线
+	return filename
+		.replace(/[<>:"/\\|?*\s]+/g, "_") // 替换Windows文件系统不允许的字符和空格
+		.replace(/\.+$/, "") // 移除结尾的点
+		.substring(0, 50); // 限制长度
+}
+
+/**
  * 从DOCX转换为HTML
  */
 async function docx2html(params: {
@@ -137,6 +150,10 @@ async function docx2html(params: {
 
 		const fileBuffer = fs.readFileSync(filePath);
 
+		// 获取不带扩展名的文件名，用于生成图片名称
+		const fileBaseName = path.basename(filePath, path.extname(filePath));
+		const safeFileName = sanitizeFilename(fileBaseName);
+
 		// 创建目标文件路径
 		const sourceBaseDir = "drill-docx/";
 		const targetHtmlPath = createTargetFilePath(filePath, sourceBaseDir, outputDir, "html");
@@ -150,6 +167,9 @@ async function docx2html(params: {
 			fs.rmSync(imagesDir, { recursive: true, force: true });
 		}
 		fs.mkdirSync(imagesDir, { recursive: true });
+
+		// 初始化图片计数器
+		let imageCounter = 1;
 
 		// 转换DOCX为HTML
 		const result = await convertToHtml(
@@ -173,7 +193,15 @@ async function docx2html(params: {
 						}
 
 						const imageType = contentType.split("/")[1];
-						let imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType === "jpeg" ? "jpg" : imageType}`;
+
+						// 生成图片名称：文件名-序号.扩展名
+						// 使用三位数格式化序号，例如：001, 002, ...
+						const paddedCounter = String(imageCounter).padStart(3, "0");
+						let imageName = `${safeFileName}-${paddedCounter}.${imageType === "jpeg" ? "jpg" : imageType}`;
+
+						// 递增图片计数器
+						imageCounter++;
+
 						const imagePath = path.join(imagesDir, imageName);
 
 						// 处理特殊格式的图片
@@ -207,11 +235,12 @@ async function docx2html(params: {
 							} else {
 								// 对于其他格式，尝试转换为png
 								consola.info(`未明确支持的图片格式: ${imageType}，尝试转换为PNG`);
-								const newImagePath = imagePath.replace(/\.[^.]+$/, ".png");
-								await sharp(imageData).toFormat("png").toFile(newImagePath);
 
-								// 更新imageName为新生成的png文件名
+								// 更新扩展名为png
 								imageName = imageName.replace(/\.[^.]+$/, ".png");
+								const newImagePath = path.join(imagesDir, imageName);
+
+								await sharp(imageData).toFormat("png").toFile(newImagePath);
 							}
 
 							consola.debug(`图片处理成功: ${imageName}`);
@@ -245,7 +274,7 @@ async function docx2html(params: {
 		fs.writeFileSync(targetHtmlPath, result.value);
 		htmlFilesPath.push(targetHtmlPath);
 
-		consola.success(`已转换 ${filePath} -> ${targetHtmlPath}`);
+		consola.success(`已转换 ${filePath} -> ${targetHtmlPath} (处理了 ${imageCounter - 1} 个图片)`);
 	} catch (error) {
 		consola.error(`处理 ${filePath} 失败: ${error.message}`);
 		errorFilesPath.push(filePath);
