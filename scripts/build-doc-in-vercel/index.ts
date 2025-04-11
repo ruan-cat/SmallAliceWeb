@@ -36,7 +36,7 @@ export interface BuildConfig {
  * 默认构建配置
  */
 const defaultConfig: BuildConfig = {
-	isSkipClone: true,
+	isSkipClone: false,
 	isSkipDataPreparation: false,
 	isSkipTransform: false,
 	isSkipClean: false,
