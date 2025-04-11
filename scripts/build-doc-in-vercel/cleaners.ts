@@ -290,10 +290,13 @@ const docLinkGenerator: CleanerPlugin = {
 	name: "文档链接生成器",
 	clean: (content: string) => {
 		// 匹配 "目录名 > 文件名.docx" 格式的文本
-		// 目录名必须满足 "${number}.${text}" 格式，且text不包含换行符
-		// 严格匹配空格模式，确保不匹配过大范围的文本
-		// (?:[^\s\n>] 使用非捕获组匹配非空白、非换行、非>的字符
-		const docLinkRegex = /(\d+\.[^\s\n>]+(?:[ \t]+[^\s\n>]+)*) > ([^\s\n.]+(?:[ \t]+[^\s\n.]+)*)\.docx/g;
+		// 匹配规则:
+		// 1. 目录名必须满足 "${number}.${text}" 格式
+		// 2. text 不包含换行符
+		// 3. text 不包含 .png 字样
+		// 4. 严格匹配空格模式
+		// 5. 只匹配单行文本
+		const docLinkRegex = /(\d+\.[^\s\n>\.png]+(?:[ \t]+[^\s\n>\.png]+)*) > ([^\s\n.]+(?:[ \t]+[^\s\n.]+)*)\.docx/g;
 
 		let replacedContent = content;
 		let matches = 0;
@@ -301,6 +304,11 @@ const docLinkGenerator: CleanerPlugin = {
 
 		// 替换为 markdown 链接格式
 		replacedContent = replacedContent.replace(docLinkRegex, (match, dirName, fileName) => {
+			// 额外验证确保目录名不包含.png字样
+			if (dirName.toLowerCase().includes(".png")) {
+				return match; // 如果包含.png，不做替换
+			}
+
 			matches++;
 			matchedLinks.add(match);
 
