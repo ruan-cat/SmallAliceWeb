@@ -327,8 +327,8 @@ const cleanerPlugins: CleanerPlugin[] = [
 	removeOverviewCleaner, // 最先删除"## 概述"文本
 	adjustHeadingLevelCleaner, // 然后调整标题层级
 	addH1FromFilenameCleaner, // 最后添加一级标题
-	anchorCleaner,
-	dimensionCleaner,
+	// anchorCleaner,
+	// dimensionCleaner,
 	unclosedTagCleaner,
 	structTypeCleaner,
 	summaryStarCleaner,
