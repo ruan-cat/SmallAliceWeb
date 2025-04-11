@@ -157,7 +157,7 @@ const colonStarCleaner: CleanerPlugin = {
 
 /**
  * 处理 `**小结\*\*` 格式的脏数据
- * 将其替换为正确的 markdown 加粗语法并添加空格
+ * 直接删除匹配到的文本
  */
 const summaryStarCleaner: CleanerPlugin = {
 	name: "小结星号清理器",
@@ -168,14 +168,14 @@ const summaryStarCleaner: CleanerPlugin = {
 		let replacedContent = content;
 		let matches = 0;
 
-		// 替换为正确的markdown加粗语法并添加空格
-		replacedContent = replacedContent.replace(summaryStarRegex, (match) => {
+		// 直接删除匹配到的文本
+		replacedContent = replacedContent.replace(summaryStarRegex, () => {
 			matches++;
-			return "**小结** ";
+			return "";
 		});
 
 		if (matches > 0) {
-			consola.info(`修复了 ${matches} 处小结格式`);
+			consola.info(`删除了 ${matches} 处小结格式文本`);
 		}
 
 		return replacedContent;
