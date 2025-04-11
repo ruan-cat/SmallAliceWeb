@@ -15,6 +15,7 @@ interface BuildConfig {
 	isSkipClone: boolean;
 	isSkipTransform: boolean;
 	isSkipClean: boolean;
+	ignoredFolders: string[]; // 忽略的文件夹列表
 }
 
 // 默认配置
@@ -22,6 +23,7 @@ const defaultConfig: BuildConfig = {
 	isSkipClone: true,
 	isSkipTransform: false,
 	isSkipClean: false,
+	ignoredFolders: ["drill-docx/node_modules", "drill-docx/.git"], // 默认忽略的文件夹
 };
 
 /**
@@ -90,6 +92,26 @@ function ensureOutputDirectoryExists() {
 }
 
 /**
+ * 检查文件是否在忽略的文件夹内
+ * @param filePath 文件路径
+ * @param ignoredFolders 忽略的文件夹列表
+ * @returns 如果文件在忽略的文件夹内，则返回true
+ */
+function isInIgnoredFolder(filePath: string, ignoredFolders: string[]): boolean {
+	const normalizedPath = path.normalize(filePath);
+
+	for (const folder of ignoredFolders) {
+		const normalizedFolder = path.normalize(folder);
+		// 检查文件路径是否以某个忽略文件夹开头
+		if (normalizedPath.startsWith(normalizedFolder + path.sep) || normalizedPath === normalizedFolder) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * 主函数：按顺序执行所有任务
  */
 async function main(config: BuildConfig = defaultConfig) {
@@ -114,10 +136,26 @@ async function main(config: BuildConfig = defaultConfig) {
 			consola.info("=== 开始格式转换阶段 ===");
 
 			// 查找所有txt和docx/doc文件
-			const txtFiles = sync("drill-docx/**/*.txt");
-			const docxFiles = sync("drill-docx/**/*.{doc,docx}").filter((file) => !path.basename(file).startsWith("~$")); // 过滤掉临时文件
+			let txtFiles = sync("drill-docx/**/*.txt");
+			let docxFiles = sync("drill-docx/**/*.{doc,docx}").filter((file) => !path.basename(file).startsWith("~$")); // 过滤掉临时文件
 
-			consola.info(`找到 ${txtFiles.length} 个 TXT 文件和 ${docxFiles.length} 个 DOCX/DOC 文件`);
+			// 过滤掉忽略文件夹中的文件
+			if (config.ignoredFolders && config.ignoredFolders.length > 0) {
+				const originalTxtCount = txtFiles.length;
+				const originalDocxCount = docxFiles.length;
+
+				txtFiles = txtFiles.filter((file) => !isInIgnoredFolder(file, config.ignoredFolders));
+				docxFiles = docxFiles.filter((file) => !isInIgnoredFolder(file, config.ignoredFolders));
+
+				const ignoredTxtCount = originalTxtCount - txtFiles.length;
+				const ignoredDocxCount = originalDocxCount - docxFiles.length;
+
+				if (ignoredTxtCount > 0 || ignoredDocxCount > 0) {
+					consola.info(`忽略了 ${ignoredTxtCount} 个TXT文件和 ${ignoredDocxCount} 个DOCX/DOC文件（位于忽略文件夹内）`);
+				}
+			}
+
+			consola.info(`找到 ${txtFiles.length} 个待处理的TXT文件和 ${docxFiles.length} 个待处理的DOCX/DOC文件`);
 
 			// 处理 TXT 文件
 			const txtErrors = await fileTransformers.processTxtFiles(txtFiles, outputDir);
