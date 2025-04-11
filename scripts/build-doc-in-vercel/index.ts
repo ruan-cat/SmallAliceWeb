@@ -47,6 +47,7 @@ const defaultConfig: BuildConfig = {
 		// 添加需要忽略的特定文件路径
 		"drill-docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.docx",
 		"drill-docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.docx",
+		"drill-docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.docx",
 	],
 };
 
