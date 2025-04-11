@@ -44,59 +44,52 @@
 #### 从 docx 转换成 html 格式
 
 1. 使用 mammoth 来完成格式转换。
+   请使用 mammoth 实现关键的 docx 格式转换，转换成 html 格式，并生成图片。
 
-请使用 mammoth 实现关键的 docx 格式转换，转换成 html 格式，并生成图片。
-
-```ts
-import { convertToHtml, images } from "mammoth";
-```
+   ```ts
+   import { convertToHtml, images } from "mammoth";
+   ```
 
 2. 图片转换细节
+   要求使用 `sharp` 来完成图片转换和生成。
 
-要求使用 `sharp` 来完成图片转换和生成。
-
-```ts
-import sharp from "sharp";
-```
+   ```ts
+   import sharp from "sharp";
+   ```
 
 3. 不处理特定格式的图片
+   不要处理以下格式的图片，如果在转换过程中遇到以下格式的图片，就不予处理，并提供一个默认的错误占位图片即可。
 
-不要处理以下格式的图片，如果在转换过程中遇到以下格式的图片，就不予处理，并提供一个默认的错误占位图片即可。
-
-- `x-emf`
-- `gif`
+   - `x-emf`
+   - `gif`
 
 4. 默认的错误占位图片
+   仅使用以下的错误占位图片，请直接使用以下代码段：
 
-仅使用以下的错误占位图片，请直接使用以下代码段：
-
-```ts
-/**
- * 错误图片占位符
- * @description
- * 一个图片地址 用于替换错误的图片地址
- */
-const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png";
-```
+   ```ts
+   /**
+    * 错误图片占位符
+    * @description
+    * 一个图片地址 用于替换错误的图片地址
+    */
+   const errorImgUrl = "https://drill-up-pic.oss-cn-beijing.aliyuncs.com/drill_web_pic/2025-02-12-18-13-41.png";
+   ```
 
 5. 生成相对路径的图片
-
-在转换时，全部的图片必须是相对路径的，不接受绝对路径的图片。
+   在转换时，全部的图片必须是相对路径的，不接受绝对路径的图片。
 
 6. 不处理特定名称开头的脏数据文件
 
-- `~$*.doc`
-- `~$*.docx`
+   - `~$*.doc`
+   - `~$*.docx`
 
-如果有文档文件的前缀开头为 `~$` ，请不要处理该文件。这是临时缓存文件，请直接删除该文件。不要处理。
+   如果有文档文件的前缀开头为 `~$` ，请不要处理该文件。这是临时缓存文件，请直接删除该文件。不要处理。
 
 7. 图片文件夹名称
-
-图片文件夹名称仅为 `images` 。预期应该都存放在 `docs\docx` 目录内。
+   图片文件夹名称仅为 `images` 。预期应该都存放在 `docs\docx` 目录内。
 
 8. 文件存储位置
-
-你生成的 html 文件和包含有图片的 `images` 文件夹，都应该在 `docs\docx` 目录内。
+   你生成的 html 文件和包含有图片的 `images` 文件夹，都应该在 `docs\docx` 目录内。
 
 最后，请你参考模仿以下代码，完成关键的格式转换。
 
