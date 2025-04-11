@@ -15,7 +15,8 @@ interface BuildConfig {
 	isSkipClone: boolean;
 	isSkipTransform: boolean;
 	isSkipClean: boolean;
-	ignoredFolders: string[]; // 忽略的文件夹列表
+	/** 忽略的文件夹列表 */
+	ignoredFolders: string[];
 }
 
 // 默认配置
@@ -23,7 +24,13 @@ const defaultConfig: BuildConfig = {
 	isSkipClone: true,
 	isSkipTransform: false,
 	isSkipClean: false,
-	ignoredFolders: ["drill-docx/node_modules", "drill-docx/.git"], // 默认忽略的文件夹
+	/** 默认忽略的文件夹 */
+	ignoredFolders: [
+		"drill-docx/node_modules",
+		"drill-docx/.git",
+		// 0.基本定义 生成的数据有脏数据 无法生成出图片。
+		"drill-docx/插件详细手册/0.基本定义",
+	],
 };
 
 /**
