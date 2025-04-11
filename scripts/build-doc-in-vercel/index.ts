@@ -40,7 +40,7 @@ const defaultConfig: BuildConfig = {
 		"drill-docx/node_modules",
 		"drill-docx/.git",
 		// 0.基本定义 生成的数据有脏数据 无法生成出图片。
-		"drill-docx/插件详细手册/0.基本定义",
+		// "drill-docx/插件详细手册/0.基本定义",
 	],
 	/** 默认忽略的文件 */
 	ignoredFiles: [
