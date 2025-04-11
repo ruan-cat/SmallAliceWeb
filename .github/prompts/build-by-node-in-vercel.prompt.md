@@ -254,7 +254,26 @@ html 文件毕竟是中间过渡产物，在完成 md 的格式转换与文件�
 
    这些标签已经属于闭合标签了，不需要你额外处理。
 
-5. 文件格式化
+5. 处理 `@type struct<XXX>` 格式的脏数据
+   当匹配到满足以下格式的文本时：
+
+   ```txt
+   @type struct<DrillWindowLayout>
+   @type struct<DrillWindow>
+   @type struct<Ruancat>
+   ```
+
+   请格式化成以下格式：
+
+   ```txt
+   `@type struct<DrillWindowLayout>`
+   `@type struct<DrillWindow>`
+   `@type struct<Ruancat>`
+   ```
+
+   当遇到 `@type struct<*>` 格式的文本时，请增加引号，转换成 markdown 的代码块语法。
+
+6. 文件格式化
    请使用 prettier 对 md 文件做一次全量的格式化。
 
 ## 可以配置上述任务阶段
