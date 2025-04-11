@@ -7,6 +7,7 @@ import { spawnSync } from "child_process";
 import { fileTransformers } from "./transformers";
 import { cleanMdFiles } from "./cleaners";
 import { generateSimpleAsyncTask } from "./utils";
+import prepareData, { FileNameIndexObject } from "./dataPreparation";
 
 // ======================================
 // 配置类型和默认值
@@ -18,6 +19,8 @@ import { generateSimpleAsyncTask } from "./utils";
 export interface BuildConfig {
 	/** 是否跳过克隆仓库阶段 */
 	isSkipClone: boolean;
+	/** 是否跳过数据预备阶段 */
+	isSkipDataPreparation: boolean;
 	/** 是否跳过转换阶段 */
 	isSkipTransform: boolean;
 	/** 是否跳过清理阶段 */
@@ -32,7 +35,8 @@ export interface BuildConfig {
  * 默认构建配置
  */
 const defaultConfig: BuildConfig = {
-	isSkipClone: false,
+	isSkipClone: true,
+	isSkipDataPreparation: false,
 	isSkipTransform: false,
 	isSkipClean: false,
 	/** 默认忽略的文件夹 */
@@ -40,6 +44,10 @@ const defaultConfig: BuildConfig = {
 	/** 默认忽略的文件 */
 	ignoredFiles: [],
 };
+
+// 全局索引对象
+let globalFileNameIndex: FileNameIndexObject = {};
+let globalPointingFileNameIndex: FileNameIndexObject = {};
 
 // ======================================
 // 工具函数
@@ -131,6 +139,28 @@ async function cloneRepository(): Promise<void> {
 		parameters: ["clone", "--depth=1", repoUrl, targetDir],
 	});
 	consola.success(`仓库克隆完成`);
+}
+
+/**
+ * 执行数据预备阶段
+ * @returns 包含文件名索引对象和指向文件名索引对象
+ */
+async function runDataPreparationStage(): Promise<void> {
+	const docxDir = "drill-docx";
+	if (!fs.existsSync(docxDir)) {
+		consola.warn(`目录 ${docxDir} 不存在，无法执行数据预备阶段`);
+		return;
+	}
+
+	const { fileNameIndex, pointingFileNameIndex } = prepareData(docxDir);
+
+	// 将生成的索引对象保存到全局变量
+	globalFileNameIndex = fileNameIndex;
+	globalPointingFileNameIndex = pointingFileNameIndex;
+
+	// 输出索引对象大小信息
+	consola.info(`文件名称索引对象包含 ${Object.keys(globalFileNameIndex).length} 个目录`);
+	consola.info(`指向文件名索引对象包含 ${Object.keys(globalPointingFileNameIndex).length} 个目录`);
 }
 
 /**
@@ -265,7 +295,15 @@ export async function main(config: BuildConfig = defaultConfig): Promise<void> {
 			consola.info("跳过文件获取阶段");
 		}
 
-		// 2. 格式转换阶段
+		// 2. 数据预备阶段
+		if (!config.isSkipDataPreparation) {
+			consola.info("=== 开始数据预备阶段 ===");
+			await runDataPreparationStage();
+		} else {
+			consola.info("跳过数据预备阶段");
+		}
+
+		// 3. 格式转换阶段
 		if (!config.isSkipTransform) {
 			const transformErrors = await runTransformStage(config, outputDir);
 			errorFiles.push(...transformErrors);
@@ -273,7 +311,7 @@ export async function main(config: BuildConfig = defaultConfig): Promise<void> {
 			consola.info("跳过格式转换阶段");
 		}
 
-		// 3. 脏数据处理阶段
+		// 4. 脏数据处理阶段
 		if (!config.isSkipClean) {
 			const cleanErrors = await runCleanStage();
 			errorFiles.push(...cleanErrors);
@@ -307,4 +345,4 @@ function outputProcessReport(errorFiles: string[]): void {
 main();
 
 // 导出模块接口
-export { defaultConfig };
+export { defaultConfig, globalFileNameIndex, globalPointingFileNameIndex };
