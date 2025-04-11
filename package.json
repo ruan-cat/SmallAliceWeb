@@ -34,7 +34,7 @@
 		"deploy-vercel": "node --import=tsx ./scripts/vercel-deploy-tool.ts",
 		"build:drill-docx2md": "node --import=tsx ./scripts/docx2md/index.ts",
 		"build:doc-in-vercel": "node --import=tsx ./scripts/build-doc-in-vercel/index.ts",
-		"notuse-predocs:build": "pnpm run build:drill-docx2md"
+		"predocs:build": "pnpm run build:doc-in-vercel"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",

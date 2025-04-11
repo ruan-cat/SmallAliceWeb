@@ -32,24 +32,13 @@ export interface BuildConfig {
  * 默认构建配置
  */
 const defaultConfig: BuildConfig = {
-	isSkipClone: true,
+	isSkipClone: false,
 	isSkipTransform: false,
 	isSkipClean: false,
 	/** 默认忽略的文件夹 */
-	ignoredFolders: [
-		"drill-docx/node_modules",
-		"drill-docx/.git",
-		// 0.基本定义 生成的数据有脏数据 无法生成出图片。
-		// "drill-docx/插件详细手册/0.基本定义",
-	],
+	ignoredFolders: ["drill-docx/node_modules", "drill-docx/.git"],
 	/** 默认忽略的文件 */
-	ignoredFiles: [
-		// 添加需要忽略的特定文件路径
-		// "drill-docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.docx",
-		// "drill-docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.docx",
-		// "drill-docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.docx",
-		// "drill-docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.docx",
-	],
+	ignoredFiles: [],
 };
 
 // ======================================
