@@ -42,7 +42,7 @@
 		"@ruan-cat/domains": "^0.4.1",
 		"@ruan-cat/utils": "^4.2.2",
 		"@ruan-cat/vercel-deploy-tool": "^0.8.11",
-		"@ruan-cat/vitepress-preset-config": "^0.9.1",
+		"@ruan-cat/vitepress-preset-config": "^0.10.0",
 		"@types/degit": "^2.8.6",
 		"@types/lodash-es": "^4.17.12",
 		"commitizen": "^4.3.1",
