@@ -8,7 +8,7 @@
 	},
 	"license": "MIT",
 	"type": "module",
-	"packageManager": "pnpm@9.15.9",
+	"packageManager": "pnpm@10.15.1",
 	"engines": {
 		"node": ">=22.14.0"
 	},
@@ -37,12 +37,12 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.0.4",
-		"@ruan-cat/commitlint-config": "^1.4.0",
-		"@ruan-cat/domains": "^0.9.0",
+		"@ruan-cat/commitlint-config": "^2.0.0",
+		"@ruan-cat/domains": "^1.1.0",
 		"@ruan-cat/taze-config": "^0.2.0",
 		"@ruan-cat/utils": "^4.10.0",
 		"@ruan-cat/vercel-deploy-tool": "^0.11.0",
-		"@ruan-cat/vitepress-preset-config": "^1.1.0",
+		"@ruan-cat/vitepress-preset-config": "^2.1.0",
 		"@types/degit": "^2.8.6",
 		"@types/lodash-es": "^4.17.12",
 		"commitizen": "^4.3.1",
@@ -54,16 +54,16 @@
 		"html-to-md": "^0.8.8",
 		"lodash-es": "^4.17.21",
 		"mammoth": "^1.10.0",
-		"mermaid": "^10.9.3",
-		"nuxt": "^3.18.1",
+		"mermaid": "^10.9.4",
+		"nuxt": "^3.19.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-lint-md": "^1.0.1",
 		"sharp": "^0.33.5",
-		"taze": "^19.1.0",
-		"tsx": "^4.20.4",
+		"taze": "^19.5.0",
+		"tsx": "^4.20.5",
 		"vite": "^6.3.5",
 		"vitepress": "^1.6.4",
 		"vitepress-demo-plugin": "^1.4.7",
-		"vue": "^3.5.18"
+		"vue": "^3.5.21"
 	}
 }
