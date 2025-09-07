@@ -1,5 +1,5 @@
 import { type Config } from "@ruan-cat/vercel-deploy-tool/src/config.ts";
-import { domains } from "@ruan-cat/domains";
+import { getDomains } from "@ruan-cat/domains";
 
 const config: Config = {
 	vercelProjetName: "small-alice-web-odse",
@@ -12,7 +12,7 @@ const config: Config = {
 			type: "userCommands",
 			outputDirectory: "docs/.vuepress/dist",
 			targetCWD: "./",
-			url: domains["drill-doc"] as unknown as string[],
+			url: getDomains("drill-doc"),
 			userCommands: ["pnpm -C=./ docs:build"],
 		},
 	],

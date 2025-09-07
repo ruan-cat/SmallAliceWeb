@@ -38,7 +38,7 @@
 		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.0.4",
 		"@ruan-cat/commitlint-config": "^2.0.0",
-		"@ruan-cat/domains": "^1.1.0",
+		"@ruan-cat/domains": "^1.1.1",
 		"@ruan-cat/taze-config": "^0.2.0",
 		"@ruan-cat/utils": "^4.10.0",
 		"@ruan-cat/vercel-deploy-tool": "^0.11.0",
