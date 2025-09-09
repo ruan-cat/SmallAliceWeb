@@ -1,5 +1,7 @@
 # 你好
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ruan-cat/SmallAliceWeb)
+
 你好，这是钻头文档。
 
 ## 错误占位图片
