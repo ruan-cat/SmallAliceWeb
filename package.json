@@ -8,7 +8,7 @@
 	},
 	"license": "MIT",
 	"type": "module",
-	"packageManager": "pnpm@10.15.1",
+	"packageManager": "pnpm@10.22.0",
 	"engines": {
 		"node": ">=22.14.0"
 	},
@@ -37,12 +37,12 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.0.4",
-		"@ruan-cat/commitlint-config": "^2.0.0",
-		"@ruan-cat/domains": "^1.1.1",
-		"@ruan-cat/taze-config": "^0.2.0",
-		"@ruan-cat/utils": "^4.10.0",
-		"@ruan-cat/vercel-deploy-tool": "^0.11.0",
-		"@ruan-cat/vitepress-preset-config": "^2.1.0",
+		"@ruan-cat/commitlint-config": "^4.3.0",
+		"@ruan-cat/domains": "^1.7.0",
+		"@ruan-cat/taze-config": "^0.3.0",
+		"@ruan-cat/utils": "^4.16.0",
+		"@ruan-cat/vercel-deploy-tool": "^0.12.0",
+		"@ruan-cat/vitepress-preset-config": "^2.12.0",
 		"@types/degit": "^2.8.6",
 		"@types/lodash-es": "^4.17.12",
 		"commitizen": "^4.3.1",
@@ -53,17 +53,17 @@
 		"gradient-string": "^3.0.0",
 		"html-to-md": "^0.8.8",
 		"lodash-es": "^4.17.21",
-		"mammoth": "^1.10.0",
-		"mermaid": "^10.9.4",
-		"nuxt": "^3.19.1",
+		"mammoth": "^1.11.0",
+		"mermaid": "^10.9.5",
+		"nuxt": "^3.20.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-lint-md": "^1.0.1",
 		"sharp": "^0.33.5",
-		"taze": "^19.5.0",
-		"tsx": "^4.20.5",
+		"taze": "^19.9.0",
+		"tsx": "^4.20.6",
 		"vite": "^6.3.5",
 		"vitepress": "^1.6.4",
-		"vitepress-demo-plugin": "^1.4.7",
-		"vue": "^3.5.21"
+		"vitepress-demo-plugin": "^1.5.0",
+		"vue": "^3.5.24"
 	}
 }
