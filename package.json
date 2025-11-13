@@ -1,8 +1,8 @@
 {
 	"name": "@ruan-cat/drill-doc",
-	"description": "阮喵喵维护的钻头文档。",
+	"description": "阮喵喵维护的钻头文档，用docx直接生成的md文档。",
 	"private": true,
-	"version": "0.0.1",
+	"version": "3.7.2",
 	"author": {
 		"name": "ruan-cat"
 	},
