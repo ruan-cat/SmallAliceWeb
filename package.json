@@ -12,11 +12,15 @@
 	"engines": {
 		"node": ">=22.14.0"
 	},
+	"dependencies": {
+		"@ruan-cat/decompress-porn-img-package": "workspace:*"
+	},
 	"scripts": {
 		"git:fetch": "git fetch -p",
 		"git:dev-2-main": "git rebase dev main && git push --follow-tags",
 		"git:main-2-dev": "git rebase main dev",
 		"up-taze": "pnpm up @ruan-cat/taze-config -L && npx taze -r",
+		"decompress-porn-img-package": "pnpm exec @ruan-cat/decompress-porn-img-package 'C:\\Users\\pc\\Desktop\\test'",
 		"docs:dev": "vitepress dev docs --port 8080 --open",
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs",

@@ -115,3 +115,13 @@ C:.
 6. 核心业务处理逻辑，会分为好几个步骤，请你适当的拆分这几个步骤，拆分成合适的，独立的业务处理函数，便于阅读。
 
 ## 其他要求
+
+## 01
+
+1. 忽略 dist 文件，避免提交 dist 文件。
+2. 为整个开发，编写一个开发报告，便于我复盘理解。
+
+## 02
+
+1. 请你在根包 package.json 内，新建 `decompress-porn-img-package` 的使用命令。
+2. 新建 `decompress-porn-img-package.config.ts` 配置文件。

@@ -22,6 +22,9 @@ static/*
 # .gitkeep不会被忽略 该文件被文件系统版本控制
 !.gitkeep
 
+dist
+.output
+
 node_modules/
 docs/.vuepress/.cache/
 docs/.vuepress/.temp/

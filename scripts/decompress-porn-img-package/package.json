@@ -1,0 +1,37 @@
+{
+	"name": "@ruan-cat/decompress-porn-img-package",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"@ruan-cat/decompress-porn-img-package": "dist/index.mjs",
+		"decompress-porn-img-package": "dist/index.mjs",
+		"dpip": "dist/index.mjs"
+	},
+	"main": "dist/index.mjs",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.mjs",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"7zip-bin": "^5.1.1",
+		"c12": "^2.0.1",
+		"consola": "^3.4.2",
+		"execa": "^9.5.2"
+	},
+	"devDependencies": {
+		"@types/node": "^22.9.4",
+		"tsdown": "^0.17.2",
+		"typescript": "^5.7.3",
+		"vitest": "^2.1.8"
+	},
+	"engines": {
+		"node": ">=22.14.0"
+	}
+}

@@ -107,7 +107,7 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 在大多数情况下，你的更改是**不需要**编写任何说明报告的。但是每当你需要编写报告时，请你首先遵循以下要求：
 
-- 报告地址： 默认在 `apps\admin\src\docs\reports` 文件夹内编写报告。
+- 报告地址： 默认在 `reports` 文件夹内编写报告。
 - 报告文件格式： `*.md` 通常是 markdown 文件格式。
 - 报告文件名称命名要求：
   1. 前缀以日期命名。包括年月日。日期格式 `YYYY-MM-DD` 。

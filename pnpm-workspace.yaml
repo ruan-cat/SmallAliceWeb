@@ -3,3 +3,5 @@ onlyBuiltDependencies:
   - "@parcel/watcher"
   - esbuild
   - sharp
+packages:
+  - "scripts/*"
