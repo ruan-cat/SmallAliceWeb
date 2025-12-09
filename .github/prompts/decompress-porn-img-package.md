@@ -125,3 +125,18 @@ C:.
 
 1. 请你在根包 package.json 内，新建 `decompress-porn-img-package` 的使用命令。
 2. 新建 `decompress-porn-img-package.config.ts` 配置文件。
+
+## 03 迭代现有的 add-decompress-porn-img-package
+
+1. 阅读 openspec\changes\add-decompress-porn-img-package
+2. 增加新的规范，和任务。
+
+### 增加 postinstall 脚本
+
+`@ruan-cat/decompress-porn-img-package` 包增加 postinstall 脚本，实现安装后就本地完成依赖构建。确保准备好足量的 cli 脚本。
+
+### 配置文件使用常见的规范 defineConfig 函数
+
+定义并导出 defineConfig 函数。即直接将形参数据导出即可。
+
+### 让 `decompress-porn-img-package.config.ts` 使用 defineConfig 函数
