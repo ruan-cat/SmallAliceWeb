@@ -30,6 +30,10 @@ const DEFAULT_CONFIG: Required<ToolConfig> = {
 const ARCHIVE_EXTS = new Set([".gz", ".zip", ".7z"]);
 const logger = consola.withTag("@ruan-cat/decompress");
 
+export function defineConfig<T>(config: T): T {
+	return config;
+}
+
 export async function loadToolConfig(): Promise<Required<ToolConfig>> {
 	const { config } = await loadConfig<ToolConfig>({
 		name: "decompress-porn-img-package",

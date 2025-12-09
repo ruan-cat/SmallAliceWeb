@@ -17,7 +17,8 @@
 	"scripts": {
 		"build": "tsdown",
 		"dev": "tsdown --watch",
-		"test": "vitest run"
+		"test": "vitest run",
+		"postinstall": "pnpm run build"
 	},
 	"dependencies": {
 		"7zip-bin": "^5.1.1",
