@@ -82,8 +82,7 @@ export async function deleteDirtyRecursive(dir: string, dirtyNames: string[]): P
 			}
 			// 精确匹配或者忽略扩展名的部分匹配
 			const fileNameWithoutExt = path.parse(entry.name).name;
-			const shouldDelete =
-				dirtyNames.includes(entry.name) || dirtyNames.includes(fileNameWithoutExt);
+			const shouldDelete = dirtyNames.includes(entry.name) || dirtyNames.includes(fileNameWithoutExt);
 			if (shouldDelete) {
 				await fs.rm(full, { force: true });
 				logger.info(`已删除脏文件: ${full}`);
