@@ -13,7 +13,7 @@
 		"git:dev-2-main": "git rebase dev main && git push --follow-tags",
 		"git:main-2-dev": "git rebase main dev",
 		"up-taze": "pnpm up @ruan-cat/taze-config -L && npx taze -r",
-		"decompress-porn-img-package": "pnpm exec decompress-porn-img-package 'C:\\Users\\pc\\Desktop\\test'",
+		"decompress-porn-img-package": "pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'",
 		"docs:dev": "vitepress dev docs --port 8080 --open",
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs",

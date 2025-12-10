@@ -149,3 +149,7 @@ C:.
 
 1. 请阅读 `.github\prompts\decompress-porn-img-package.md` 的要求。
 2. 如图，运行后没有删除掉多余的文件夹和图片，请检查 `@ruan-cat/decompress-porn-img-package` 包的处理逻辑。
+
+## 06 <!-- TODO: --> 运行命令 `pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'` 失败
+
+运行命令 `pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'` 失败，请处理该故障。
