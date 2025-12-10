@@ -50,10 +50,7 @@ export function isArchiveCandidate(fileName: string, allowMixed: boolean): boole
 	return allowMixed;
 }
 
-export async function selectArchives(
-	targetDir: string,
-	config: Required<ToolConfig>,
-): Promise<string[]> {
+export async function selectArchives(targetDir: string, config: Required<ToolConfig>): Promise<string[]> {
 	const entries = await fs.readdir(targetDir, { withFileTypes: true });
 	return entries
 		.filter((entry) => entry.isFile() && isArchiveCandidate(entry.name, config.isDecompressMixedNamedPackages))
@@ -219,11 +216,7 @@ async function removeEmptyDirs(base: string, keep: string): Promise<void> {
 	}
 }
 
-async function processArchive(
-	targetDir: string,
-	archiveName: string,
-	config: Required<ToolConfig>,
-): Promise<void> {
+async function processArchive(targetDir: string, archiveName: string, config: Required<ToolConfig>): Promise<void> {
 	const archivePath = path.join(targetDir, archiveName);
 	const baseName = path.parse(archiveName).name;
 	const extractionDir = path.join(targetDir, baseName);
@@ -317,4 +310,3 @@ if (isEntryPoint(import.meta.url)) {
 		process.exit(1);
 	});
 }
-

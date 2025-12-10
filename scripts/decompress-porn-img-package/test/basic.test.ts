@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import {
-	deleteDirtyRecursive,
-	isArchiveCandidate,
-	moveFilesToRoot,
-} from "../src/index.js";
+import { deleteDirtyRecursive, isArchiveCandidate, moveFilesToRoot } from "../src/index.js";
 
 async function createTempDir(): Promise<string> {
 	return fs.mkdtemp(path.join(os.tmpdir(), "decompress-test-"));
@@ -55,4 +51,3 @@ describe("move files to root", () => {
 		await expect(fs.readdir(deepDir)).rejects.toBeTruthy();
 	});
 });
-

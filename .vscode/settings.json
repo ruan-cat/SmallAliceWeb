@@ -1,9 +1,9 @@
 {
-  // 针对picgo的配置 这里是指定上传图床类型 具体敏感配置存储在阮喵喵的个人全局配置内
-  "picgo": {
-    "picBed": {
-      "current": "aliyun",
-      "uploader": "aliyun",
-    },
-  },
+	// 针对picgo的配置 这里是指定上传图床类型 具体敏感配置存储在阮喵喵的个人全局配置内
+	"picgo": {
+		"picBed": {
+			"current": "aliyun",
+			"uploader": "aliyun"
+		}
+	}
 }

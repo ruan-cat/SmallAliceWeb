@@ -8,4 +8,3 @@ export default defineConfig({
 	clean: true,
 	target: "node22",
 });
-
