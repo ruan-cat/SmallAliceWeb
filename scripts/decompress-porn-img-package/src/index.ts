@@ -63,6 +63,10 @@ type VolumeSet = {
 	files: string[];
 };
 
+/**
+ * 递归删除脏文件
+ * 支持精确匹配文件名，以及忽略扩展名的部分匹配
+ */
 export async function deleteDirtyRecursive(dir: string, dirtyNames: string[]): Promise<void> {
 	if (!dirtyNames.length) return;
 	const stack = [dir];
@@ -76,7 +80,11 @@ export async function deleteDirtyRecursive(dir: string, dirtyNames: string[]): P
 				stack.push(full);
 				continue;
 			}
-			if (dirtyNames.includes(entry.name)) {
+			// 精确匹配或者忽略扩展名的部分匹配
+			const fileNameWithoutExt = path.parse(entry.name).name;
+			const shouldDelete =
+				dirtyNames.includes(entry.name) || dirtyNames.includes(fileNameWithoutExt);
+			if (shouldDelete) {
 				await fs.rm(full, { force: true });
 				logger.info(`已删除脏文件: ${full}`);
 			}
@@ -139,7 +147,17 @@ async function deleteNonVolumeFiles(volumeDir: string, baseName: string): Promis
 	}
 }
 
-async function collectFiles(dir: string): Promise<string[]> {
+/** 判断文件是否是压缩包（包括分卷压缩） */
+function isArchiveFile(fileName: string): boolean {
+	const lowerName = fileName.toLowerCase();
+	// 检查常见压缩包扩展名
+	if (ARCHIVE_EXTS.has(path.extname(lowerName))) return true;
+	// 检查分卷压缩文件（如 .7z.001, .7z.002）
+	if (/\.7z\.\d+$/.test(lowerName)) return true;
+	return false;
+}
+
+async function collectFiles(dir: string, excludeArchives: boolean = false): Promise<string[]> {
 	const stack = [dir];
 	const files: string[] = [];
 	while (stack.length) {
@@ -151,6 +169,8 @@ async function collectFiles(dir: string): Promise<string[]> {
 			if (entry.isDirectory()) {
 				stack.push(full);
 			} else {
+				// 如果需要排除压缩包，且当前文件是压缩包，则跳过
+				if (excludeArchives && isArchiveFile(entry.name)) continue;
 				files.push(full);
 			}
 		}
@@ -179,8 +199,12 @@ async function makeUniqueDest(baseDir: string, fileName: string): Promise<string
 	return candidate;
 }
 
+/**
+ * 移动文件到根目录
+ * 会排除压缩包文件，确保最终只有纯粹的内容文件
+ */
 export async function moveFilesToRoot(rootDir: string): Promise<void> {
-	const files = await collectFiles(rootDir);
+	const files = await collectFiles(rootDir, true); // 排除压缩包
 	for (const file of files) {
 		const parent = path.dirname(file);
 		if (parent === rootDir) continue;
@@ -191,6 +215,9 @@ export async function moveFilesToRoot(rootDir: string): Promise<void> {
 	await removeEmptyDirs(rootDir, rootDir);
 }
 
+/**
+ * 递归删除空目录和只包含压缩包的目录
+ */
 async function removeEmptyDirs(base: string, keep: string): Promise<void> {
 	const entries = await fs.readdir(base, { withFileTypes: true });
 	for (const entry of entries) {
@@ -203,15 +230,20 @@ async function removeEmptyDirs(base: string, keep: string): Promise<void> {
 			} catch {
 				continue; // 目录已被移除或不可访问时跳过
 			}
-			if (after.length === 0) {
-				await fs.rmdir(full).catch(() => {});
+			// 检查目录是否为空，或只包含压缩包文件
+			const hasNonArchiveFiles = after.some((name) => !isArchiveFile(name));
+			if (after.length === 0 || !hasNonArchiveFiles) {
+				// 删除整个目录（包括其中的压缩包）
+				await fs.rm(full, { recursive: true, force: true }).catch(() => {});
 			}
 		}
 	}
 	if (base !== keep) {
 		const remaining = await fs.readdir(base);
-		if (remaining.length === 0) {
-			await fs.rmdir(base).catch(() => {});
+		// 检查是否只剩压缩包文件
+		const hasNonArchiveFiles = remaining.some((name) => !isArchiveFile(name));
+		if (remaining.length === 0 || !hasNonArchiveFiles) {
+			await fs.rm(base, { recursive: true, force: true }).catch(() => {});
 		}
 	}
 }
@@ -251,10 +283,11 @@ async function processArchive(targetDir: string, archiveName: string, config: Re
 		const nextDir = path.join(path.dirname(extractionDir), renameTarget);
 		if (nextDir !== extractionDir) {
 			if (await pathExists(nextDir)) {
-				logger.warn(`目标目录已存在，跳过重命名: ${nextDir}`);
-			} else {
-				await fs.rename(extractionDir, nextDir);
+				logger.warn(`目标目录已存在，将删除旧目录: ${nextDir}`);
+				await fs.rm(nextDir, { recursive: true, force: true });
 			}
+			await fs.rename(extractionDir, nextDir);
+			logger.info(`已重命名文件夹: ${path.basename(extractionDir)} -> ${renameTarget}`);
 		}
 	}
 }

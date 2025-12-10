@@ -144,3 +144,8 @@ C:.
 ## 04 运行 decompress-porn-img-package 命令毫无反应
 
 在 `package.json` 内运行 decompress-porn-img-package 命令，毫无反应，没有主动开始解压，也没有任何日志，请处理该故障。
+
+## 05 运行解压任务后，项目没有及时删减掉多余的文件
+
+1. 请阅读 `.github\prompts\decompress-porn-img-package.md` 的要求。
+2. 如图，运行后没有删除掉多余的文件夹和图片，请检查 `@ruan-cat/decompress-porn-img-package` 包的处理逻辑。
