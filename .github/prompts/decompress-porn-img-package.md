@@ -140,3 +140,7 @@ C:.
 定义并导出 defineConfig 函数。即直接将形参数据导出即可。
 
 ### 让 `decompress-porn-img-package.config.ts` 使用 defineConfig 函数
+
+## 04 运行 decompress-porn-img-package 命令毫无反应
+
+在 `package.json` 内运行 decompress-porn-img-package 命令，毫无反应，没有主动开始解压，也没有任何日志，请处理该故障。

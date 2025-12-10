@@ -298,10 +298,12 @@ export async function main(): Promise<void> {
 	logger.success("压缩包处理完成");
 }
 
+/** 检查当前模块是否作为入口点运行 */
 function isEntryPoint(metaUrl: string): boolean {
 	const current = fileURLToPath(metaUrl);
 	const invoked = process.argv[1] ? path.resolve(process.argv[1]) : "";
-	return current === invoked;
+	// Windows 上通过 pnpm exec 运行时路径可能不完全匹配，所以使用更宽松的检查
+	return current === invoked || current.endsWith(path.basename(invoked));
 }
 
 if (isEntryPoint(import.meta.url)) {
