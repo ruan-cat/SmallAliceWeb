@@ -310,10 +310,18 @@ async function validateTargetDir(target: string): Promise<void> {
 }
 
 export async function main(): Promise<void> {
-	const targetArg = process.argv[2];
+	let targetArg = process.argv[2];
 	if (!targetArg) {
 		logger.error("请提供要处理的绝对路径目录");
 		process.exit(1);
+	}
+
+	// 移除可能存在的引号（Windows CMD 兼容性）
+	if (
+		(targetArg.startsWith("'") && targetArg.endsWith("'")) ||
+		(targetArg.startsWith('"') && targetArg.endsWith('"'))
+	) {
+		targetArg = targetArg.slice(1, -1);
 	}
 
 	await validateTargetDir(targetArg);
