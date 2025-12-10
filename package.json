@@ -1,19 +1,12 @@
 {
 	"name": "@ruan-cat/drill-doc",
 	"description": "阮喵喵维护的钻头文档，用docx直接生成的md文档。",
-	"private": true,
 	"version": "3.7.2",
-	"author": {
-		"name": "ruan-cat"
-	},
-	"license": "MIT",
+	"private": true,
 	"type": "module",
 	"packageManager": "pnpm@10.22.0",
 	"engines": {
 		"node": ">=22.14.0"
-	},
-	"dependencies": {
-		"@ruan-cat/decompress-porn-img-package": "workspace:*"
 	},
 	"scripts": {
 		"git:fetch": "git fetch -p",
@@ -38,6 +31,9 @@
 		"build:drill-docx2md": "tsx ./scripts/docx2md/index.ts",
 		"build:doc-in-vercel": "tsx ./scripts/build-doc-in-vercel/index.ts",
 		"predocs:build": "pnpm run build:doc-in-vercel"
+	},
+	"dependencies": {
+		"@ruan-cat/decompress-porn-img-package": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
@@ -70,5 +66,11 @@
 		"vitepress": "^1.6.4",
 		"vitepress-demo-plugin": "^1.5.0",
 		"vue": "^3.5.24"
-	}
+	},
+	"author": {
+		"name": "ruan-cat",
+		"email": "1219043956@qq.com",
+		"url": "https://github.com/ruan-cat"
+	},
+	"license": "MIT"
 }
