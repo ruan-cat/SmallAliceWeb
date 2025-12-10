@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execa } from "execa";
 import { path7za } from "7zip-bin";
+import { name as packageName, version as packageVersion } from "../package.json";
 
 export type ToolConfig = {
 	password?: string;
@@ -28,7 +29,8 @@ const DEFAULT_CONFIG: Required<ToolConfig> = {
 };
 
 const ARCHIVE_EXTS = new Set([".gz", ".zip", ".7z"]);
-const logger = consola.withTag("@ruan-cat/decompress");
+const logger = consola.withTag(packageName);
+logger.info(`${packageName} v${packageVersion} is running...`);
 
 export function defineConfig<T>(config: T): T {
 	return config;
