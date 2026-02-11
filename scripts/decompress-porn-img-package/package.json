@@ -21,16 +21,16 @@
 		"postinstall": "pnpm run build"
 	},
 	"dependencies": {
-		"7zip-bin": "^5.1.1",
-		"c12": "^2.0.1",
+		"7zip-bin": "^5.2.0",
+		"c12": "^2.0.4",
 		"consola": "^3.4.2",
-		"execa": "^9.5.2"
+		"execa": "^9.6.1"
 	},
 	"devDependencies": {
-		"@types/node": "^22.9.4",
-		"tsdown": "^0.17.2",
-		"typescript": "^5.7.3",
-		"vitest": "^2.1.8"
+		"@types/node": "^22.19.11",
+		"tsdown": "^0.17.4",
+		"typescript": "^5.9.3",
+		"vitest": "^2.1.9"
 	},
 	"engines": {
 		"node": ">=22.14.0"
