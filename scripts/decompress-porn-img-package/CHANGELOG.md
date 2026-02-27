@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.1.0
+
+[compare changes](https://github.com/RuanZhongNan/SmallAliceWeb/compare/v2.0.0...v2.1.0)
+
+### 🚀 Enhancements
+
+- **decompress-porn-img-package:** 增强阶段检测支持混合命名与补零编号 ([e9bae6d](https://github.com/RuanZhongNan/SmallAliceWeb/commit/e9bae6d))
+- **decompress-porn-img-package:** 新增解压超时控制与缺漏编号容错 ([7c4f56e](https://github.com/RuanZhongNan/SmallAliceWeb/commit/7c4f56e))
+
+### ❤️ Contributors
+
+- Ruan-cat <1219043956@qq.com>
+
 ## v2.0.0
 
 ### 🚀 Enhancements
