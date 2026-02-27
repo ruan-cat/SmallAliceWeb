@@ -29,6 +29,8 @@ export type ToolConfig = {
 	isRenameRootFolder?: boolean;
 	/** 要处理的文件夹/文件编号范围，不配置则处理全部 */
 	folderRange?: FolderRange;
+	/** 单次解压操作的超时时间（毫秒），超时则中断并跳过，默认 10000ms */
+	decompressTimeout?: number;
 };
 
 /**

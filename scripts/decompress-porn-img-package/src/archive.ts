@@ -19,20 +19,28 @@ export function isArchiveCandidate(fileName: string, allowMixed: boolean): boole
 	return allowMixed;
 }
 
-/** 执行 7z 命令 */
-async function run7z(args: string[], cwd: string): Promise<void> {
+/** 执行 7z 命令（支持超时） */
+async function run7z(args: string[], cwd: string, timeout?: number): Promise<void> {
 	try {
-		await execa(path7za, args, { cwd });
-	} catch (error) {
+		await execa(path7za, args, { cwd, timeout });
+	} catch (error: any) {
+		if (error?.timedOut) {
+			throw new Error(`7z 解压超时（超过 ${timeout}ms）`);
+		}
 		logger.error("7z 解压失败", error);
 		throw error;
 	}
 }
 
 /** 解压压缩包到指定输出目录 */
-export async function extractArchive(archivePath: string, outputDir: string, password: string): Promise<void> {
+export async function extractArchive(
+	archivePath: string,
+	outputDir: string,
+	password: string,
+	timeout?: number,
+): Promise<void> {
 	await ensureDir(outputDir);
-	await run7z(["x", archivePath, `-o${outputDir}`, `-p${password}`, "-y"], path.dirname(archivePath));
+	await run7z(["x", archivePath, `-o${outputDir}`, `-p${password}`, "-y"], path.dirname(archivePath), timeout);
 }
 
 /**
@@ -94,9 +102,20 @@ export async function processArchive(targetDir: string, archiveName: string, con
 	const archivePath = path.join(targetDir, archiveName);
 	const baseName = path.parse(archiveName).name;
 	const extractionDir = path.join(targetDir, baseName);
+	const timeout = config.decompressTimeout;
 
 	logger.info(`开始处理压缩包: ${archiveName}`);
-	await extractArchive(archivePath, extractionDir, config.password);
+
+	try {
+		await extractArchive(archivePath, extractionDir, config.password, timeout);
+	} catch (error: any) {
+		if (error?.message?.includes("超时")) {
+			logger.warn(`❗ 解压超时，跳过: ${archiveName} (超时 ${timeout}ms)`);
+			return;
+		}
+		throw error;
+	}
+
 	if (config.isDeletePackages) {
 		await fs.rm(archivePath, { force: true });
 	}
@@ -107,7 +126,17 @@ export async function processArchive(targetDir: string, archiveName: string, con
 		logger.info(`发现分卷压缩: ${volumeSet.baseName}`);
 		await deleteNonVolumeFiles(volumeSet.dir, volumeSet.baseName);
 		const firstVolume = path.join(volumeSet.dir, `${volumeSet.baseName}.7z.001`);
-		await extractArchive(firstVolume, volumeSet.dir, config.password);
+
+		try {
+			await extractArchive(firstVolume, volumeSet.dir, config.password, timeout);
+		} catch (error: any) {
+			if (error?.message?.includes("超时")) {
+				logger.warn(`❗ 分卷解压超时，跳过: ${volumeSet.baseName} (超时 ${timeout}ms)`);
+				return;
+			}
+			throw error;
+		}
+
 		if (config.isDeletePackages) {
 			for (const file of volumeSet.files) {
 				await fs.rm(file, { force: true });

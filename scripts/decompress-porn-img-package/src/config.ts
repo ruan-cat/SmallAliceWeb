@@ -14,6 +14,7 @@ export const DEFAULT_CONFIG: Required<Omit<ToolConfig, "folderRange">> & Pick<To
 	isMoveFilesToRoot: true,
 	isRenameRootFolder: true,
 	folderRange: undefined,
+	decompressTimeout: 10000,
 };
 
 /** 已解析的完整配置类型（folderRange 仍然可选） */

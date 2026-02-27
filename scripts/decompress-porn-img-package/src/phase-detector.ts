@@ -127,7 +127,7 @@ export async function detectAllTargets(targetDir: string, range: FolderRange): P
 			);
 			targets.push(target);
 		} else {
-			logger.debug(`  编号 ${num}: ⏭️ 未找到对应文件或文件夹，跳过`);
+			logger.warn(`  编号 ${num}: ⏭️ 未找到对应文件或文件夹，跳过`);
 		}
 	}
 
