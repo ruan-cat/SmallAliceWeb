@@ -3,6 +3,15 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"test": "vitest run",
+		"postinstall": "pnpm run build"
+	},
+	"engines": {
+		"node": ">=22.14.0"
+	},
 	"bin": {
 		"@ruan-cat/decompress-porn-img-package": "dist/index.mjs",
 		"decompress-porn-img-package": "dist/index.mjs",
@@ -14,12 +23,6 @@
 	"files": [
 		"dist"
 	],
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"test": "vitest run",
-		"postinstall": "pnpm run build"
-	},
 	"dependencies": {
 		"7zip-bin": "^5.2.0",
 		"c12": "^2.0.4",
@@ -31,8 +34,5 @@
 		"tsdown": "^0.17.4",
 		"typescript": "^5.9.3",
 		"vitest": "^2.1.9"
-	},
-	"engines": {
-		"node": ">=22.14.0"
 	}
 }
