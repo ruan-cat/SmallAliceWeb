@@ -2,7 +2,13 @@ import { defineConfig } from "@ruan-cat/decompress-porn-img-package";
 
 export default defineConfig({
 	password: "https://www.91xiezhen.top",
-	dirtyFiles: ["孔雀海"],
+	dirtyFiles: [
+		// 一个URL地址文件 需要删除
+		"孔雀海",
+		// 一个多余图片广告文件 需要删除
+		"290.jpg",
+		"287.jpg",
+	],
 	isPureDecompress: true,
 	isDecompressMixedNamedPackages: false,
 	isDeletePackages: false,
@@ -15,5 +21,5 @@ export default defineConfig({
 	 * - 编号对应压缩包 → 解压流程
 	 * - 编号对应文件夹 → 整理文件夹目录层级流程
 	 */
-	folderRange: { start: 213, end: 220 },
+	folderRange: { start: 210, end: 220 },
 });
