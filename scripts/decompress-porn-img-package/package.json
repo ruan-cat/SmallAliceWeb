@@ -1,6 +1,6 @@
 {
 	"name": "@ruan-cat/decompress-porn-img-package",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -8,15 +8,17 @@
 		"dev": "tsdown --watch",
 		"test": "vitest run",
 		"postinstall": "pnpm run build",
-		"do-dpip": "pnpm exec decompress-porn-img-package ''"
+		"do-dpip": "pnpm exec decompress-porn-img-package ''",
+		"changelog": "changelogen --output CHANGELOG.md",
+		"release": "changelogen --bump --release --push --output CHANGELOG.md"
 	},
 	"engines": {
 		"node": ">=22.14.0"
 	},
 	"bin": {
-		"@ruan-cat/decompress-porn-img-package": "dist/index.mjs",
-		"decompress-porn-img-package": "dist/index.mjs",
-		"dpip": "dist/index.mjs"
+		"@ruan-cat/decompress-porn-img-package": "dist/cli.mjs",
+		"decompress-porn-img-package": "dist/cli.mjs",
+		"dpip": "dist/cli.mjs"
 	},
 	"main": "dist/index.mjs",
 	"module": "dist/index.mjs",
@@ -32,6 +34,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.19.11",
+		"changelogen": "^0.6.1",
 		"tsdown": "^0.17.4",
 		"typescript": "^5.9.3",
 		"vitest": "^2.1.9"

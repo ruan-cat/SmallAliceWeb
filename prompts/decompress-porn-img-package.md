@@ -154,7 +154,7 @@ C:.
 
 运行命令 `pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'` 失败，请处理该故障。
 
-## 07 <!-- TODO: --> 拓展解压缩包的细粒化文件夹处理范围，以及智能识别处理阶段的能力
+## 07 拓展解压缩包的细粒化文件夹处理范围，以及智能识别处理阶段的能力
 
 `scripts\decompress-porn-img-package` 是一个解压缩的工具包，需要增加新功能， 在配置项，`decompress-porn-img-package.config.ts` 内，增加新的配置。实现按照指定文件夹的特定数目范围，完成解压缩任务。增加细粒化的文件夹范围处理能力
 
