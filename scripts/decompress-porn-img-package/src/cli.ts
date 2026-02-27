@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { name as packageName, version as packageVersion } from "../package.json";
 import { loadToolConfig } from "./config.js";
 import { logger, validateTargetDir } from "./file-utils.js";
@@ -8,8 +7,8 @@ import { runProcess } from "./processor.js";
 
 logger.info(`${packageName} v${packageVersion} is running...`);
 
-/** 主入口函数 */
-export async function main(): Promise<void> {
+/** CLI 入口 — 解析参数并执行处理流程 */
+async function run(): Promise<void> {
 	let targetArg = process.argv[2];
 	if (!targetArg) {
 		logger.error("请提供要处理的绝对路径目录");
@@ -31,16 +30,7 @@ export async function main(): Promise<void> {
 	await runProcess(targetDir, config);
 }
 
-/** 检查当前模块是否作为入口点运行 */
-function isEntryPoint(metaUrl: string): boolean {
-	const current = fileURLToPath(metaUrl);
-	const invoked = process.argv[1] ? path.resolve(process.argv[1]) : "";
-	return current === invoked || current.endsWith(path.basename(invoked));
-}
-
-if (isEntryPoint(import.meta.url)) {
-	main().catch((error) => {
-		logger.error(error);
-		process.exit(1);
-	});
-}
+run().catch((error) => {
+	logger.error(error);
+	process.exit(1);
+});

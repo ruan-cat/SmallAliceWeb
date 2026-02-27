@@ -32,6 +32,3 @@ export { organizeFolder, findDeepestContentDir } from "./folder-organizer.js";
 
 /** 主处理器导出 */
 export { runProcess } from "./processor.js";
-
-/** CLI 入口导出 */
-export { main } from "./cli.js";
