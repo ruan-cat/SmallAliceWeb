@@ -8,7 +8,7 @@
 		"dev": "tsdown --watch",
 		"test": "vitest run",
 		"postinstall": "pnpm run build",
-		"do-dpip": "pnpm exec decompress-porn-img-package 'D:/store/baidu/315.咬一口兔娘'",
+		"do-dpip": "pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫'",
 		"changelog": "changelogen --output CHANGELOG.md",
 		"release": "changelogen --bump --release --push --output CHANGELOG.md"
 	},
