@@ -21,5 +21,5 @@ export default defineConfig({
 	 * - 编号对应压缩包 → 解压流程
 	 * - 编号对应文件夹 → 整理文件夹目录层级流程
 	 */
-	folderRange: { start: 210, end: 220 },
+	folderRange: { start: 1, end: 209 },
 });

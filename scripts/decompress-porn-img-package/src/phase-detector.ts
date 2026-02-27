@@ -21,48 +21,88 @@ export function generateNumberRange(range: FolderRange): number[] {
  *
  * 检测逻辑：
  * 1. 先检查是否存在对应编号的压缩包文件（如 221.gz, 221.zip, 221.7z）
- * 2. 再检查是否存在对应编号的文件夹（如 213/）
- * 3. 都不存在则标记为未知
+ * 2. 再检查是否存在对应编号的纯数字文件夹（如 213/）
+ * 3. 再模糊匹配以该编号开头的文件夹（如 020tu, 022咬）
+ * 4. 都不存在则标记为未知
+ *
+ * 注意：跳过已整理过的长名称文件夹（名称中包含 NO. 的）
  *
  * @param targetDir - 父目录路径
  * @param num - 编号
  */
 export async function detectPhase(targetDir: string, num: number): Promise<ProcessTarget | null> {
 	const numStr = String(num);
+	/** 左侧补零到 3 位，用于匹配 001, 020 等格式 */
+	const paddedStr = numStr.padStart(3, "0");
 
-	/** 检查压缩包文件 */
+	/** 检查压缩包文件（精确匹配 + 补零匹配） */
 	for (const ext of ARCHIVE_EXTS) {
-		const archiveName = `${numStr}${ext}`;
-		const archivePath = path.join(targetDir, archiveName);
-		try {
-			const stat = await fs.stat(archivePath);
-			if (stat.isFile()) {
-				return {
-					number: num,
-					phase: ProcessPhase.DECOMPRESS,
-					fullPath: archivePath,
-					name: archiveName,
-				};
+		for (const prefix of [numStr, paddedStr]) {
+			const archiveName = `${prefix}${ext}`;
+			const archivePath = path.join(targetDir, archiveName);
+			try {
+				const stat = await fs.stat(archivePath);
+				if (stat.isFile()) {
+					return {
+						number: num,
+						phase: ProcessPhase.DECOMPRESS,
+						fullPath: archivePath,
+						name: archiveName,
+					};
+				}
+			} catch {
+				/** 文件不存在，继续 */
 			}
-		} catch {
-			/** 文件不存在，继续检查下一个扩展名 */
 		}
 	}
 
-	/** 检查文件夹 */
-	const folderPath = path.join(targetDir, numStr);
+	/** 检查纯数字文件夹（精确匹配 + 补零匹配） */
+	for (const prefix of [numStr, paddedStr]) {
+		const folderPath = path.join(targetDir, prefix);
+		try {
+			const stat = await fs.stat(folderPath);
+			if (stat.isDirectory()) {
+				return {
+					number: num,
+					phase: ProcessPhase.ORGANIZE,
+					fullPath: folderPath,
+					name: prefix,
+				};
+			}
+		} catch {
+			/** 不存在 */
+		}
+	}
+
+	/** 模糊匹配：搜索以编号开头的文件夹（如 020tu, 022咬, 054咬一口） */
 	try {
-		const stat = await fs.stat(folderPath);
-		if (stat.isDirectory()) {
-			return {
-				number: num,
-				phase: ProcessPhase.ORGANIZE,
-				fullPath: folderPath,
-				name: numStr,
-			};
+		const entries = await fs.readdir(targetDir, { withFileTypes: true });
+		for (const entry of entries) {
+			if (!entry.isDirectory()) continue;
+
+			/** 跳过已整理过的长名称文件夹（包含 NO. 的是已处理完的） */
+			if (entry.name.includes("NO.")) continue;
+
+			/** 匹配以编号或补零编号开头的文件夹 */
+			if (entry.name.startsWith(paddedStr) || entry.name.startsWith(numStr)) {
+				/** 确保是编号匹配而非数字碰巧相同（如 1 不应匹配 100） */
+				const afterPrefix = entry.name.startsWith(paddedStr)
+					? entry.name.slice(paddedStr.length)
+					: entry.name.slice(numStr.length);
+				/** 数字后面跟的必须是非数字字符或为空 */
+				if (afterPrefix.length === 0 || !/^\d/.test(afterPrefix)) {
+					const folderPath = path.join(targetDir, entry.name);
+					return {
+						number: num,
+						phase: ProcessPhase.ORGANIZE,
+						fullPath: folderPath,
+						name: entry.name,
+					};
+				}
+			}
 		}
 	} catch {
-		/** 文件夹不存在 */
+		/** 读取目录失败 */
 	}
 
 	return null;
