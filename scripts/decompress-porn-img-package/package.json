@@ -7,7 +7,8 @@
 		"build": "tsdown",
 		"dev": "tsdown --watch",
 		"test": "vitest run",
-		"postinstall": "pnpm run build"
+		"postinstall": "pnpm run build",
+		"do-dpip": "pnpm exec decompress-porn-img-package ''"
 	},
 	"engines": {
 		"node": ">=22.14.0"
