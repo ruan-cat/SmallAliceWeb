@@ -1,0 +1,22 @@
+{
+	"name": "get-cursor-token",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"start": "tsx src/index.ts"
+	},
+	"engines": {
+		"node": ">=22.14.0"
+	},
+	"dependencies": {
+		"better-sqlite3": "^11.0.0",
+		"consola": "^3.4.2"
+	},
+	"devDependencies": {
+		"@types/better-sqlite3": "^7.0.0",
+		"@types/node": "^22.19.11",
+		"tsx": "^4.0.0",
+		"typescript": "^5.0.0"
+	}
+}
