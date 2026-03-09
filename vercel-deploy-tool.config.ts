@@ -1,11 +1,11 @@
-import { type Config } from "@ruan-cat/vercel-deploy-tool/src/config.ts";
+import { defineConfig } from "@ruan-cat/vercel-deploy-tool";
 import { getDomains } from "@ruan-cat/domains";
 
-const config: Config = {
-	vercelProjetName: "small-alice-web-odse",
+export default defineConfig({
+	vercelProjectName: "small-alice-web-odse",
 	vercelOrgId: "team_cUeGw4TtOCLp0bbuH8kA7BYH",
 	vercelProjectId: "prj_vdrAvRthiSjkhotfPTXFSV5e1KQW",
-	vercelToken: "",
+	vercelToken: process.env.VERCEL_TOKEN || "",
 
 	deployTargets: [
 		{
@@ -16,6 +16,4 @@ const config: Config = {
 			userCommands: ["pnpm -C=./ docs:build"],
 		},
 	],
-};
-
-export default config;
+});
