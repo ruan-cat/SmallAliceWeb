@@ -6,6 +6,7 @@ export default defineConfig({
 		// 一个URL地址文件 需要删除
 		"孔雀海",
 		// 一个多余图片广告文件 需要删除
+		"295.jpg",
 		"290.jpg",
 		"287.jpg",
 	],
@@ -23,5 +24,5 @@ export default defineConfig({
 	 * - 编号对应压缩包 → 解压流程
 	 * - 编号对应文件夹 → 整理文件夹目录层级流程
 	 */
-	folderRange: { start: 217, end: 401 },
+	folderRange: { start: 228, end: 268 },
 });
