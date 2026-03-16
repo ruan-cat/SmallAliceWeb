@@ -4,16 +4,10 @@ import type { ResolvedConfig } from "./config.js";
 import { logger, pathExists, deleteDirtyRecursive, moveFilesToRoot } from "./file-utils.js";
 
 /**
- * 检测文件夹内部是否有多层嵌套的同名目录结构
- * 返回最深层内容目录的路径
+ * 检测目录内部是否存在多层嵌套的内容目录结构。
  *
- * 典型结构：
- * ```
- * 213/
- * └── 某某 - NO.213 xxx[40P-400M]/
- *     └── 某某 - NO.213 xxx[40P-400M]/
- *         └── (图片文件们)
- * ```
+ * 例如：
+ * `213/作品名/作品名/图片文件`
  *
  * @param rootDir - 要分析的根目录路径
  */
@@ -31,12 +25,11 @@ export async function findDeepestContentDir(
 			break;
 		}
 
-		const subdirs = entries.filter((e) => e.isDirectory());
-		const files = entries.filter((e) => e.isFile());
+		const subdirs = entries.filter((entry) => entry.isDirectory());
+		const files = entries.filter((entry) => entry.isFile());
 
 		/**
-		 * 当目录内只有一个子目录且没有有效文件（或只有脏文件）时，
-		 * 认为这是一个中间层级，继续深入
+		 * 当前目录只有一个子目录且没有文件时，继续向下探测。
 		 */
 		if (subdirs.length === 1 && files.length === 0) {
 			detectedName = subdirs[0].name;
@@ -45,8 +38,7 @@ export async function findDeepestContentDir(
 		}
 
 		/**
-		 * 当目录内有一个子目录且有少量文件时，
-		 * 检查子目录是否也包含内容，如果是则继续深入
+		 * 当前目录只有一个子目录且存在文件时，如果子目录内也有文件，则继续向下探测。
 		 */
 		if (subdirs.length === 1 && files.length > 0) {
 			const subPath = path.join(current, subdirs[0].name);
@@ -56,15 +48,13 @@ export async function findDeepestContentDir(
 			} catch {
 				break;
 			}
-			/** 子目录有内容文件，继续深入 */
-			if (subEntries.some((e) => e.isFile())) {
+			if (subEntries.some((entry) => entry.isFile())) {
 				detectedName = detectedName ?? subdirs[0].name;
 				current = subPath;
 				continue;
 			}
 		}
 
-		/** 到达内容层级，停止深入 */
 		break;
 	}
 
@@ -72,26 +62,37 @@ export async function findDeepestContentDir(
 }
 
 /**
- * 整理已解压但目录层级过深的文件夹
+ * 解析根目录最终应使用的目录名称。
  *
- * 处理流程：
- * 1. 删除脏文件
- * 2. 检测最深层内容目录
- * 3. 移动内容文件到根编号目录
- * 4. 清理多余嵌套空目录
- * 5. 可选：用检测到的名称重命名根目录
+ * 这里优先使用最后一个实际内容目录的名称；若未探测到嵌套目录，则回退到外部提供的名称。
  *
- * @param folderPath - 编号目录路径（如 D:\store\baidu\315.咬一口兔娘\213）
+ * @param rootDir - 要分析的根目录路径
+ * @param fallbackName - 未探测到语义目录名时的回退名称
+ */
+export async function resolveRootFolderName(rootDir: string, fallbackName?: string): Promise<string | null> {
+	const { deepestDir } = await findDeepestContentDir(rootDir);
+
+	if (deepestDir !== rootDir) {
+		return path.basename(deepestDir);
+	}
+
+	return fallbackName ?? null;
+}
+
+/**
+ * 整理已经解压但目录层级过深的文件夹。
+ *
+ * @param folderPath - 编号目录路径
  * @param config - 工具配置
  */
 export async function organizeFolder(folderPath: string, config: ResolvedConfig): Promise<void> {
 	const folderName = path.basename(folderPath);
 	logger.info(`开始整理文件夹: ${folderName}`);
 
-	/** 步骤 1：删除脏文件 */
+	/** 第 1 步：删除脏文件 */
 	await deleteDirtyRecursive(folderPath, config.dirtyFiles);
 
-	/** 步骤 2：检测最深内容目录 */
+	/** 第 2 步：检测最深层内容目录 */
 	const { deepestDir, detectedName } = await findDeepestContentDir(folderPath);
 
 	if (deepestDir === folderPath) {
@@ -104,16 +105,16 @@ export async function organizeFolder(folderPath: string, config: ResolvedConfig)
 		logger.info(`  检测到名称: ${detectedName}`);
 	}
 
-	/** 步骤 3：移动文件到根目录 */
+	/** 第 3 步：移动文件到根目录 */
 	if (config.isMoveFilesToRoot) {
 		await moveFilesToRoot(folderPath);
 		logger.info(`  已完成文件移动到根目录: ${folderName}`);
 	}
 
-	/** 步骤 4：再次删除脏文件 */
+	/** 第 4 步：再次删除脏文件 */
 	await deleteDirtyRecursive(folderPath, config.dirtyFiles);
 
-	/** 步骤 5：可选重命名 */
+	/** 第 5 步：可选重命名 */
 	if (detectedName && config.isRenameRootFolder) {
 		const parentDir = path.dirname(folderPath);
 		const newPath = path.join(parentDir, detectedName);

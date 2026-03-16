@@ -5,6 +5,7 @@ import { path7za } from "7zip-bin";
 import type { ResolvedConfig } from "./config.js";
 import type { VolumeSet } from "./types.js";
 import { ARCHIVE_EXTS, logger, ensureDir, pathExists, deleteDirtyRecursive, moveFilesToRoot } from "./file-utils.js";
+import { resolveRootFolderName } from "./folder-organizer.js";
 
 /**
  * 判断文件名是否为待处理的压缩包候选
@@ -149,7 +150,7 @@ export async function processArchive(targetDir: string, archiveName: string, con
 		await moveFilesToRoot(extractionDir);
 	}
 
-	const renameTarget = volumeSet?.baseName;
+	const renameTarget = await resolveRootFolderName(extractionDir, volumeSet?.baseName);
 	if (renameTarget && config.isRenameRootFolder) {
 		const nextDir = path.join(path.dirname(extractionDir), renameTarget);
 		if (nextDir !== extractionDir) {
