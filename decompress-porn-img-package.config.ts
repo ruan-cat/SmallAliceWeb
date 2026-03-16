@@ -18,7 +18,7 @@ export default defineConfig({
 	isMoveFilesToRoot: true,
 	isRenameRootFolder: true,
 	/** 单次解压操作的超时时间（毫秒），超时则中断并跳过该文件，默认 10000ms */
-	decompressTimeout: 10000,
+	decompressTimeout: 25000,
 	/**
 	 * 要处理的文件夹/文件编号范围
 	 * 不配置时处理目录下全部压缩包（原始行为）
@@ -26,6 +26,6 @@ export default defineConfig({
 	 * - 编号对应压缩包 → 解压流程
 	 * - 编号对应文件夹 → 整理文件夹目录层级流程
 	 */
-	folderRange: { start: 228, end: 268 },
+	folderRange: { start: 261, end: 267 },
 	// folderRange: { start: 228, end: 232 },
 });
