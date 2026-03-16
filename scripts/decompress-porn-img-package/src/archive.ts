@@ -146,11 +146,12 @@ export async function processArchive(targetDir: string, archiveName: string, con
 		await deleteDirtyRecursive(volumeSet.dir, config.dirtyFiles);
 	}
 
+	const renameTarget = await resolveRootFolderName(extractionDir, volumeSet?.baseName);
+
 	if (config.isMoveFilesToRoot) {
 		await moveFilesToRoot(extractionDir);
 	}
 
-	const renameTarget = await resolveRootFolderName(extractionDir, volumeSet?.baseName);
 	if (renameTarget && config.isRenameRootFolder) {
 		const nextDir = path.join(path.dirname(extractionDir), renameTarget);
 		if (nextDir !== extractionDir) {
