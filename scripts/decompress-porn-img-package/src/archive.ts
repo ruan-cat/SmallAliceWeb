@@ -4,7 +4,15 @@ import { execa } from "execa";
 import { path7za } from "7zip-bin";
 import type { ResolvedConfig } from "./config.js";
 import type { VolumeSet } from "./types.js";
-import { ARCHIVE_EXTS, logger, ensureDir, pathExists, deleteDirtyRecursive, moveFilesToRoot } from "./file-utils.js";
+import {
+	ARCHIVE_EXTS,
+	logger,
+	ensureDir,
+	pathExists,
+	deleteDirtyRecursive,
+	moveFilesToRoot,
+	removeDirIfEffectivelyEmpty,
+} from "./file-utils.js";
 import { resolveRootFolderName } from "./folder-organizer.js";
 
 /**
@@ -120,7 +128,7 @@ export async function processArchive(targetDir: string, archiveName: string, con
 	if (config.isDeletePackages) {
 		await fs.rm(archivePath, { force: true });
 	}
-	await deleteDirtyRecursive(extractionDir, config.dirtyFiles);
+	await deleteDirtyRecursive(extractionDir, config.dirtyFiles, config.dirtyFilePatterns);
 
 	const volumeSet = await findVolumeSet(extractionDir);
 	if (volumeSet) {
@@ -143,13 +151,19 @@ export async function processArchive(targetDir: string, archiveName: string, con
 				await fs.rm(file, { force: true });
 			}
 		}
-		await deleteDirtyRecursive(volumeSet.dir, config.dirtyFiles);
+		await deleteDirtyRecursive(volumeSet.dir, config.dirtyFiles, config.dirtyFilePatterns);
 	}
 
 	const renameTarget = await resolveRootFolderName(extractionDir, volumeSet?.baseName);
 
 	if (config.isMoveFilesToRoot) {
 		await moveFilesToRoot(extractionDir);
+	}
+
+	await deleteDirtyRecursive(extractionDir, config.dirtyFiles, config.dirtyFilePatterns);
+	if (await removeDirIfEffectivelyEmpty(extractionDir)) {
+		logger.info(`产物目录已无有效内容，已删除目录: ${baseName}`);
+		return;
 	}
 
 	if (renameTarget && config.isRenameRootFolder) {

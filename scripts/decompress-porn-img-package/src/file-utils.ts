@@ -73,12 +73,34 @@ export async function collectFiles(dir: string, excludeArchives: boolean = false
 	return files;
 }
 
+/** 将通配模式转换为大小写不敏感的正则表达式 */
+function createPatternMatcher(pattern: string): RegExp {
+	const escapedPattern = pattern
+		.toLowerCase()
+		.replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
+		.replace(/\*/g, ".*");
+
+	return new RegExp(`^${escapedPattern}$`, "i");
+}
+
+/** 判断文件名是否命中脏文件模式 */
+function matchesDirtyPattern(fileName: string, patternMatchers: RegExp[]): boolean {
+	return patternMatchers.some((pattern) => pattern.test(fileName.toLowerCase()));
+}
+
 /**
  * 递归删除脏文件
  * 支持精确匹配文件名，以及忽略扩展名的部分匹配
  */
-export async function deleteDirtyRecursive(dir: string, dirtyNames: string[]): Promise<void> {
-	if (!dirtyNames.length) return;
+export async function deleteDirtyRecursive(
+	dir: string,
+	dirtyNames: string[],
+	dirtyPatterns: string[] = [],
+): Promise<void> {
+	if (!dirtyNames.length && !dirtyPatterns.length) return;
+
+	const normalizedDirtyNames = new Set(dirtyNames.map((name) => name.toLowerCase()));
+	const patternMatchers = dirtyPatterns.map(createPatternMatcher);
 	const stack = [dir];
 	while (stack.length) {
 		const current = stack.pop();
@@ -90,8 +112,12 @@ export async function deleteDirtyRecursive(dir: string, dirtyNames: string[]): P
 				stack.push(full);
 				continue;
 			}
-			const fileNameWithoutExt = path.parse(entry.name).name;
-			const shouldDelete = dirtyNames.includes(entry.name) || dirtyNames.includes(fileNameWithoutExt);
+			const fileName = entry.name.toLowerCase();
+			const fileNameWithoutExt = path.parse(entry.name).name.toLowerCase();
+			const shouldDelete =
+				normalizedDirtyNames.has(fileName) ||
+				normalizedDirtyNames.has(fileNameWithoutExt) ||
+				matchesDirtyPattern(entry.name, patternMatchers);
 			if (shouldDelete) {
 				await fs.rm(full, { force: true });
 				logger.info(`已删除脏文件: ${full}`);
@@ -125,25 +151,53 @@ export async function removeEmptyDirs(base: string, keep: string): Promise<void>
 		const full = path.join(base, entry.name);
 		if (entry.isDirectory()) {
 			await removeEmptyDirs(full, keep);
-			let after: string[];
-			try {
-				after = await fs.readdir(full);
-			} catch {
-				continue;
-			}
-			const hasNonArchiveFiles = after.some((name) => !isArchiveFile(name));
-			if (after.length === 0 || !hasNonArchiveFiles) {
+			if (await isDirectoryEffectivelyEmpty(full)) {
 				await fs.rm(full, { recursive: true, force: true }).catch(() => {});
 			}
 		}
 	}
-	if (base !== keep) {
-		const remaining = await fs.readdir(base);
-		const hasNonArchiveFiles = remaining.some((name) => !isArchiveFile(name));
-		if (remaining.length === 0 || !hasNonArchiveFiles) {
-			await fs.rm(base, { recursive: true, force: true }).catch(() => {});
+	if (base !== keep && (await isDirectoryEffectivelyEmpty(base))) {
+		await fs.rm(base, { recursive: true, force: true }).catch(() => {});
+	}
+}
+
+/** 判断目录是否已经没有有效产物文件 */
+export async function isDirectoryEffectivelyEmpty(dir: string): Promise<boolean> {
+	let entries;
+	try {
+		entries = await fs.readdir(dir, { withFileTypes: true });
+	} catch {
+		return true;
+	}
+
+	for (const entry of entries) {
+		if (entry.isFile() && !isArchiveFile(entry.name)) {
+			return false;
+		}
+
+		if (entry.isDirectory()) {
+			const nestedDir = path.join(dir, entry.name);
+			if (!(await isDirectoryEffectivelyEmpty(nestedDir))) {
+				return false;
+			}
 		}
 	}
+
+	return true;
+}
+
+/** 如果目录内已经没有有效产物文件，则直接删除该目录 */
+export async function removeDirIfEffectivelyEmpty(dir: string): Promise<boolean> {
+	if (!(await pathExists(dir))) {
+		return true;
+	}
+
+	if (!(await isDirectoryEffectivelyEmpty(dir))) {
+		return false;
+	}
+
+	await fs.rm(dir, { recursive: true, force: true });
+	return true;
 }
 
 /**

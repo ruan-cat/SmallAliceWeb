@@ -1,7 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { ResolvedConfig } from "./config.js";
-import { logger, pathExists, deleteDirtyRecursive, moveFilesToRoot } from "./file-utils.js";
+import {
+	logger,
+	pathExists,
+	deleteDirtyRecursive,
+	moveFilesToRoot,
+	removeDirIfEffectivelyEmpty,
+} from "./file-utils.js";
 
 /**
  * 检测目录内部是否存在多层嵌套的内容目录结构。
@@ -90,7 +96,11 @@ export async function organizeFolder(folderPath: string, config: ResolvedConfig)
 	logger.info(`开始整理文件夹: ${folderName}`);
 
 	/** 第 1 步：删除脏文件 */
-	await deleteDirtyRecursive(folderPath, config.dirtyFiles);
+	await deleteDirtyRecursive(folderPath, config.dirtyFiles, config.dirtyFilePatterns);
+	if (await removeDirIfEffectivelyEmpty(folderPath)) {
+		logger.info(`  文件夹 ${folderName} 在清理脏文件后已无有效内容，已删除该目录`);
+		return;
+	}
 
 	/** 第 2 步：检测最深层内容目录 */
 	const { deepestDir, detectedName } = await findDeepestContentDir(folderPath);
@@ -112,7 +122,11 @@ export async function organizeFolder(folderPath: string, config: ResolvedConfig)
 	}
 
 	/** 第 4 步：再次删除脏文件 */
-	await deleteDirtyRecursive(folderPath, config.dirtyFiles);
+	await deleteDirtyRecursive(folderPath, config.dirtyFiles, config.dirtyFilePatterns);
+	if (await removeDirIfEffectivelyEmpty(folderPath)) {
+		logger.info(`  文件夹 ${folderName} 在最终清理后已无有效内容，已删除该目录`);
+		return;
+	}
 
 	/** 第 5 步：可选重命名 */
 	if (detectedName && config.isRenameRootFolder) {

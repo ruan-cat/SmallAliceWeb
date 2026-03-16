@@ -17,6 +17,8 @@ export type ToolConfig = {
 	password?: string;
 	/** 要被删除的脏文件文件名数组 */
 	dirtyFiles?: string[];
+	/** 要被删除的脏文件模式数组，例如 *.mp4 */
+	dirtyFilePatterns?: string[];
 	/** 是否是纯解压压缩包模式 */
 	isPureDecompress?: boolean;
 	/** 是否解压混合命名风格的压缩包 */

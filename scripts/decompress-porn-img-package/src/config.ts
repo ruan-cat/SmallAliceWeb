@@ -4,10 +4,26 @@ import { loadConfig } from "c12";
 import type { ToolConfig } from "./types.js";
 import { logger } from "./file-utils.js";
 
+type ResolvedConfigBase = Required<
+	Pick<
+		ToolConfig,
+		| "password"
+		| "dirtyFiles"
+		| "dirtyFilePatterns"
+		| "isPureDecompress"
+		| "isDecompressMixedNamedPackages"
+		| "isDeletePackages"
+		| "isMoveFilesToRoot"
+		| "isRenameRootFolder"
+		| "decompressTimeout"
+	>
+>;
+
 /** 默认配置 */
-export const DEFAULT_CONFIG: Required<Omit<ToolConfig, "folderRange">> & Pick<ToolConfig, "folderRange"> = {
+export const DEFAULT_CONFIG: ResolvedConfigBase & Pick<ToolConfig, "folderRange"> = {
 	password: "https://www.91xiezhen.top",
 	dirtyFiles: ["孔雀海"],
+	dirtyFilePatterns: [],
 	isPureDecompress: true,
 	isDecompressMixedNamedPackages: false,
 	isDeletePackages: false,
@@ -18,7 +34,7 @@ export const DEFAULT_CONFIG: Required<Omit<ToolConfig, "folderRange">> & Pick<To
 };
 
 /** 已解析的完整配置类型（folderRange 仍然可选） */
-export type ResolvedConfig = Required<Omit<ToolConfig, "folderRange">> & Pick<ToolConfig, "folderRange">;
+export type ResolvedConfig = ResolvedConfigBase & Pick<ToolConfig, "folderRange">;
 
 /** 配置文件名称模式 */
 const CONFIG_FILE_PATTERNS = [
