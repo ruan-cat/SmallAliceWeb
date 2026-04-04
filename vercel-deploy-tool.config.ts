@@ -10,10 +10,16 @@ export default defineConfig({
 	deployTargets: [
 		{
 			type: "userCommands",
-			outputDirectory: "docs/.vuepress/dist",
+			outputDirectory: "docs/.vitepress/dist",
 			targetCWD: "./",
 			url: getDomains("drill-doc"),
 			userCommands: ["pnpm -C=./ docs:build"],
+			watchPaths: [
+				"docs/**",
+				"package.json",
+				"scripts/build-doc-in-vercel/**",
+				"vercel-deploy-tool.config.ts",
+			],
 		},
 	],
 });
