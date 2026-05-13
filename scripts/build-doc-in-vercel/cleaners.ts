@@ -122,7 +122,7 @@ const prettierFormatter: CleanerPlugin = {
 
 			return formattedContent;
 		} catch (error) {
-			consola.warn(`Prettier格式化失败: ${error.message}`);
+			consola.warn(`Prettier格式化失败: ${(error as Error).message}`);
 			// 如果格式化失败，返回原内容
 			return content;
 		}
@@ -388,7 +388,7 @@ export async function cleanMdFiles(mdFiles: string[]): Promise<string[]> {
 
 			consola.success(`已清理文件: ${filePath}`);
 		} catch (error) {
-			consola.error(`清理 ${filePath} 失败: ${error.message}`);
+			consola.error(`清理 ${filePath} 失败: ${(error as Error).message}`);
 			errorFiles.push(filePath);
 		}
 	}

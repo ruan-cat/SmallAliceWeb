@@ -318,7 +318,7 @@ export async function main(config: BuildConfig = defaultConfig): Promise<void> {
 		// 输出处理报告
 		outputProcessReport(errorFiles);
 	} catch (error) {
-		consola.error(`处理过程中发生错误: ${error.message}`);
+		consola.error(`处理过程中发生错误: ${(error as Error).message}`);
 		process.exit(1);
 	}
 }

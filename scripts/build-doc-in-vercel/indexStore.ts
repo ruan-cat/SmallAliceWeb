@@ -1,4 +1,4 @@
-import { FileNameIndexObject } from "./dataPreparation";
+import type { FileNameIndexObject } from "./dataPreparation";
 
 /**
  * 文件名称索引对象

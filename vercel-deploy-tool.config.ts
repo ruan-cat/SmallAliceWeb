@@ -14,12 +14,8 @@ export default defineConfig({
 			targetCWD: "./",
 			url: getDomains("drill-doc"),
 			userCommands: ["pnpm -C=./ docs:build"],
-			watchPaths: [
-				"docs/**",
-				"package.json",
-				"scripts/build-doc-in-vercel/**",
-				"vercel-deploy-tool.config.ts",
-			],
+			// @ts-expect-error watchPaths is a newer field not yet in the type definition
+			watchPaths: ["docs/**", "package.json", "scripts/build-doc-in-vercel/**", "vercel-deploy-tool.config.ts"],
 		},
 	],
 });

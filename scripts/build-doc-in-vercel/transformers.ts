@@ -4,7 +4,7 @@ import { consola } from "consola";
 import { convertToHtml, images } from "mammoth";
 import sharp from "sharp";
 import htmlToMd from "html-to-md";
-import { FormatEnum } from "sharp";
+import type { FormatEnum } from "sharp";
 import { ensureTargetDirectoryExists, createTargetFilePath, errorImgUrl } from "./utils";
 
 // 记录已处理的图片类型
@@ -51,7 +51,7 @@ async function processTxtFiles(txtFiles: string[], outputDir: string): Promise<s
 
 			consola.success(`已转换 ${filePath} -> ${targetFilePath}`);
 		} catch (error) {
-			consola.error(`处理 ${filePath} 失败: ${error.message}`);
+			consola.error(`处理 ${filePath} 失败: ${(error as Error).message}`);
 			errorFiles.push(filePath);
 		}
 	}
@@ -105,7 +105,7 @@ async function processDocxFiles(docxFiles: string[], outputDir: string): Promise
 		try {
 			fs.unlinkSync(htmlFilePath);
 		} catch (error) {
-			consola.warn(`无法删除HTML文件 ${htmlFilePath}: ${error.message}`);
+			consola.warn(`无法删除HTML文件 ${htmlFilePath}: ${(error as Error).message}`);
 		}
 	}
 
@@ -257,11 +257,10 @@ async function docx2html(params: {
 
 							consola.debug(`图片处理成功: ${imageName}`);
 						} catch (error) {
-							consola.error(`处理图片失败 [${imageName}]: ${error.message}`);
+							consola.error(`处理图片失败 [${imageName}]: ${(error as Error).message}`);
 							consola.error(`错误的图片格式: ${imageType}`);
 
-							// 记录错误但继续处理
-							errorFilesPath.push(`${filePath} - 图片处理失败 [${imageType}]: ${error.message}`);
+							errorFilesPath.push(`${filePath} - 图片处理失败 [${imageType}]: ${(error as Error).message}`);
 
 							return {
 								src: errorImgUrl,
@@ -273,7 +272,7 @@ async function docx2html(params: {
 							src: `./images/${safeFileName}/${imageName}`,
 						};
 					} catch (error) {
-						consola.error(`图片转换过程中出错: ${error.message}`);
+						consola.error(`图片转换过程中出错: ${(error as Error).message}`);
 						return {
 							src: errorImgUrl,
 						};
@@ -288,7 +287,7 @@ async function docx2html(params: {
 
 		consola.success(`已转换 ${filePath} -> ${targetHtmlPath} (处理了 ${imageCounter - 1} 个图片)`);
 	} catch (error) {
-		consola.error(`处理 ${filePath} 失败: ${error.message}`);
+		consola.error(`处理 ${filePath} 失败: ${(error as Error).message}`);
 		errorFilesPath.push(filePath);
 	}
 }
@@ -316,7 +315,7 @@ async function html2md(params: { filePath: string; errorFilesPath: string[]; out
 
 		consola.success(`已转换 ${filePath} -> ${mdFilePath}`);
 	} catch (error) {
-		consola.error(`将HTML转换为MD失败 ${filePath}: ${error.message}`);
+		consola.error(`将HTML转换为MD失败 ${filePath}: ${(error as Error).message}`);
 		errorFilesPath.push(filePath);
 	}
 }
