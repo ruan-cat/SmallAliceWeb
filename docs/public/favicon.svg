@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Bow upper left wing - upright rounded ellipse, more vertical -->
+  <ellipse cx="10" cy="4" rx="5.5" ry="5.5" fill="#3B82F6" transform="rotate(-15 10 4)"/>
+  <!-- Bow upper right wing - upright rounded ellipse, more vertical -->
+  <ellipse cx="22" cy="4" rx="5.5" ry="5.5" fill="#3B82F6" transform="rotate(15 22 4)"/>
+  <!-- Bow lower left petal - visible, going down-left -->
+  <path d="M14 9 Q10 11 5 15 Q4 16 5 15.5 Q6 14 8 12 Q11 9.5 14 9 Z" fill="#3B82F6"/>
+  <!-- Bow lower right petal - visible, going down-right -->
+  <path d="M18 9 Q22 11 27 15 Q28 16 27 15.5 Q26 14 24 12 Q21 9.5 18 9 Z" fill="#3B82F6"/>
+  <!-- Bow center knot -->
+  <circle cx="16" cy="7.5" r="2.5" fill="#93C5FD"/>
+  <!-- Hair - top and sides -->
+  <path d="M5.5 16C5.5 11 9.5 8 16 8C22.5 8 26.5 11 26.5 16V21C26.5 21 25 23 23.5 23.5C22 24 20 24 16 24C12 24 10 24 8.5 23.5C7 23 5.5 21 5.5 21V16Z" fill="#F9BF1B"/>
+  <!-- Left side bangs -->
+  <path d="M5.5 18C5.5 18 5 20 5 23C5 26 6 28 7.5 28C9 28 9.5 26 9.5 24C9.5 22 9 20 8.5 18Z" fill="#F9BF1B"/>
+  <!-- Right side bangs -->
+  <path d="M26.5 18C26.5 18 27 20 27 23C27 26 26 28 24.5 28C23 28 22.5 26 22.5 24C22.5 22 23 20 23.5 18Z" fill="#F9BF1B"/>
+  <!-- Face - wide and short -->
+  <ellipse cx="16" cy="23" rx="7.5" ry="6" fill="#FDE8D0"/>
+  <!-- Hair bangs -->
+  <path d="M8 15C8 11.5 11 9.5 16 9.5C21 9.5 24 11.5 24 15C24 16 22.5 15 20.5 14.5C18.5 14 17 15.5 16 15.5C15 15.5 13.5 14 11.5 14.5C9.5 15 8 16 8 15Z" fill="#F9BF1B"/>
+</svg>

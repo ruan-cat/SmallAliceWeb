@@ -18,6 +18,8 @@ const userConfig = setUserConfig({
 	description: "天才小爱丽丝，冲鸭！",
 	lang: "zh",
 
+	head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
+
 	themeConfig: {
 		socialLinks: [
 			{
