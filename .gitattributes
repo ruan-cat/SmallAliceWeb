@@ -1,4 +1,44 @@
-# Force the following filetypes to have unix eols, so Windows does not break them
-*.* text eol=lf
+# Force LF line endings for all text files
+* text=auto eol=lf
 
-* text=auto
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.avif binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.ogg binary
+*.flac binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.7z binary
+*.rar binary
+*.bz2 binary
+*.xz binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.psd binary
+*.ai binary
+*.sketch binary
+*.fig binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary

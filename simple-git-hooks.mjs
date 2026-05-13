@@ -12,4 +12,12 @@ export default {
 	 */
 	"commit-msg": "npx --no-install commitlint --edit ${1}",
 	"pre-commit": "npx lint-staged",
+
+	/**
+	 * post-commit：提交完成后将本次提交涉及的文件从 index（LF）写回工作区，
+	 * 修复 Windows 上 AI 编辑器（Cursor / Claude Code 等）使用 CRLF 写文件后
+	 * 残留在工作区的"幽灵 git modified"。
+	 */
+	"post-commit":
+		"git diff HEAD~1..HEAD --diff-filter=ACMR --name-only -z 2>/dev/null | xargs -0 git restore --worktree -- 2>/dev/null || true",
 };

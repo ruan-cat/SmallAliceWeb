@@ -5,14 +5,21 @@ const config = {
 	plugins: ["prettier-plugin-lint-md"],
 	overrides: [
 		{
-			files: "**/*.{js,mjs,cjs,jsx}",
+			files: ["**/*.{js,mjs,cjs,jsx}"],
 			parser: "oxc",
 			plugins: [prettierPluginOxc],
 		},
 		{
-			files: "**/*.{ts,mts,cts,tsx}",
+			files: ["**/*.{ts,mts,cts,tsx}"],
 			parser: "oxc-ts",
 			plugins: [prettierPluginOxc],
+		},
+		{
+			files: [".vscode/extensions.json", ".vscode/settings.json"],
+			options: {
+				parser: "jsonc",
+				trailingComma: "none",
+			},
 		},
 	],
 	printWidth: 120,
@@ -21,7 +28,7 @@ const config = {
 	jsxSingleQuote: true,
 	useTabs: true,
 	tabWidth: 2,
-	endOfLine: "auto",
+	endOfLine: "lf",
 	"space-around-alphabet": true,
 	"space-around-number": true,
 	"no-empty-code-lang": false,
