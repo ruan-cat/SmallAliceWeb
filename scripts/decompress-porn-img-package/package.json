@@ -38,5 +38,10 @@
 		"tsdown": "^0.17.4",
 		"typescript": "^5.9.3",
 		"vitest": "^2.1.9"
+	},
+	"author": {
+		"name": "ruan-cat",
+		"email": "1219043956@qq.com",
+		"url": "https://github.com/ruan-cat"
 	}
 }
