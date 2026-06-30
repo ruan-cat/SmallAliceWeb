@@ -30,7 +30,7 @@ jobs:
       - name: 安装node
         uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          node-version: 24.18.0
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
 
