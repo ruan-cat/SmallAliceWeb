@@ -95,7 +95,7 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 - D:\store\WorkBuddy\2026-6-30-common\2026-7-8-learn-use-LangGraph-with-typescript\2026-07-11-langgraph-typescript-entry-research.md
 - `D:\code\ruan-cat\resume\简历\转型到AI方向\index.md`
 
-## 003 <!-- TODO: --> 安装 grill-me 技能
+## 003 <!-- 已完成 --> 安装 grill-me 技能
 
 1. 运行命令。
 2. 及时在 AI 记忆文档内，记录项目局部技能，说明清楚这批次的技能都是 grill-me 的衍生技能。
