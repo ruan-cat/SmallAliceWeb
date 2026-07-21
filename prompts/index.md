@@ -87,3 +87,25 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
    - 在 preview 模式下，能够正常访问 nuxt 项目。
 2. 对于 `@ruan-cat/drill-doc` 根包 vitepress 文档项目。
    - 能够正常的导入 vitepress 插件，并且能在本地 dev 模式下看到整个网站右下角的按钮。点击打开对话框，即可完成沟通。
+
+## 002 <!-- TODO: 还在仔细设计提示词任务 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
+
+阅读以下文档和建议的 AI 入门计划：
+
+- D:\store\WorkBuddy\2026-6-30-common\2026-7-8-learn-use-LangGraph-with-typescript\2026-07-11-langgraph-typescript-entry-research.md
+- `D:\code\ruan-cat\resume\简历\转型到AI方向\index.md`
+
+## 003 <!-- TODO: --> 安装 grill-me 技能
+
+1. 运行命令。
+2. 及时在 AI 记忆文档内，记录项目局部技能，说明清楚这批次的技能都是 grill-me 的衍生技能。
+
+```bash
+skills add https://github.com/mattpocock/skills `
+  --skill grill-me grilling grill-with-docs domain-modeling wayfinder to-spec `
+  setup-matt-pocock-skills ask-matt `
+  -y `
+  -a claude-code `
+  -a codex `
+  -a cursor `
+```
