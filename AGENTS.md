@@ -5,6 +5,18 @@
   - **阅读方式**：使用此技能前，先读 SKILL.md 了解流程，再根据「案例索引」章节按需读取相关的独立案例文件。
   - **写入方式**：新增经验时，创建独立案例文件，同时在 SKILL.md 的「案例索引」追加摘要。禁止将完整事故正文写入 SKILL.md。
 
+- `grill-me` — Matt Pocom Skills 系列核心技能，引导式代码审查与重构追问。
+  - 路径：`.agents/skills/grill-me/SKILL.md`
+  - 用途：通过追问引导用户思考代码问题，而非直接给出答案。
+  - 衍生技能：
+    - `grilling` — 深入追问和澄清
+    - `grill-with-docs` — 结合文档的审查
+    - `domain-modeling` — 领域建模
+    - `wayfinder` — 路径指引与探索
+    - `to-spec` — 规格化写作
+    - `ask-matt` — Matt 问答助手
+  - 触发时机：当需要帮助用户理清代码思路、引导重构或审查时使用。
+
 - `openspec-apply-change`
   - 路径：`.agents/skills/openspec-apply-change/SKILL.md`
   - 用途：Implement tasks from an OpenSpec change.
