@@ -1,6 +1,6 @@
 # 通用的杂项提示词
 
-## 001 <!-- TODO: 提示词准备好了； --> 开发简单的 AI 对话窗口组件
+## 001 <!-- TODO: 提示词准备好了； Codex正在做 --> 开发简单的 AI 对话窗口组件
 
 我要求你制作一个复杂的项目配置。在 packages 目录内新建两个子包项目。
 
@@ -105,6 +105,24 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 
 - 因为额度的问题，所以这一系列长任务的执行情况是间歇性的。
 - 因为任务优先级问题，所以有时候会中断任务。
+
+### goal 长任务触发提示词
+
+```markdown
+/goal 执行 OpenSpec change：`openspec/changes/build-ai-chat-packages`，完成 `@ruan-cat-drill-doc/ai-vue`、`@ruan-cat-drill-doc/ai-vue-doc`、`@ruan-cat-drill-doc/ai-vitepress-plugins` mock AI 对话能力及 VitePress 接入。
+
+先检查 `AGENT_LONGTASK.md`（若存在）及其 references；读取 `AGENTS.md`、项目 OpenSpec skills、change 的 `proposal.md`、`design.md`、`specs/ai-chat-packages/spec.md`、`tasks.md`、`agent-progress.md`、`agent-findings.md`。刷新 git 状态，保护既有改动；未经授权不得暂存、提交、推送或回滚。
+
+唯一任务源是 `openspec/changes/build-ai-chat-packages/tasks.md`，禁止创建第二套清单。每次只处理一个 task 或 checkpoint：先确认验收标准、文件和验证命令，做最小改动并运行验证；将进度和结果摘要写入 `agent-progress.md`，将失败路径与风险写入 `agent-findings.md`，证据齐全后才标记 `[x]`。
+
+必须先完成试点 `1.1-1.9`。仅在 `pnpm --filter @ruan-cat-drill-doc/ai-vue test` 与 `pnpm --filter @ruan-cat-drill-doc/ai-vue typecheck` 通过并记录证据后，才能开始主体任务。后续依次完成组件库、Nuxt 文档站、VitePress client 插件与根站接入。一期禁止真实 LLM、RAG、Nitro、LangGraph、向量库、`baseUrl`、API key、模型配置和真实网络请求；Nuxt/VitePress SSR shell 必须可构建，AI 交互可 client-only，模块顶层不得访问浏览器 API。
+
+使用探索、编辑、复核子代理；主代理负责工件链、任务选择与最终验收。发现遗漏先以文件级 checkbox 补写 `tasks.md`，必要时同步 `design.md` 或 `specs/`，运行 `openspec validate build-ai-chat-packages --strict` 后再实施。关闭完成的子代理，并运行 `cleanup-agent-team-node-processes` 清理或 dry-run 审计残留 Node 进程。
+
+验证覆盖包级 test/typecheck/build、Nuxt build/preview、VitePress build/dev；优先用 agent-browser 验收按钮、对话框、mock 收发与 console。change 根目录不得散放过程报告；`agent-progress.md` 和 `agent-findings.md` 固定在根目录且只保留摘要索引。
+
+执行至全部任务完成，并通过最终 strict validate、`git diff --check` 与工作区审计。仅在权限问题、破坏性风险、需求冲突或连续 3 次同类失败时停止，输出 BLOCKED 原因、证据和下一步建议。
+```
 
 ## 002 <!-- TODO: 还在仔细设计提示词任务 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
 
