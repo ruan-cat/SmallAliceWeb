@@ -5,6 +5,7 @@ export default defineRuanCatVuepressConfig({
 	base: "/",
 	lang: "zh-CN",
 	description: "天才小爱丽丝，冲鸭！",
+	head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
 	markdown: {
 		headers: {
 			level: [2, 3, 4, 5],
