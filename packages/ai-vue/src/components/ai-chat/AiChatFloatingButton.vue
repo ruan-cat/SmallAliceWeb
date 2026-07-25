@@ -14,27 +14,49 @@ onMounted(() => {
 function toggleDock() {
 	isOpen.value = !isOpen.value;
 }
+
+/** 关闭对话 dock。 */
+function closeDock() {
+	isOpen.value = false;
+}
 </script>
 
 <template>
-	<div v-if="isMounted" class="ai-chat-floating-button">
-		<button
-			type="button"
-			class="ai-chat-floating-button__trigger"
-			:aria-expanded="isOpen"
-			aria-controls="ai-chat-floating-button-dock"
-			@click="toggleDock"
-		>
-			{{ isOpen ? "关闭 AI 对话" : "打开 AI 对话" }}
-		</button>
-
+	<div v-if="isMounted" class="ai-chat-floating-button" :class="{ 'ai-chat-floating-button--open': isOpen }">
 		<aside
 			v-if="isOpen"
 			id="ai-chat-floating-button-dock"
 			class="ai-chat-floating-button__dock"
 			aria-label="AI 对话面板"
 		>
-			<AiChat />
+			<div class="ai-chat-floating-button__dock-shell">
+				<header class="ai-chat-floating-button__header">
+					<div class="ai-chat-floating-button__brand" aria-hidden="true">AI</div>
+					<div class="ai-chat-floating-button__title-group">
+						<h2 class="ai-chat-floating-button__title">AI 对话</h2>
+						<p class="ai-chat-floating-button__status">
+							<span class="ai-chat-floating-button__status-dot" aria-hidden="true"></span>
+							本地助手
+						</p>
+					</div>
+					<button type="button" class="ai-chat-floating-button__close" aria-label="关闭 AI 对话" @click="closeDock">
+						<span aria-hidden="true">×</span>
+					</button>
+				</header>
+				<AiChat />
+			</div>
 		</aside>
+
+		<button
+			type="button"
+			class="ai-chat-floating-button__trigger"
+			:aria-expanded="isOpen"
+			aria-controls="ai-chat-floating-button-dock"
+			:aria-label="isOpen ? '关闭 AI 对话' : '打开 AI 对话'"
+			@click="toggleDock"
+		>
+			<span class="ai-chat-floating-button__trigger-mark" aria-hidden="true">AI</span>
+			<span class="ai-chat-floating-button__trigger-text">AI 对话</span>
+		</button>
 	</div>
 </template>
