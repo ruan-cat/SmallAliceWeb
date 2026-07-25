@@ -2,11 +2,12 @@
 
 ## 1. 当前 checkpoint
 
-- 日期：2026-07-22
+- 日期：2026-07-25
 - Change：`build-ai-chat-packages`
-- 当前状态：正在补齐 OpenSpec 长任务工件，尚未开始实现三包代码。
+- 当前状态：试点 `1.1` 至 `1.9`、主体 `2.1` 至 `2.36.2`、验证任务 `3.1` 至 `3.10` 已完成；最终 strict validate、diff check、工作区审计与 Node 进程 dry-run 审计均已执行。
+- 预检：2026-07-23 已完成探索与独立工件复核；无阻止试点 1.1 的冲突，`1.8` 已补强为 loading、发送禁用和禁网断言，尚未开始实现任务。
 - 唯一任务源：`openspec/changes/build-ai-chat-packages/tasks.md`
-- 当前执行边界：只创建和校验 OpenSpec 工件，不修改 `packages/**`、根 VitePress 源码或用户已有 dirty 文件。
+- 当前执行边界：按 `tasks.md` 从 `2.33` 继续推进；不得跳过未完成任务，不修改、暂存、提交、推送或回滚用户既有改动。
 
 ## 2. 本轮已处理文件
 
@@ -16,6 +17,28 @@
 - `openspec/changes/build-ai-chat-packages/tasks.md`
 - `openspec/changes/build-ai-chat-packages/agent-progress.md`
 - `openspec/changes/build-ai-chat-packages/agent-findings.md`
+- `pnpm-workspace.yaml`（1.1：保留现有 `scripts/*` 与 `onlyBuiltDependencies`，新增 `packages/*`）
+- `packages/ai-vue/package.json`（1.2：最小 ESM manifest，声明 `test`、`typecheck` 与六项开发依赖）
+- `packages/ai-vue/vitest.config.ts`（1.3：Vitest `defineConfig`、jsdom 与 `src/tests/**/*.test.ts` 范围）
+- `packages/ai-vue/tsconfig.json`（1.4：composable、Vue 文件和测试的严格 TypeScript 编译边界）
+- `packages/ai-vue/src/components/ai-chat/types.ts`（1.6：角色、消息、props 与 send emit 类型契约）
+- `packages/ai-vue/src/composables/useMockAiChat.ts`（1.7：纯本地 mock 状态、禁发、延迟回复与 loading）
+- `packages/ai-vue/src/tests/use-mock-ai-chat.test.ts`（1.8：mock 状态转换、禁发、延迟回复与无网络调用验证）
+- `packages/ai-vue/vite.config.ts`（2.1：单入口 ES/CJS library build、dts 与 UI runtime external 边界）
+- `packages/ai-vue/package.json`（2.2：build、组件构建 devDependencies 与 Vue/UI peer 边界）
+- `packages/ai-vue/src/components/ai-chat/AiChat.vue`（2.3：SSR 安全的 mock 对话窗口、消息、输入与 responding UI）
+- `packages/ai-vue/src/components/ai-chat/AiChatFloatingButton.vue`（2.4：mounted 后入口、dock 切换与 client-only 渲染）
+- `packages/ai-vue/src/components/ai-chat/index.ts`（2.5：两个组件与四个类型的公共 barrel 导出）
+- `packages/ai-vue/src/components/index.ts`（2.6：最小重导出 `ai-chat` 组件目录）
+- `packages/ai-vue/src/styles/index.scss`（2.7：唯一公共样式入口，覆盖对话、Element Plus 输入、悬浮 dock 与小屏约束）
+- `packages/ai-vue/vite.config.ts`（2.7.1：library CSS 产物固定为 `style.css`）
+- `packages/ai-vue/package.json`（2.7.2：主入口和 `./styles` 的 dist exports 映射）
+- `packages/ai-vue/src/index.ts`（2.8：样式导入、公共 API、具名 install 与默认 Vue plugin）
+- `packages/ai-vue/src/tests/plugin.test.ts`（2.9：具名 install 与默认 plugin 的精确双组件注册测试）
+- `packages/ai-vue-doc/package.json`（2.10：Nuxt 文档站 manifest 与 prepare 生命周期）
+- `packages/ai-vue-doc/workspace-aliases.ts`（2.11：styles-first 的 ai-vue 源码 aliases）
+- `packages/ai-vitepress-plugins/src/client/index.ts`（2.31：VitePress client Vue plugin 入口，导出具名 `install`、默认 plugin、shell 组件和配置类型；`enabled === false` 时跳过注册）
+- `packages/ai-vitepress-plugins/src/client/style.css`（2.32：仅定义 `.ai-chat-vitepress-shell` 容器层样式，桥接浮层 z-index 变量，不复制组件库内部样式）
 
 ## 3. 验证摘要
 
@@ -31,9 +54,336 @@
   - 结果：确认本轮 OpenSpec 工件为未跟踪新增文件；`prompts/index.md` 仍是既有未提交修改，本轮未触碰。
 - 已运行：`agent-team-node-cleanup.ps1` dry-run
   - 结果：采样到 13 个 Node 进程，`CandidateCount: 0`，未执行停止；台账位于 `%TEMP%\smallalice-agent-node-ledger-20260722-dry-run.json`。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：2026-07-23 预检前通过；本次任务文本细化后将重新运行后再进入 1.1。
+- 已运行：`pnpm -r list --depth -1`
+  - 结果：1.1 后退出码 `0`；根项目和两个既有 `scripts/*` workspace 均被枚举，`ai-vue` 将在 1.2 新建 manifest 后才出现。
+- 已运行：`git diff --check -- pnpm-workspace.yaml`
+  - 结果：1.1 后通过，无输出；独立复核 verdict 为 spec compliant、task quality approved。
+- 已运行：Node JSON 与 manifest 字段白名单校验
+  - 结果：1.2 后通过；`name`、ESM、`test`、`typecheck` 与六项开发依赖符合最小边界，未新增构建、AI SDK、后端或网络配置；独立复核 verdict 为 spec compliant、task quality approved（附一项非阻断的报告表述更正）。
+- 已运行：`pnpm exec biome check packages/ai-vue/vitest.config.ts`
+  - 结果：1.3 后退出码 `0`，输出 `Checked 1 file`；独立复核复验后 verdict 为 spec compliant、task quality approved。
+- 已运行：JSON 字段白名单与 `pnpm exec biome check packages/ai-vue/tsconfig.json`
+  - 结果：1.4 后均通过；初次 Biome 检查仅因空格缩进失败，改为仓库 Tab 格式后复验通过，独立复核 verdict 为 spec compliant、task quality approved。
+- 已运行：`pnpm install --ignore-scripts`
+  - 结果：1.5 后退出码 `0`，耗时 10.6 秒，当前 `packages/ai-vue` importer 完整且无 hard peer dependency error；独立复核 verdict 为 pass。未执行脚本、test 或 typecheck。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/components/ai-chat/types.ts`
+  - 结果：1.6 后通过；独立复核 verdict 为 spec pass、task quality 高。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/composables/useMockAiChat.ts`
+  - 结果：1.7 后通过；禁用网络和浏览器 API 扫描无匹配，独立复核复验后 verdict 为 pass。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue test`
+  - 结果：1.8/1.9 后退出码 `0`；Vitest `1` 个测试文件、`2` 个测试通过（`use-mock-ai-chat.test.ts`），覆盖初始消息、空输入、loading/禁发、延迟回复和 `fetch` 未调用。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue typecheck`
+  - 结果：1.9 后退出码 `0`；`vue-tsc --noEmit` 通过，无输出。
+- 已运行：`pnpm exec biome check packages/ai-vue/vite.config.ts`
+  - 结果：2.1 后通过，输出 `Checked 1 file in 12ms. No fixes applied.`；独立复核 verdict 为 high/pass。实际 build 等待 2.2 声明 Vite 与 dts 依赖后执行。
+- 已运行：manifest JSON/字段白名单与 `pnpm exec biome check packages/ai-vue/package.json`
+  - 结果：2.2 后通过；`build`、构建 devDependencies 和三个 peer 均符合边界，独立复核 verdict 为 pass。安装与 build 分别等待 2.36、3.3。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/components/ai-chat/AiChat.vue`
+  - 结果：2.3 后通过；SSR/禁网静态扫描无命中，独立复核 verdict 为 pass。样式与完整 typecheck/build 分别等待 2.7、2.36/3.3。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/components/ai-chat/AiChatFloatingButton.vue`
+  - 结果：2.4 后通过；mounted/禁浏览器 API 静态检查通过。任务边界已补充并 strict validate 通过，独立复核 verdict 为 pass；圆形、定位和尺寸等待 2.7 公共样式。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/components/ai-chat/index.ts`
+  - 结果：2.5 后通过，实施与独立复核均得到 `Checked 1 file`；barrel 仅具名导出 `AiChat`、`AiChatFloatingButton` 与四个 type-only 契约。复核 verdict 为 spec compliance pass、task quality pass；一项 Minor 已记录到 findings，完整包级 typecheck/build 仍由 3.3 统一执行。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/components/index.ts`
+  - 结果：2.6 后实施与独立复核均通过，输出 `Checked 1 file`；文件只重导出 `./ai-chat`，未重复组件/类型或加入运行时行为。复核 verdict 为 spec compliance pass、task quality pass；完整包级 typecheck/build 仍由 3.3 统一执行。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/styles/index.scss`
+  - 结果：2.7 后确认当前 Biome 处理 0 个 SCSS 文件并报 `No files were processed in the specified paths`；不是通过证据。
+- 已运行：精确 SCSS 静态契约检查
+  - 结果：2.7 修复后通过，覆盖 12 个稳定 class、Element Plus wrapper/inner/focus 选择器、fixed/z-index、小屏 `4.25rem` 高度预留、trigger 焦点回退和无冲突外层输入属性。初次复核的两个 Important 已修复并复审通过；Sass 解析、包级 build 和浏览器视觉验收分别延后至依赖安装后、3.3、3.7。
+- 已运行：`pnpm exec biome check packages/ai-vue/vite.config.ts`
+  - 结果：2.7.1 后通过，输出 `Checked 1 file`。历史 2.1 review diff 与当前文件的字段比对仅显示 `cssFileName: "style"`，独立复审确认 entry、ES/CJS 输出、external 与 dts 均保留；实际 CSS 产物仍由 3.3 build 验证。
+- 已运行：`pnpm exec biome check packages/ai-vue/package.json` 与严格 Node exports 断言
+  - 结果：2.7.2 后均通过；2.2 基线 manifest 删除当前 `exports` 后与当前 JSON 等价，严格断言仅有 `.`、`./styles` 以及 `types`、`import`、`require` 条件键和四个目标路径。独立复审通过；dist 文件存在性仍由 3.3 build 验证。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/index.ts` 与入口静态契约检查
+  - 结果：2.8 后通过；独立复审确认样式仅导入一次、`App` 为 type-only、组件/composable/五类型导出完整、install 以指定名称注册两个组件且默认 plugin 复用同一 install。Minor：实施报告中的普通 `git diff --check` 不覆盖未跟踪文件，独立 `git diff --no-index --check` 已确认无空白错误；完整 typecheck/build 仍由 3.3 执行。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/tests/plugin.test.ts` 与插件测试静态结构检查
+  - 结果：2.9 后通过；独立复审确认具名 install 与默认 plugin 均以精确两项调用序列注册组件，覆盖重复调用、顺序、名称与组件引用。Vitest runtime 未执行且未伪称通过，明确移至 2.36.1（等待 Sass 可用）。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/package.json` 与 manifest 字段白名单断言
+  - 结果：2.10 后通过；独立复审确认 dev/build/preview 和三个 `nuxt prepare` 生命周期脚本、八项必需依赖与无真实 AI/后端依赖。Nuxt prepare、build/preview、浏览器验收分别准确延期到 2.36、3.5、3.7。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/workspace-aliases.ts` 与 alias 静态断言
+  - 结果：2.11 后通过；独立复审确认 `getAiVueAliases`、styles-first 顺序、两条精确源码路径、SSR 安全和未修改既有未跟踪 manifest。Nuxt 解析/build 仍由 3.5 验证。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/nuxt.config.ts`、静态契约检查与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/nuxt.config.ts`
+  - 结果：2.12 后通过；独立复核确认 `shadcn-docs-nuxt` extends、`getAiVueAliases()`、SSR/Nitro 依赖内联、中文 i18n、lucide icon bundle、Windows 条件化 trace 与一期边界均符合要求。`nuxt prepare`、build、preview 仍按 2.36、3.5 延后。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/app.config.ts`、必需字段/一期禁用项静态检查与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/app.config.ts`
+  - 结果：2.13 后通过；独立复核确认 `shadcnDocs` 覆盖站点信息、导航、GitHub 链接、aside、footer、toc 与 search。GitHub 文档外链不构成真实 AI 网络请求；Nuxt 运行时验证仍按 2.36、3.5 延后。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/tailwind.config.js`、Tailwind 静态契约检查与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/tailwind.config.js`
+  - 结果：2.14 后通过；独立复核确认 class dark mode、`dark` safelist、四条 content 扫描路径、最小 shadcn 主题扩展与 `tailwindcss-animate`。实际 Nuxt/Tailwind 构建仍按 2.36、3.5 延后。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/plugins/ai-vue.ts`、导入/安装顺序静态检查与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/plugins/ai-vue.ts`
+  - 结果：2.15 后通过；独立复核确认 Element Plus、CSS、AI Vue default plugin 与公共 styles 均被精确导入，`vueApp.use` 顺序为 Element Plus 后 AI Vue。Nuxt 运行时验证仍按 2.36、3.5 延后。
+- 已运行：Tailwind 入口静态契约、eams 参考逐行比对与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/assets/css/tailwind.css`
+  - 结果：2.16 后通过；独立复核确认 Tailwind/config/source 引用、基础 layer/变量、`step` utility 与 `main.css` 分层均完整，未复制 AI Vue 内部样式。`main.css` 与实际解析分别由 2.17、3.5 完成。
+- 已运行：文档站 CSS 静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/assets/css/main.css`
+  - 结果：2.17 后通过；独立复核确认 demo、preview、code、API table 样式均受 `.ai-vue-docs-*` 语义容器限定，未覆盖 `ai-vue` 或 Element Plus 内部 class。视觉验收仍由 3.7 完成。
+- 已运行：首页 Markdown 静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/content/index.md`
+  - 结果：2.18 后通过；独立复核确认首页使用简体中文说明本地 mock 收发、loading 与禁发，准确排除真实 LLM、RAG、API key、模型、Nitro 路由、向量库和真实网络请求，且未重复快速开始、API 或 demo 内容。Nuxt 渲染仍由 3.5 验证。
+- 已运行：快速开始 Markdown 静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/content/1.getting-started/0.index.md`
+  - 结果：2.19 后通过；独立复核确认安装命令、公共 styles 导入、`app.use(AiVue)` 和带 `<template>` 的 Vue fence 均存在，且未出现真实服务、模型或连接配置。Nuxt 渲染仍由 3.5 验证。
+- 已运行：AiChat 文档静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/content/2.components/1.ai-chat.md`
+  - 结果：2.20 后通过；独立复核确认三项 props、`send(message)`、本地 mock loading/禁发、Nuxt/VitePress client-only 提示、居中表格和 Vue fence 均符合源码契约与文档规范。Nuxt 渲染和浏览器验收仍由 3.5、3.7 验证。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/components/content/AiChatBasicDemo.vue`、SSR/禁网静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/components/content/AiChatBasicDemo.vue`
+  - 结果：2.21 后通过；独立复核确认 `<ClientOnly>` 直接包裹 `<AiChat />`，文档 class 稳定且无 script、浏览器 API 或网络访问。运行时验收仍由 3.5、3.7 验证。
+- 已运行：`pnpm exec biome check "packages/ai-vue-doc/pages/[...slug].vue"`、document-driven/禁用项静态契约与 `git diff --no-index --check -- /dev/null "packages/ai-vue-doc/pages/[...slug].vue"`
+  - 结果：2.22 后通过；独立复核确认页面使用 `useContent()` 和 shadcn-docs-nuxt 组件覆盖 404、全页、标准内容、空内容、目录和页脚，且不存在浏览器 API、真实 AI 或网络访问。Nuxt 路由/渲染仍由 3.5 验证。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/shims/debug.ts`、debug 导出契约与 `git diff --no-index --check -- /dev/null packages/ai-vue-doc/shims/debug.ts`
+  - 结果：2.23 后通过；独立复核确认 default 与具名 debug API 和 eams shim 一致，全部行为为 SSR-safe 内存 no-op。首次断言误把预期 `enabled() === false` 视为失败，修正验证命令后通过，源文件无需变更。Nuxt prepare/build 仍由 2.36、3.5 验证。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/package.json` 与 manifest 字段断言
+  - 结果：2.24 后通过；独立复核确认 private ESM、三项 exports、精确 styles sideEffect、build/test/typecheck 和最小依赖边界，未引入真实 AI 或后端依赖。安装、构建、测试仍按 2.36、3.4 验证。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/vite.config.ts`、双入口/外部化静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/vite.config.ts`
+  - 结果：2.25 后通过；独立复核确认根/client 双入口、ESM/CJS、Vue 与 AI Vue external、Vue/dts plugins，且 Vite 6 的 `cssFileName: "style"` 与 asset 规则稳定映射 `dist/client/style.css`。实际 build 仍由 3.4 验证。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/vitest.config.ts`、Vitest/jsdom 静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/vitest.config.ts`
+  - 结果：2.26 后通过；独立复核确认 Vue plugin、jsdom 与精确 `src/tests/**/*.test.ts` 测试范围，模块无浏览器 API 顶层访问、网络或真实 AI 依赖。实际测试仍由 3.4 验证。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/tsconfig.json`、JSON 字段契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/tsconfig.json`
+  - 结果：2.27 后通过；首轮复核发现 brief/report 编码与占位交接问题，实施代理补齐 UTF-8 工件和验证记录后重复核通过。配置包含 ES2022/ESNext/Bundler、strict/noEmit、Vue SFC/Vitest 测试 include；完整 typecheck 仍由 3.4 验证。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/index.ts`、type-only/禁用项静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/index.ts`
+  - 结果：2.28 后通过；独立复核确认根入口仅导出 `AiChatVitePressPluginOptions` 类型，无运行时、样式、浏览器、网络或真实 AI 依赖。2.29 类型文件与 3.4 build 按任务顺序保留。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/types.ts`、最小字段/禁用项静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/client/types.ts`
+  - 结果：2.29 后通过；独立复核确认 type-only 选项仅含 `enabled` 与 `containerAttributes`，无 baseUrl、凭据、模型、LLM、RAG、网络或浏览器顶层访问。调用方仅为根入口 type re-export。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/components/AiChatVitePressShell.vue`、mounted/禁用项静态契约与 `git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/client/components/AiChatVitePressShell.vue`
+  - 结果：2.30 后通过；独立复核确认 `onMounted` guard 后才渲染 `AiChatFloatingButton`，SSR 首屏仅输出稳定 `.ai-chat-vitepress-shell`，无浏览器、网络或真实 AI 配置。client index 与运行时验收仍按 2.31、3.4、3.7 保留。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/index.ts`
+  - 结果：2.31 后通过，输出 `Checked 1 file`；文件为新建 client plugin 入口。
+- 已运行：`Select-String` 静态契约检查
+  - 结果：2.31 后通过；确认 `export function install`、`options.enabled === false`、`app.component("AiChatVitePressShell", AiChatVitePressShell)`、默认导出、shell 组件导出和配置类型导出均存在；禁用项扫描 `window|document|localStorage|navigator|fetch|XMLHttpRequest|baseUrl|apiKey|API key|model|RAG|Nitro|LangGraph|vector` 无输出。
+- 已运行：`git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/client/index.ts`
+  - 结果：2.31 后退出码 `1` 且无输出；对新文件表示存在内容差异但未发现空白错误。
+- 子代理：2.31 编辑子代理完成源文件与 `.superpowers/sdd/task-2.31-report.md`；探索与两个复核子代理均因超时中断，主代理已用独立命令复核并保留流程风险记录。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/style.css`
+  - 结果：2.32 后通过，输出 `Checked 1 file`。
+- 已运行：VitePress shell 样式静态契约与禁用项扫描
+  - 结果：2.32 后通过；`^\.ai-chat-vitepress-shell` 命中第 1 行，精确扫描 `ai-chat-floating-button|ai-chat__|\.ai-chat[\s,{]|window|document|localStorage|navigator|fetch|XMLHttpRequest|baseUrl|apiKey|model|RAG|Nitro|LangGraph|vector` 无输出。第一次扫描使用 `\.ai-chat\b` 误命中 `.ai-chat-vitepress-shell`，已修正为精确内部组件选择器模式。
+- 已运行：`git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/client/style.css`
+  - 结果：2.32 后退出码 `1` 且无输出；对新文件表示存在内容差异但未发现空白错误。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/tests/plugin.test.ts`
+  - 结果：2.33 后通过，输出 `Checked 1 file`。
+- 已运行：`Select-String` 静态契约检查
+  - 结果：2.33 后通过；确认 `import { describe, test } from "vitest"`、`install(app)`、默认 plugin install、`enabled: false` 与 `AiChatVitePressShell` 断言均存在；禁用项扫描 `fetch|XMLHttpRequest|window|document|localStorage|navigator|baseUrl|apiKey|API key|model|RAG|Nitro|LangGraph|vector` 无输出。
+- 已运行：`git diff --no-index --check -- /dev/null packages/ai-vitepress-plugins/src/tests/plugin.test.ts`
+  - 结果：2.33 后退出码 `1` 且无输出；对新文件表示存在内容差异但未发现空白错误。
+- 子代理：2.33 只读复核子代理超时未返回，已关闭；主代理已用独立命令完成静态验收，运行时测试仍按 3.4 统一执行。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：补入 2.33.1 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm exec biome check package.json`
+  - 结果：2.33.1 后通过，输出 `Checked 1 file`。
+- 已运行：Node 根 manifest 字段断言
+  - 结果：2.33.1 后通过；`devDependencies["@ruan-cat-drill-doc/ai-vitepress-plugins"] === "workspace:*"`。
+- 已运行：`git diff --check -- package.json`
+  - 结果：2.33.1 后通过，无输出。
+- 已运行：禁用项扫描
+  - 结果：2.33.1 后仅命中根既有脚本 `git:fetch`，属于 Git 脚本名称误报，不是 AI 运行时请求、真实 LLM 或后端配置。
+- 已运行：`pnpm exec biome check docs/.vitepress/theme/index.ts`
+  - 结果：2.34 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- docs/.vitepress/theme/index.ts`
+  - 结果：2.34 后通过，无输出。
+- 已运行：theme 接入静态契约检查
+  - 结果：2.34 后通过；确认导入 `@ruan-cat-drill-doc/ai-vitepress-plugins/client` 与 `client/style.css`、保留 `defineRuancatPresetTheme()` 生成的 `baseTheme`、包装 `Layout` 的 `layout-bottom` 注入 `AiChatVitePressShell`、调用 `baseTheme.enhanceApp?.(context)` 后再 `context.app.use(aiChatVitePressPlugin)`。
+- 已运行：theme 禁用项扫描
+  - 结果：2.34 后 `window|document|localStorage|navigator|fetch|XMLHttpRequest|baseUrl|apiKey|API key|model|RAG|Nitro|LangGraph|vector` 无输出。
+- 子代理：2.34 只读复核子代理 120 秒超时未返回，已关闭；主代理已用独立命令完成静态验收，VitePress 运行时解析与浏览器交互仍按 3.6、3.7 验证。
+- 已运行：`pnpm exec biome check docs/.vitepress/theme/style.css`
+  - 结果：2.35 后失败；错误位于文件既有注释空格和旧 gradient 长行，不在本次 AI block diff 中，未执行全文件格式化。
+- 已运行：`pnpm exec biome lint docs/.vitepress/theme/style.css`
+  - 结果：2.35 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- docs/.vitepress/theme/style.css`
+  - 结果：2.35 后通过，无输出。
+- 已运行：根站 AI 样式静态契约与越界扫描
+  - 结果：2.35 后通过；新增 `.ai-chat-vitepress-shell` 与 `--ai-chat-vitepress-z-index`，精确扫描 `ai-chat-floating-button|ai-chat__|\.ai-chat[\s,{]|window|document|localStorage|navigator|fetch|XMLHttpRequest|baseUrl|apiKey|model|RAG|Nitro|LangGraph|vector` 无输出。
+- 已运行：`git diff -- docs/.vitepress/theme/style.css` 与 `git diff --numstat -- docs/.vitepress/theme/style.css`
+  - 结果：2.35 后确认仅在文件末尾新增 13 行 AI Chat 兜底样式，未重写现有主题样式。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：2.35 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm install --ignore-scripts`
+  - 结果：2.36 后退出码 `0`，耗时约 26.6 秒；输出 `Scope: all 6 workspace projects`，新增根 devDependency 链接 `@ruan-cat-drill-doc/ai-vitepress-plugins 0.0.0 <- packages\ai-vitepress-plugins`，无 hard peer dependency error。保留 peer/deprecated warning 作为后续风险。
+- 已运行：`pnpm -r list --depth -1`
+  - 结果：2.36 后退出码 `0`；枚举根项目、`ai-vitepress-plugins`、`ai-vue`、`ai-vue-doc` 和两个既有 `scripts/*` workspace，共 6 个 workspace project。
+- 已运行：根 node_modules 链接检查
+  - 结果：2.36 后 `node_modules\@ruan-cat-drill-doc\ai-vitepress-plugins` 存在；`ai-vue` 未直接链接到根是预期，因为它是插件包依赖，不是根直接依赖。
+- 已运行：`git diff --check -- package.json pnpm-lock.yaml pnpm-workspace.yaml`
+  - 结果：2.36 后通过，无输出。
+- 已运行：lockfile 与 ignore 状态检查
+  - 结果：`pnpm-lock.yaml` 存在且被 `.gitignore` 忽略，`git ls-files -- pnpm-lock.yaml` 无输出；`Select-String` 确认 lockfile 中存在 `@ruan-cat-drill-doc/ai-vitepress-plugins`、`@ruan-cat-drill-doc/ai-vue`、`@ruan-cat-drill-doc/ai-vue-doc` 记录。
+- 子代理：2.36 探索子代理 120 秒超时未返回，已关闭；主代理已用 install 与独立命令完成验收。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue test`
+  - 结果：2.36.1 首次运行失败；`use-mock-ai-chat.test.ts` 的 2 个测试通过，`plugin.test.ts` 收集失败，报错 `Install @vitejs/plugin-vue to handle .vue files`，定位到 `AiChat.vue` import analysis。根因是 `packages/ai-vue/vitest.config.ts` 尚未配置 Vue plugin，不是 SCSS 解析问题。
+- 已检查：`packages/ai-vue/package.json` 与 `pnpm-lock.yaml`
+  - 结果：`@vitejs/plugin-vue` 已在 `ai-vue` devDependencies 和 lockfile 中，不需要新增依赖；只需修改 `vitest.config.ts`。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：拆分 2.36.1/2.36.2 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm exec biome check packages/ai-vue/vitest.config.ts`
+  - 结果：2.36.1 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vue/vitest.config.ts`
+  - 结果：2.36.1 后通过，无输出。
+- 已运行：`packages/ai-vue/vitest.config.ts` 静态契约与禁用项扫描
+  - 结果：2.36.1 后通过；确认 `@vitejs/plugin-vue`、`plugins: [vue()]`、`environment: "jsdom"` 和原测试范围保留，禁用项扫描无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue test`
+  - 结果：2.36.1 修复后退出码 `0`；Vitest `2` 个测试文件、`4` 个测试通过。输出包含 Dart Sass legacy JS API deprecation warning，但不影响通过。
+- 已运行：`pnpm exec biome check packages/ai-vue/src/tests/plugin.test.ts`
+  - 结果：2.36.2 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vue/src/tests/plugin.test.ts`
+  - 结果：2.36.2 后通过，无输出。
+- 已运行：`packages/ai-vue/src/tests/plugin.test.ts` 静态契约与禁用项扫描
+  - 结果：2.36.2 后通过；确认 `import { describe, test } from "vitest"`、具名 `install(app)`、默认 `plugin.install(app)`、`AiChat` 与 `AiChatFloatingButton` 注册断言均存在，禁用项扫描无输出。
+- 已运行：`Select-String` 进度摘要覆盖检查
+  - 结果：3.1 后通过；`agent-progress.md` 覆盖当前状态、`2.33`、`2.33.1`、`2.34`、`2.35`、`2.36`、`2.36.1`、`2.36.2`、已运行命令、结果与下一步。
+- 已运行：`git diff --check -- openspec/changes/build-ai-chat-packages/agent-progress.md`
+  - 结果：3.1 后通过，无输出。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：3.1 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`Select-String` findings 覆盖检查
+  - 结果：3.2 后通过；`agent-findings.md` 覆盖 SSR、依赖、浏览器、遗漏任务、失败路径、`2.33` 至 `2.36.1` 风险，以及真实 AI、`baseUrl`、API key、Nitro、LangGraph、RAG 禁用边界。
+- 已运行：`git diff --check -- openspec/changes/build-ai-chat-packages/agent-findings.md`
+  - 结果：3.2 后通过，无输出。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：3.2 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue test`
+  - 结果：3.3 首次验证中退出码 `0`；Vitest `2` 个测试文件、`4` 个测试通过，输出 Dart Sass legacy JS API deprecation warning。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue typecheck`
+  - 结果：3.3 首次验证中退出码 `0`；`vue-tsc --noEmit` 通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue build`
+  - 结果：3.3 首次验证中失败；Vite build 报 `Install @vitejs/plugin-vue to handle .vue files`，定位到 `AiChatFloatingButton.vue` import analysis。根因是 `packages/ai-vue/vite.config.ts` 未配置 Vue plugin。
+- 已运行：`pnpm exec biome check packages/ai-vue/vite.config.ts`
+  - 结果：3.3 配置修复后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vue/vite.config.ts`
+  - 结果：3.3 配置修复后通过，无输出。
+- 已运行：`packages/ai-vue/vite.config.ts` 静态契约与禁用项扫描
+  - 结果：3.3 配置修复后通过；确认 `@vitejs/plugin-vue`、`plugins: [vue(), dts()]`、原 `entry`、`cssFileName: "style"` 和 external 边界保留，禁用项扫描无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue build`
+  - 结果：3.3 配置修复后退出码 `0`；产出 `dist/style.css`、`dist/index.js`、`dist/index.cjs` 和 dts 声明。输出包含 default/named exports 混用 warning，不影响构建通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue test`
+  - 结果：3.3.1 后退出码 `0`；Vitest `2` 个测试文件、`4` 个测试通过。输出包含 Dart Sass legacy JS API deprecation warning，不影响通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue typecheck`
+  - 结果：3.3.1 后退出码 `0`；`vue-tsc --noEmit` 通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue build`
+  - 结果：3.3.1 后退出码 `0`；产出 `dist/style.css`、`dist/index.js`、`dist/index.cjs` 和 dts 声明。输出包含 default/named exports 混用 warning，不影响通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins test`
+  - 结果：3.4 首次验证中退出码 `0`；Vitest `1` 个测试文件、`3` 个测试通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins build`
+  - 结果：3.4 首次验证中退出码 `0`，但未生成 package exports 声明的 `dist/client/style.css`。
+- 已运行：插件包 dist 产物检查
+  - 结果：3.4 首次验证后 `dist/index.js`、`dist/client/index.js`、dts 存在，但 `Test-Path packages/ai-vitepress-plugins/dist/client/style.css` 为 `False`；需修复 client 入口样式导入后重跑 build。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/index.ts`
+  - 结果：3.4 修复后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vitepress-plugins/src/client/index.ts`
+  - 结果：3.4 修复后通过，无输出。
+- 已运行：`packages/ai-vitepress-plugins/src/client/index.ts` 静态契约与禁用项扫描
+  - 结果：3.4 修复后通过；确认 `import "./style.css"`、shell 注册、`enabled === false` 保留，禁用项扫描无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins test`
+  - 结果：3.4.1 后退出码 `0`；Vitest `1` 个测试文件、`3` 个测试通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins build`
+  - 结果：3.4.1 后退出码 `0`；产出 `dist/client/style.css`、根/client ESM/CJS 和 dts。输出包含空根入口 chunk 与 default/named exports 混用 warning，不影响通过。
+- 已运行：插件包 CSS 产物检查
+  - 结果：3.4.1 后 `Test-Path packages/ai-vitepress-plugins/dist/client/style.css` 为 `True`，文件长度 171 bytes；`git diff --check` 对 client index 与 package manifest 通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue-doc build`
+  - 结果：3.5 首次验证失败；`prebuild` 的 `nuxt prepare` 生成类型成功，但 `nuxt build` 在 `pages/[...slug].vue` 报 `Error parsing JavaScript expression: Unexpected token`，定位到 `:class="[config.main.padded && "container"]"` 嵌套引号。
+- 已运行：`pnpm exec biome check "packages/ai-vue-doc/pages/[...slug].vue"`
+  - 结果：3.5 修复后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- "packages/ai-vue-doc/pages/[...slug].vue"`
+  - 结果：3.5 修复后通过，无输出。
+- 已运行：`packages/ai-vue-doc/pages/[...slug].vue` 静态契约与禁用项扫描
+  - 结果：3.5 修复后通过；`container`、`lg:grid...`、`aside`、`md:top...` 字符串均改为表达式内部单引号，禁用项扫描无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue-doc build`
+  - 结果：3.5.1 后退出码 `0`；Nuxt client/server/Nitro build 完成，输出 `Build complete` 和 `You can preview this build using node .output/server/index.mjs`。存在非阻断 warning：`@nuxt/icon` 需要 Nuxt 4、VueUse PURE 注释、chunk size、nuxt-og-image 插件包装/字体解析、Nitro virtual storage external、`@nuxt/image` sharp win32 二进制、`@nuxt/scripts` 构建期下载 umami 脚本。
+- 已运行：Nuxt preview 启动与 HTTP 验收
+  - 结果：使用 `$env:NITRO_PORT='4175'; $env:NITRO_HOST='127.0.0.1'; pnpm --filter @ruan-cat-drill-doc/ai-vue-doc preview` 成功启动，日志 `Listening on http://127.0.0.1:4175`。`Invoke-WebRequest http://127.0.0.1:4175/` 返回 `status=200 length=462970 hasTitle=True`；`/components/ai-chat` 返回 `status=200 length=510411 hasAiChat=True hasDemo=False`，`hasDemo=False` 符合 `<ClientOnly>` SSR shell 预期。
+- 已运行：Nuxt preview 进程清理
+  - 结果：端口 `4175` 监听 pid `15388`（node）已停止，随后端口不再监听。preview session 最终因强制停止返回非 0，用作服务清理结果，不代表 SSR shell 验收失败。
+- 已运行：`pnpm exec vitepress build docs`
+  - 结果：3.6 首次验证失败；client/server bundle 已构建并生成 llms 文件，但 rendering pages 阶段报 `src.replace is not a function`，堆栈位于 Vue SSR comment 渲染。后续检查确认 `defineRuancatPresetTheme()` 返回 `extends: Teek` 且自身无 `Layout`，当前 theme 包装渲染了 `baseTheme.Layout` 的 undefined。
+- 已运行：`pnpm exec biome check docs/.vitepress/theme/index.ts`
+  - 结果：3.6 修复后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- docs/.vitepress/theme/index.ts`
+  - 结果：3.6 修复后通过，无输出。
+- 已运行：root theme 静态契约与禁用项扫描
+  - 结果：3.6 修复后通过；确认 `baseTheme.Layout ?? baseTheme.extends?.Layout`、`h(BaseLayout)`、`layout-bottom`、`AiChatVitePressShell`、`baseTheme.enhanceApp` 与 `context.app.use(aiChatVitePressPlugin)`，禁用项扫描无输出。
+- 已运行：`pnpm exec vitepress build docs`
+  - 结果：3.6.1 后退出码 `0`，build complete in `88.32s`；未运行会触发 `predocs:build` 的 `pnpm run docs:build`。输出包含非阻断 warning：缺少 CHANGELOG/prompts 索引、iconfont 构建期未解析、VueUse PURE 注释、chunk size、llms 插件处理 287 个 Markdown 文件。
+- 已运行：`pnpm exec vitepress dev docs --port 4176 --host 127.0.0.1`
+  - 结果：3.6.1 后 dev server 启动成功；VitePress 实际监听 `http://127.0.0.1:8080/`。`Invoke-WebRequest http://127.0.0.1:8080/` 返回 `status=200 length=516`。dev 模式初始 HTML 是轻量 SPA shell，标题和 AI shell 挂载交给 3.7 浏览器验收。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：补入 3.6.3.1/3.6.3.2 文件级 checkpoint 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm install --ignore-scripts`
+  - 结果：3.6.3.2 后退出码 `0`；`packages/ai-vue-doc` 直依赖 `@nuxt/icon 1.15.0`，无 hard peer dependency error。保留既有 peer/deprecated warning。
+- 已运行：`pnpm why @nuxt/icon --filter @ruan-cat-drill-doc/ai-vue-doc`
+  - 结果：确认 `ai-vue-doc` 直接解析 `@nuxt/icon 1.15.0`，同时 `shadcn-docs-nuxt 1.2.2` 仍有传递依赖 `@nuxt/icon 2.3.1`；Nuxt build 实际使用直接依赖，`@nuxt/icon` Nuxt 4 不兼容 warning 消失。
+- 已运行：`pnpm exec biome check packages/ai-vue-doc/package.json`
+  - 结果：3.6.3.1 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vue-doc/package.json pnpm-lock.yaml openspec/changes/build-ai-chat-packages/tasks.md`
+  - 结果：通过，无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vue-doc build`
+  - 结果：3.6.2 至 3.6.4 修复后退出码 `0`；`nuxt prepare` 与 `nuxt build` 均通过，输出 `Nuxt Icon client bundle consist of 1 icons`、`icons.mjs` 和 `Build complete`。保留非阻断 warning：VueUse PURE 注释、chunk size、nuxt-og-image 字体/插件包装、Nitro virtual storage external、`@nuxt/image` sharp win32 二进制。
+- 已运行：Nuxt preview 浏览器验收（Chrome DevTools，`http://127.0.0.1:4175/components/ai-chat`）
+  - 结果：页面出现可操作 `AI 对话` region；输入 `Nuxt icon 修复后验收消息` 后显示用户消息和 `这是本地 mock 回复：Nuxt icon 修复后验收消息`；console `error/warn/issue` 为空。
+- 已运行：Nuxt preview 非 AI 页 console 对照（Chrome DevTools，`http://127.0.0.1:4175/getting-started`）
+  - 结果：console `error/warn/issue` 为空；3.6.3 前该页也复现 `Hydration completed but contains mismatches`，3.6.3.1/3.6.3.2 后已消失。
+- 已运行：Nuxt preview 网络请求审计（Chrome DevTools，`xhr/fetch/websocket`）
+  - 结果：仅有本地 `_i18n`、`/api/_content/query/...` 与 Nuxt build meta 请求；`/components` 相关 Content query 均为 `200`，未出现 `Document not found` 404，也未出现真实 AI/LLM API 请求。
+- 已运行：agent-browser VitePress 打开验收（`http://127.0.0.1:8080/`）
+  - 结果：`agent_browser_open` 等待 300 秒后超时，未取得可用页面快照；因 Nuxt 与 VitePress 均已复现 agent-browser 长时间超时，本轮改用 Chrome DevTools 继续验收，并在 findings 保留失败路径。
+- 已运行：VitePress dev 初次浏览器检查（Chrome DevTools，`http://127.0.0.1:8080/`）
+  - 结果：页面标题为 `小爱丽丝官网`，可见 `打开 AI 对话` 入口，AI 插件资源 `/packages/ai-vitepress-plugins/dist/client/index.js`、`/packages/ai-vitepress-plugins/dist/client/style.css`、`/packages/ai-vue/dist/index.js` 均为 `200`；但入口按钮退化为普通文本按钮，DOM rect 为 `x=0,y=925,width=73.609375,height=24`，未加载组件库公共浮层样式，已补 `3.6.5` 文件级 checkpoint 后修复。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：补入 `3.6.5` 后通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/index.ts`
+  - 结果：3.6.5 后通过，输出 `Checked 1 file`。
+- 已运行：`git diff --check -- packages/ai-vitepress-plugins/src/client/index.ts openspec/changes/build-ai-chat-packages/tasks.md`
+  - 结果：3.6.5 后通过，无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins test`
+  - 结果：3.6.5 后退出码 `0`；Vitest `1` 个测试文件、`3` 个测试通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins typecheck`
+  - 结果：3.6.5 后退出码 `0`；`vue-tsc --noEmit` 通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins build`
+  - 结果：3.6.5 后退出码 `0`；`dist/client/style.css` 为 `4.61 kB`，包含 `ai-chat-floating-button`、`ai-chat__*` 与 `ai-chat-vitepress-shell`，确认 VitePress 插件 CSS 产物已吸收组件库公共样式。输出仍包含根入口 empty chunk 与 default/named exports 混用 warning，不影响通过。
+- 已运行：VitePress dev 对话面板检查（Chrome DevTools）
+  - 结果：样式修复后 `打开 AI 对话` 入口为 `56x56` 圆形按钮并固定在右下角；点击后出现 `AI 对话面板` 与 `AI 对话` region，但面板 DOM 没有真实可见 `el-input` 输入框，只有 `发送` 文本，定位到根站未安装 Element Plus，已补 `3.6.6`。
+- 已运行：`pnpm install --ignore-scripts`
+  - 结果：3.6.6 后退出码 `0`；无 hard peer dependency error，保留既有 peer/deprecated warning。
+- 已运行：`pnpm exec biome check packages/ai-vitepress-plugins/src/client/index.ts packages/ai-vitepress-plugins/src/tests/plugin.test.ts packages/ai-vitepress-plugins/package.json`
+  - 结果：3.6.6 首次因导入排序失败，修复后通过，输出 `Checked 3 files`。
+- 已运行：`git diff --check -- packages/ai-vitepress-plugins/src/client/index.ts packages/ai-vitepress-plugins/src/tests/plugin.test.ts packages/ai-vitepress-plugins/package.json openspec/changes/build-ai-chat-packages/tasks.md`
+  - 结果：3.6.6 后通过，无输出。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins test`
+  - 结果：3.6.6 后退出码 `0`；Vitest `1` 个测试文件、`3` 个测试通过，覆盖启用时 `app.use(ElementPlus)`、注册 `AiChatVitePressShell`，以及 `enabled: false` 时跳过安装和注册。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins typecheck`
+  - 结果：3.6.6 后退出码 `0`；`vue-tsc --noEmit` 通过。
+- 已运行：`pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins build`
+  - 结果：3.6.6 后退出码 `0`；`dist/client/style.css` 为 `362.14 kB`，包含 Element Plus CSS、`ai-chat-floating-button` 与 `ai-chat__*`；`dist/client/index.js` 为 `1,430.36 kB`，因 Element Plus 运行时被打包而显著增大。保留 VueUse PURE 注释、根入口 empty chunk 与 default/named exports 混用 warning，不影响通过。
+- 已运行：`pnpm why element-plus --filter @ruan-cat-drill-doc/ai-vitepress-plugins`
+  - 结果：确认插件包 production dependency 解析到 `element-plus 2.14.3`。
+- 已运行：3.6.6 禁用项扫描
+  - 结果：`packages/ai-vitepress-plugins/src/client/index.ts`、`src/tests/plugin.test.ts` 与 `package.json` 中未出现 `fetch`、`XMLHttpRequest`、浏览器顶层 API、`baseUrl`、API key、模型配置、RAG、Nitro、LangGraph 或 vector 命中。
+- 已运行：Nuxt preview 与 VitePress dev 服务重启
+  - 结果：`pnpm --filter @ruan-cat-drill-doc/ai-vue-doc preview` 监听 `http://127.0.0.1:4175`；`pnpm exec vitepress dev docs --port 8080 --host 127.0.0.1` 监听 `http://127.0.0.1:8080/`。
+- 已运行：VitePress dev 浏览器验收（Chrome DevTools，`http://127.0.0.1:8080/`）
+  - 结果：页面标题 `小爱丽丝官网`；`打开 AI 对话` 按钮可见；点击后出现 `AI 对话面板`、`AI 对话` region、真实 `textbox "请输入消息"` 与 `发送` 按钮；输入 `VitePress mock 验收消息` 后发送按钮可用，点击后追加用户消息与 `这是本地 mock 回复：VitePress mock 验收消息`，输入清空且发送按钮回到禁用。
+- 已运行：VitePress dev console/network 审计（Chrome DevTools）
+  - 结果：`xhr/fetch/websocket/preflight` 列表为空，未出现真实 AI/LLM API 请求；AI 插件资源 `packages/ai-vitepress-plugins/dist/client/index.js`、`dist/client/style.css`、`packages/ai-vue/dist/index.js` 均为 `200`。console 只有 `favicon.ico [404]`；另有既有主题图标外部请求 `https://api.iconify.design/simple-icons/github.svg [200]`，不是 AI 对话请求。
+- 已运行：Nuxt preview 浏览器验收（Chrome DevTools，`http://127.0.0.1:4175/components/ai-chat`）
+  - 结果：页面标题 `AiChat 对话组件 - AI Vue`；`AI 对话` region 中有真实 `textbox "请输入消息"` 与 `发送` 按钮；输入 `Nuxt final mock 验收消息` 后发送按钮可用，点击后追加用户消息与 `这是本地 mock 回复：Nuxt final mock 验收消息`，输入清空且发送按钮回到禁用。
+- 已运行：Nuxt preview console/network 审计（Chrome DevTools）
+  - 结果：console `error/warn/issue` 为空；`xhr/fetch/websocket/preflight` 仅有本地 `_i18n`、`/api/_content/query/...` 与 `_nuxt/builds/meta/...` 请求，均为 `200`；资源审计未发现 OpenAI、Anthropic、AI API、`baseUrl`、chat completions、LLM、RAG、vector 或 model 请求，外部请求为空。
+- 已运行：3.8 禁用项静态复核
+  - 结果：`rg` 复核本 change 相关源码、配置和根站 theme，未发现真实 OpenAI/Anthropic/API key/`baseUrl`/chat completions/embeddings/LangGraph/vector/RAG 请求入口；未发现 `server/api`、`routes`、Nitro route 或 `.server`/`.api` 文件；生产源码未命中 `fetch`、`XMLHttpRequest`、`window`、`document`、`localStorage` 或 `navigator`。命中项均为边界说明、测试 spy、Nuxt SSR external 配置或 Vue 模板关键字，已写入 findings。
+- 已运行：3.9 任务清单复核
+  - 结果：`openspec validate build-ai-chat-packages --strict` 通过；`git diff --check -- openspec/changes/build-ai-chat-packages/tasks.md openspec/changes/build-ai-chat-packages/agent-progress.md openspec/changes/build-ai-chat-packages/agent-findings.md` 通过；`tasks.md` 中除 `3.9` 与最终 `3.10` 外无未完成 checkbox，`3.9` 已在证据齐全后勾选。
+- 已运行：`openspec status --change build-ai-chat-packages --json`
+  - 结果：通过；schema 为 `spec-driven`，proposal、design、specs、tasks 四项工件均为 `done`，`isComplete: true`。
+- 已运行：`openspec instructions apply --change build-ai-chat-packages --json`
+  - 结果：通过；勾选 `3.10` 前进度为 `70/71`，唯一剩余任务为 `3.10` 最终验证记录。
+- 已运行：`openspec validate build-ai-chat-packages --strict`
+  - 结果：通过，输出 `Change 'build-ai-chat-packages' is valid`。
+- 已运行：`git diff --check`
+  - 结果：通过，无输出。
+- 已运行：`git status --short --untracked-files=all`
+  - 结果：工作区仍为未暂存状态；包含本 change 的根站 theme、OpenSpec 工件、根 `package.json`、`pnpm-workspace.yaml` 修改，以及 `packages/ai-vue`、`packages/ai-vue-doc`、`packages/ai-vitepress-plugins` 新增文件；未执行暂存、提交、推送或回滚。
+- 已运行：`Select-String -LiteralPath 'openspec\changes\build-ai-chat-packages\tasks.md' -Pattern '- \[ \]'`
+  - 结果：勾选 `3.10` 前仅返回 `3.10` 一项未完成 checkbox。
+- 已运行：`agent-team-node-cleanup.ps1` dry-run
+  - 结果：台账位于 `%TEMP%\smallalice-agent-node-ledger-20260725-final-dry-run.json`；采样 `42` 个 Node 进程，`CandidateCount: 0`，`AuditOnlyCount: 42`，`RemainingCandidatePids` 为空，未执行停止操作。
+- 已运行：端口残留复核
+  - 结果：`Get-NetTCPConnection -LocalPort 8080,4175` 无输出；Nuxt preview 与 VitePress dev 验收端口未发现残留监听。
 
 ## 4. 下一步
 
-1. 让复核子代理检查工件完整性。
-2. 后续真正实施时，从 `tasks.md` 的试点批次 1.1 开始，不跳任务、不提前勾选。
-3. 实现阶段每完成一个任务后，先运行对应验证，再更新本文件与 `tasks.md`。
+1. 当前 change 的 `tasks.md` 已全部完成；如需继续推进，应先由用户决定是否进入 OpenSpec archive。
+2. 未经授权仍不得暂存、提交、推送或回滚本轮工作区改动。
