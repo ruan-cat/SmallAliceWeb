@@ -14,7 +14,11 @@
 			"import": "./dist/client/index.js",
 			"require": "./dist/client/index.cjs"
 		},
-		"./client/style.css": "./dist/client/style.css"
+		"./client/style.css": {
+			"types": "./client-style.d.ts",
+			"import": "./dist/client/style.css",
+			"default": "./dist/client/style.css"
+		}
 	},
 	"sideEffects": [
 		"./dist/client/style.css"
