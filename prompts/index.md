@@ -1,6 +1,6 @@
 # 通用的杂项提示词
 
-## 001 <!-- TODO: 提示词准备好了； Codex正在做 --> 开发简单的 AI 对话窗口组件
+## 001 <!-- 已完成 提示词准备好了； Codex正在做 --> 开发简单的 AI 对话窗口组件
 
 我要求你制作一个复杂的项目配置。在 packages 目录内新建两个子包项目。
 
@@ -123,6 +123,26 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 
 执行至全部任务完成，并通过最终 strict validate、`git diff --check` 与工作区审计。仅在权限问题、破坏性风险、需求冲突或连续 3 次同类失败时停止，输出 BLOCKED 原因、证据和下一步建议。
 ```
+
+---
+
+设计基于 turbo 的串行调度
+我们最终的交付产品是根包的 vitepress 文档，可是我们现在的 docs:build 一定是失败的，因为在生产环境的 vercel 内，build 的时候没有做好依赖调度。
+在生产环境内，是能够拿到全部的仓库子包的代码的，问题在于 build 的时候没有使用 turbo 实现依赖调度。所以构建失败。
+我要求这样改动我们的 ci 流水线和 vercel 生产环境的调度：
+
+1. 在 根包 package.json 内，新建一个 build 命令，这个 build 命令最终的目的是实现 vitepress 文档的构建。需要什么子包的调度就一律用 turbo 完成调度。你应该在 turbo.json 内实现基于依赖拓扑结构的命令匹配和统一调度，用 turbo.json 实现优雅的子包串行调度 build。不要给我写冗长 pnpm 筛选命令，太离谱了。
+2. 用 vercel MCP 或者是 vercel cli，修改本项目的 vercel 云项目的 build 配置，确保可以实现 turbo 的串行调度，确保使用正常。
+   - 我这边猜测你直接修改根目录的 vercel.json 文件即可。
+   - 我们项目虽然是 monorepo，但是在 vercel 云项目内，实际上还是使用单包模式，我们不是直接部署本 monorepo 的子包，所以你在使用 `use-vercel-deploy-in-monorepo` 技能时，不要被误导了。我们现在部署的生产环境目标是来自根包的 vitepress 文档，不是来自子包的内容。
+3. 在我们 github 的 ci yaml 流水线文件内，我们应该也要弄一个经可能模仿 vercel 生产环境构建流程的 ci 自检文件。
+4. 你应该去模仿 `D:\code\ruan-cat` 的其他项目，模仿具体的 ci.yaml 工作流的制作。
+5. 结合我们全局技能，实现自检 ci 工作流文件的新建。
+6. 自检自测流程
+   - 我们应该实现 git-commit 之后，然后 push，在 github 和 vercel 的 main 分支内
+   - 检查清楚我们的 github ci 工作流是否在 dev 分支正常执行
+   - 检查 vercel 在 main 分支内是否正常执行。
+   - 你必须严格使用全局技能 git-commit 和 rebase2main 来完成 git commit 信息的编写，然后切换分支，自己完成 git push，并且去检查清楚 github 和 vercel 的构建情况。你需要同时使用 github 和 vercel 的 MCP，或者是 github 和 vercel 的 cli。
 
 ## 002 <!-- TODO: 还在仔细设计提示词任务 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
 
