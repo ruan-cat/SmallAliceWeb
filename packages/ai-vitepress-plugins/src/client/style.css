@@ -1,6 +1,25 @@
 .ai-chat-vitepress-shell {
 	--ai-chat-floating-z-index: var(--ai-chat-vitepress-z-index, 1000);
+	--ai-chat-floating-offset: var(
+		--ai-chat-vitepress-floating-offset,
+		max(1rem, calc(env(safe-area-inset-right, 0px) + 1rem))
+	);
+	--ai-chat-floating-bottom: var(
+		--ai-chat-vitepress-floating-bottom,
+		max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5.5rem))
+	);
+	--ai-chat-primary-color: var(--vp-c-brand-1, #3b82f6);
+	--ai-chat-primary-hover-color: var(--vp-c-brand-2, #60a5fa);
 	position: relative;
 	z-index: var(--ai-chat-floating-z-index);
 	pointer-events: none;
+}
+
+@media (width <= 36rem) {
+	.ai-chat-vitepress-shell {
+		--ai-chat-floating-offset: var(
+			--ai-chat-vitepress-floating-offset,
+			max(0.75rem, calc(env(safe-area-inset-right, 0px) + 0.75rem))
+		);
+	}
 }
