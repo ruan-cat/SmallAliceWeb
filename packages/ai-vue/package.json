@@ -9,7 +9,11 @@
 			"import": "./dist/index.js",
 			"require": "./dist/index.cjs"
 		},
-		"./styles": "./dist/style.css"
+		"./styles": {
+			"types": "./styles.d.ts",
+			"import": "./dist/style.css",
+			"default": "./dist/style.css"
+		}
 	},
 	"scripts": {
 		"build": "vite build",
