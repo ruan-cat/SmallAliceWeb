@@ -1,0 +1,23 @@
+{
+	"extends": "./.nuxt/tsconfig.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true
+	},
+	"vueCompilerOptions": {
+		"strictTemplates": false
+	},
+	"include": [
+		".nuxt/nuxt.d.ts",
+		".nuxt/imports.d.ts",
+		".nuxt/types/**/*.d.ts",
+		".nuxt/schema/**/*.d.ts",
+		"app.config.ts",
+		"nuxt.config.ts",
+		"pages/**/*.vue",
+		"plugins/**/*.ts",
+		"shims/**/*.ts",
+		"types/**/*.d.ts",
+		"workspace-aliases.ts"
+	],
+	"exclude": ["dist", ".output", "node_modules"]
+}

@@ -8,6 +8,7 @@
 		"predev": "nuxt prepare",
 		"prebuild": "nuxt prepare",
 		"build": "nuxt build",
+		"typecheck": "nuxt typecheck",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare"
 	},

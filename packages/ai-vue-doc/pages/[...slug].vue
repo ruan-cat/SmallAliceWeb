@@ -67,11 +67,13 @@
 const { page } = useContent();
 const config = useConfig();
 const appConfig = useAppConfig();
+const shadcnDocsConfig = appConfig.shadcnDocs as { site?: { name?: string } };
+const siteName = shadcnDocsConfig.site?.name ?? "AI Vue";
 
 const isDev = import.meta.dev;
 
 useSeoMeta({
-	title: `${page.value?.title ?? "404"} - ${config.value.site.name}`,
+	title: `${page.value?.title ?? "404"} - ${siteName}`,
 	ogTitle: page.value?.title,
 	description: page.value?.description,
 	ogDescription: page.value?.description,

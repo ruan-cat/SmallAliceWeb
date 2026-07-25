@@ -1,5 +1,28 @@
-function createDebug(namespace: string) {
-	const logger = () => {};
+type DebugLogger = (() => void) & {
+	namespace: string;
+	enabled: boolean;
+	extend: (suffix: string) => DebugLogger;
+	destroy: () => void;
+};
+
+type DebugFactory = {
+	(namespace: string): DebugLogger;
+	debug: DebugFactory;
+	default: DebugFactory;
+	coerce: (value: unknown) => unknown;
+	disable: () => string;
+	enable: () => void;
+	enabled: () => boolean;
+	humanize: (value: unknown) => string;
+	destroy: () => void;
+	formatters: Record<string, unknown>;
+	names: string[];
+	skips: string[];
+	selectColor: () => number;
+};
+
+function createDebug(namespace: string): DebugLogger {
+	const logger = (() => {}) as DebugLogger;
 
 	logger.namespace = namespace;
 	logger.enabled = false;
@@ -9,7 +32,7 @@ function createDebug(namespace: string) {
 	return logger;
 }
 
-const debugFactory = createDebug;
+const debugFactory = createDebug as DebugFactory;
 
 debugFactory.debug = debugFactory;
 debugFactory.default = debugFactory;
