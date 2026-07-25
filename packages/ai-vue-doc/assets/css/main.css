@@ -1,0 +1,40 @@
+/* AI Vue 文档站的站点层样式，不覆盖组件库内部样式。 */
+.ai-vue-docs-demo {
+	isolation: isolate;
+	border: 1px solid hsl(var(--border));
+	border-radius: 0.5rem;
+	overflow: hidden;
+}
+
+.ai-vue-docs-demo-preview {
+	padding: 1.5rem;
+	background: hsl(var(--background));
+}
+
+.ai-vue-docs-demo-code pre {
+	margin: 0;
+	border-radius: 0;
+}
+
+.ai-vue-docs-api-table {
+	overflow-x: auto;
+}
+
+.ai-vue-docs-api-table table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.ai-vue-docs-api-table thead tr {
+	border-bottom: 1px solid hsl(var(--border));
+}
+
+.ai-vue-docs-api-table tbody tr + tr {
+	border-top: 1px solid hsl(var(--border));
+}
+
+.ai-vue-docs-api-table :is(th, td) {
+	padding: 0.85rem 0.75rem;
+	text-align: left;
+	vertical-align: top;
+}

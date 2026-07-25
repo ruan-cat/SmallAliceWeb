@@ -1,0 +1,27 @@
+{
+	"name": "@ruan-cat-drill-doc/ai-vue-doc",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "nuxt dev",
+		"predev": "nuxt prepare",
+		"prebuild": "nuxt prepare",
+		"build": "nuxt build",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare"
+	},
+	"dependencies": {
+		"@ruan-cat-drill-doc/ai-vue": "workspace:*",
+		"@nuxt/icon": "1.15.0",
+		"element-plus": "^2.13.5",
+		"nuxt": "^3.21.2",
+		"shadcn-docs-nuxt": "^1.1.9",
+		"tailwindcss": "^4.2.1",
+		"tailwindcss-animate": "^1.0.7",
+		"vue": "^3.5.30"
+	},
+	"devDependencies": {
+		"@iconify-json/lucide": "^1.2.98"
+	}
+}
