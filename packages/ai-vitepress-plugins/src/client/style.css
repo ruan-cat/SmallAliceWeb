@@ -1,0 +1,6 @@
+.ai-chat-vitepress-shell {
+	--ai-chat-floating-z-index: var(--ai-chat-vitepress-z-index, 1000);
+	position: relative;
+	z-index: var(--ai-chat-floating-z-index);
+	pointer-events: none;
+}
