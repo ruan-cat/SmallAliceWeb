@@ -1,0 +1,45 @@
+{
+	"name": "@ruan-cat-drill-doc/ai-vitepress-plugins",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./client": {
+			"types": "./dist/client/index.d.ts",
+			"import": "./dist/client/index.js",
+			"require": "./dist/client/index.cjs"
+		},
+		"./client/style.css": "./dist/client/style.css"
+	},
+	"sideEffects": [
+		"./dist/client/style.css"
+	],
+	"scripts": {
+		"build": "vite build",
+		"test": "vitest run",
+		"typecheck": "vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@ruan-cat-drill-doc/ai-vue": "workspace:*",
+		"element-plus": "^2.11.8"
+	},
+	"peerDependencies": {
+		"vue": "^3.5.28"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^5.2.4",
+		"@types/node": "^22.19.11",
+		"jsdom": "^26.1.0",
+		"typescript": "^5.9.3",
+		"vite": "^6.3.5",
+		"vite-plugin-dts": "^4.5.4",
+		"vitest": "^2.1.9",
+		"vue": "^3.5.28",
+		"vue-tsc": "^3.1.5"
+	}
+}
