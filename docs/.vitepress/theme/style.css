@@ -128,3 +128,16 @@
 .DocSearch {
 	--docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
+
+/**
+ * AI Chat
+ * -------------------------------------------------------------------------- */
+
+:root {
+	--ai-chat-vitepress-z-index: 30;
+}
+
+.ai-chat-vitepress-shell {
+	color: var(--vp-c-text-1);
+	font-family: var(--vp-font-family-base);
+}
