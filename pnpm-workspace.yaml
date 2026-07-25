@@ -6,3 +6,4 @@ onlyBuiltDependencies:
   - sharp
 packages:
   - "scripts/*"
+  - "packages/*"
