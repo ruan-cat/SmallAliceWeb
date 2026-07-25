@@ -8,11 +8,13 @@ import { h } from "vue";
 import "./style.css";
 
 const baseTheme = defineRuancatPresetTheme();
-const BaseLayout = baseTheme.Layout ?? baseTheme.extends?.Layout;
+const BaseLayout = (baseTheme as Theme).extends?.Layout;
 
 export default {
 	...baseTheme,
 	Layout() {
+		if (!BaseLayout) return null;
+
 		return h(BaseLayout, null, {
 			"layout-bottom": () => h(AiChatVitePressShell),
 		});

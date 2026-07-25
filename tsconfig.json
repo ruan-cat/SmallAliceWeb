@@ -1,3 +1,25 @@
 {
-	"extends": "./.nuxt/tsconfig.json"
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"strict": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"allowJs": true,
+		"allowArbitraryExtensions": true,
+		"allowImportingTsExtensions": true,
+		"paths": {
+			"@ruan-cat/vitepress-preset-config/theme": ["./docs/.vitepress/types/vitepress-preset-config-theme.d.ts"],
+			"@ruan-cat-drill-doc/ai-vitepress-plugins/client": ["./packages/ai-vitepress-plugins/src/client/index.ts"],
+			"@ruan-cat-drill-doc/ai-vitepress-plugins/client/style.css": [
+				"./packages/ai-vitepress-plugins/client-style.d.ts"
+			],
+			"@ruan-cat-drill-doc/ai-vue": ["./packages/ai-vue/src/index.ts"],
+			"@ruan-cat-drill-doc/ai-vue/styles": ["./packages/ai-vue/styles.d.ts"]
+		},
+		"types": ["node", "vitepress/client"]
+	},
+	"include": ["docs/.vitepress/**/*.ts", "docs/.vitepress/**/*.d.ts", "docs/.vitepress/**/*.vue"],
+	"exclude": ["node_modules", "packages", "scripts"]
 }
