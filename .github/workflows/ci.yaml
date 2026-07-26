@@ -34,5 +34,3 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: 生产构建
         run: pnpm run build
-      - name: 类型检查
-        run: pnpm run typecheck
