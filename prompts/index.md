@@ -144,6 +144,12 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
    - 检查 vercel 在 main 分支内是否正常执行。
    - 你必须严格使用全局技能 git-commit 和 rebase2main 来完成 git commit 信息的编写，然后切换分支，自己完成 git push，并且去检查清楚 github 和 vercel 的构建情况。你需要同时使用 github 和 vercel 的 MCP，或者是 github 和 vercel 的 cli。
 
+---
+
+我不喜欢你写 `"build": "turbo run build --filter=@ruan-cat-drill-doc/ai-vitepress-plugins && pnpm run docs:build",`
+这个命令冗长不优雅。
+我要求你这样做： 利用 pnpm 的工作区协议，将全部子包都加入到根包的依赖内。你应该酌情增加到 dependencies 和 devDependencies 内。这样能充分发挥 turbo 的拓扑依赖构建能力，这样能完成更好的依赖调度行为。我很讨厌这种 --filter 参数写法。这加剧了固定的耦合度，依赖顺序调度能力是 turbo 本身就有的，我们要做的是在根包内建立依赖，建立依赖拓扑关系。
+
 ## 002 <!-- TODO: 还在仔细设计提示词任务 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
 
 阅读以下文档和建议的 AI 入门计划：
