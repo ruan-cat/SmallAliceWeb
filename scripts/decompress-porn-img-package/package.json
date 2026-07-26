@@ -1,5 +1,5 @@
 {
-	"name": "@ruan-cat/decompress-porn-img-package",
+	"name": "@ruan-cat-temp/decompress-porn-img-package",
 	"version": "2.1.0",
 	"private": true,
 	"type": "module",
@@ -16,7 +16,7 @@
 		"node": ">=22.14.0"
 	},
 	"bin": {
-		"@ruan-cat/decompress-porn-img-package": "dist/cli.mjs",
+		"@ruan-cat-temp/decompress-porn-img-package": "dist/cli.mjs",
 		"decompress-porn-img-package": "dist/cli.mjs",
 		"dpip": "dist/cli.mjs"
 	},

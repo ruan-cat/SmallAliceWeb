@@ -1,9 +1,10 @@
 {
-	"name": "get-cursor-token",
+	"name": "@ruan-cat-temp/get-cursor-token",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
+		"build": "tsc --noEmit",
 		"start": "tsx src/index.ts"
 	},
 	"engines": {

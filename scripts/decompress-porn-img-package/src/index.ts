@@ -1,5 +1,5 @@
 /**
- * @ruan-cat/decompress-porn-img-package
+ * @ruan-cat-temp/decompress-porn-img-package
  * 解压图片压缩包工具
  *
  * 支持两种处理模式：

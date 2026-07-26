@@ -1,4 +1,4 @@
-import { defineConfig } from "@ruan-cat/decompress-porn-img-package";
+import { defineConfig } from "@ruan-cat-temp/decompress-porn-img-package";
 
 export default defineConfig({
 	password: "https://www.91xiezhen.top",

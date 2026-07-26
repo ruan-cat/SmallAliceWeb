@@ -16,7 +16,7 @@
 		"up-taze": "pnpm up @ruan-cat/taze-config -L && npx taze -r",
 		"decompress-porn-img-package": "pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'",
 		"docs:dev": "vitepress dev docs --port 8080 --open",
-		"build": "turbo run build --filter=@ruan-cat-drill-doc/ai-vitepress-plugins && pnpm run docs:build",
+		"build": "turbo run //#docs:build",
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs",
 		"docs:build-vp": "vuepress-vite build docs",
@@ -35,7 +35,6 @@
 		"deploy-vercel": "vercel-deploy-tool deploy",
 		"build:drill-docx2md": "tsx ./scripts/docx2md/index.ts",
 		"build:doc-in-vercel": "tsx ./scripts/build-doc-in-vercel/index.ts",
-		"predocs:build": "pnpm run build:doc-in-vercel",
 		"release": "pnpm run release:sub && pnpm run release:root && pnpm run git:push",
 		"release:sub": "relizy-runner release --no-publish --no-provider-release --no-push --yes",
 		"release:root": "bumpp --no-push --yes --release patch",
@@ -46,12 +45,15 @@
 		"changelog:root": "changelogen --output CHANGELOG.md"
 	},
 	"dependencies": {
-		"@ruan-cat/decompress-porn-img-package": "workspace:*"
+		"@ruan-cat-drill-doc/ai-vitepress-plugins": "workspace:*",
+		"@ruan-cat-drill-doc/ai-vue": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.1.3",
-		"@ruan-cat-drill-doc/ai-vitepress-plugins": "workspace:*",
+		"@ruan-cat-temp/decompress-porn-img-package": "workspace:*",
+		"@ruan-cat-temp/get-cursor-token": "workspace:*",
+		"@ruan-cat-drill-doc/ai-vue-doc": "workspace:*",
 		"@ruan-cat/commitlint-config": "^4.9.1",
 		"@ruan-cat/domains": "^1.7.0",
 		"@ruan-cat/taze-config": "^1.0.2",

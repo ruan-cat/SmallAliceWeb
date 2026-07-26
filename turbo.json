@@ -3,7 +3,34 @@
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
-			"outputs": ["dist/**"]
+			"inputs": ["$TURBO_DEFAULT$", ".env*", "!dist/**", "!.output/**", "!.nuxt/**", "!.turbo/**"],
+			"outputs": ["dist/**", ".output/**", "!.output/cache/**", ".nuxt/**", "!.nuxt/cache/**"]
+		},
+		"//#build:doc-in-vercel": {
+			"inputs": [
+				"package.json",
+				"pnpm-workspace.yaml",
+				"tsconfig.json",
+				"turbo.json",
+				".env*",
+				"scripts/build-doc-in-vercel/**"
+			],
+			"outputs": ["docs/docx/**"]
+		},
+		"//#docs:build": {
+			"dependsOn": ["^build", "//#build:doc-in-vercel"],
+			"inputs": [
+				"package.json",
+				"pnpm-workspace.yaml",
+				"tsconfig.json",
+				"turbo.json",
+				".env*",
+				"docs/**",
+				"!docs/docx/**",
+				"!docs/.vitepress/dist/**",
+				"!docs/.vitepress/cache/**"
+			],
+			"outputs": ["docs/.vitepress/dist/**", "!docs/.vitepress/cache/**"]
 		}
 	}
 }
