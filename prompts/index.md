@@ -172,4 +172,12 @@ skills add https://github.com/mattpocock/skills `
   -a cursor `
 ```
 
+---
+
+我不喜欢 tsconfig.json 内 的"paths": 处理方式，这种方式就说明了我们每一个子包本身就没做好自己的 export 和类型导出的职责，反而要在项目级别的 monorepo 的 tsconfig.json 内完成。这就不成熟，不对！
+每一个子包应该自己在 package.json 内完成自己要负责的 export 路径，和必要的 typescript 类型文件的生成，和 `*.d.ts` 文件的生成。而不是用这种变通的方式来完成全局整体性质的路径处理。这就很偷懒，而且耦合度很高，万一我以后增加了更多的子包，岂不是根包 tsconfig.json 配置越来越臃肿了？
+你去看看 D:\code\ruan-cat\monorepo 和 D:\code\ruan-cat\01s-11comm ，D:\code\ruan-cat\eams-component-lib ，这几个项目那个会想你一样弄这种根 tsconfig.json 的写死路径别名？你这个做法就不优雅，耦合度很大。每个子包的 typescript 路径暴露职责都没做好！
+
 ## 004 <!-- TODO: -->
+
+---
