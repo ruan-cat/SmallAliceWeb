@@ -21,5 +21,18 @@ export default defineConfig({
 			},
 		},
 	},
-	plugins: [vue(), dts()],
+	plugins: [
+		vue(),
+		dts(),
+		{
+			name: "emit-client-style-declaration",
+			generateBundle() {
+				this.emitFile({
+					type: "asset",
+					fileName: "client/style.d.ts",
+					source: "declare const stylesheet: string;\n\nexport default stylesheet;\n",
+				});
+			},
+		},
+	],
 });

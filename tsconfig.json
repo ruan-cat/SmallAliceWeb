@@ -10,13 +10,7 @@
 		"allowArbitraryExtensions": true,
 		"allowImportingTsExtensions": true,
 		"paths": {
-			"@ruan-cat/vitepress-preset-config/theme": ["./docs/.vitepress/types/vitepress-preset-config-theme.d.ts"],
-			"@ruan-cat-drill-doc/ai-vitepress-plugins/client": ["./packages/ai-vitepress-plugins/src/client/index.ts"],
-			"@ruan-cat-drill-doc/ai-vitepress-plugins/client/style.css": [
-				"./packages/ai-vitepress-plugins/client-style.d.ts"
-			],
-			"@ruan-cat-drill-doc/ai-vue": ["./packages/ai-vue/src/index.ts"],
-			"@ruan-cat-drill-doc/ai-vue/styles": ["./packages/ai-vue/styles.d.ts"]
+			"@ruan-cat/vitepress-preset-config/theme": ["./docs/.vitepress/types/vitepress-preset-config-theme.d.ts"]
 		},
 		"types": ["node", "vitepress/client"]
 	},

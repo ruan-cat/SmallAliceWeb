@@ -15,7 +15,7 @@
 			"require": "./dist/client/index.cjs"
 		},
 		"./client/style.css": {
-			"types": "./client-style.d.ts",
+			"types": "./dist/client/style.d.ts",
 			"import": "./dist/client/style.css",
 			"default": "./dist/client/style.css"
 		}

@@ -10,7 +10,7 @@
 			"require": "./dist/index.cjs"
 		},
 		"./styles": {
-			"types": "./styles.d.ts",
+			"types": "./dist/style.d.ts",
 			"import": "./dist/style.css",
 			"default": "./dist/style.css"
 		}

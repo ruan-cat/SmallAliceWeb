@@ -14,5 +14,18 @@ export default defineConfig({
 			external: ["vue", "element-plus", "vue-element-plus-x"],
 		},
 	},
-	plugins: [vue(), dts()],
+	plugins: [
+		vue(),
+		dts(),
+		{
+			name: "emit-style-declaration",
+			generateBundle() {
+				this.emitFile({
+					type: "asset",
+					fileName: "style.d.ts",
+					source: "declare const stylesheet: string;\n\nexport default stylesheet;\n",
+				});
+			},
+		},
+	],
 });
