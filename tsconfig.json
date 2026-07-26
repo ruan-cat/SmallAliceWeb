@@ -21,5 +21,6 @@
 		"types": ["node", "vitepress/client"]
 	},
 	"include": ["docs/.vitepress/**/*.ts", "docs/.vitepress/**/*.d.ts", "docs/.vitepress/**/*.vue"],
-	"exclude": ["node_modules", "packages", "scripts"]
+	"exclude": ["node_modules", "packages", "scripts"],
+	"references": [{ "path": "./tsconfig.node.json" }]
 }
