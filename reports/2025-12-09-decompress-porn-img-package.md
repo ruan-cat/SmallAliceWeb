@@ -2,7 +2,7 @@
 
 ## 1. 工作概览
 
-- 完成 `@ruan-cat/decompress-porn-img-package` 包的脚手架、构建与单测。
+- 完成 `@ruan-cat-temp/decompress-porn-img-package` 包的脚手架、构建与单测。
 - 将 OpenSpec 变更 `add-decompress-porn-img-package` 验证通过并对齐实现。
 - 本地安装与验证流程跑通，确保串行解压逻辑与配置默认值符合规范。
 

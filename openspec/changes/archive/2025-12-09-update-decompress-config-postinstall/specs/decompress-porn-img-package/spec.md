@@ -2,7 +2,7 @@
 
 ### Requirement: 安装后自动构建 CLI 产物
 
-系统 SHALL 在安装 `@ruan-cat/decompress-porn-img-package` 时执行 postinstall 构建，生成 CLI 可执行产物，确保安装完成即可直接运行。
+系统 SHALL 在安装 `@ruan-cat-temp/decompress-porn-img-package` 时执行 postinstall 构建，生成 CLI 可执行产物，确保安装完成即可直接运行。
 
 #### Scenario: 安装即构建
 
@@ -15,7 +15,7 @@
 
 #### Scenario: 导入并包装配置
 
-- **WHEN** 用户 `import { defineConfig } from "@ruan-cat/decompress-porn-img-package"`
+- **WHEN** 用户 `import { defineConfig } from "@ruan-cat-temp/decompress-porn-img-package"`
 - **THEN** 调用 `defineConfig(config)` SHALL 原样返回配置对象，供 c12 读取
 
 ### Requirement: 配置文件使用 defineConfig

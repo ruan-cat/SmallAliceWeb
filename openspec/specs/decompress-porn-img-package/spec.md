@@ -12,7 +12,7 @@ TBD - created by archiving change add-decompress-porn-img-package. Update Purpos
 
 #### Scenario: 缺少路径参数
 
-- **WHEN** 用户未提供绝对路径执行 `@ruan-cat/decompress-porn-img-package`
+- **WHEN** 用户未提供绝对路径执行 `@ruan-cat-temp/decompress-porn-img-package`
 - **THEN** 工具 SHALL 退出并提示必须提供绝对路径
 
 #### Scenario: 提供有效绝对路径
@@ -107,7 +107,7 @@ TBD - created by archiving change add-decompress-porn-img-package. Update Purpos
 
 ### Requirement: 技术栈与交付约束
 
-系统 SHALL 使用 TypeScript 开发，采用 tsdown 构建，vitest 编写单元测试，c12 读取配置，consola 输出日志；入口文件为 `src/index.ts`；包名 `@ruan-cat/decompress-porn-img-package` 为私包，根项目需安装私包且不得发布到公共 npm。
+系统 SHALL 使用 TypeScript 开发，采用 tsdown 构建，vitest 编写单元测试，c12 读取配置，consola 输出日志；入口文件为 `src/index.ts`；包名 `@ruan-cat-temp/decompress-porn-img-package` 为私包，根项目需安装私包且不得发布到公共 npm。
 
 #### Scenario: 技术与交付守护
 
@@ -116,7 +116,7 @@ TBD - created by archiving change add-decompress-porn-img-package. Update Purpos
 
 ### Requirement: 安装后自动构建 CLI 产物
 
-系统 SHALL 在安装 `@ruan-cat/decompress-porn-img-package` 时执行 postinstall 构建，生成 CLI 可执行产物，确保安装完成即可直接运行。
+系统 SHALL 在安装 `@ruan-cat-temp/decompress-porn-img-package` 时执行 postinstall 构建，生成 CLI 可执行产物，确保安装完成即可直接运行。
 
 #### Scenario: 安装即构建
 
@@ -129,7 +129,7 @@ TBD - created by archiving change add-decompress-porn-img-package. Update Purpos
 
 #### Scenario: 导入并包装配置
 
-- **WHEN** 用户 `import { defineConfig } from "@ruan-cat/decompress-porn-img-package"`
+- **WHEN** 用户 `import { defineConfig } from "@ruan-cat-temp/decompress-porn-img-package"`
 - **THEN** 调用 `defineConfig(config)` SHALL 原样返回配置对象，供 c12 读取
 
 ### Requirement: 配置文件使用 defineConfig

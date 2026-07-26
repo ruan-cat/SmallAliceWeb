@@ -1,4 +1,4 @@
-# 2026-03-09 get-cursor-token 子包设计文档
+# 2026-03-09 @ruan-cat-temp/get-cursor-token 子包设计文档
 
 ## 1. 概述
 
@@ -137,7 +137,7 @@ main();
 ### 3.3. 推荐的包目录结构
 
 ```plain
-get-cursor-token/
+scripts/get-cursor-token/（包名 `@ruan-cat-temp/get-cursor-token`）
 ├── package.json
 ├── tsconfig.json
 ├── DESIGN.md              ← 本文档
@@ -151,11 +151,12 @@ get-cursor-token/
 
 ```json
 {
-	"name": "get-cursor-token",
+	"name": "@ruan-cat-temp/get-cursor-token",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
+		"build": "tsc --noEmit",
 		"start": "tsx src/index.ts"
 	},
 	"dependencies": {

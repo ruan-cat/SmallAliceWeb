@@ -5,7 +5,7 @@
 
 ## 2. 实施
 
-- [x] 2.1 为 `@ruan-cat/decompress-porn-img-package` 增加 postinstall 构建脚本
+- [x] 2.1 为 `@ruan-cat-temp/decompress-porn-img-package` 增加 postinstall 构建脚本
 - [x] 2.2 导出 `defineConfig` helper 并在配置文件中使用
 - [x] 2.3 更新默认配置文件为 `defineConfig(...)` 形式
 - [x] 2.4 构建与测试（tsdown/vitest）

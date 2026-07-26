@@ -1,14 +1,14 @@
-# 2026-02-27 修复 @ruan-cat/decompress-porn-img-package CLI 入口无法执行的错误
+# 2026-02-27 修复 @ruan-cat-temp/decompress-porn-img-package CLI 入口无法执行的错误
 
 ## 1. 错误现象
 
 运行 `pnpm run do-dpip` 命令后，CLI 仅输出启动日志便立即退出，没有执行任何处理逻辑：
 
 ```log
-> @ruan-cat/decompress-porn-img-package@1.0.0 do-dpip
+> @ruan-cat-temp/decompress-porn-img-package@1.0.0 do-dpip
 > pnpm exec decompress-porn-img-package 'D:/store/baidu/315.咬一口兔娘'
 
-[@ruan-cat/decompress-porn-img-package 20:37:35] ℹ @ruan-cat/decompress-porn-img-package v1.0.0 is running...
+[@ruan-cat-temp/decompress-porn-img-package 20:37:35] ℹ @ruan-cat-temp/decompress-porn-img-package v1.0.0 is running...
 ```
 
 之后毫无反应，程序直接退出。

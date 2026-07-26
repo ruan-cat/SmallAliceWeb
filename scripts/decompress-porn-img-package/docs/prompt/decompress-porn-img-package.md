@@ -1,13 +1,13 @@
 # 解压图片压缩包
 
-为我制作一个独立的 node 包，我将用这个名为 `@ruan-cat/decompress-porn-img-package` 包，简称为 `解压图片压缩包工具` 。
+为我制作一个独立的 node 包，我将用这个名为 `@ruan-cat-temp/decompress-porn-img-package` 包，简称为 `解压图片压缩包工具` 。
 
-预期通过运行 `@ruan-cat/decompress-porn-img-package {path}` 命令的方式，实现读取绝对路径 path 内的文件，并按照预设的固定逻辑来处理文件。
+预期通过运行 `@ruan-cat-temp/decompress-porn-img-package {path}` 命令的方式，实现读取绝对路径 path 内的文件，并按照预设的固定逻辑来处理文件。
 
 ## 术语说明
 
 - `本项目` ： 即 `scripts\decompress-porn-img-package` 目录内的 node 项目。
-- `解压图片压缩包工具` ： 即 `@ruan-cat/decompress-porn-img-package` 包。
+- `解压图片压缩包工具` ： 即 `@ruan-cat-temp/decompress-porn-img-package` 包。
 
 ## 配置文件 `decompress-porn-img-package.config.ts` 应该提供的配置项
 
@@ -107,7 +107,7 @@ C:.
 
 ## 代码编写其他要求
 
-1. `@ruan-cat/decompress-porn-img-package` 是私包，避免发布到 npm 镜像内。
+1. `@ruan-cat-temp/decompress-porn-img-package` 是私包，避免发布到 npm 镜像内。
 2. 根包要安装私包。
 3. 配置文件的命名为 `decompress-porn-img-package.config.ts` ，在使用 c12 定义并读取配置文件时，配置文件的核心命名为 `decompress-porn-img-package` 。
 4. 务必提供一个干净的入口文件 `src/index.ts` 。
@@ -133,7 +133,7 @@ C:.
 
 ### 增加 postinstall 脚本
 
-`@ruan-cat/decompress-porn-img-package` 包增加 postinstall 脚本，实现安装后就本地完成依赖构建。确保准备好足量的 cli 脚本。
+`@ruan-cat-temp/decompress-porn-img-package` 包增加 postinstall 脚本，实现安装后就本地完成依赖构建。确保准备好足量的 cli 脚本。
 
 ### 配置文件使用常见的规范 defineConfig 函数
 
@@ -148,7 +148,7 @@ C:.
 ## 05 运行解压任务后，项目没有及时删减掉多余的文件
 
 1. 请阅读 `.github\prompts\decompress-porn-img-package.md` 的要求。
-2. 如图，运行后没有删除掉多余的文件夹和图片，请检查 `@ruan-cat/decompress-porn-img-package` 包的处理逻辑。
+2. 如图，运行后没有删除掉多余的文件夹和图片，请检查 `@ruan-cat-temp/decompress-porn-img-package` 包的处理逻辑。
 
 ## 06 运行命令 `pnpm exec decompress-porn-img-package 'D:/store/baidu/048.蠢沫沫/'` 失败
 

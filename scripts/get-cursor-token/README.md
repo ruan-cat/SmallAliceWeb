@@ -1,4 +1,4 @@
-# get-cursor-token
+# @ruan-cat-temp/get-cursor-token
 
 从本机 Cursor IDE 的存储文件中，程序化地提取以下凭据信息：
 
@@ -63,7 +63,7 @@ pnpm start
 ## 3. 项目结构
 
 ```plain
-get-cursor-token/
+scripts/get-cursor-token/（包名 `@ruan-cat-temp/get-cursor-token`）
 ├── package.json
 ├── tsconfig.json
 ├── README.md              ← 本文档

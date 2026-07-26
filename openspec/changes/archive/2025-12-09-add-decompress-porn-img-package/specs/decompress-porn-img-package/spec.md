@@ -6,7 +6,7 @@
 
 #### Scenario: 缺少路径参数
 
-- **WHEN** 用户未提供绝对路径执行 `@ruan-cat/decompress-porn-img-package`
+- **WHEN** 用户未提供绝对路径执行 `@ruan-cat-temp/decompress-porn-img-package`
 - **THEN** 工具 SHALL 退出并提示必须提供绝对路径
 
 #### Scenario: 提供有效绝对路径
@@ -101,7 +101,7 @@
 
 ### Requirement: 技术栈与交付约束
 
-系统 SHALL 使用 TypeScript 开发，采用 tsdown 构建，vitest 编写单元测试，c12 读取配置，consola 输出日志；入口文件为 `src/index.ts`；包名 `@ruan-cat/decompress-porn-img-package` 为私包，根项目需安装私包且不得发布到公共 npm。
+系统 SHALL 使用 TypeScript 开发，采用 tsdown 构建，vitest 编写单元测试，c12 读取配置，consola 输出日志；入口文件为 `src/index.ts`；包名 `@ruan-cat-temp/decompress-porn-img-package` 为私包，根项目需安装私包且不得发布到公共 npm。
 
 #### Scenario: 技术与交付守护
 

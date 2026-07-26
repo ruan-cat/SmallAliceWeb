@@ -6,7 +6,7 @@
 
 ## What Changes
 
-- 为 `@ruan-cat/decompress-porn-img-package` 增加 postinstall 构建，安装即准备好 CLI 脚本。
+- 为 `@ruan-cat-temp/decompress-porn-img-package` 增加 postinstall 构建，安装即准备好 CLI 脚本。
 - 提供 `defineConfig` 导出，用于声明配置。
 - 要求 `decompress-porn-img-package.config.ts` 以 `defineConfig` 形式导出配置。
 

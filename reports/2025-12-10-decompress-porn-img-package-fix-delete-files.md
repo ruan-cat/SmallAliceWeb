@@ -2,7 +2,7 @@
 
 ## 1. 故障概述
 
-在 `@ruan-cat/decompress-porn-img-package` 解压工具运行过程中，发现两个关键故障：
+在 `@ruan-cat-temp/decompress-porn-img-package` 解压工具运行过程中，发现两个关键故障：
 
 1. **命令无反应故障**：运行 `pnpm exec decompress-porn-img-package` 命令时毫无反应，没有任何日志输出，也没有开始解压操作。
 2. **文件清理不完整故障**：解压完成后，目标文件夹内残留大量多余文件，包括：
