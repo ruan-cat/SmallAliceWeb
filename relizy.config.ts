@@ -4,6 +4,11 @@ import { parsePnpmWorkspaceYaml } from "pnpm-workspace-yaml";
 import { defineConfig } from "relizy";
 import changelogConfig from "./changelog.config";
 
+type RelizyConfig = Parameters<typeof defineConfig>[0];
+type RelizyTypes = RelizyConfig["types"];
+
+const relizyTypes = changelogConfig.types as RelizyTypes;
+
 function readWorkspacePackageGlobs(): string[] {
 	const content = readFileSync(resolve(process.cwd(), "pnpm-workspace.yaml"), "utf8");
 
@@ -13,7 +18,7 @@ function readWorkspacePackageGlobs(): string[] {
 export default defineConfig({
 	projectName: "SmallAliceWeb",
 
-	types: changelogConfig.types,
+	types: relizyTypes,
 	templates: {
 		...(changelogConfig.templates ?? {}),
 		changelogTitle: "{{newVersion}} ({{date}})",
