@@ -150,12 +150,39 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 这个命令冗长不优雅。
 我要求你这样做： 利用 pnpm 的工作区协议，将全部子包都加入到根包的依赖内。你应该酌情增加到 dependencies 和 devDependencies 内。这样能充分发挥 turbo 的拓扑依赖构建能力，这样能完成更好的依赖调度行为。我很讨厌这种 --filter 参数写法。这加剧了固定的耦合度，依赖顺序调度能力是 turbo 本身就有的，我们要做的是在根包内建立依赖，建立依赖拓扑关系。
 
-## 002 <!-- TODO: 还在仔细设计提示词任务 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
+## 002 <!-- TODO: 在ZCode内执行 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
+
+<!--
+docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md
+docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md
+-->
 
 阅读以下文档和建议的 AI 入门计划：
 
 - D:\store\WorkBuddy\2026-6-30-common\2026-7-8-learn-use-LangGraph-with-typescript\2026-07-11-langgraph-typescript-entry-research.md
 - `D:\code\ruan-cat\resume\简历\转型到AI方向\index.md`
+
+我需要你帮我完成一个合理的二期 AI 化任务设计。
+
+---
+
+<!-- TODO: -->
+
+我有好几个技术问题需要你先解答一下，和我沟通一下：
+
+1. Chroma chromadb ，为什么选择这个？其他技术选型为什么你不选呢？这个数很主流的方案么？
+2. 编写固定大小 Chunk 函数？在 typescript 为技术栈的 AI agent RAG 项目内， Chunk 切分函数以及切分策略，没有现成的方案么？以后我需要动态调整 Chunk 分割细粒度怎么办？
+3. 现在在 typescript agent 项目内，对 vitest 的测试用例编写有什么现成的方案么？你在 github 仓库内有看到什么合适的教程和项目指导你这样做么？
+4. 你写的是 `const docText = await Bun.file('data/test-docs.md').text();` ，我们的生产环境是 vercel，开发环境是 window，我们都没有设置运行时是 bun，我们都是 node。照你这么说，我们做 typescript 的 AI RAG 知识库项目，岂不是要更换运行时为 bun ？这个改动设计太破坏性了，我记得大多数方案都是 node 运行时的。
+5. BM25 是什么东西啊？跟我说说吧，我对这个确实不懂。
+
+---
+
+<!-- TODO: -->
+
+我需要跟你说明清楚我需要做的 RAG 项目要做到什么功能，我们项目目前在开发环境和生产环境内，会有办法获取到 `drill-docx` 目录的全部 markdown 文件，我们的核心检索的文件就是这一大堆的 markdown 文件。我需要做的智能 AI 对话助手，主要的任务目标就是为了实现智能化的 AI 对话，知识库智能助手的知识库就是 `drill-docx` 目录的全部文件。
+这些文件是随时都有可能更新的，毕竟是获取来自上游的 docx 文件。所以我们的 AI 应用面对的知识库本身就是动态变化的。
+在这个核心需求前提下，你去适当改动我们的 2026-07-29-ai-rag-phase2-plan 和 2026-07-29-ai-rag-phase2-design 文档；
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
