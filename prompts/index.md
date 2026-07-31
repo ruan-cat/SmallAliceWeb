@@ -150,7 +150,7 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 这个命令冗长不优雅。
 我要求你这样做： 利用 pnpm 的工作区协议，将全部子包都加入到根包的依赖内。你应该酌情增加到 dependencies 和 devDependencies 内。这样能充分发挥 turbo 的拓扑依赖构建能力，这样能完成更好的依赖调度行为。我很讨厌这种 --filter 参数写法。这加剧了固定的耦合度，依赖顺序调度能力是 turbo 本身就有的，我们要做的是在根包内建立依赖，建立依赖拓扑关系。
 
-## 002 <!-- TODO: 在ZCode内执行 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
+## 002 <!-- TODO: Codex正在做 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
 
 <!--
 docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md
@@ -166,23 +166,52 @@ docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md
 
 ---
 
-<!-- TODO: -->
-
 我有好几个技术问题需要你先解答一下，和我沟通一下：
+
+你先看这些上下文，然后准备继续回答我的问题：
+
+- D:\store\WorkBuddy\2026-6-30-common\2026-7-8-learn-use-LangGraph-with-typescript\2026-07-11-langgraph-typescript-entry-research.md
+- `D:\code\ruan-cat\resume\简历\转型到AI方向\index.md`
+- docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md
+- docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md
+- docs\handoffs\2026-07-29-ai-rag-phase2-handoff.md （该文件看完就删掉）
+- 执行 `memorix context --task "AI 转型二期任务执行"` 命令获取上下文
 
 1. Chroma chromadb ，为什么选择这个？其他技术选型为什么你不选呢？这个数很主流的方案么？
 2. 编写固定大小 Chunk 函数？在 typescript 为技术栈的 AI agent RAG 项目内， Chunk 切分函数以及切分策略，没有现成的方案么？以后我需要动态调整 Chunk 分割细粒度怎么办？
+   - 根据文档类型以及特定格式来确定 chunk 策略，然后进行词嵌入向量化，最后优化检索。我们的数据来源是 `docs\docx` 目录的全部 markdown 文件。你有针对这个场景做专门的 chuck 拆分方案么？
 3. 现在在 typescript agent 项目内，对 vitest 的测试用例编写有什么现成的方案么？你在 github 仓库内有看到什么合适的教程和项目指导你这样做么？
 4. 你写的是 `const docText = await Bun.file('data/test-docs.md').text();` ，我们的生产环境是 vercel，开发环境是 window，我们都没有设置运行时是 bun，我们都是 node。照你这么说，我们做 typescript 的 AI RAG 知识库项目，岂不是要更换运行时为 bun ？这个改动设计太破坏性了，我记得大多数方案都是 node 运行时的。
 5. BM25 是什么东西啊？跟我说说吧，我对这个确实不懂。
+6. 搭建 Neon 本地 Postgres，你有想好怎么去 neon 内新建一个云数据库么？你把这个链路准备好了吗？
+7. 我们项目 Nitro API 项目，我们只能提供 nitro 接口，你做好我们项目的 api 接口分包设计了么？我们没有 nuxt 项目的。
+8. 实现前端 Chat UI，我们不是已经有了 AI 对话组件了么？ packages\ai-vue 不就是已经设计好的 AI 对话组件了么？
 
 ---
 
-<!-- TODO: -->
-
-我需要跟你说明清楚我需要做的 RAG 项目要做到什么功能，我们项目目前在开发环境和生产环境内，会有办法获取到 `drill-docx` 目录的全部 markdown 文件，我们的核心检索的文件就是这一大堆的 markdown 文件。我需要做的智能 AI 对话助手，主要的任务目标就是为了实现智能化的 AI 对话，知识库智能助手的知识库就是 `drill-docx` 目录的全部文件。
+我需要跟你说明清楚我需要做的 RAG 项目要做到什么功能，我们项目目前在开发环境和生产环境内，会有办法获取到 `docs\docx` 目录的全部 markdown 文件，我们的核心检索的文件就是这一大堆的 markdown 文件。我需要做的智能 AI 对话助手，主要的任务目标就是为了实现智能化的 AI 对话，知识库智能助手的知识库就是 `docs\docx` 目录的全部文件。
 这些文件是随时都有可能更新的，毕竟是获取来自上游的 docx 文件。所以我们的 AI 应用面对的知识库本身就是动态变化的。
 在这个核心需求前提下，你去适当改动我们的 2026-07-29-ai-rag-phase2-plan 和 2026-07-29-ai-rag-phase2-design 文档；
+
+---
+
+你还没有回答我的这几个问题呢，以报告的形式来回答我的疑问：
+
+1. Chroma chromadb ，为什么选择这个？其他技术选型为什么你不选呢？这个数很主流的方案么？
+2. 现在在 typescript agent 项目内，对 vitest 的测试用例编写有什么现成的方案么？你在 github 仓库内有看到什么合适的教程和项目指导你这样做么？
+3. BM25 是什么东西啊？跟我说说吧，我对这个确实不懂。
+4. 搭建 Neon 本地 Postgres，你有想好怎么去 neon 内新建一个云数据库么？你把这个链路准备好了吗？
+
+---
+
+我对这个 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api add nitropack h3 ai @ai-sdk/openai drizzle-orm postgres zod` 很不满意。特别是你的你的 nitro 实现，你应该看 `D:\code\ruan-cat\01s-11comm\apps\api` 这个项目的做法，看这个项目 nitro 接口实现。我们用的是 nitro v3 版本来实现独立可用 nitro 接口的。不允许你使用 nitropack 这个 v2 版本的包。
+安排独立的子代理，去改正这个写法，你这个写法就不对，不合适。
+
+---
+
+我们现在的 spec 和 plan 内根本没说明清楚你怎么去完成 neon 新数据库的生成，以及 neon 连接向量插件 pgvector 。这个具体的做法细节没说明清楚，你的调研不齐全。应该多用 content7 MCP 或者是其他联网查询工具看具体的问题，来实现 pgvector + neon 的功能。说明清楚怎么新建数据库，怎么使用 neon cli 完成任务。
+另外，我已经给我们这个项目的云 vercel 项目，安装了 neon-smallalice-ai-rag 这个 neon 数据库，你给我记清楚了，本 git 项目链接的 vercel 项目，其对接的云数据库名称是 `neon-smallalice-ai-rag` 。未来你链接 neon 数据库需要的敏感环境变量，你应该要先走 vercel 获取云环境的变量，再开始完成数据库连接。
+参考 https://neon.com/docs/extensions/pgvector 和 reports\2026-07-31-ai-rag-phase2-technical-decisions.md ，确保这个云 neon 数据库可以连接 pgvector 。
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
@@ -205,6 +234,8 @@ skills add https://github.com/mattpocock/skills `
 每一个子包应该自己在 package.json 内完成自己要负责的 export 路径，和必要的 typescript 类型文件的生成，和 `*.d.ts` 文件的生成。而不是用这种变通的方式来完成全局整体性质的路径处理。这就很偷懒，而且耦合度很高，万一我以后增加了更多的子包，岂不是根包 tsconfig.json 配置越来越臃肿了？
 你去看看 D:\code\ruan-cat\monorepo 和 D:\code\ruan-cat\01s-11comm ，D:\code\ruan-cat\eams-component-lib ，这几个项目那个会想你一样弄这种根 tsconfig.json 的写死路径别名？你这个做法就不优雅，耦合度很大。每个子包的 typescript 路径暴露职责都没做好！
 
-## 004 <!-- TODO: -->
+## 004 <!-- TODO: --> 调研来自 docx 文档生成的 x-emf 格式文件的转换方案
 
 ---
+
+## 005 <!-- TODO: -->
