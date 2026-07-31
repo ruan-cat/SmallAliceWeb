@@ -1,4 +1,5 @@
 import { setUserConfig, setGenerateSidebar, addChangelog2doc } from "@ruan-cat/vitepress-preset-config/config";
+import { installVitePressHeadingAnchors } from "@ruan-cat-drill-doc/ai-rag-core";
 
 // 为文档添加自动生成的changelog
 addChangelog2doc({
@@ -39,6 +40,12 @@ const userConfig = setUserConfig({
 	// 钻头项目有很多emf矢量图 需要添加到vite的assetsInclude中
 	vite: {
 		assetsInclude: ["**/*.emf"],
+	},
+
+	markdown: {
+		config(markdown) {
+			installVitePressHeadingAnchors(markdown);
+		},
 	},
 });
 
