@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsdown",
+		"typecheck": "tsc --noEmit",
 		"dev": "tsdown --watch",
 		"test": "vitest run",
 		"postinstall": "pnpm run build",

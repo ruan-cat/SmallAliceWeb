@@ -1,10 +1,39 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"tasks": {
+		"//#neon:guard": {
+			"inputs": [
+				"package.json",
+				"pnpm-lock.yaml",
+				"turbo.json",
+				"scripts/guard-neon-cli.ts",
+				"**/*.bat",
+				"**/*.cmd",
+				"**/*.cjs",
+				"**/*.cts",
+				"**/*.js",
+				"**/*.json",
+				"**/*.mjs",
+				"**/*.mts",
+				"**/*.ps1",
+				"**/*.sh",
+				"**/*.ts",
+				"**/*.yaml",
+				"**/*.yml",
+				"!node_modules/**",
+				"!.git/**",
+				"!.output/**",
+				"!dist/**"
+			],
+			"outputs": []
+		},
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": ["$TURBO_DEFAULT$", ".env*", "!dist/**", "!.output/**", "!.nuxt/**", "!.turbo/**"],
 			"outputs": ["dist/**", ".output/**", "!.output/cache/**", ".nuxt/**", "!.nuxt/cache/**"]
+		},
+		"typecheck": {
+			"outputs": []
 		},
 		"//#build:doc-in-vercel": {
 			"inputs": [
@@ -17,8 +46,28 @@
 			],
 			"outputs": ["docs/docx/**"]
 		},
+		"//#docs:build:run": {
+			"dependsOn": ["//#neon:guard", "^build", "//#build:doc-in-vercel"],
+			"inputs": [
+				"package.json",
+				"pnpm-workspace.yaml",
+				"tsconfig.json",
+				"turbo.json",
+				".env*",
+				"docs/**",
+				"!docs/docx/**",
+				"!docs/.vitepress/dist/**",
+				"!docs/.vitepress/cache/**"
+			],
+			"outputs": ["docs/.vitepress/dist/**", "!docs/.vitepress/cache/**"]
+		},
+		"//#typecheck:run": {
+			"dependsOn": ["//#neon:guard", "^typecheck"],
+			"inputs": ["package.json", "pnpm-workspace.yaml", "tsconfig.json", "turbo.json", "packages/**", "scripts/**"],
+			"outputs": []
+		},
 		"//#docs:build": {
-			"dependsOn": ["^build", "//#build:doc-in-vercel"],
+			"dependsOn": ["//#neon:guard", "^build", "//#build:doc-in-vercel"],
 			"inputs": [
 				"package.json",
 				"pnpm-workspace.yaml",
