@@ -37,14 +37,40 @@ TypeScript / VitePress / 独立 Nitro / Element Plus X
 
 ### 2.1 技术栈组合
 
-| 层次              | 推荐技术                         | 选型理由                                        |
-| ----------------- | -------------------------------- | ----------------------------------------------- |
-| **前端 UI**       | Vue3 + Element Plus X            | 已有 Vue3 经验，Element Plus X 提供 AI 对话组件 |
-| **流式传输**      | @ai-sdk/vue + 独立 Nitro API     | 统一的流式响应协议，Nitro 提供 `/v1/chat` 入口  |
-| **Markdown 渲染** | x-markdown-vue + @shikijs/stream | 支持流式增量渲染，代码块动态高亮                |
-| **数据库**        | Neon + drizzle + pgvector        | PostgreSQL 原生向量支持，与业务数据统一建模     |
-| **输入校验**      | zod                              | TypeScript 原生 schema 校验                     |
-| **RAG 框架**      | LangChain.js / Vercel AI SDK RAG | 官方支持，稳定可靠                              |
+|       层次        |             推荐技术             |                          选型理由                          |
+| :---------------: | :------------------------------: | :--------------------------------------------------------: |
+|    **前端 UI**    |   Vue3 + `vue-element-plus-x`    |    `Bubble`、`BubbleList`、`Sender` 是唯一聊天 UI 主线     |
+|   **流式传输**    |  `@ai-sdk/vue` + 独立 Nitro API  | 使用方的 `useKnowledgeChat` 负责 transport、state 与 abort |
+| **Markdown 渲染** |         `markstream-vue`         |   面向 Vue/VitePress 的流式、不完整 Markdown 成熟渲染器    |
+|   **代码高亮**    | `@shikijs/stream`（受控集成项）  |       仅在锁定版本并完成兼容性验证后处理生成中代码块       |
+|    **数据库**     |    Neon + drizzle + pgvector     |        PostgreSQL 原生向量支持，与业务数据统一建模         |
+|   **输入校验**    |               zod                |                TypeScript 原生 schema 校验                 |
+|   **RAG 框架**    | LangChain.js / Vercel AI SDK RAG |                     官方支持，稳定可靠                     |
+
+### 2.1.1 聊天 UI 与 Markdown 职责边界
+
+`vue-element-plus-x` 是本期唯一的聊天 UI 主线：使用其 `Bubble`、`BubbleList` 与 `Sender` 负责消息气泡、消息列表、输入和停止交互。`markstream-vue` 是唯一的流式 Markdown 主线，必须直接导入并用于助手消息渲染，以正确处理增量到达和未闭合 Markdown。不得以本地 `AiChatMessage`、`AiChatComposer`、`AiChatMarkdown`、手写 Markdown parser 或其他同职责组件替代这些依赖。
+
+`@shikijs/stream` 不是 Markdown 渲染器替代品，只可作为 `markstream-vue` 代码块高亮的受控集成项。接入前必须锁定版本，并以真实组件 API spike 验证代码块、未闭合代码块、表格、长回复与 XSS 防护；验证失败时保留 `markstream-vue` 的安全默认渲染，不得假定两者兼容。
+
+通用 `ai-vue` 展示包只能保留薄适配：将项目消息/来源 DTO 映射为第三方组件 props、生成稳定 `sourceHref`、维护 mock 文档示例。`@ai-sdk/vue` 仅由业务使用方的 `useKnowledgeChat` 调用，负责 transport、会话状态和 abort，不进入通用 `ai-vue` 展示包。AI Elements Vue 仅是未来 Tailwind/shadcn 技术栈的替代方案；本期不得与 Element Plus X 混用。
+
+### 2.1.2 流式 Markdown 与 Typewriter 的职责边界
+
+`markstream-vue` 与 `vue-element-plus-x` 的 `Typewriter` 不是可互换的同类组件。前者负责不断变化的 Markdown 内容，后者负责纯文本的视觉逐字展示；二期不得将二者叠加到同一段助手 Markdown 正文上。
+
+| 对比维度 |                             `markstream-vue`                              |     `vue-element-plus-x` 的 `Typewriter`     |         二期选型         |
+| :------: | :-----------------------------------------------------------------------: | :------------------------------------------: | :----------------------: |
+| 输入对象 |                    响应式 Markdown 内容及其流结束状态                     |                已确定的纯文本                |     助手正文使用前者     |
+| 流式语义 |         处理 SSE/WebSocket chunk、未闭合 Markdown 与 `final` 收敛         |  不承担传输、Markdown 解析或未闭合结构处理   |     流式状态交给前者     |
+| 呈现节奏 | `smoothStreaming` 平滑追赶到达不均的 chunk；`typewriter` 可做增量逐字效果 |                 单纯文本动画                 | 正文只保留前者的逐字策略 |
+| 适用区域 |                  助手回答、代码块、表格、公式与引用内容                   | Welcome 标题、简短状态提示等非 Markdown 文案 |  不得包裹 Markdown 正文  |
+
+二期助手正文固定采用 `MarkdownRender` 的 `mode="chat"`，由业务层持续更新 `content`；流式期间传入 `final=false`，收到流结束信号后传入 `final=true`。默认传入 `smoothStreaming="auto"` 并启用 `markstream-vue` 的 `typewriter`，同时固定 `fade=false`，避免高频平滑流与淡入叠加造成重复的透明度重启。服务端一次推送较大的 chunk 时，平滑流式能力仍可小批量呈现，而不应改由外层纯文本动画拆分内容。
+
+应用必须遵守用户的减少动态效果偏好：检测到 `prefers-reduced-motion: reduce` 时关闭正文 `typewriter` 与淡入动画，但不得停止内容流、Markdown 解析或 `final` 收敛。Element Plus X 的 `Typewriter` 只允许用于非 Markdown 的短文案，且同样必须尊重该偏好。
+
+这不是重复造轮子：`Bubble`、`BubbleList`、`Sender`、`Welcome` 与 `Prompts` 组成 Element Plus X 的对话壳层；`markstream-vue` 是助手内容的流式 Markdown 渲染层。二期不得新增自研 Markdown 打字机，也不得以 Element Plus X 的 `Typewriter` 再包裹 `MarkdownRender`，以免破坏代码围栏、公式、表格和流结束状态的一致性。
 
 ### 2.2 向量数据库选型建议
 
@@ -73,6 +99,12 @@ TypeScript / VitePress / 独立 Nitro / Element Plus X
 本仓库关联的 Vercel 项目已安装 `neon-smallalice-ai-rag`，二期直接复用这一云端资源，不得新建同用途的 Neon project 或 database。固定的非敏感资源标识为：Neon 组织 ID `org-super-fog-48541962`、Neon 项目 ID `patient-cloud-43432277`、Vercel 已关联的 Neon 数据库名称 `neon-smallalice-ai-rag`。实施连接的顺序固定为：先使用 `vercel env pull .env.local --environment=development` 拉取当前 Vercel 环境变量，再让 Nitro API 连接数据库；连接串绝不写入仓库、报告、测试快照或终端记录。应用运行使用 Vercel 集成提供的 pooled URL，Drizzle migration 使用非 pooled URL；环境变量的实际名称以拉取结果为准，缺少非 pooled URL 时不得迁移。
 
 本项目统一使用官方 `neon` CLI。CLI 的安装与认证由用户完成，代理不得自行安装、认证或读取 CLI 凭据；认证完成后，才可通过 `neon projects list --output json`、`neon branches list` 与 `neon databases list` 核对既有资源的真实 ID，再对目标 development branch 执行 migration。`pgvector` 通过首个 migration 的 `CREATE EXTENSION IF NOT EXISTS vector;` 启用，并且必须在每个要写入向量的 database 中单独启用。`chunks.embedding` 固定为 `vector(1536)`，首期使用余弦距离 `<=>` 与 HNSW 的 `vector_cosine_ops`；HNSW 是近似检索，须以固定评估集对比精确检索后才作为默认。
+
+### 2.6 Neon CLI 强制执行与记录
+
+项目执行入口只能调用官方 `neon` CLI，禁止 `neonctl`、其包装器或以 `npx` 临时安装的同名替代命令。Windows 已发生过 `neonctl@2.30.1` 的 `dist/cli.js --help` 在 `cmd -> node` 链路中无端口 CPU 自旋的事故：5 秒 CPU 增量为 5.66 秒，累计 CPU 达 7891.41 秒。因此 `neonctl --help`、`neonctl --version` 和所有资源查询都属于禁止路径，不得以“只读检查”为由绕过。`scripts/guard-neon-cli.ts` 通过 std-env 先判断平台：仅 Windows 扫描整个仓库的可执行文件类型，并排除依赖目录、构建产物和守卫自身；Linux、macOS 与 Vercel 构建环境不扫描、直接成功退出。后续新增的数据库脚本必须把该守卫作为前置步骤，不能以文档声明替代可执行检查。
+
+正确替代顺序固定为：运行 `pnpm run neon:guard`，由用户确认官方 `neon` 已安装并完成认证，再使用 `neon projects get patient-cloud-43432277 --output json`、`neon branches list`、`neon databases list` 或 `neon psql` 完成对应步骤。每次实际云端操作都必须留下不含密钥的执行记录：执行时间、操作者已确认的认证状态、工作目录、脱敏后的 `neon` 命令模板、目标 project/branch/database、退出码和验证结果。若命令超时或异常，记录 PID、父进程、CPU 采样和监听端口；先停止可复核的异常子进程，再重新采样，禁止把长期运行的 MCP、开发服务或不明进程一并结束。
 
 ---
 
@@ -223,14 +255,21 @@ const RAG_PROMPT = `
 
 #### 3.3.1 Chat UI 组件
 
-| 组件     | 功能             | 技术要点                                                       |
-| -------- | ---------------- | -------------------------------------------------------------- |
-| 消息气泡 | 显示用户/AI 消息 | Markdown 渲染、代码高亮                                        |
-| 流式文本 | 增量渲染 AI 回复 | x-markdown-vue / markstream-vue                                |
-| 引用卡片 | 显示检索来源     | 折叠/展开，按稳定 `headingAnchor` 跳到 `sourcePath` 的标题段落 |
-| 输入区域 | 发送消息         | 文本框、文件上传、停止按钮                                     |
+|     组件      |       唯一实现来源        |                               技术要点                                |
+| :-----------: | :-----------------------: | :-------------------------------------------------------------------: |
+| 消息气泡/列表 |  `Bubble` / `BubbleList`  |          项目 DTO 薄映射，助手内容交由 `markstream-vue` 渲染          |
+|   输入区域    |         `Sender`          |           发送和停止事件由使用方的 `useKnowledgeChat` 绑定            |
+|   流式文本    |     `markstream-vue`      |     直接导入；支持增量与未闭合 Markdown，禁止手写 Markdown parser     |
+|   代码高亮    | `@shikijs/stream`（可选） |    仅通过锁版本和兼容性 spike 后接入，不得假定与 Markdown 组件兼容    |
+|   引用卡片    |       项目薄适配层        | 按稳定 `headingAnchor` 生成 `sourceHref` 并跳到 `sourcePath` 标题段落 |
 
-#### 3.3.2 文档管理 UI
+**验收边界**：产物必须真实 import `vue-element-plus-x` 与 `markstream-vue`；不得导出或维护与 `Bubble`、`Sender`、Markdown renderer 同职责的本地组件。`@ai-sdk/vue` 的版本锁定、真实 transport/abort 合同测试和使用方接入是单独前置条件，未通过前不得声称已接入真实会话。
+
+#### 3.3.2 聊天状态与传输边界
+
+`useKnowledgeChat` 位于业务使用方：它以 `@ai-sdk/vue` 管理消息、请求 transport、流式状态和 abort，并把规范化后的消息与来源 DTO 传给 Element Plus X 和 `markstream-vue`。通用 `ai-vue` 不导入 `@ai-sdk/vue`，也不包含 Nitro 请求逻辑。来源 footer 与 mock 示例只能基于传入数据工作，不能绕过这层边界。
+
+#### 3.3.3 文档管理 UI
 
 | 组件     | 功能             | 技术要点                                   |
 | -------- | ---------------- | ------------------------------------------ |

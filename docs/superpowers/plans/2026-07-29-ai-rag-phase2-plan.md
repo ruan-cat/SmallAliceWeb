@@ -271,6 +271,9 @@ src/
 **步骤**：
 
 - [ ] **Step 0: 先从 Vercel 获取连接配置，再操作 Neon**
+  - 执行任何 Neon 云端命令前，先运行 `pnpm run neon:guard`。该守卫必须确认项目可执行入口中不存在 `neonctl`；失败时停止本任务，不得改用 `neonctl`、`npx` 临时替代命令或手工绕过检查。
+  - Windows 严禁直接执行 `neonctl`，包括 `neonctl --help` 与 `neonctl --version`。这是已复现的严重故障路径：`neonctl@2.30.1` 的 `cmd -> node` 一次性帮助命令曾在无监听端口时持续占用单核 CPU。正确替代是用户确认官方 `neon` 已安装认证后，按本任务的 `neon projects get`、`neon branches list`、`neon databases list` 和 `neon psql` 命令执行。
+  - 本任务的每次实际云端操作都记录执行时间、已确认认证状态、工作目录、脱敏后的官方 `neon` 命令模板、目标 project/branch/database、退出码和验证结果；连接串、密码和 token 不得进入记录。命令异常时额外记录 PID、父进程、CPU 二次采样和监听端口，再按受限进程清理门禁处理。
   - 本 Git 仓库关联的 Vercel 项目已安装 `neon-smallalice-ai-rag`。固定资源标识：Neon 组织 ID 为 `org-super-fog-48541962`，Neon 项目 ID 为 `patient-cloud-43432277`，Vercel 已关联的 Neon 数据库名称为 `neon-smallalice-ai-rag`。它们共同指向二期唯一的云端 Neon 资源；不得因文档中的示例名称再次执行 `neon projects create` 或 `neon databases create`。
   - 在 `packages/ai-rag-api` 存在后，先执行 `vercel env pull .env.local --environment=development`。只在本地受 `.gitignore` 保护的文件中读取变量，禁止在终端输出、日志、测试快照、报告或 Git 中写入连接串。
   - 先检查拉取到的变量名，再确定连接串来源：应用运行使用 pooled URL（通常为 `POSTGRES_URL`）；Drizzle migration 只使用非 pooled URL（通常为 `POSTGRES_URL_NON_POOLING`）。若 Vercel 集成没有提供非 pooled URL，停止迁移并在 Vercel/Neon 集成侧补齐，不能把 pooled URL 冒充 DDL 连接。
@@ -718,141 +721,37 @@ packages/ai-rag-api/
 
 ---
 
-### 任务 3.2：演进复用 ai-vue Chat UI
+### 任务 3.2：集成现成 Chat UI 与流式 Markdown
 
-**目标**：复用 `packages/ai-vue` 的 `AiChat`，将本地 mock 状态与展示层解耦，再补齐真实流式会话、停止生成和来源展示能力。
+**目标**：以 `vue-element-plus-x` 的 `Bubble`、`BubbleList`、`Sender` 实现唯一的对话 UI 主线，以 `markstream-vue` 实现唯一的流式 Markdown 主线；`ai-vue` 仅保留项目 DTO、来源链接与 mock 演示的薄适配。
 
-**文件**：`packages/ai-vue/src/components/ai-chat/`、`packages/ai-vue/src/composables/`
+**文件**：业务使用方的 Chat 页面与 `useKnowledgeChat.ts`；`packages/ai-vue` 仅包含薄适配和文档示例。
 
 **步骤**：
 
-- [ ] **Step 1: 保留并解耦现有 AiChat**
-  - 保留 `useMockAiChat` 作为文档站和组件演示的默认数据源。
-  - `AiChat` 只负责消息、输入、状态和事件展示；消息集合、发送行为、停止行为由使用方传入。
-  - 保持现有 `send` 事件，并新增可选的 `stop`、来源数据和流式状态接口。
+- [ ] **Step 1: 锁定依赖与真实 API**
+  - 将 `vue-element-plus-x`、`markstream-vue` 和 `@ai-sdk/vue` 锁定为经过核验的版本；不得根据示例或名称猜测 API。
+  - 验证 `Bubble`、`BubbleList`、`Sender` 的消息、列表、发送与停止接口，以及 `markstream-vue` 的 `content`/流式结束状态接口。
+  - `@ai-sdk/vue` 尚未安装和接入；其 transport、state、abort 合同测试是后续步骤的前置条件。
 
-- [ ] **Step 2: 在 ai-vue 内补齐可复用展示组件**
+- [ ] **Step 2: 以第三方组件替换同职责本地实现**
+  - 在业务 Chat 页面真实 import `Bubble`、`BubbleList`、`Sender` 与 `markstream-vue`；不得继续新增或导出与它们同职责的本地消息、输入或 Markdown 组件。
+  - `ai-vue` 只负责将项目 message/source DTO 映射为第三方 props、生成稳定 `sourceHref`、维持 mock 文档示例；不得导入 `@ai-sdk/vue` 或耦合 Nitro 请求。
+  - 将停止操作绑定到使用方传入的 abort；在尚未接入真实 transport 时，mock 示例必须明确保持本地边界。
 
-  ```vue
-  <!-- packages/ai-vue/src/components/ai-chat/AiChatMessage.vue -->
-  <template>
-  	<div :class="['message', `message-${role}`]">
-  		<div class="message-avatar">
-  			<el-icon v-if="role === 'assistant'"><ai-el-icon /></el-icon>
-  		</div>
-  		<div class="message-content">
-  			<div class="message-text">
-  				<MarkdownRenderer :content="content" :streaming="streaming" />
-  			</div>
-  			<div v-if="sources?.length" class="message-sources">
-  				<div class="sources-header">参考资料</div>
-  				<div v-for="(source, i) in sources" :key="i" class="source-item">
-  					<span class="source-index">[{{ i + 1 }}]</span>
-  					<span class="source-text">{{ source.content }}</span>
-  				</div>
-  			</div>
-  		</div>
-  	</div>
-  </template>
+- [ ] **Step 3: 实现单一的流式 Markdown 与打字机呈现路径**
+  - 助手 Markdown 正文必须由 `markstream-vue` 的 `MarkdownRender` 直接渲染：SSE 内容持续追加到响应式 `content`，流式期间传入 `final=false`，收到结束信号后传入 `final=true`。不得以整段替换或外层纯文本动画模拟流式回答。
+  - 默认使用 `mode="chat"`、`smoothStreaming="auto"` 与 `markstream-vue` 的 `typewriter`；当后端 chunk 粒度不均或较大时，验证其平滑追赶仍保持 Markdown、代码围栏、表格和公式的正确中间状态。
+  - 检测到 `prefers-reduced-motion: reduce` 时关闭正文 `typewriter` 与淡入动画，但保留真实内容流和 `final` 收敛。为默认策略与减少动态效果策略分别编写 `describe`/`test` 合同测试。
+  - 禁止使用 `vue-element-plus-x` 的 `Typewriter` 包裹助手 Markdown 正文，也禁止新增自研 Markdown 打字机。该组件仅可用于 Welcome 或其他非 Markdown 的简短文案，并须遵守同一动态效果偏好。
 
-  <script setup lang="ts">
-  interface Source {
-  	id: string;
-  	content: string;
-  	score: number;
-  	sourcePath: string;
-  	sourceUrl: string;
-  	headingPath: string[];
-  	headingIndex: number;
-  	headingAnchor: string;
-  	chunkIndex: number;
-  	imageUrls: string[];
-  }
+- [ ] **Step 4: 受控集成代码块高亮**
+  - 仅在 `markstream-vue` 版本与实际组件 API 完成 spike 后，评估 `@shikijs/stream`；它只处理生成中代码块高亮，不替代 Markdown renderer。
+  - 为表格、未闭合代码块、长回复、XSS 防护和流式结束状态编写 `describe`/`test` 合同测试；缺任一证据时不得宣称兼容或接入。
 
-  defineProps<{
-  	role: "user" | "assistant";
-  	content: string;
-  	sources?: Source[];
-  	streaming?: boolean;
-  }>();
-  </script>
-  ```
-
-- [ ] **Step 3: 在 ai-vue 内补齐输入与停止交互**
-
-  ```vue
-  <!-- packages/ai-vue/src/components/ai-chat/AiChatComposer.vue -->
-  <template>
-  	<div class="chat-input">
-  		<el-input
-  			v-model="inputValue"
-  			type="textarea"
-  			:rows="3"
-  			placeholder="输入问题..."
-  			@keydown.enter.meta="handleSubmit"
-  			@keydown.enter.ctrl="handleSubmit"
-  		/>
-  		<div class="input-actions">
-  			<el-button v-if="isStreaming" @click="handleStop" :icon="VideoPause"> 停止 </el-button>
-  			<el-button type="primary" @click="handleSubmit" :loading="isLoading" :icon="Promotion"> 发送 </el-button>
-  		</div>
-  	</div>
-  </template>
-
-  <script setup lang="ts">
-  const inputValue = ref("");
-  const isStreaming = ref(false);
-  const isLoading = ref(false);
-
-  const emit = defineEmits<{
-  	submit: [message: string];
-  	stop: [];
-  }>();
-
-  function handleSubmit() {
-  	if (!inputValue.value.trim()) return;
-  	emit("submit", inputValue.value);
-  	inputValue.value = "";
-  }
-
-  function handleStop() {
-  	emit("stop");
-  	isStreaming.value = false;
-  }
-  </script>
-  ```
-
-- [ ] **Step 4: 实现可选的流式 Markdown 渲染**
-
-  ```vue
-  <!-- packages/ai-vue/src/components/ai-chat/AiChatMarkdown.vue -->
-  <template>
-  	<div class="markdown-content" v-html="renderedContent"></div>
-  </template>
-
-  <script setup lang="ts">
-  import MarkdownIt from "markdown-it";
-  import { codeBlockPlugin } from "@shikijs/stream";
-
-  const props = defineProps<{
-  	content: string;
-  	streaming?: boolean;
-  }>();
-
-  const md = new MarkdownIt({
-  	html: false,
-  	linkify: true,
-  	typographer: true,
-  });
-
-  // 注册代码高亮插件
-  md.use(codeBlockPlugin({ theme: "github-dark" }));
-
-  const renderedContent = computed(() => {
-  	return md.render(props.content);
-  });
-  </script>
-  ```
+- [ ] **Step 5: 验收 UI 复用边界**
+  - 断言实现产物真实 import `vue-element-plus-x` 和 `markstream-vue`，并在组件测试和构建中验证消息、发送、停止、来源 footer 与流式渲染。
+  - AI Elements Vue 仅作为 Tailwind/shadcn 栈的备选，不得与 Element Plus X 混用。
 
 ---
 
@@ -892,6 +791,9 @@ packages/ai-rag-api/
   ```
 
 - [ ] **Step 2: 前端解析来源数据**
+  - 前置条件：先安装并锁定 `@ai-sdk/vue`，再根据该锁定版本的官方 API 编写 `useKnowledgeChat`；下方仅表达数据边界，不得据此假定当前版本的调用签名。
+  - `useKnowledgeChat` 只存在于业务使用方，负责 transport、消息状态与 abort；它向 Element Plus X 和 `markstream-vue` 传入已规范化的消息、流式状态与来源 DTO。通用 `ai-vue` 不得导入 `@ai-sdk/vue`，也不得包含 Nitro 请求实现。
+  - 为 transport、abort、来源数据帧、`503 RAG_NOT_CONFIGURED` 和 DTO 映射编写合同测试；未通过前不得将真实聊天状态标为可用。
 
   ```typescript
   import { useChat } from "@ai-sdk/vue";
@@ -1055,6 +957,53 @@ packages/ai-rag-api/
   ```
 
 ---
+
+## 5. 高频更新与待办
+
+本章是本计划的持续状态台账。每次推进二期 AI RAG 时，优先更新本章；原任务与里程碑中的复选框仅在实现、验证完成且获得用户认可后才更新，避免将“代码已写入”误记为“目标已验收”。
+
+### 5.1 更新规则
+
+- 只记录可复核事实：修改范围、验证命令、外部依赖和下一步，不写推测性结论。
+- 本地代码、外部凭据和云端验收必须分开记录；本地构建成功不能证明 Neon、Vercel 或模型服务可用。
+- 外部步骤执行前先记录授权、目标资源、脱敏后的命令模板与预期证据；不得把连接串、密码、token 或模型密钥写入本文件。
+- 本章按状态变化更新。没有新的证据时保留原记录，不重复改写日期或制造无意义变更。
+
+### 5.2 当前已验证的本地成果
+
+|      模块      |                                                                                                          当前证据                                                                                                          |                                                          验证范围                                                           |                             残余边界                             |
+| :------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------: |
+| 结构化知识准备 |                                                                           Markdown 扫描、结构化 chunk、稳定标题锚点、来源 URL 与 RRF 合同已落地                                                                            |                                              `ai-rag-core` 单元测试与类型检查                                               |              未接入真实语料的 embedding 与向量写入               |
+|  API 离线合同  |                                                                Nitro 路由、鉴权/错误映射、同步记录 schema、pgvector migration、Hybrid Search 注入合同已落地                                                                |                                       `ai-rag-api` 单元测试、类型检查、`build:vercel`                                       |           没有真实 PostgreSQL lexical/vector provider            |
+|  聊天安全边界  |                                                                未装配真实检索或流服务时返回 `503 RAG_NOT_CONFIGURED`；模型配置只允许来自私有 runtime config                                                                |                                          路由测试覆盖 503、Response 原样透传与 EOF                                          |                 尚未装配生产 `event.context.rag`                 |
+|    离线评估    |                                                                                 固定 10 题题集和 lexical/vector/hybrid 三策略评估器已落地                                                                                  |                                       评估器测试覆盖 JSON 结果、命中率和关键词覆盖率                                        |                 尚未以真实索引运行并写入评估结果                 |
+|  本地 Chat UI  | `AiChat` 已直接接入 `Bubble`、`BubbleList`、`Sender` 与 `MarkdownRender`；助手消息采用 `mode="chat"`、`html-policy="escape"`，默认使用 `smoothStreaming="auto"` 与 `typewriter`、固定 `fade=false`，减少动态效果时关闭三项 | `pnpm --filter @ruan-cat-drill-doc/ai-vue test`：`3` 文件、`8` 用例通过；`typecheck`、`build` 通过；`git diff --check` 通过 | 尚未接入 `@ai-sdk/vue` 真实 transport/state/abort 或生产聊天传输 |
+| VitePress 锚点 |                                                                                            构建期稳定锚点与来源 URL 映射已落地                                                                                             |                                                   核心单元测试与配置加载                                                    |                全量 `docs:build` 尚未取得成功证据                |
+
+### 5.3 待办与外部验收门禁
+
+| 优先级 |                                        待办                                        |                                       进入条件                                       |                                                        所需证据                                                        |           当前状态           |
+| :----: | :--------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: | :--------------------------: |
+|   P0   |     实现 PostgreSQL 词法检索与 pgvector 检索 provider，并装配到同步和聊天服务      |                 用户明确允许数据库操作，且 Vercel 环境变量已安全拉取                 |                               脱敏后的 migration、provider 集成测试、目标数据库查询结果                                |         等待外部授权         |
+|   P0   |    生成真实 embedding，执行增量对账、单文档事务替换与 PostgreSQL advisory lock     |                      已有可用 OpenAI/embedding 凭据及目标数据库                      |                                    同步运行记录、失败文件记录、重复同步不重算的证据                                    |         等待外部授权         |
+|   P0   | 装配生产 `event.context.rag`，把 Hybrid Search 和私有 OpenAI 流服务接入 `/v1/chat` |                       检索 provider、模型配置和部署环境均可用                        |                                      真实端到端流式响应、来源 DTO、503 非装配分支                                      |         等待外部授权         |
+|   P0   |    本地 Chat UI 库适配已完成：`vue-element-plus-x` 与 `markstream-vue` 真实接入    | `vue-element-plus-x@1.3.98` 与 `markstream-vue@1.0.8` 类型、运行产物和 README 已核验 | `Bubble`/`BubbleList`/`Sender`、来源 footer、Markdown 安全策略、默认与减少动态策略的 Vitest 覆盖；包级 typecheck/build | 本地完成；真实传输依赖下一项 |
+|   P0   |             锁定并验证 `@ai-sdk/vue` 的真实 transport/state/abort 合同             |                        `@ai-sdk/vue` 已安装且版本 API 已核验                         |                        `useKnowledgeChat` transport、abort、来源帧、503 分支与 DTO 映射合同测试                        |         等待本地实施         |
+|   P1   |           验证 `@shikijs/stream` 与 `markstream-vue` 的代码块高亮兼容性            |                 前述 Markdown renderer 已接入，版本与组件 API 已锁定                 |                                   表格、未闭合代码块、XSS、长回复和流式结束状态测试                                    | 等待本地 spike；不得假定兼容 |
+|   P1   |               提供 `rag:sync` 与可选 `rag:watch`，并配置生产同步触发               |                               同步服务可连接目标数据库                               |                                       本地一次同步、监听变更与受控鉴权触发的日志                                       |       依赖 P0 同步服务       |
+|   P1   |                         用真实索引运行评估集并产出调优结果                         |                       词法、向量与 embedding provider 全部可用                       |                                         固定题集输出、参数集、命中率和选型理由                                         |       依赖 P0 检索服务       |
+|   P1   |                        诊断并通过完整 `pnpm run docs:build`                        |                                可复现当前文档构建环境                                |                                             两次完整构建成功及生成产物检查                                             |           尚未验证           |
+|   P1   |                 部署到既有关联的 Vercel 项目并完成生产可访问性回归                 |         用户明确授权部署，且生产环境变量、检索 provider 与流服务均已完成装配         |                               脱敏后的部署记录、部署 URL、真实流式问答与来源跳转回归证据                               |         等待外部授权         |
+|   P2   |                      完善 README，录制并上传 30-60 秒演示视频                      |                       本地端到端功能可演示，且用户授权外部上传                       |                                            文档链接、视频地址与可访问性验证                                            |     视频上传等待用户授权     |
+
+### 5.4 最近更新记录
+
+- 2026-08-01：`ai-vue` 本地 Chat UI 已完成库适配：`Bubble`、`BubbleList`、`Sender` 与 `MarkdownRender` 均为真实 import。助手 Markdown 保持 `mode="chat"`、`content`、`final` 与 `html-policy="escape"`；默认采用 `smoothStreaming="auto"` 与 `typewriter`、固定 `fade=false`，`prefers-reduced-motion: reduce` 时关闭三项但保留内容流。包级 Vitest `3` 文件、`8` 用例通过，typecheck 与 build 通过。
+- 2026-07-31：聊天路由移除了空检索与默认模型回退；缺少检索或流服务装配时返回 `503 RAG_NOT_CONFIGURED`，避免以空上下文请求外部模型。
+- 2026-07-31：新增私有 runtime config 的 OpenAI 流适配边界、路由 EOF 验证，以及离线固定评估题集和三策略评估器。
+- 2026-07-31：确定 Chat UI 技术选型：`vue-element-plus-x` 的 `Bubble`、`BubbleList`、`Sender` 是唯一 UI 主线，`markstream-vue` 是唯一流式 Markdown 主线；该选型已在 2026-08-01 的本地 Chat UI 实施中落地。
+- 2026-07-31：`@ai-sdk/vue` 的真实 transport/state/abort 接入、`@shikijs/stream` 与 `markstream-vue` 的兼容性验证均未实施；AI Elements Vue 仅保留为 Tailwind/shadcn 技术栈备选，不与 Element Plus X 混用。
+- 2026-07-31：未访问 Neon、Vercel、数据库或模型服务；所有真实云端步骤仍以本章的授权与证据门禁为准。
 
 ## 实施检查清单
 
