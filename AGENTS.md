@@ -439,6 +439,16 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 - 报告语言： 默认用简体中文。
 
+## Neon 与 Vercel 固定资源记忆
+
+二期 AI RAG 使用本仓库关联的 Vercel 项目中既有 Neon 资源。以下标识不属于敏感信息，MCP、CLI 和后续代理执行数据库相关任务前必须以它们为准：
+
+- Neon 组织 ID：`org-super-fog-48541962`
+- Neon 项目 ID：`patient-cloud-43432277`
+- Vercel 已关联的 Neon 数据库名称：`neon-smallalice-ai-rag`
+
+禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。数据库连接前先通过 Vercel 获取当前环境变量；连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
+
 ## 终端操作注意事项（防卡住）
 
 在 Windows PowerShell 环境下执行终端命令时，必须遵循以下规则，避免命令卡住浪费时间：
