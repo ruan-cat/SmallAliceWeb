@@ -4,6 +4,7 @@ import { sync } from "glob";
 import { consola } from "consola";
 import gradient from "gradient-string";
 import { spawnSync } from "child_process";
+import { isWindows, provider } from "std-env";
 import { fileTransformers } from "./transformers";
 import { cleanMdFiles } from "./cleaners";
 import { generateSimpleAsyncTask } from "./utils";
@@ -36,7 +37,7 @@ export interface BuildConfig {
  * 默认构建配置
  */
 const defaultConfig: BuildConfig = {
-	isSkipClone: false,
+	isSkipClone: shouldSkipCloneInCurrentEnvironment(),
 	isSkipDataPreparation: false,
 	isSkipTransform: false,
 	isSkipClean: false,
@@ -49,6 +50,27 @@ const defaultConfig: BuildConfig = {
 // ======================================
 // 工具函数
 // ======================================
+
+/**
+ * 判断当前运行环境是否应跳过克隆文档仓库。
+ *
+ * Windows 本地开发直接复用工作区内的 `drill-docx` 目录；Vercel 和
+ * GitHub Actions 等 Linux 云端构建环境必须克隆，以获得干净的文档源。
+ * 其他非 Windows 环境同样保守地执行克隆。
+ *
+ * @returns Windows 本地环境返回 `true`，其他环境返回 `false`
+ */
+function shouldSkipCloneInCurrentEnvironment(): boolean {
+	if (isWindows) {
+		return true;
+	}
+
+	if (provider === "vercel" || provider === "github_actions") {
+		return false;
+	}
+
+	return false;
+}
 
 /**
  * 生成简单的执行命令函数
