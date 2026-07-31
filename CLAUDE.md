@@ -429,6 +429,8 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 ## Neon 与 Vercel 固定资源记忆
 
+**Windows 平台禁令：禁止直接运行、安装后调用或在任何脚本中引入 `neonctl`。已确认它可导致 Node CPU 自旋；需要 Neon CLI 操作时必须使用官方 `neon` 替代。**
+
 二期 AI RAG 使用本仓库关联的 Vercel 项目中既有 Neon 资源。以下标识不属于敏感信息，MCP、CLI 和后续代理执行数据库相关任务前必须以它们为准：
 
 - Neon 组织 ID：`org-super-fog-48541962`

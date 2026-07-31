@@ -196,6 +196,12 @@ metadata:
 > 此章节在初始化时为空。随着项目中实际的 bug 修复经验积累，按照第 2.4 节的格式逐步补充摘要索引。
 > 详细案例内容写入同目录下的独立 md 文件，不要写在这里。
 
+### Windows neonctl CPU 自旋事故（2026-07-31）
+
+- 详细案例：`2026-07-31-windows-neonctl-cpu-spin.md`
+- 适用场景：Windows 上运行 Neon CLI 后，`cmd.exe -> node.exe` 一次性命令链无输出且长期占用 CPU。
+- 关键约束：禁止直接使用 `neonctl`；云端资源操作统一使用官方 `neon`，并以进程 CPU 采样和 `pnpm run neon:guard` 作为防回归证据。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
