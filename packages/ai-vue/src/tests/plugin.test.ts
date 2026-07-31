@@ -1,6 +1,10 @@
-import { describe, test } from "vitest";
+import { describe, test, vi } from "vitest";
 import { expect } from "vitest";
 import type { App } from "vue";
+
+vi.mock("vue-element-plus-x", () => ({ BubbleList: {}, Sender: {} }));
+vi.mock("markstream-vue", () => ({ default: {} }));
+
 import plugin, { AiChat, AiChatFloatingButton, install } from "../index";
 
 function createAppMock() {

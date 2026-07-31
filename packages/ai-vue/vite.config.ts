@@ -11,7 +11,7 @@ export default defineConfig({
 			cssFileName: "style",
 		},
 		rollupOptions: {
-			external: ["vue", "element-plus", "vue-element-plus-x"],
+			external: ["vue", "element-plus", "vue-element-plus-x", "markstream-vue"],
 		},
 	},
 	plugins: [
