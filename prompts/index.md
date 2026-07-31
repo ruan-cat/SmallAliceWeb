@@ -213,6 +213,30 @@ docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md
 另外，我已经给我们这个项目的云 vercel 项目，安装了 neon-smallalice-ai-rag 这个 neon 数据库，你给我记清楚了，本 git 项目链接的 vercel 项目，其对接的云数据库名称是 `neon-smallalice-ai-rag` 。未来你链接 neon 数据库需要的敏感环境变量，你应该要先走 vercel 获取云环境的变量，再开始完成数据库连接。
 参考 https://neon.com/docs/extensions/pgvector 和 reports\2026-07-31-ai-rag-phase2-technical-decisions.md ，确保这个云 neon 数据库可以连接 pgvector 。
 
+---
+
+`vue-element-plus-x` 管对话壳，`markstream-vue` 管流式 Markdown，`@shikijs/stream` 管生成中代码块；`AI Elements Vue` 属于另一套 shadcn/Tailwind UI 体系，不应与 Element Plus X 混作同一主界面
+把这个重要的技术选型说明，写清楚，写到 packages\ai-vue\package.json 的 READMD 和 根 README.md，做好必要的技术选型说明，确保你自己不要迷糊，也确保我能够正常阅读清楚必要的内容。
+正确更新 spec 和 plan。
+
+### 对 AI 组件库的思考设计
+
+vue-element-plus-x — AI 对话壳层，提供这些基础能力：
+
+核心组件矩阵
+组件 解决什么问题 AI 场景价值
+ChatBubble 对话气泡（用户/AI 双向） 支持头像、时间戳、操作按钮（复制/重试/点赞）
+Typewriter 打字机逐字输出效果 可配置速度、光标样式，模拟 AI "正在思考" 的体感
+Thinking 思考链/推理过程折叠展示 DeepSeek R1、QwQ 等推理模型的 thinking 内容展示
+Welcome 欢迎语 + 推荐问题 首次进入对话时的引导，降低用户冷启动成本
+MessageInput 增强输入框 支持多行、快捷键发送、文件上传、字数限制
+ConversationList 会话列表管理 多轮对话的历史管理、重命名、删除
+
+这些东西对么？按照官网来说这些对么？我们的 `@ruan-cat-drill-doc/ai-vue` AI 对话组件库，有充分的使用这些么？我们的 ChatBubble Typewriter Thinking MessageInput 这些基础组件，你有设计并使用么？还是说我们现在的组件库没做好？这些是不是纯纯的就是第一期制作套壳对话模板时，没做好的部分？你认为这些东西算作是对一期纯静态套壳 AI 对话框的补充么？你认为这些东西适合插入到我们二期项目的 `2026-07-29-ai-rag-phase2-plan` 和 `2026-07-29-ai-rag-phase2-design` 文档么？
+思考并和我讨论一下。
+
+---
+
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
 1. 运行命令。
@@ -238,4 +262,12 @@ skills add https://github.com/mattpocock/skills `
 
 ---
 
-## 005 <!-- TODO: -->
+## 005 <!-- TODO: 作为交互优化级别的项目 --> 网站 title 标题的动态切换
+
+我要求你实现 AI 应用标题的动态切换功能，我们完成一轮对话沟通后，标题应该立刻切换，并且去提示用户尽快处理。
+
+1. 在浏览器层面，应该申请浏览器弹框的权限。如果用户提供权限，那么 AI 对话完成后，就应该弹出浏览器弹框，通知用户已经完成了对话。
+   - 浏览器弹框的 icon 图标应该默认使用你这个 vitepress 站点默认提供的 favicon，未来我可能会改换别的通知弹框方式和 icon 图标。
+2. 浏览器标题应该立刻切换，以便完成通知用户的效果。
+   - 应该使用 vueuse 的工具函数，来实现你的浏览器标题切换功能。
+   - 在你的 vitepress 应用中，你应该注意看清楚在哪里去实现这个功能，你可能是在 `packages\ai-vitepress-plugins\package.json` 子包内完成这个浏览器标题切换功能。注意你是在 vitepress 应用内完成这个功能。我给的建议可能不对，你做好调研和思考后再开始做。核心查询点是： 在 vitepress 应用内使用 vueuse 的 useTitle 函数完成应用的标题切换。
