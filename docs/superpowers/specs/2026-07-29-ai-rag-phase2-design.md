@@ -10,7 +10,8 @@
 
 - **学习者定位**：AI 应用前端、AI Agent 全栈偏前端、TypeScript AI 应用工程师
 - **当前阶段**：已完成（或具备）AI Chat 基础，正在向 RAG 知识库方向深入
-- **目标作品**：基于 RAG 的企业知识库问答系统，支持文档上传、向量检索、流式问答与引用溯源
+- **目标作品**：基于 RAG 的动态知识库问答系统，支持知识库同步、向量检索、流式问答与引用溯源
+- **二期语料**：`docs/docx/**/*.md` 是唯一知识源；开发与生产环境都可读取该目录，文件由上游 DOCX 转换流程持续更新。图片不做 OCR 或多模态检索，只保留 Markdown 中的图片 URL 作为来源元数据
 
 ### 1.2 核心能力目标
 
@@ -27,7 +28,7 @@
 ```plain
 AI 知识库问答系统 / RAG / Hybrid Search / 向量检索 / 引用溯源 /
 流式渲染 / SSE / Chunk / Embedding / Neon / pgvector /
-TypeScript / Nuxt / Nitro / Element Plus X
+TypeScript / VitePress / 独立 Nitro / Element Plus X
 ```
 
 ---
@@ -39,7 +40,7 @@ TypeScript / Nuxt / Nitro / Element Plus X
 | 层次              | 推荐技术                         | 选型理由                                        |
 | ----------------- | -------------------------------- | ----------------------------------------------- |
 | **前端 UI**       | Vue3 + Element Plus X            | 已有 Vue3 经验，Element Plus X 提供 AI 对话组件 |
-| **流式传输**      | @ai-sdk/vue + Nuxt/Nitro         | 统一的流式响应协议，Nitro 提供 `/api/chat` 入口 |
+| **流式传输**      | @ai-sdk/vue + 独立 Nitro API     | 统一的流式响应协议，Nitro 提供 `/v1/chat` 入口  |
 | **Markdown 渲染** | x-markdown-vue + @shikijs/stream | 支持流式增量渲染，代码块动态高亮                |
 | **数据库**        | Neon + drizzle + pgvector        | PostgreSQL 原生向量支持，与业务数据统一建模     |
 | **输入校验**      | zod                              | TypeScript 原生 schema 校验                     |
@@ -63,6 +64,16 @@ TypeScript / Nuxt / Nitro / Element Plus X
 - ❌ 禁止引入多个向量数据库混用
 - ❌ 禁止在第一阶段引入 MCP 工具网关
 
+### 2.4 二期语料与多模态边界
+
+二期的入库根目录固定为 `docs/docx`，仅扫描 Markdown 文件。该目录是可变的上游产物，不以首次导入的数据库内容作为事实来源；每次同步都重新扫描目录并以相对路径和内容哈希对账。图片 URL 由 Markdown 解析器提取并挂载到文档和 chunk 元数据，既不下载图片，也不将图片内容发送给 embedding 或聊天模型。OCR、视觉检索、图片理解和多模态回答属于第三期的独立变更，不能以“补充功能”的方式混入二期。
+
+### 2.5 Neon 与 pgvector 部署契约
+
+本仓库关联的 Vercel 项目已安装 `neon-smallalice-ai-rag`，二期直接复用这一云端资源，不得新建同用途的 Neon project 或 database。固定的非敏感资源标识为：Neon 组织 ID `org-super-fog-48541962`、Neon 项目 ID `patient-cloud-43432277`、Vercel 已关联的 Neon 数据库名称 `neon-smallalice-ai-rag`。实施连接的顺序固定为：先使用 `vercel env pull .env.local --environment=development` 拉取当前 Vercel 环境变量，再让 Nitro API 连接数据库；连接串绝不写入仓库、报告、测试快照或终端记录。应用运行使用 Vercel 集成提供的 pooled URL，Drizzle migration 使用非 pooled URL；环境变量的实际名称以拉取结果为准，缺少非 pooled URL 时不得迁移。
+
+本项目统一使用官方 `neon` CLI。CLI 的安装与认证由用户完成，代理不得自行安装、认证或读取 CLI 凭据；认证完成后，才可通过 `neon projects list --output json`、`neon branches list` 与 `neon databases list` 核对既有资源的真实 ID，再对目标 development branch 执行 migration。`pgvector` 通过首个 migration 的 `CREATE EXTENSION IF NOT EXISTS vector;` 启用，并且必须在每个要写入向量的 database 中单独启用。`chunks.embedding` 固定为 `vector(1536)`，首期使用余弦距离 `<=>` 与 HNSW 的 `vector_cosine_ops`；HNSW 是近似检索，须以固定评估集对比精确检索后才作为默认。
+
 ---
 
 ## 三、核心功能设计
@@ -73,11 +84,12 @@ TypeScript / Nuxt / Nitro / Element Plus X
 ┌─────────────────────────────────────────────────────────────────┐
 │                        前端层 (Vue3 + Element Plus X)           │
 ├─────────────────────────────────────────────────────────────────┤
-│  文档上传 → Markdown 渲染 → 流式问答 → 来源高亮 → 会话管理        │
+│ 知识库同步状态 → Markdown 渲染 → 流式问答 → 来源高亮 → 会话管理    │
 ├─────────────────────────────────────────────────────────────────┤
-│                        API 层 (Nuxt/Nitro)                      │
+│                       API 层（独立 Nitro 服务）                  │
 ├─────────────────────────────────────────────────────────────────┤
-│  /api/chat (流式对话) │ /api/documents (文档管理) │ /api/search │
+│ /v1/chat (流式对话) │ /v1/knowledge/sync (同步) │ /v1/search │
+│ /v1/knowledge/sync-runs (同步记录)                              │
 ├─────────────────────────────────────────────────────────────────┤
 │                        RAG 引擎层                                │
 ├─────────────────────────────────────────────────────────────────┤
@@ -93,22 +105,46 @@ TypeScript / Nuxt / Nitro / Element Plus X
 
 #### 3.2.1 文档管理模块
 
-| 功能       | 描述                     | 技术要点                      |
-| ---------- | ------------------------ | ----------------------------- |
-| 文档上传   | 支持 PDF、Markdown、TXT  | 前端组件 + SSE 进度反馈       |
-| 文档解析   | 提取文本内容             | 正则/解析库处理不同格式       |
-| Chunk 切分 | 文本按策略切分           | overlap、chunk_size、语义切分 |
-| 元数据管理 | 文档标签、来源、创建时间 | drizzle 建模                  |
+| 功能       | 描述                           | 技术要点                                   |
+| ---------- | ------------------------------ | ------------------------------------------ |
+| 知识源同步 | 扫描 `docs/docx/**/*.md`       | 增量处理新增、修改、删除；仅 Markdown 文本 |
+| 文档解析   | 提取标题、段落、表格和图片 URL | 保留标题层级与源文件路径                   |
+| Chunk 切分 | 标题优先、表格行组、token 兜底 | 超长语义块才使用 overlap                   |
+| 元数据管理 | 来源、标题路径、图片 URL、版本 | 支持精确跳转和幂等重入库                   |
 
 **Chunk 策略要点**：
 
 ```typescript
 interface ChunkConfig {
-	chunk_size: number; // 默认 500 tokens
-	overlap: number; // 默认 50 tokens
-	separators: string[]; // ["\n\n", "\n", "。", "！", "？", ". "]
+	targetTokens: number;
+	overlapTokens: number;
+	tableRowsPerChunk: number;
+	profileVersion: string;
+}
+
+interface ChunkMetadata {
+	sourcePath: string;
+	headingPath: string[];
+	headingIndex: number;
+	headingAnchor: string;
+	chunkIndex: number;
+	imageUrls: string[];
+	chunkKind: "prose" | "table";
+	tableRowStart?: number;
+	tableRowEnd?: number;
+	contentHash: string;
 }
 ```
+
+默认配置为 `targetTokens: 500`、`overlapTokens: 50`、`tableRowsPerChunk: 12` 和 `profileVersion: "markdown-structure-v1"`。先按 H1/H2/H3 构造语义块；普通段落只在超过 token 上限时递归切分并保留 overlap。表格小于上限时保持原子性，超长表格按连续行组拆分，每个行组重复表头、当前标题路径和图片 URL。图片 URL 不进入 chunk 文本，不参与 embedding。
+
+`headingIndex` 是 Markdown AST 内 H1/H2/H3 的零基出现序号；无标题根块为 `-1`。有标题时，`headingAnchor` 由 `sourcePath`、完整 `headingPath` 与 `headingIndex` 使用 `"\u0000"` 固定分隔符拼接后计算 SHA-256，并使用完整 base64url 摘要生成 `rag-heading-<digest>`。它与 Markdown 渲染器默认生成的标题 id 无关，既避免中文标题 slug 规则变化，也能区分同一父级下的同名标题。无标题根块使用 `rag-document-<sourcePath-digest>`，其来源链接不附加 hash，直接打开文档顶部。同一源文件内的 `chunkIndex` 从 `0` 递增且连续；它用于区分同一标题下的多个文本块，不替代标题锚点。
+
+知识源同步按 `sourcePath` 与内容哈希幂等执行：源文件未变化且 `profileVersion`、embedding 模型版本未变化时跳过；文件新增或变化时先完成新 chunk 与 embedding 生成，再以单文档事务替换旧版本，重建失败时旧版本必须继续可检索。扫描完整成功后，才删除本轮未出现的 `sourcePath` 及其 chunk；扫描不完整或读取失败时绝不据此删除旧数据。每轮同步记录扫描文件数、未变化数、新增数、更新数、删除数、写入 chunk 数、失败文件列表和同步状态。
+
+同步服务在开发环境提供一次性命令与可选文件监听，在生产环境不依赖常驻 watcher：上游 DOCX 转换完成后调用受 `NITRO_KNOWLEDGE_SYNC_TOKEN` 保护的同步入口，并使用 Vercel Cron 做定时对账兜底。Vercel Cron 的 `GET` 请求使用平台的 `CRON_SECRET`，鉴权实现需兼容这两种受控凭据。三种触发方式必须复用同一个同步服务，避免出现不同的切分、哈希或删除语义。生产 API 构建必须显式把 `docs/docx` 纳入函数可读的部署输入，不能假定 Vercel 运行目录保留完整 Git 工作区。
+
+**来源跳转契约**：`docs/docx` 由 VitePress 构建为现有静态文档页，`sourcePath` 通过移除 `docs/` 前缀、将 `.md` 替换为 `.html` 并逐段 URL 编码，得到 `sourceUrl`。VitePress 的 Markdown 构建扩展使用同一 AST 与 `sourcePath` / `headingPath` 算法，为每个 H1/H2/H3 写入上述 `headingAnchor` 作为 DOM `id`；来源卡片链接为 `sourceUrl#headingAnchor`。不得依赖 VitePress 默认的标题 slug。页面加载后若找不到该元素，显式滚动到文档顶部；`sourceUrl` 是由 `sourcePath` 派生的展示字段，不作为数据库中的环境相关持久化数据。
 
 #### 3.2.2 Embedding 与向量存储模块
 
@@ -155,12 +191,12 @@ function rrf(scores: number[], k = 60): number {
 
 #### 3.2.5 问答模块
 
-| 功能       | 描述                            | 技术要点                |
-| ---------- | ------------------------------- | ----------------------- |
-| 上下文组装 | System Prompt + 检索片段 + 历史 | Prompt 模板化           |
-| 流式生成   | SSE / fetch stream              | @ai-sdk/vue 处理状态    |
-| 引用溯源   | 返回来源片段 + 原文位置         | metadata 携带 source_id |
-| 停止生成   | 用户可中断生成                  | AbortController         |
+| 功能       | 描述                            | 技术要点                                                             |
+| ---------- | ------------------------------- | -------------------------------------------------------------------- |
+| 上下文组装 | System Prompt + 检索片段 + 历史 | Prompt 模板化                                                        |
+| 流式生成   | SSE / fetch stream              | @ai-sdk/vue 处理状态                                                 |
+| 引用溯源   | 返回来源片段 + 精确标题段落     | `sourcePath`、`headingPath`、`headingIndex`、`chunkIndex` 与图片 URL |
+| 停止生成   | 用户可中断生成                  | AbortController                                                      |
 
 **问答 Prompt 模板**：
 
@@ -187,20 +223,20 @@ const RAG_PROMPT = `
 
 #### 3.3.1 Chat UI 组件
 
-| 组件     | 功能             | 技术要点                        |
-| -------- | ---------------- | ------------------------------- |
-| 消息气泡 | 显示用户/AI 消息 | Markdown 渲染、代码高亮         |
-| 流式文本 | 增量渲染 AI 回复 | x-markdown-vue / markstream-vue |
-| 引用卡片 | 显示检索来源     | 折叠/展开、点击跳转             |
-| 输入区域 | 发送消息         | 文本框、文件上传、停止按钮      |
+| 组件     | 功能             | 技术要点                                                       |
+| -------- | ---------------- | -------------------------------------------------------------- |
+| 消息气泡 | 显示用户/AI 消息 | Markdown 渲染、代码高亮                                        |
+| 流式文本 | 增量渲染 AI 回复 | x-markdown-vue / markstream-vue                                |
+| 引用卡片 | 显示检索来源     | 折叠/展开，按稳定 `headingAnchor` 跳到 `sourcePath` 的标题段落 |
+| 输入区域 | 发送消息         | 文本框、文件上传、停止按钮                                     |
 
 #### 3.3.2 文档管理 UI
 
-| 组件     | 功能           | 技术要点               |
-| -------- | -------------- | ---------------------- |
-| 文档列表 | 展示已上传文档 | 名称、状态、chunk 数量 |
-| 上传区域 | 拖拽/点击上传  | 进度条、格式校验       |
-| 检索面板 | 展示检索结果   | 片段预览、相似度分值   |
+| 组件     | 功能             | 技术要点                                   |
+| -------- | ---------------- | ------------------------------------------ |
+| 同步记录 | 展示最近同步任务 | 状态、耗时、增改删数量、失败文件           |
+| 文档列表 | 展示已同步文档   | 源路径、内容哈希、chunk 数量、最近同步时间 |
+| 检索面板 | 展示检索结果     | 片段预览、相似度分值                       |
 
 ---
 
@@ -227,7 +263,7 @@ const RAG_PROMPT = `
 │  第三周：工程落地与产品化                                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  - Neon + drizzle + pgvector 建模与迁移                                    │
-│  - Nuxt/Nitro API 实现：文档上传、向量生成、流式问答                       │
+│  - 独立 Nitro API 实现：知识源同步、向量生成、流式问答                     │
 │  - 前端 UI：Element Plus X + 流式 Markdown + 来源高亮                     │
 │  - 输入校验：zod schema                                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -246,7 +282,7 @@ const RAG_PROMPT = `
 | ----------------- | ------------------------------------- | -------------- |
 | M1：最小 RAG 闭环 | 能从文档检索相关内容并回答            | 本地 demo 截图 |
 | M2：Hybrid Search | 支持关键词+向量混合检索，可对比效果   | 评估结果表     |
-| M3：完整问答系统  | 文档上传→检索→流式回答→来源展示       | 可演示作品     |
+| M3：完整问答系统  | 知识源同步→检索→流式回答→来源展示     | 可演示作品     |
 | M4：简历作品集    | 完整的项目 README、技术博客或演示视频 | GitHub 仓库    |
 
 ---
@@ -294,14 +330,14 @@ const RAG_PROMPT = `
 
 ### 7.1 技术验收
 
-| 验收点        | 标准                                    |
-| ------------- | --------------------------------------- |
-| 文档上传      | 支持 PDF/MD/TXT，chunk 数量和大小可配置 |
-| 向量检索      | 准确返回 Top-5 相关片段，带相似度分值   |
-| Hybrid Search | 可切换仅关键词/仅向量/hybrid 三种模式   |
-| 流式问答      | SSE 流式输出，支持停止生成              |
-| 来源展示      | 回答中标注来源，来源卡片可点击展开原文  |
-| 输入校验      | 无效输入返回明确错误提示                |
+| 验收点        | 标准                                                    |
+| ------------- | ------------------------------------------------------- |
+| 知识源同步    | 识别 `docs/docx` 的新增、修改和删除；失败时不误删旧数据 |
+| 向量检索      | 准确返回 Top-5 相关片段，带相似度分值                   |
+| Hybrid Search | 可切换仅关键词/仅向量/hybrid 三种模式                   |
+| 流式问答      | SSE 流式输出，支持停止生成                              |
+| 来源展示      | 回答中标注来源，来源卡片可点击展开原文                  |
+| 输入校验      | 无效输入返回明确错误提示                                |
 
 ### 7.2 简历展示验收
 
@@ -329,20 +365,20 @@ const RAG_PROMPT = `
 
 ```plain
 前端：Vue3 + Element Plus X + @ai-sdk/vue
-服务端：Nuxt/Nitro + zod
+服务端：独立 Nitro + zod
 数据层：Neon + drizzle + pgvector
 RAG 引擎：LangChain.js / Vercel AI SDK
 检索策略：Hybrid Search (BM25 + Vector) + ReRank
-部署：Vercel / Cloudflare Worker
+部署：Vercel
 ```
 
 ### 8.2 简历项目描述模板
 
 > **AI 知识库问答系统**
 >
-> 基于 RAG 技术栈的企业知识库问答系统，支持文档上传、文本切分、向量检索与流式问答。前端使用 Vue3 + Element Plus X 实现 AI 对话 UI，后端使用 Nuxt/Nitro 提供流式 API。数据层采用 Neon + pgvector 存储文档与向量，检索策略支持 BM25 + 向量混合搜索 (Hybrid Search) 与 ReRank 重排。回答带来源溯源，可点击展开原文片段。
+> 基于 RAG 技术栈的企业知识库问答系统，支持 Markdown 入库、文本切分、向量检索与流式问答。前端使用 Vue3 + Element Plus X 实现 AI 对话 UI，后端使用独立 Nitro 提供流式 API。数据层采用 Neon + pgvector 存储文档与向量，检索策略支持词法全文检索 + 向量混合搜索（Hybrid Search）与 ReRank 重排。回答带来源溯源，可直达文档标题段落。
 >
-> **技术栈**：TypeScript / Vue3 / Nuxt / Nitro / Neon / pgvector / drizzle / zod / Element Plus X / @ai-sdk/vue
+> **技术栈**：TypeScript / Vue3 / VitePress / 独立 Nitro / Neon / pgvector / drizzle / zod / Element Plus X / @ai-sdk/vue
 
 ### 8.3 版本历史
 
