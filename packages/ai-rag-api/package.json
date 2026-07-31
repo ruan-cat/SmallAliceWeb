@@ -1,0 +1,33 @@
+{
+	"name": "@ruan-cat-drill-doc/ai-rag-api",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"predev": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
+		"dev": "nitro dev",
+		"prebuild": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
+		"build": "nitro build",
+		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"preview": "nitro preview",
+		"test": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && vitest run",
+		"typecheck": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && tsc --noEmit"
+	},
+	"dependencies": {
+		"@ai-sdk/openai": "^1.3.22",
+		"@ruan-cat-drill-doc/ai-rag-core": "workspace:*",
+		"ai": "^4.3.16",
+		"drizzle-orm": "^0.44.7",
+		"nitro": "3.0.260610-beta",
+		"postgres": "^3.4.7",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@types/node": "22.19.11",
+		"drizzle-kit": "^0.31.4",
+		"typescript": "5.9.3",
+		"vitest": "2.1.9"
+	}
+}

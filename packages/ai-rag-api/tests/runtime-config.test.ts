@@ -1,0 +1,22 @@
+import { describe, expect, test } from "vitest";
+import nitroConfig from "../nitro.config";
+
+describe("RAG API runtime configuration", () => {
+	test("uses Nitro v3 configuration with private RAG settings", () => {
+		expect(nitroConfig.compatibilityDate).toBe("2026-07-31");
+		expect(nitroConfig.runtimeConfig).toMatchObject({
+			databaseUrl: "",
+			embeddingModel: "",
+			openaiApiKey: "",
+			chatModel: "",
+			public: { apiBase: "/v1" },
+		});
+	});
+
+	test("does not embed a connection string or credential in the configuration", () => {
+		const serializedConfig = JSON.stringify(nitroConfig);
+
+		expect(serializedConfig).not.toMatch(/postgres(?:ql)?:\/\//i);
+		expect(serializedConfig).not.toMatch(/sk-[a-z0-9]/i);
+	});
+});

@@ -1,0 +1,62 @@
+[
+	{
+		"id": "q1",
+		"question": "什么是 RAG？",
+		"expected_keywords": ["检索", "增强", "生成"],
+		"category": "概念理解"
+	},
+	{
+		"id": "q2",
+		"question": "Vue3 和 React 的区别是什么？",
+		"expected_keywords": ["Vue", "React", "组件"],
+		"category": "技术对比"
+	},
+	{
+		"id": "q3",
+		"question": "如何优化 TypeScript 编译速度？",
+		"expected_keywords": ["tsc", "编译", "优化"],
+		"category": "实践问题"
+	},
+	{
+		"id": "q4",
+		"question": "RMMV 插件的作用域是什么？",
+		"expected_keywords": ["作用域", "插件"],
+		"category": "基本定义"
+	},
+	{
+		"id": "q5",
+		"question": "RMMV 中的动画帧如何理解？",
+		"expected_keywords": ["动画", "帧"],
+		"category": "基本定义"
+	},
+	{
+		"id": "q6",
+		"question": "RMMV 工程数据如何转移？",
+		"expected_keywords": ["工程", "数据", "转移"],
+		"category": "常见问题"
+	},
+	{
+		"id": "q7",
+		"question": "插件使用条款和商用说明有哪些要求？",
+		"expected_keywords": ["使用", "商用", "说明"],
+		"category": "使用条款"
+	},
+	{
+		"id": "q8",
+		"question": "如何查看插件信息？",
+		"expected_keywords": ["插件", "信息", "查看器"],
+		"category": "工具使用"
+	},
+	{
+		"id": "q9",
+		"question": "RMMV 插件性能应该如何评估？",
+		"expected_keywords": ["插件", "性能", "测试"],
+		"category": "性能优化"
+	},
+	{
+		"id": "q10",
+		"question": "升级到 v3.80 前需要注意什么？",
+		"expected_keywords": ["v3.80", "升级", "注意"],
+		"category": "版本升级"
+	}
+]
