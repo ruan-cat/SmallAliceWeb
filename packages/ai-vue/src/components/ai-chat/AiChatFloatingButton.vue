@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import type { AiChatEmits, AiChatProps } from "./types";
 import { onMounted, ref } from "vue";
 import AiChat from "./AiChat.vue";
 
+const props = defineProps<Pick<AiChatProps, "messages" | "isResponding" | "errorMessage">>();
+const emit = defineEmits<AiChatEmits>();
 const isMounted = ref(false);
 const isOpen = ref(false);
 
@@ -43,7 +46,15 @@ function closeDock() {
 						<span aria-hidden="true">×</span>
 					</button>
 				</header>
-				<AiChat />
+				<AiChat
+					mode="external"
+					:messages="props.messages"
+					:is-responding="props.isResponding"
+					:error-message="props.errorMessage"
+					@send="emit('send', $event)"
+					@stop="emit('stop')"
+					@clear-error="emit('clear-error')"
+				/>
 			</div>
 		</aside>
 

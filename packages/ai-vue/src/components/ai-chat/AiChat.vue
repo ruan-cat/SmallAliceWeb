@@ -82,6 +82,12 @@ function handleStop() {
 <template>
 	<section class="ai-chat" aria-label="AI 对话">
 		<div class="ai-chat__messages" aria-live="polite">
+			<div v-if="errorMessage" class="ai-chat__error" role="alert">
+				<span>{{ errorMessage }}</span>
+				<button type="button" class="ai-chat__error-dismiss" aria-label="关闭错误提示" @click="emit('clear-error')">
+					关闭
+				</button>
+			</div>
 			<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
 				<template #content>
 					<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
@@ -90,7 +96,7 @@ function handleStop() {
 				</template>
 			</Bubble>
 
-			<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="true">
+			<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
 				<template #content="{ item }">
 					<span v-if="item.role === 'user'">{{ item.content }}</span>
 					<MarkdownRender
@@ -120,6 +126,16 @@ function handleStop() {
 				</template>
 			</BubbleList>
 		</div>
+
+		<button
+			v-if="props.mode === 'external' && displayedResponding"
+			type="button"
+			class="ai-chat__stop"
+			aria-label="停止生成"
+			@click="handleStop"
+		>
+			停止生成
+		</button>
 
 		<Sender
 			v-model="input"

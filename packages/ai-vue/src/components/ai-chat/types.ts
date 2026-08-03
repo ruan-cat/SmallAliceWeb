@@ -19,6 +19,7 @@ export interface AiChatProps {
 	initialMessages?: AiChatMessage[];
 	messages?: AiChatMessage[];
 	isResponding?: boolean;
+	errorMessage?: string;
 	mode?: "mock" | "external";
 	placeholder?: string;
 	mockDelay?: number;
@@ -27,4 +28,5 @@ export interface AiChatProps {
 export type AiChatEmits = {
 	(event: "send", message: AiChatMessage): void;
 	(event: "stop"): void;
+	(event: "clear-error"): void;
 };
