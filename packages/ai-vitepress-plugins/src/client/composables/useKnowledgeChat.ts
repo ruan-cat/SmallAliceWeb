@@ -17,6 +17,13 @@ type ActiveRequest = {
 	targetAssistantMessageId?: string;
 };
 
+export type KnowledgeChatOptions = {
+	/** 覆盖默认的本地聊天 API，便于文档站或本地集成测试使用。 */
+	api?: string;
+	/** 覆盖 AI SDK 使用的 fetch，实现本地 HTTP 或运行时代理。 */
+	fetch?: typeof globalThis.fetch;
+};
+
 /** 将 data-stream 中的来源帧缩减为聊天组件可展示的安全字段。 */
 function toSource(frame: unknown): AiChatSource | undefined {
 	if (!frame || typeof frame !== "object" || !("type" in frame) || frame.type !== "source") return;
@@ -34,10 +41,11 @@ function toSource(frame: unknown): AiChatSource | undefined {
 }
 
 /** 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。 */
-export function useKnowledgeChat(conversationId = "knowledge-chat") {
+export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const chat = useChat({
-		api: "/v1/chat",
+		api: options.api ?? "/v1/chat",
 		id: conversationId,
+		fetch: options.fetch,
 		experimental_prepareRequestBody({ messages }) {
 			const latestMessage = messages.at(-1);
 			return {
