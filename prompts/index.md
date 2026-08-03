@@ -237,12 +237,35 @@ ConversationList 会话列表管理 多轮对话的历史管理、重命名、�
 
 ---
 
+### 继续推进二期项目改造
+
 <!-- TODO: 需要进一步询问清楚需要我如何授权？ -->
 
-本轮没有继续改动外部集成边界。PostgreSQL provider 的离线合同仍保持候选状态：
+我正在持续推进 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 的 superpower 长任务。上一个会话已经结束了。我正在本会话继续推进该内容。我遇到以下 goal 任务的暂停事项：
+
+PostgreSQL provider 的离线合同仍保持候选状态：
 代码与测试已在本地通过，SQL、行映射、1536 维校验和余弦距离约束都有覆盖。
 仍缺少独立复核记录，且不能将其描述为真实 PostgreSQL provider 已完成。
 真实数据库连接、pgvector 查询、embedding、同步事务、生产装配、部署和演示视频仍受明确的外部授权与证据门禁约束。
+
+---
+
+整体二期目标仍未完成，以下事项继续受真实外部证据门禁约束：
+PostgreSQL/pgvector 真实连接、查询和索引验证；
+embedding 服务与真实向量写入；
+增量同步事务、失败回滚保护和 advisory lock；
+生产 event.context.rag 接入真实 provider；
+真实模型端到端 /v1/chat；
+Vercel 部署、线上回归和演示视频；
+真实生产浏览器 hydration 与逐 token Shiki 高亮兼容性。
+
+---
+
+请问为了解决这些问题，我应该怎么做？
+
+1. 首先你先跟我解释一下上面这些东西为什么导致 goal 任务暂停了。
+2. 然后告诉我应该怎么给你做好提前授权，然后让你有足够的工具完成自主测试。
+3. 最后在 `reports` 目录内给我新建一个专门的报告，说明清楚我该怎么做。
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
