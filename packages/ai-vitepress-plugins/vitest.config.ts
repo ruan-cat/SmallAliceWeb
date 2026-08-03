@@ -13,5 +13,10 @@ export default defineConfig({
 	test: {
 		environment: "jsdom",
 		include: ["src/tests/**/*.test.ts"],
+		server: {
+			deps: {
+				inline: ["vue-element-plus-x"],
+			},
+		},
 	},
 });
