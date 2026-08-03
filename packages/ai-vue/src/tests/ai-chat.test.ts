@@ -34,12 +34,16 @@ vi.mock("vue-element-plus-x", async () => {
 			name: "BubbleList",
 			props: {
 				list: { type: Array, default: () => [] },
+				autoScroll: { type: Boolean, default: false },
 			},
 			setup(props, { slots }) {
 				return () =>
 					h(
 						"div",
-						{ "data-library-component": "BubbleList" },
+						{
+							"data-auto-scroll": String(props.autoScroll),
+							"data-library-component": "BubbleList",
+						},
 						props.list.map((item) =>
 							h(Bubble, item as { content: string; noStyle?: boolean; placement?: string }, {
 								content: () => slots.content?.({ item }),
@@ -178,6 +182,7 @@ describe("AiChat library adapters", () => {
 		});
 
 		expect(host.querySelector('[data-library-component="BubbleList"]')).not.toBeNull();
+		expect(host.querySelector<HTMLElement>('[data-library-component="BubbleList"]')?.dataset.autoScroll).toBe("false");
 		const bubbles = host.querySelectorAll<HTMLElement>('[data-library-component="Bubble"]');
 		expect(bubbles).toHaveLength(3);
 		expect(bubbles[0].dataset.placement).toBe("end");
@@ -241,7 +246,7 @@ describe("AiChat library adapters", () => {
 		});
 	});
 
-	test("maps Sender submit to send and cancel to stop", async () => {
+	test("maps Sender submit to send", async () => {
 		const onSend = vi.fn();
 		const sendHost = mountAiChat({ mode: "external", messages: [], isResponding: false, onSend });
 		const input = sendHost.querySelector<HTMLInputElement>(".sender-input");
@@ -256,11 +261,37 @@ describe("AiChat library adapters", () => {
 		sendHost.querySelector<HTMLButtonElement>(".sender-submit")?.click();
 
 		expect(onSend).toHaveBeenCalledWith({ id: "user-1", role: "user", content: "项目问题" });
+	});
+
+	test("仅在生成中显示本地停止按钮，并由点击发出 stop", () => {
+		const idleHost = mountAiChat({ mode: "external", messages: [], isResponding: false });
+		expect(idleHost.querySelector(".ai-chat__stop")).toBeNull();
+		const mockHost = mountAiChat({ mode: "mock", messages: [], isResponding: true });
+		expect(mockHost.querySelector(".ai-chat__stop")).toBeNull();
 
 		const onStop = vi.fn();
 		const stopHost = mountAiChat({ mode: "external", messages: [], isResponding: true, onStop });
-		stopHost.querySelector<HTMLButtonElement>(".sender-cancel")?.click();
+		const stopButton = stopHost.querySelector<HTMLButtonElement>(".ai-chat__stop");
+		expect(stopButton).not.toBeNull();
+		expect(stopButton?.getAttribute("aria-label")).toBe("停止生成");
+		expect(stopButton?.textContent?.trim()).toBe("停止生成");
+		stopButton?.click();
 
 		expect(onStop).toHaveBeenCalledOnce();
+	});
+
+	test("显示并允许关闭外部 RAG 配置错误", async () => {
+		const onClearError = vi.fn();
+		const host = mountAiChat({
+			mode: "external",
+			messages: [],
+			errorMessage: "知识库服务尚未配置，请稍后再试。",
+			onClearError,
+		});
+
+		expect(host.querySelector<HTMLElement>(".ai-chat__error")?.textContent).toContain("知识库服务尚未配置");
+		host.querySelector<HTMLButtonElement>(".ai-chat__error-dismiss")?.click();
+		await nextTick();
+		expect(onClearError).toHaveBeenCalledOnce();
 	});
 });
