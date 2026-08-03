@@ -1000,8 +1000,30 @@ packages/ai-rag-api/
 |   P1   |                 部署到既有关联的 Vercel 项目并完成生产可访问性回归                 |         用户明确授权部署，且生产环境变量、检索 provider 与流服务均已完成装配         |                               脱敏后的部署记录、部署 URL、真实流式问答与来源跳转回归证据                               |                 等待外部授权                  |
 |   P2   |                      完善 README，录制并上传 30-60 秒演示视频                      |                       本地端到端功能可演示，且用户授权外部上传                       |                                            文档链接、视频地址与可访问性验证                                            |             视频上传等待用户授权              |
 
+### Task 5：建立 Nitro RAG 运行时装配工厂与配置失败合同（离线 fake provider）
+
+> 本任务属于本地可完成的装配边界，不替代第 5.3 节中需要外部凭据、真实数据库、模型服务或部署授权的 P0 待办。
+
+- [ ] **Step 1：新增可注入的 runtime assembly 工厂**
+  - 输入已解析的私有 runtime config 与显式 provider factories。
+  - 输出路由所需的 `event.context.rag` 能力：`retrieve`、`search`、`stream`、`sync`、`syncRuns` 及只读配置。
+  - 工厂不得读取裸 `process.env`，不得在 import 时建立数据库连接；数据库、embedding 和模型连接必须由 factory 参数注入。
+- [ ] **Step 2：定义缺失配置与 provider 错误合同**
+  - 缺少 database、embedding 或 model 配置时，不生成半成品 context，并继续由路由返回 `503 RAG_NOT_CONFIGURED`。
+  - provider factory 抛错时不得被路由转换成 HTTP 200 假成功。
+- [ ] **Step 3：用真实 Nitro/H3 harness 验证装配路径**
+  - 新增 `packages/ai-rag-api/tests/runtime-assembly.test.ts`，使用 Vitest `describe`/`test`。
+  - 覆盖完整 fake assembly、缺失配置、provider 错误、裸环境变量隔离，以及 chat/search/sync 路由消费装配 context。
+- [ ] **Step 4：运行本地验证并记录边界**
+  - `pnpm --filter @ruan-cat-drill-doc/ai-rag-api test`
+  - `pnpm --filter @ruan-cat-drill-doc/ai-rag-api typecheck`
+  - `git diff --check`
+  - 验证结果只能证明依赖拓扑与配置合同成立，不得写成真实 PostgreSQL、embedding、模型或生产装配完成。
+
 ### 5.4 最近更新记录
 
+- 2026-08-03：新增本地 Nitro RAG runtime assembly 工厂 `packages/ai-rag-api/server/runtime/rag-assembly.ts` 与 `runtime-assembly.test.ts`。工厂只消费显式 runtime config 和 provider factories，缺少 database、embedding 或 model 配置时在 provider 初始化前保持 `RAG_NOT_CONFIGURED`/503 合同；provider 初始化失败映射为 500，且 wrapper 保留依赖 `this` 的 provider 方法接收者。真实 `createApp`/`app.fetch` harness 覆盖 chat/search/sync、class fake、真实 `0:"answer"\n` data-stream headers 和裸环境变量隔离。API 全包为 `15` 文件、`49` 用例通过，typecheck 与 `git diff --check` 通过。该结果仅证明离线装配拓扑和失败合同，未验证真实 PostgreSQL、embedding、模型、Vercel 或生产部署；Task 5 复核已通过，但复选框待用户确认后再更新。
+- 2026-08-03：按 `cleanup-agent-team-node-processes` 执行最终 dry-run，台账为 `.superpowers/sdd/2026-07-29-ai-rag-phase2-plan/agent-team-process-ledger-task-5-final.dry-run.json`；采样到 `12` 个目标进程，`candidateCount: 0`、`auditOnlyCount: 12`，未停止任何进程。长驻服务、父进程仍存活或归属不明的进程均保留审计状态。
 - 2026-08-01：修复本地 Chat 的两个真实运行时边界。`BubbleList` 固定为 `autoScroll=false`，绕开 `vue-element-plus-x@1.3.98` 在单消息列表访问未定义节点 `getBoundingClientRect()` 的上游分支；独立复核通过。上游 `Sender` 的 loading 按钮虽触发 `cancel`，但无可见文字或可访问名称，因而仅在 `external + isResponding` 时增加应用层“停止生成”按钮，复用既有 `@ai-sdk/vue` `stop()` 事件链；独立复核与 `ai-vue` `4` 文件、`15` 用例、typecheck、build 均通过。由于本地 `agent-browser` Chrome 无法启动，真实页面的流式可见性、点击中止和已接收内容保留仍是未通过门禁。
 - 2026-08-01：根 `pnpm run docs:build` 首次在 `ai-vue-doc` 明确报出 `Could not load @vueuse/nuxt`。根因是 `@ztl-uwu/nuxt-content@2.13.9` 在宿主侧加载 `@vueuse/nuxt@14.3.0`，而 pnpm 不向应用包暴露未声明的传递入口；将锁文件已有的 `@vueuse/nuxt@14.3.0` 声明为 `ai-vue-doc` 的直接依赖后，`nuxi prepare` 与单包生产 build 成功。无并发且停止本会话 VitePress 开发服务器后，`pnpm exec vitepress build docs` 以退出码 `0` 在 `95.69s` 完成；根 Turbo 一次运行因文档转换和构建合计超过 `304s` 的执行器上限而没有可用退出码，不能将该次编排记录标为成功。
 - 2026-08-01：完成本地包级测试边界的两轮独立复核。API 凭据守卫扫描范围明确为 `drizzle`、`server`、`src`、顶层发布配置和 `.sql` migration，并断言 `drizzle/0000_ai_rag.sql` 被覆盖，测试文件仍不参与扫描；API 全包为 `11` 文件、`32` 用例通过。VitePress 插件 Vitest 将 `vue-element-plus-x` 仅在测试服务器内联，由 Vite 处理其 CSS，生产 `vite.config.ts` 未变；插件全包为 `2` 文件、`6` 用例通过。两包 typecheck 和 `git diff --check` 均通过。
