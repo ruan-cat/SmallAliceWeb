@@ -6,7 +6,9 @@ import { describe, expect, test } from "vitest";
 const packageRoot = new URL("..", import.meta.url);
 const packageRootPath = fileURLToPath(packageRoot);
 const ignoredDirectories = new Set([".nitro", ".output", ".vercel", "coverage", "dist", "node_modules"]);
-const sourceExtensions = new Set([".json", ".ts"]);
+const sourceExtensions = new Set([".json", ".sql", ".ts"]);
+const controlledSourceRoots = ["drizzle", "server", "src"];
+const controlledConfigFiles = ["drizzle.config.ts", "nitro.config.ts", "package.json"];
 const forbiddenLiteralPatterns = [
 	/(?:postgres(?:ql)?|mysql|mongodb):\/\//i,
 	/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
@@ -55,7 +57,12 @@ describe("ai-rag-api package boundary", () => {
 	});
 
 	test("recursively keeps controlled runtime source and configuration free of credentials", async () => {
-		const files = await collectControlledFiles(packageRootPath);
+		const sourceFiles = (
+			await Promise.all(
+				controlledSourceRoots.map((directory) => collectControlledFiles(join(packageRootPath, directory))),
+			)
+		).flat();
+		const files = [...sourceFiles, ...controlledConfigFiles.map((file) => join(packageRootPath, file))];
 		const findings: string[] = [];
 
 		for (const file of files) {
@@ -67,6 +74,7 @@ describe("ai-rag-api package boundary", () => {
 
 		expect(files.map(toPackageRelativePath)).toContain("nitro.config.ts");
 		expect(files.map(toPackageRelativePath)).toContain("src/runtime-config.ts");
+		expect(files.map(toPackageRelativePath)).toContain("drizzle/0000_ai_rag.sql");
 		expect(findings).toEqual([]);
 	});
 });
