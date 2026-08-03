@@ -9,10 +9,23 @@ export class ApiHttpError extends Error {
 	}
 }
 
+/** RAG 运行时未完成装配时返回的统一响应。 */
+export const ragNotConfiguredResponse = {
+	success: false,
+	code: 503,
+	message: "RAG_NOT_CONFIGURED",
+	data: null,
+} as const;
+
 /** 将业务异常转换为统一的 API 响应体。 */
 export function toErrorResponse(error: unknown, fallback: string) {
 	if (error instanceof ApiHttpError) {
-		return { success: false, code: error.status, message: error.message, data: null };
+		return {
+			success: false,
+			code: error.status,
+			message: error.message,
+			data: null,
+		};
 	}
 	return { success: false, code: 500, message: fallback, data: null };
 }
