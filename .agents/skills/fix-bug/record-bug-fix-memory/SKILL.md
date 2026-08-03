@@ -196,11 +196,17 @@ metadata:
 > 此章节在初始化时为空。随着项目中实际的 bug 修复经验积累，按照第 2.4 节的格式逐步补充摘要索引。
 > 详细案例内容写入同目录下的独立 md 文件，不要写在这里。
 
-### Windows neonctl CPU 自旋事故（2026-07-31）
+### 13.1 Windows neonctl CPU 自旋事故（2026-07-31）
 
 - 详细案例：`2026-07-31-windows-neonctl-cpu-spin.md`
 - 适用场景：Windows 上运行 Neon CLI 后，`cmd.exe -> node.exe` 一次性命令链无输出且长期占用 CPU。
 - 关键约束：禁止直接使用 `neonctl`；云端资源操作统一使用官方 `neon`，并以进程 CPU 采样和 `pnpm run neon:guard` 作为防回归证据。
+
+### 13.2 Nuxt Content 跨运行时世代解析事故（2026-08-01）
+
+- 详细案例：`2026-08-01-nuxt-content-monorepo-compatibility.md`
+- 适用场景：pnpm monorepo 中 `shadcn-docs-nuxt`、Nuxt、Content 与 H3 的实际解析跨越 Nuxt 3/H3 v1 和 Nuxt 4/H3 v2 边界。
+- 关键约束：把主题、Content、Nuxt/Nitro 与 H3 作为整体兼容矩阵验证；禁止用跳过 Content prerender 或关闭搜索掩盖依赖失配。
 
 ## 14. 本仓库落点覆盖
 
