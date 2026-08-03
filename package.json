@@ -54,6 +54,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.1.3",
+		"@ruan-cat-drill-doc/ai-rag-core": "workspace:*",
 		"@ruan-cat-drill-doc/ai-vue-doc": "workspace:*",
 		"@ruan-cat-temp/decompress-porn-img-package": "workspace:*",
 		"@ruan-cat-temp/get-cursor-token": "workspace:*",
