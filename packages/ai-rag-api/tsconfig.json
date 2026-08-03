@@ -8,5 +8,5 @@
 		"skipLibCheck": true,
 		"types": ["node"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts", "nitro.config.ts"]
+	"include": ["scripts/**/*.ts", "server/**/*.ts", "src/**/*.ts", "tests/**/*.ts", "nitro.config.ts"]
 }

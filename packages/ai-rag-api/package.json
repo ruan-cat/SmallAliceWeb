@@ -11,6 +11,7 @@
 		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
+		"knowledge:prepare:dry-run": "tsx scripts/knowledge-prepare-dry-run.ts --dry-run",
 		"preview": "nitro preview",
 		"test": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && vitest run",
 		"typecheck": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && tsc --noEmit"
