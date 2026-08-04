@@ -239,8 +239,6 @@ ConversationList 会话列表管理 多轮对话的历史管理、重命名、�
 
 ### 继续推进二期项目改造
 
-<!-- TODO: 需要进一步询问清楚需要我如何授权？ -->
-
 我正在持续推进 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 的 superpower 长任务。上一个会话已经结束了。我正在本会话继续推进该内容。我遇到以下 goal 任务的暂停事项：
 
 PostgreSQL provider 的离线合同仍保持候选状态：
@@ -266,6 +264,18 @@ Vercel 部署、线上回归和演示视频；
 1. 首先你先跟我解释一下上面这些东西为什么导致 goal 任务暂停了。
 2. 然后告诉我应该怎么给你做好提前授权，然后让你有足够的工具完成自主测试。
 3. 最后在 `reports` 目录内给我新建一个专门的报告，说明清楚我该怎么做。
+
+### <!-- TODO: --> 实现任务格式改造
+
+我要求你实现任务文档格式的大幅度改造。
+
+我不打算继续使用 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 文件来管理这个长任务了，我要求改换成基于 openspec 的 do-long-task 长任务任务存储体系。
+
+这个任务需要你大幅度的改动任务进度、任务规格的存储方式。
+
+1. 我要求你先完成历史上下文的获取，安排足够多的子代理，真实的探索清楚任务进度情况。
+2. 结合 memorix 的历史信息，按照二期、AI 化改造这些关键词，去找本项目近期的记忆存储内容，确保不要出现失忆的情况。
+3. 我们的最终目的是彻底取代 2026-07-29-ai-rag-phase2-design.md 和 2026-07-29-ai-rag-phase2-plan.md 文件，把里面的全部细节都做到精准的 openspec 任务规格迁移。做成基于 do-long-task 技能的长任务规格，你很容易出现理解失忆的情况，你必须非常谨慎的，逐步的完成内容迁移和改造。
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
@@ -301,3 +311,7 @@ skills add https://github.com/mattpocock/skills `
 2. 浏览器标题应该立刻切换，以便完成通知用户的效果。
    - 应该使用 vueuse 的工具函数，来实现你的浏览器标题切换功能。
    - 在你的 vitepress 应用中，你应该注意看清楚在哪里去实现这个功能，你可能是在 `packages\ai-vitepress-plugins\package.json` 子包内完成这个浏览器标题切换功能。注意你是在 vitepress 应用内完成这个功能。我给的建议可能不对，你做好调研和思考后再开始做。核心查询点是： 在 vitepress 应用内使用 vueuse 的 useTitle 函数完成应用的标题切换。
+
+## 006 <!-- TODO: --> 持续推进二期 AI 项目改造
+
+## 007 <!-- TODO: -->
