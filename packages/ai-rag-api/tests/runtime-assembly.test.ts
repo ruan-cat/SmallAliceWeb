@@ -25,6 +25,7 @@ function makeConfig(overrides: Partial<RagRuntimeConfig> = {}): RagRuntimeConfig
 		databaseUrl: "postgres://fake",
 		embeddingModel: "embedding-fake",
 		openaiApiKey: "key-fake",
+		baseUrl: "",
 		chatModel: "chat-fake",
 		knowledgeSyncToken: "sync-fake",
 		cronSecret: "cron-fake",
