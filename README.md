@@ -28,3 +28,30 @@
 - `ai-vue` 仅负责 DTO 到第三方 props 的薄适配、`sourceHref` 和 mock 文档演示，不耦合 Nitro、检索或模型服务。
 
 `ai-vue` 已接入 `vue-element-plus-x@1.3.98` 的 `BubbleList`、其内部 `Bubble` 渲染和 `Sender`，并接入 `markstream-vue@1.0.8` 渲染助手消息。`@ai-sdk/vue` 与 `@shikijs/stream` 仍未安装或接入。本地文档不表示 Neon、Vercel、数据库或模型服务已经完成云端验收。
+
+## vercel 项目名称
+
+- 核心 vitepress 文档项目： small-alice-web-odse
+- rag nitro 接口项目： smallalice-docs-ai-nitro-api
+
+## 4. Vercel 双项目部署架构
+
+本仓库同时绑定两个 Vercel 项目，采用统一的**仓库根安装 + 产物搬运**模式（`use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A）。
+
+|          Vercel 项目           |       用途       | Root Directory | Framework |                          Build Command                          |    Output Directory    | Install Command | Node |
+| :----------------------------: | :--------------: | :------------: | :-------: | :-------------------------------------------------------------: | :--------------------: | :-------------: | :--: |
+|     `small-alice-web-odse`     | VitePress 文档站 |      `.`       |   Other   |                        `pnpm run build`                         | `docs/.vitepress/dist` | `pnpm install`  | 22.x |
+| `smallalice-docs-ai-nitro-api` |  Nitro API 接口  |      `.`       |   Other   | `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel` |    `.vercel/output`    | `pnpm install`  | 22.x |
+
+### 4.1 破坏性变更记录：删除根 `vercel.json`
+
+仓库根 `vercel.json` 已于 2026-08-07 删除（备份在 QoderWork 工作区）。原因：`vercel.json` 会覆盖云端 Project Settings，在同一仓库绑定多个 Vercel 项目时会造成跨项目配置污染。原 `vercel.json` 中的文档站配置已迁移到 `small-alice-web-odse` 的云端 Project Settings，两者值完全一致。
+
+### 4.2 CLI 单槽绑定纪律
+
+`.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
+
+### 4.3 Nitro API 生产域名
+
+- 生产：`https://smallalice-docs-ai-nitro-api.vercel.app`
+- 路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`

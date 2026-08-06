@@ -451,6 +451,21 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。数据库连接前先通过 Vercel 获取当前环境变量；连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
 
+## Vercel 双项目部署架构（2026-08-07 起生效）
+
+本仓库同时绑定两个 Vercel 项目，统一采用 `use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A（仓库根安装 + 产物搬运到仓库根 `.vercel/output`）。
+
+|          Vercel 项目           |       用途       | Root Directory | Framework |                          Build Command                          |    Output Directory    | Install Command | Node |
+| :----------------------------: | :--------------: | :------------: | :-------: | :-------------------------------------------------------------: | :--------------------: | :-------------: | :--: |
+|     `small-alice-web-odse`     | VitePress 文档站 |      `.`       |   Other   |                        `pnpm run build`                         | `docs/.vitepress/dist` | `pnpm install`  | 22.x |
+| `smallalice-docs-ai-nitro-api` |  Nitro API 接口  |      `.`       |   Other   | `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel` |    `.vercel/output`    | `pnpm install`  | 22.x |
+
+**破坏性变更**：仓库根 `vercel.json` 已于 2026-08-07 删除。原因：`vercel.json` 覆盖云端 Project Settings，多项目 monorepo 中会造成跨项目配置污染。原文档中 `small-alice-web-odse` 的配置已迁移到该项目云端 Project Settings，值完全一致。
+
+**CLI 单槽绑定纪律**：`.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
+
+**Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.vercel.app`。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。
+
 ## 终端操作注意事项（防卡住）
 
 在 Windows PowerShell 环境下执行终端命令时，必须遵循以下规则，避免命令卡住浪费时间：
