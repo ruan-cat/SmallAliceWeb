@@ -7,7 +7,10 @@ import type { ChatDependencies } from "../contracts/chat";
 export function createOpenAiChatStream(config: RagNitroConfig["runtimeConfig"]): ChatDependencies["stream"] {
 	if (!config.openaiApiKey || !config.chatModel) throw new Error("RAG chat provider is not configured");
 
-	const provider = createOpenAI({ apiKey: config.openaiApiKey });
+	const provider = createOpenAI({
+		apiKey: config.openaiApiKey,
+		...(config.baseUrl ? { baseURL: config.baseUrl } : {}),
+	});
 	return (request) => {
 		const data = new StreamData();
 		for (const source of request.sources) {
