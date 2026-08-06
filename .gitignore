@@ -57,3 +57,6 @@ docs/docx
 
 # 忽略根目录的 drill-docx 文件夹。该文件夹默认认为是外部复制粘贴的docx元数据
 drill-docx
+
+.vercel
+.env*

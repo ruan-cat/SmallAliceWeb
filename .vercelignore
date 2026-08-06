@@ -1,0 +1,8 @@
+.turbo
+.codegraph
+.superpowers
+.nuxt
+drill-docx
+docs/docx
+docs/.vitepress/dist
+docs/.vitepress/cache
