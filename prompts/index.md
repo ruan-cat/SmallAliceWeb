@@ -265,6 +265,46 @@ Vercel 部署、线上回归和演示视频；
 2. 然后告诉我应该怎么给你做好提前授权，然后让你有足够的工具完成自主测试。
 3. 最后在 `reports` 目录内给我新建一个专门的报告，说明清楚我该怎么做。
 
+---
+
+<!-- TODO: 先完成nitro接口的生产环境部署 -->
+
+1. 不会创建 PostgreSQL 连接？为什么？我们不是已经有了 nitro 接口么？我们的 nitro 接口难道没办法首先先获取到来自 vercel 的环境变量，然后用获取到的 neon 环境变量，完成 PostgreSQL 数据库的链接么？你的自测流程难道没有先开启 nitro 本地接口服务么？
+   - 至于生产环境的 nitro 接口部署，这个我现在确实还没有设计清楚。你至少给我确保本地级别的 nitro 接口服务能运行，且能够完成云端唯一 PostgreSQL 数据库的链接。
+2. 外部系统具有副作用，代理不能替用户猜授权
+   - 你应该大胆的使用 drizzle 完成数据库 migration ，如果这个操作你不知道规范，你应该自己去看看 `D:\code\ruan-cat\01s-11comm` 的 api 子包是怎么做到用 drizzle 完成 neon 数据库的 migration 合并的。别害怕更改数据库表。我们现在是刚刚开始做这个功能，别怕修改数据库表。功能都没稳定，别害怕。你再这个部分过于保守了。
+   - 按量计费的模型请求。别害怕。我会给你提供多款不同格式的，不同 baseUrl 和 apikey 的，不同接口响应格式的渠道。你可以大胆的实现测试。不用太害怕产生费用。
+   - Vercel 部署会改变可访问的运行版本和环境绑定。你应该大胆的完成 vercel 推送和部署。我们项目目前完成 dev 分支的推送后，就会触发有意义构建。就会更新生产环境了。你应该要先设计好要实现生产环境的更新的测试流程，再开始逐步完成面向生产环境的联调。先完成本地级别的 dev 测试，和 preview 测试。再考虑用 git commit 和 git push 来触发 vercel 的 build，进入生产环境的测试。
+   - 我不明白你说的这个什么`视频上传`是什么意思？浏览器回归是什么意思？本地的，基于 agent-browser 的浏览器验证有什么问题么？你不就是用 agent-browser 来完成 dev、preview、和生产环境 build 的浏览器功能测试么？这有什么疑惑呢？
+   - 别害怕把测试数据上传给外部的公开模型，我们的文本数据本身就是在 github 开源公开的。
+3. 你先直接使用 neon cli 或者是 curl 的手段，直接完成 neon 数据的真实 embedding 写入，再开始完成下一步的测试。
+
+以下是授权范围：
+
+```text
+授权范围：SmallAliceWeb AI RAG 二期
+允许工作目录：D:\code\ruan-cat\SmallAliceWeb
+目标环境：development / preview / production（3个环境都做测试）
+Neon 资源：复用 patient-cloud-43432277，数据库 neon-smallalice-ai-rag；禁止新建同用途资源
+允许 A0 本地验证：是
+允许 A1 只读资源核对和拉取 development 环境变量：是
+允许 A2 development migration、SQL smoke test、测试数据写入：是
+允许 A3 development 真实 embedding 和同步：是
+允许 A4 Vercel preview 部署和真实 API/浏览器回归：否
+允许 A5 production 部署、线上回归、视频录制或上传：是
+embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 低成本模型。或者是我指定的模型。
+数据库写入限制： 每个环境均可；允许 migration 是；允许写入的表 均可。
+测试数据： 均可，不考虑数据脱敏。
+停止条件： 出现非预期环境、权限错误、费用超限、数据不一致或 secrets 泄露迹象时立即停止。
+证据保存位置：.superpowers/sdd/2026-07-29-ai-rag-phase2-plan/
+```
+
+你能够使用的工具：
+
+- neon cli 我已经完成授权。你按照我提供给你的 neon 数据库组织 id 和数据库 id 来完成，在根 `README.md` 内有写清楚。
+- vercel cli 已授权，可使用。
+- 浏览器工具优先使用 agent-browser ，实在不行才使用谷歌浏览器 MCP。
+
 ### <!-- TODO: --> 实现任务格式改造
 
 我要求你实现任务文档格式的大幅度改造。
@@ -276,6 +316,7 @@ Vercel 部署、线上回归和演示视频；
 1. 我要求你先完成历史上下文的获取，安排足够多的子代理，真实的探索清楚任务进度情况。
 2. 结合 memorix 的历史信息，按照二期、AI 化改造这些关键词，去找本项目近期的记忆存储内容，确保不要出现失忆的情况。
 3. 我们的最终目的是彻底取代 2026-07-29-ai-rag-phase2-design.md 和 2026-07-29-ai-rag-phase2-plan.md 文件，把里面的全部细节都做到精准的 openspec 任务规格迁移。做成基于 do-long-task 技能的长任务规格，你很容易出现理解失忆的情况，你必须非常谨慎的，逐步的完成内容迁移和改造。
+4. 迁移改造时，务必要看清楚历史的 `.agents\skills\fix-bug\record-bug-fix-memory` 错误，不要出现错误遗漏和失忆。
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
@@ -314,4 +355,13 @@ skills add https://github.com/mattpocock/skills `
 
 ## 006 <!-- TODO: --> 持续推进二期 AI 项目改造
 
-## 007 <!-- TODO: -->
+## 007 <!-- TODO: 高优先级 --> 完成独立 nitro 接口服务部署
+
+我需要你使用全局技能 `use-vercel-deploy-in-monorepo` 来完成本项目子包的 packages\ai-rag-api\package.json ，即独立 nitro 接口的部署任务。
+
+新的 vercel 项目名称 `smallalice-docs-ai-nitro-api` 。
+注意搞清楚本项目的部署情况，不要胡乱删除掉根 vercel.json 配置。本项目的根内容就是文档库。是有意义的可部署对象，且已经有了对应的 vercel 项目。
+将新的 vercel 项目名称，和本项目的 vercel 部署情况，都及时在根 README 内写清楚，避免出现失忆。
+在 AI 记忆文档内写清楚必要的引用项，说明清楚 vercel 部署涉及到的项目和部署细节。
+
+你首先先完成任务工件的定义，理清楚全部细节后，才开始完成部署和生产环境接口测试。
