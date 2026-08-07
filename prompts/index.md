@@ -355,7 +355,9 @@ skills add https://github.com/mattpocock/skills `
 
 ## 006 <!-- TODO: --> 持续推进二期 AI 项目改造
 
-## 007 <!-- TODO: 高优先级 --> 完成独立 nitro 接口服务部署
+<!-- 完成openspec改造后继续 -->
+
+## 007 <!-- TODO: 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
 
 我需要你使用全局技能 `use-vercel-deploy-in-monorepo` 来完成本项目子包的 packages\ai-rag-api\package.json ，即独立 nitro 接口的部署任务。
 
@@ -365,3 +367,76 @@ skills add https://github.com/mattpocock/skills `
 在 AI 记忆文档内写清楚必要的引用项，说明清楚 vercel 部署涉及到的项目和部署细节。
 
 你首先先完成任务工件的定义，理清楚全部细节后，才开始完成部署和生产环境接口测试。
+
+---
+
+你的任务是单纯的完成 nitro 接口部署，因为上一个任务存在循环论证验证的情况，我必须要先准备好 nitro 接口，才能继续推进任务。你不要误解误会了。别扯到上一个任务的什么授权上面。本次任务核心点就是部署 nitro 接口
+
+---
+
+我要求你增加 NITRO_OPENAI_API_KEY 这个 vercel 云环境变量。
+其中，baseUrl 你也要设计合适的环境变量，取值即： `https://api.code-tab.com`
+
+---
+
+改用官方 app 目录模式：`Root Directory = packages/ai-rag-api`，Install/Build/Output/本地 link 全套子包口径。你这边可以确保新的 vercel 项目能够得到 monorepo 的其他子包信息么？我不太认为这个做法合适，`Root Directory = packages/ai-rag-api` 的设置合适。是不是我们的根包 D:\code\ruan-cat\SmallAliceWeb\vercel.json 设计写死了，太严格了？
+我们能不能这样处理，你直接去改动 vercel 项目 smallalice，去部署配置那里做更改，避免我们项目直接在根写死 vercel.json 文件，导致你无法完成 monorepo 级别的 vercel 子项目部署和产物移动的需求。我记得我们不写死根 vercel.json 文件也能让根项目完成 build 的。
+这是破坏性变更，你做好更新，做好根 README.md 的说明，和其他必要文件的改写，因为我们删除了根 vercel.json 文件。
+
+---
+
+Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在我已经实现在 `smallalice-docs-ai-nitro-api` 和 `small-alice-web-odse` 这两个 vercel 云项目内的链接了，并且环境都是齐全的。Production, Preview, Development 这三个 vercel 环境都允许使用 `neon-smallalice-ai-rag` 数据库。
+
+---
+
+我没有在 - https://vercel.com/ruancat-projects/smallalice-docs-ai-nitro-api/settings/build-and-deployment 内看到有意义的，基于 `use-vercel-deploy-in-monorepo` 技能的配置路径写法。你是不是忽略了 vercel 云项目 `smallalice-docs-ai-nitro-api` 的云配置了？请你用 vercel MCP 和 vercel cli 来完成云项目的配置，不要丢三落四。
+
+---
+
+我要求你通过 git-commit 的方式来触发 nitro 接口的 vercel 生产环境部署，我已经做好配置了，dev origin push，就会触发生产环境部署，nitro 接口的生产环境就会更新。你不要再依赖直接推送工件的方式来完成部署了。用 git-commit 技能，对你的修改做分门别类的提交，用有意义的 git-commit 来触发 nitro 再 dev 的更新，并实现生产环境更新。
+
+---
+
+你确定你已经把 `docs\superpowers\specs\2026-08-07-nitro-api-vercel-deploy-design.md` 全部的任务都完成了？本次会话的全部任务和我给你的要求都做完了？你没有缺漏么？
+安排子代理做出审核，我不太信任你的成果，做出检查和核验。
+
+---
+
+我们这次 vercel nitro 接口部署和其他相关的处理，本质上也客观的推动了 `2026-07-29-ai-rag-phase2` 系列任务进度。请你在最后恰当的更新 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 文件。也在必要的 memorix 内记录记忆。
+
+---
+
+<!-- TODO: -->
+
+对于本次会话，对复杂任务的上下文加载控制、提示词设计、skills 和 MCP 调度等，你有什么好的改进建议么？我希望你可以从中总结成合适的方案，便于我在下一次完成这样复杂的任务的时候，能够更好的控制这些东西：
+
+- 帮助我从本次会话内吸取教训，我该如何优化提示词设计呢？
+- 我该如何优化上下文加载控制呢？
+- 我该如何设计合适的子代理呢？
+- 设计的子代理怎么才能实现强模型和弱模型的高低搭配呢？
+- 我该如何做好 skill 和 MCP 工具的调度呢？
+- 我还应该做到那些东西才能更加节省 token 呢？
+
+请你以教练、复盘者、局外人、观察者的角度，去审视，批判我在本次会话调度、任务控制、纠偏管理的表现，并按照本项目的报告规格要求，编写一个报告，帮助我更好的迭代，学会与 AI agent 协作开发的工作流。
+
+---
+
+<!-- TODO: 去自己设计 https://smallalice-docs-ai-nitro-api.vercel.app 的生产环境别名 -->
+
+## 008 <!-- TODO: --> 处理 vercel 的 vitepress 文档云构建错误
+
+- 失败日志： https://vercel.com/ruancat-projects/small-alice-web-odse/F1oDwcRXtacbsyKmbjW2NgNqb4ZA
+
+关键错误：
+
+```log
+[@nolebase/vitepress-plugin-git-changelog] Command failed with exit code 128: git config --local core.quotepath false
+```
+
+排查方向：
+
+1. 先看看是不是偶发问题，调阅足够多的 production vercel 生产环境构建成功案例，来完成检查自检。
+2. scripts\build-doc-in-vercel\index.ts 脚本在 vercel 内事实上在 drill-docx 目录内，会产出一个 .git 文件夹，在 vercel 云构建流水线内，会多出一个 git 目录，这个可能会导致 vitepress 的 `@ruan-cat/vitepress-preset-config` 依赖的 `@nolebase/vitepress-plugin-git-changelog` 插件，产生 git 路径识别错误。
+3. 结合 `@ruan-cat/vitepress-preset-config` 的文档，和 `@nolebase/vitepress-plugin-git-changelog` 包的文档，你看看怎么在 `docs\.vitepress\theme\index.ts` 和 `docs\.vitepress\config.mts` 内实现对 `@nolebase/vitepress-plugin-git-changelog` 的配置，确保不要出现这样的识别错误。看看有没有什么忽略配置可以来配置：
+   - `@ruan-cat/vitepress-preset-config` https://vitepress-preset.ruancat6312.top/
+   - `@nolebase/vitepress-plugin-git-changelog` https://nolebase-integrations.ayaka.io/pages/zh-CN/integrations/vitepress-plugin-git-changelog/
