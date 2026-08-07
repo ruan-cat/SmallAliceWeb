@@ -2,6 +2,7 @@
 	"name": "@ruan-cat-drill-doc/ai-rag-api",
 	"version": "0.0.0",
 	"private": true,
+	"homepage": "https://smallalice-docs-ai-nitro-api.ruan-cat.com/",
 	"type": "module",
 	"scripts": {
 		"predev": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",

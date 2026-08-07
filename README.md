@@ -53,5 +53,6 @@
 
 ### 4.3 Nitro API 生产域名
 
-- 生产：`https://smallalice-docs-ai-nitro-api.vercel.app`
+- 生产：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`
+- Vercel 默认地址（不使用）：`https://smallalice-docs-ai-nitro-api.vercel.app`
 - 路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`

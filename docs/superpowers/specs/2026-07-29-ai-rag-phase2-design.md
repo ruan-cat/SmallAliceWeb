@@ -96,7 +96,7 @@ TypeScript / VitePress / 独立 Nitro / Element Plus X
 
 ### 2.5 Neon 与 pgvector 部署契约
 
-本仓库关联的 Vercel 项目已安装 `neon-smallalice-ai-rag`，二期直接复用这一云端资源，不得新建同用途的 Neon project 或 database。固定的非敏感资源标识为：Neon 组织 ID `org-super-fog-48541962`、Neon 项目 ID `patient-cloud-43432277`、Vercel 已关联的 Neon 数据库名称 `neon-smallalice-ai-rag`。实施连接的顺序固定为：先使用 `vercel env pull .env.local --environment=development` 拉取当前 Vercel 环境变量，再让 Nitro API 连接数据库；连接串绝不写入仓库、报告、测试快照或终端记录。应用运行使用 Vercel 集成提供的 pooled URL，Drizzle migration 使用非 pooled URL；环境变量的实际名称以拉取结果为准，缺少非 pooled URL 时不得迁移。
+本仓库关联的 Vercel 项目已安装 `neon-smallalice-ai-rag`，二期直接复用这一云端资源，不得新建同用途的 Neon project 或 database。固定的非敏感资源标识为：Neon 组织 ID `org-super-fog-48541962`、Neon 项目 ID `patient-cloud-43432277`、Vercel 已关联的 Neon 项目名称 `neon-smallalice-ai-rag`（注意：这是项目名称，项目内的实际数据库名称为 `neondb`，由 Neon MCP `describe_branch` 确认）。实施连接的顺序固定为：先使用 `vercel env pull .env.local --environment=development` 拉取当前 Vercel 环境变量，再让 Nitro API 连接数据库；连接串绝不写入仓库、报告、测试快照或终端记录。应用运行使用 Vercel 集成提供的 pooled URL，Drizzle migration 使用非 pooled URL；环境变量的实际名称以拉取结果为准，缺少非 pooled URL 时不得迁移。
 
 本项目统一使用官方 `neon` CLI。CLI 的安装与认证由用户完成，代理不得自行安装、认证或读取 CLI 凭据；认证完成后，才可通过 `neon projects list --output json`、`neon branches list` 与 `neon databases list` 核对既有资源的真实 ID，再对目标 development branch 执行 migration。`pgvector` 通过首个 migration 的 `CREATE EXTENSION IF NOT EXISTS vector;` 启用，并且必须在每个要写入向量的 database 中单独启用。`chunks.embedding` 固定为 `vector(1536)`，首期使用余弦距离 `<=>` 与 HNSW 的 `vector_cosine_ops`；HNSW 是近似检索，须以固定评估集对比精确检索后才作为默认。
 
@@ -421,6 +421,7 @@ RAG 引擎：LangChain.js / Vercel AI SDK
 
 ### 8.3 版本历史
 
-| 版本 | 日期       | 变更说明                                             |
-| ---- | ---------- | ---------------------------------------------------- |
-| 1.0  | 2026-07-29 | 初始版本，基于 LangGraph TypeScript 入门调研报告整合 |
+| 版本 | 日期       | 变更说明                                                                                                                                                                                                                                                                                                                                   |
+| ---- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1  | 2026-08-07 | Nitro API 独立 Vercel 部署完成（`smallalice-docs-ai-nitro-api`）；Vercel 双项目架构落地（删除根 `vercel.json`，配置迁移到云端 Project Settings）；Neon migration `0000_ai_rag.sql` 已执行（vector 0.8.0、3 表、HNSW 余弦索引）；7 个 `NITRO_*` 环境变量跨 3 环境接线；生产域名 `https://smallalice-docs-ai-nitro-api.ruan-cat.com/` 已上线 |
+| 1.0  | 2026-07-29 | 初始版本，基于 LangGraph TypeScript 入门调研报告整合                                                                                                                                                                                                                                                                                       |

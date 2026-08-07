@@ -464,7 +464,7 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 **CLI 单槽绑定纪律**：`.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
 
-**Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.vercel.app`。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。
+**Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`（用户自定义域名，实际使用此地址）。Vercel 默认地址 `https://smallalice-docs-ai-nitro-api.vercel.app` 不使用。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。
 
 ## 终端操作注意事项（防卡住）
 
