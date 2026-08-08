@@ -267,10 +267,18 @@ Vercel 部署、线上回归和演示视频；
 
 ---
 
-<!-- TODO: 先完成nitro接口的生产环境部署 -->
+<!-- TODO: 等待开启新的独立会话继续完成任务 -->
+
+请你先用 openspec 的技能，检查清楚现在的 openspec 工件内的任务进度。用 memorix 去检查二期 AI 项目的进度。我们准备完成授权，并继续推进任务。在此之前，我们已经做了：
+
+- 完成了完整的 nitro 接口部署。
+- 改造了基于 superpower 的 spec 和 plan 文件，全部换成 do-long-task 的任务工件了。
+- 调研清楚 agent 继续完成本任务需要的授权信息。
+
+以下是我对之前授权卡顿的疑问，和我给你的授权情况。
 
 1. 不会创建 PostgreSQL 连接？为什么？我们不是已经有了 nitro 接口么？我们的 nitro 接口难道没办法首先先获取到来自 vercel 的环境变量，然后用获取到的 neon 环境变量，完成 PostgreSQL 数据库的链接么？你的自测流程难道没有先开启 nitro 本地接口服务么？
-   - 至于生产环境的 nitro 接口部署，这个我现在确实还没有设计清楚。你至少给我确保本地级别的 nitro 接口服务能运行，且能够完成云端唯一 PostgreSQL 数据库的链接。
+   - 云 nitro API rag 已经完成了。你继续。
 2. 外部系统具有副作用，代理不能替用户猜授权
    - 你应该大胆的使用 drizzle 完成数据库 migration ，如果这个操作你不知道规范，你应该自己去看看 `D:\code\ruan-cat\01s-11comm` 的 api 子包是怎么做到用 drizzle 完成 neon 数据库的 migration 合并的。别害怕更改数据库表。我们现在是刚刚开始做这个功能，别怕修改数据库表。功能都没稳定，别害怕。你再这个部分过于保守了。
    - 按量计费的模型请求。别害怕。我会给你提供多款不同格式的，不同 baseUrl 和 apikey 的，不同接口响应格式的渠道。你可以大胆的实现测试。不用太害怕产生费用。
@@ -305,7 +313,9 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
 - vercel cli 已授权，可使用。
 - 浏览器工具优先使用 agent-browser ，实在不行才使用谷歌浏览器 MCP。
 
-### <!-- TODO: --> 实现任务格式改造
+现在我已经给够你东西了，请你调查清楚上下文。明确清楚自己要做的任务和内容，然后继续推进这款长任务。
+
+### <!-- TODO: Codex正在做 先等待其他的skills批量升级一次，再开始安排agent做格式转换任务 --> 实现任务格式改造
 
 我要求你实现任务文档格式的大幅度改造。
 
@@ -355,9 +365,9 @@ skills add https://github.com/mattpocock/skills `
 
 ## 006 <!-- TODO: --> 持续推进二期 AI 项目改造
 
-<!-- 完成openspec改造后继续 -->
+<!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。 -->
 
-## 007 <!-- TODO: 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
+## 007 <!-- 已完成 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
 
 我需要你使用全局技能 `use-vercel-deploy-in-monorepo` 来完成本项目子包的 packages\ai-rag-api\package.json ，即独立 nitro 接口的部署任务。
 
@@ -406,7 +416,13 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 ---
 
-<!-- TODO: -->
+更新文档，我手动完成 `https://smallalice-docs-ai-nitro-api.ruan-cat.com/` 的生产环境设置了。对于 nitro 接口来说，`https://smallalice-docs-ai-nitro-api.vercel.app` 是 vercel 默认分配的生产环境地址，我不用这个，我用的是 `https://smallalice-docs-ai-nitro-api.ruan-cat.com/` 。
+
+- 去改文档，改相关的 markdown 文档，包括 spec 和 plan，还有 README。
+- 去 nitro 子包的 package.json 内，给 homepage 字段增加这个生产环境地址。
+- 去找找其他地方，看看哪里还需要声明清楚这个生产环境地址。
+
+---
 
 对于本次会话，对复杂任务的上下文加载控制、提示词设计、skills 和 MCP 调度等，你有什么好的改进建议么？我希望你可以从中总结成合适的方案，便于我在下一次完成这样复杂的任务的时候，能够更好的控制这些东西：
 
@@ -421,9 +437,11 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 ---
 
-<!-- TODO: 去自己设计 https://smallalice-docs-ai-nitro-api.vercel.app 的生产环境别名 -->
+请你认真思考一下，在本次任务中， use-vercel-deploy-in-monorepo 这款技能还能做到那些东西？还能怎样做才能做的更好？给我出示一份报告。
 
-## 008 <!-- TODO: --> 处理 vercel 的 vitepress 文档云构建错误
+---
+
+## 008 <!-- TODO: WorkBuddy正在做 --> 处理 vercel 的 vitepress 文档云构建错误
 
 - 失败日志： https://vercel.com/ruancat-projects/small-alice-web-odse/F1oDwcRXtacbsyKmbjW2NgNqb4ZA
 
@@ -440,3 +458,10 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 3. 结合 `@ruan-cat/vitepress-preset-config` 的文档，和 `@nolebase/vitepress-plugin-git-changelog` 包的文档，你看看怎么在 `docs\.vitepress\theme\index.ts` 和 `docs\.vitepress\config.mts` 内实现对 `@nolebase/vitepress-plugin-git-changelog` 的配置，确保不要出现这样的识别错误。看看有没有什么忽略配置可以来配置：
    - `@ruan-cat/vitepress-preset-config` https://vitepress-preset.ruancat6312.top/
    - `@nolebase/vitepress-plugin-git-changelog` https://nolebase-integrations.ayaka.io/pages/zh-CN/integrations/vitepress-plugin-git-changelog/
+
+## 009 <!-- TODO: -->
+
+---
+
+pre-commit hook 中 prettier --experimental-cli 在当前 Windows 环境下始终失败（WorkTankWorkerError: Terminated），普通 prettier --write 正常。这是 lint-staged.config.js 配置的环境兼容性问题，非文件内容问题。
+我完全不能接受，为什么我用其他模型的时候，不会出现这个兼容性问题呢？就你出现？你是不是误判了？把你的实力说出来，lint-staged.config.js 配置的环境兼容性问题你打算怎么处理？跟我说清楚。
