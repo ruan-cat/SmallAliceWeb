@@ -208,6 +208,12 @@ metadata:
 - 适用场景：pnpm monorepo 中 `shadcn-docs-nuxt`、Nuxt、Content 与 H3 的实际解析跨越 Nuxt 3/H3 v1 和 Nuxt 4/H3 v2 边界。
 - 关键约束：把主题、Content、Nuxt/Nitro 与 H3 作为整体兼容矩阵验证；禁止用跳过 Content prerender 或关闭搜索掩盖依赖失配。
 
+### 13.3 Vercel 上传部署触发 git-changelog git config --local 失败（2026-08-09）
+
+- 详细案例：`2026-08-09-vercel-git-changelog-config-failed.md`
+- 适用场景：Vercel CLI 上传部署（非 Git 集成克隆）时，构建目录无 `.git`，`@nolebase/vitepress-plugin-git-changelog` 在 `buildStart` 无条件执行 `git config --local core.quotepath false` 失败（exit 128）。
+- 关键约束：`setUserConfig` 的 `gitChangelog` 配置必须保留 `shouldDisableGitChangelog()` 检测逻辑；Vercel production 部署优先使用 Git 集成方式避免丢失 `.git` 目录。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
