@@ -1,3 +1,5 @@
+<!-- 已完成 -->
+
 # 2026-08-07 独立 Nitro 接口服务 Vercel 部署设计（v2）
 
 > 本文档为 v2 最终版，覆盖并否决 v1 中「保留根 vercel.json + 子包 Root Directory」方案。v1 的 Root Directory 设计已被删除，取而代之的是「删除根 vercel.json + 两项目统一采用模式 A」的破坏性变更。
