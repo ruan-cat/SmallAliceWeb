@@ -441,7 +441,7 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 ---
 
-## 008 <!-- TODO: WorkBuddy正在做 --> 处理 vercel 的 vitepress 文档云构建错误
+## 008 <!-- 已完成 WorkBuddy正在做 --> 处理 vercel 的 vitepress 文档云构建错误
 
 - 失败日志： https://vercel.com/ruancat-projects/small-alice-web-odse/F1oDwcRXtacbsyKmbjW2NgNqb4ZA
 
