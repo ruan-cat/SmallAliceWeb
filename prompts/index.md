@@ -459,7 +459,40 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
    - `@ruan-cat/vitepress-preset-config` https://vitepress-preset.ruancat6312.top/
    - `@nolebase/vitepress-plugin-git-changelog` https://nolebase-integrations.ayaka.io/pages/zh-CN/integrations/vitepress-plugin-git-changelog/
 
-## 009 <!-- TODO: -->
+## 009 <!-- TODO: --> 检查频繁出现的 vercel pnpm 安装失败的错误
+
+- https://vercel.com/ruancat-projects/smallalice-docs-ai-nitro-api/6d69tZcmmESbt6GTX53LU3gL9cpi
+
+我们项目的 vercel 流水线，对于 smallalice-docs-ai-nitro-api 这个 vercel 项目来说，总是出现 `ERR_PNPM_META_FETCH_FAIL` 的错误。是不是我们项目在流水线内多 git clone 了一个项目，导致 .npmrc 的内容出错了？请你帮我排查清楚。并修复。
+
+## 010 <!-- TODO: --> 检查 github workflow 流水线出现的 nuxt 构建内存超限的错误
+
+- https://github.com/ruan-cat/SmallAliceWeb/actions/runs/31272689831/job/93141201150
+
+节选错误日志：nuxt content 项目，内存构建超限。
+
+```log
+<--- Last few GCs --->
+
+[3386:0x1c39a000]   103782 ms: Scavenge 4015.6 (4058.5) -> 4009.4 (4101.3) MB, pooled: 0 MB, 9.54 / 0.00 ms  (average mu = 0.262, current mu = 0.197) allocation failure;
+[3386:0x1c39a000]   105520 ms: Mark-Compact (reduce) 4028.9 (4101.3) -> 4002.6 (4034.0) MB, pooled: 0 MB, 43.77 / 0.00 ms  (+ 1495.7 ms in 293 steps since start of marking, biggest step 8.0 ms, walltime since start of marking 1739 ms) (average mu = 0.316,
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x74eae8 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 2: 0xc42680  [node]
+ 3: 0xc4276f  [node]
+ 4: 0xee5fc5  [node]
+ 5: 0xee5ff2  [node]
+ 6: 0xee62ea  [node]
+ 7: 0xef6fea  [node]
+ 8: 0xefb390  [node]
+ 9: 0x198d931  [node]
+Aborted (core dumped)
+```
+
+我不明白为什么我们的 `@ruan-cat-drill-doc/ai-vue-doc` 子包的 nuxt 项目如此脆弱，在 github workflow 也能出现内存不足的情况。这到底是怎么回事？为什么在本地 window 和云端 github workflow linux 都出现相同的内存不够的情况呢？到底是为什么的？ shadcn-docs-nuxt 这个文档框架真的在 monorepo 架构下非常困难艰难么？
+请帮我调研思考，帮我彻底的，长久的克服掉这个错误。
 
 ---
 
