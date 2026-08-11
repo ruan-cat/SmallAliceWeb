@@ -6,7 +6,7 @@
 	"type": "module",
 	"packageManager": "pnpm@10.29.2",
 	"engines": {
-		"node": ">=22.14.0"
+		"node": "22.x"
 	},
 	"scripts": {
 		"git:fetch": "git fetch -p",
@@ -58,12 +58,12 @@
 		"@ruan-cat-drill-doc/ai-vue-doc": "workspace:*",
 		"@ruan-cat-temp/decompress-porn-img-package": "workspace:*",
 		"@ruan-cat-temp/get-cursor-token": "workspace:*",
-		"@ruan-cat/commitlint-config": "^4.9.1",
-		"@ruan-cat/domains": "^1.7.0",
-		"@ruan-cat/taze-config": "^1.0.2",
-		"@ruan-cat/utils": "^4.20.0",
-		"@ruan-cat/vercel-deploy-tool": "^1.2.3",
-		"@ruan-cat/vitepress-preset-config": "^2.14.0",
+		"@ruan-cat/commitlint-config": "^4.11.4",
+		"@ruan-cat/domains": "^2.6.0",
+		"@ruan-cat/taze-config": "^1.1.4",
+		"@ruan-cat/utils": "^4.26.0",
+		"@ruan-cat/vercel-deploy-tool": "^2.0.3",
+		"@ruan-cat/vitepress-preset-config": "^3.2.4",
 		"@types/degit": "^2.8.6",
 		"@types/lodash-es": "^4.17.12",
 		"@types/node": "^22.19.11",
@@ -93,6 +93,7 @@
 		"taze": "^19.9.2",
 		"tsx": "^4.21.0",
 		"turbo": "^2.6.3",
+		"vercel": "^58.9.2",
 		"vite": "^6.3.5",
 		"vitepress": "^1.6.4",
 		"vitepress-demo-plugin": "^1.5.1",
