@@ -3,7 +3,7 @@ import nitroConfig from "../nitro.config";
 
 describe("RAG API runtime configuration", () => {
 	test("uses Nitro v3 configuration with private RAG settings", () => {
-		expect(nitroConfig.compatibilityDate).toBe("2026-07-31");
+		expect(nitroConfig.compatibilityDate).toBe("2024-09-19");
 		expect(nitroConfig.runtimeConfig).toMatchObject({
 			databaseUrl: "",
 			embeddingModel: "",

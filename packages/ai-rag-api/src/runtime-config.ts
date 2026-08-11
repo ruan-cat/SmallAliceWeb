@@ -19,7 +19,7 @@ export type RagNitroConfig = {
 
 /** 仅声明配置键；部署环境通过 Nitro 的 NITRO_* 变量注入私有值。 */
 export const ragNitroConfig = {
-	compatibilityDate: "2026-07-31",
+	compatibilityDate: "2024-09-19",
 	serverDir: "server",
 	runtimeConfig: {
 		databaseUrl: "",
