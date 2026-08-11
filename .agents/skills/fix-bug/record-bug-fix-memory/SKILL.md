@@ -214,6 +214,12 @@ metadata:
 - 适用场景：Vercel CLI 上传部署（非 Git 集成克隆）时，构建目录无 `.git`，`@nolebase/vitepress-plugin-git-changelog` 在 `buildStart` 无条件执行 `git config --local core.quotepath false` 失败（exit 128）。
 - 关键约束：`setUserConfig` 的 `gitChangelog` 配置必须保留 `shouldDisableGitChangelog()` 检测逻辑；Vercel production 部署优先使用 Git 集成方式避免丢失 `.git` 目录。
 
+### 13.4 Vercel 自定义 pnpm 安装未启用 Corepack（2026-08-10）
+
+- 详细案例：`2026-08-10-vercel-pnpm-corepack-meta-fetch-fail.md`
+- 适用场景：Vercel 自定义 Install Command 为 `pnpm install`，`packageManager` 声明未生效，安装阶段出现 `ERR_INVALID_THIS` / `ERR_PNPM_META_FETCH_FAIL`。
+- 关键约束：目标 Project 的 Production、Preview、Development 必须维护 `ENABLE_EXPERIMENTAL_COREPACK=1`，并用真实 Git 构建日志确认最终 pnpm 版本；prebuilt 部署不能替代安装链验收。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
