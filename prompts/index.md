@@ -532,6 +532,10 @@ Aborted (core dumped)
 我不明白为什么我们的 `@ruan-cat-drill-doc/ai-vue-doc` 子包的 nuxt 项目如此脆弱，在 github workflow 也能出现内存不足的情况。这到底是怎么回事？为什么在本地 window 和云端 github workflow linux 都出现相同的内存不够的情况呢？到底是为什么的？ shadcn-docs-nuxt 这个文档框架真的在 monorepo 架构下非常困难艰难么？
 请帮我调研思考，帮我彻底的，长久的克服掉这个错误。
 
+- https://github.com/ruan-cat/SmallAliceWeb/actions/workflows/ci.yaml
+
+我们的 ci.yaml 内的构建结果，全都是错误。请你想点办法完成批量修复。定位故障原因并且去修复。
+
 ---
 
 pre-commit hook 中 prettier --experimental-cli 在当前 Windows 环境下始终失败（WorkTankWorkerError: Terminated），普通 prettier --write 正常。这是 lint-staged.config.js 配置的环境兼容性问题，非文件内容问题。
