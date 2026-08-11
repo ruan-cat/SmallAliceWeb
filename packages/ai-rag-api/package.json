@@ -9,7 +9,7 @@
 		"dev": "nitro dev",
 		"prebuild": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
 		"build": "nitro build",
-		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel && move-vercel-output-to-root",
+		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel && move-vercel-output-to-root --dereference",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"knowledge:prepare:dry-run": "tsx scripts/knowledge-prepare-dry-run.ts --dry-run",
@@ -27,7 +27,7 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@ruan-cat/utils": "^4.24.0",
+		"@ruan-cat/utils": "^4.26.0",
 		"@types/node": "22.19.11",
 		"drizzle-kit": "^0.31.4",
 		"typescript": "5.9.3",
