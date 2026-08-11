@@ -459,11 +459,49 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
    - `@ruan-cat/vitepress-preset-config` https://vitepress-preset.ruancat6312.top/
    - `@nolebase/vitepress-plugin-git-changelog` https://nolebase-integrations.ayaka.io/pages/zh-CN/integrations/vitepress-plugin-git-changelog/
 
-## 009 <!-- TODO: --> 检查频繁出现的 vercel pnpm 安装失败的错误
+## 009 <!-- 已完成 Codex正在做 --> 检查频繁出现的 vercel pnpm 安装失败的错误
+
+<!-- 本质上是缺少 直接修复是 ENABLE_EXPERIMENTAL_COREPACK=1。 环境变量 -->
 
 - https://vercel.com/ruancat-projects/smallalice-docs-ai-nitro-api/6d69tZcmmESbt6GTX53LU3gL9cpi
 
 我们项目的 vercel 流水线，对于 smallalice-docs-ai-nitro-api 这个 vercel 项目来说，总是出现 `ERR_PNPM_META_FETCH_FAIL` 的错误。是不是我们项目在流水线内多 git clone 了一个项目，导致 .npmrc 的内容出错了？请你帮我排查清楚。并修复。
+
+---
+
+```txt
+我的最终建议是：在 @ruan-cat/utils 增加非破坏性的 dereference?: boolean 和 --dereference，发布补丁版本后改回：
+{
+"build:vercel": "... && move-vercel-output-to-root --dereference"
+}
+```
+
+我同意你这个方案，我很喜欢这个做法。你现在去 reports\2026-8-10-move-vercel-output-to-root-dereference 目录内，按照 superpower ，写 spec 和 plan，你直接去看看 `D:\code\ruan-cat\monorepo\packages\utils` 的 `@ruan-cat/utils` 源码，根据源码给出一个清晰的升级方案。稍后我会安排独立的 AI 去完成你需要的升级要求。
+
+---
+
+我已经完成了 2026-8-10-move-vercel-output-to-root-dereference 的升级，`@ruan-cat/utils` 已经按照你期望的方式完成升级了。请你继续做出配置改动。
+请你注意在整个项目内，升级 `@ruan-cat/*` 系列的包，我大批量的对这些包完成了升级。你直接升级到最新版。升级后，你在继续完成你的改写。
+
+---
+
+然后你 git push，去看看 vercel 云流水线是不是还有故障？按理说应该不存在故障了。
+
+---
+
+--dereference 在本地构建看似正确，但没有解决云端最终的函数拓扑。Vercel 的规范允许 .func 目录以符号链接形式复用函数，因此这里需要重新设计产物搬运策略。你继续探究一下，你看看是不是移动策略问题。
+不过我真的很疑惑，是不是哪里出问题了？我觉得是 nitro 配置有问题。而不是我们的文件移动方案和这款脚本出问题了。
+我觉得是 nitro 配置的问题，凭什么我们之前本来的方案，在其他项目好好的，其他项目也是 monorepo 架构啊，也是有独立的 nitro 接口啊，但是别人 vercel 构建和文件目录移动就是正常啊。也不涉及到什么符号链接的问题啊。
+我非常怀疑是 packages\ai-rag-api\nitro.config.ts 的写法，本身就很离谱，很错误，才导致我们 nitro 移动有问题。
+你看看：
+
+- D:\code\ruan-cat\01s-11comm\apps\api\nitro.config.ts
+
+我真的觉得是你的 `compatibilityDate: "2024-09-19",` 没做到，没做好，所以才这样。compatibilityDate 没做好，才导致你构建产物的文件格式是软链接格式。而不是直接就能复制粘贴的实体文件。
+
+---
+
+我们的 move-vercel-output-to-root 增加了新的 `--dereference` 用来解决特定问题，请你以升级加固全局技能 `use-vercel-deploy-in-monorepo` 为目的，在 `reports\2026-8-10-up-use-vercel-deploy-in-monorepo` 目录内，编写技能加固文档，便于我进一步升级这款技能，说明清楚 move-vercel-output-to-root 的参数以及适用情况。
 
 ## 010 <!-- TODO: --> 检查 github workflow 流水线出现的 nuxt 构建内存超限的错误
 
