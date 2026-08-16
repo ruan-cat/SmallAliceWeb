@@ -1,5 +1,14 @@
 # 二期 AI 化任务设计文档
 
+> **⚠️ 本文件已被取代（2026-08-16）**
+>
+> 二期 AI RAG 长任务已迁移至 OpenSpec 任务体系。本文件与 `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md` 仅作历史参考，不再作为任务管理源。
+>
+> - 唯一任务源：`openspec/changes/ai-rag-phase2/tasks.md`
+> - 设计细节：`openspec/changes/ai-rag-phase2/design.md`
+> - 行为规格：`openspec/changes/ai-rag-phase2/specs/ai-rag/*/spec.md`
+> - 进度与风险：`openspec/changes/ai-rag-phase2/agent-progress.md`、`openspec/changes/ai-rag-phase2/agent-findings.md`
+
 > **RAG 与检索质量阶段 — 简历能力拓展核心**
 
 ## 一、背景与目标
