@@ -4,33 +4,39 @@
 
 - 日期：2026-08-16
 - Change：`ai-rag-phase2`
-- 当前阶段：执行 superpowers → OpenSpec 永久迁移收尾，等待分支级 diff / 路径 / blob SHA 自检后关闭迁移任务。
+- 当前状态：superpowers → OpenSpec 永久迁移已完成并通过 GitHub 分支级自检；迁移治理任务 `tasks.md` 0.1 已可关闭。
 - 唯一任务源：`openspec/changes/ai-rag-phase2/tasks.md`。
-- 当前业务待办入口仍为 `tasks.md` §2.1.1；工件迁移不得改变 PostgreSQL、embedding、模型、生产浏览器或部署回归的外部门禁状态。
+- 下一业务入口：`tasks.md` §2.1.1（真实 PostgreSQL lexical + pgvector provider）。真实 PostgreSQL、embedding、模型、生产浏览器和部署回归状态没有因本轮文档迁移发生改变。
 
-## 2. 本轮迁移动作
+## 2. 永久迁移结果
 
-- 将旧 design 原 blob `4514e5c1abe6659d6c6d6a78a4d7c9c36834b8d8` 迁入 `history/2026-07-29-ai-rag-phase2-design.superpowers.md`。
-- 将旧 plan 原 blob `58471a612223ff40e8197b129fbd08c4f1d6a00f` 迁入 `history/2026-07-29-ai-rag-phase2-plan.superpowers.md`。
-- 新增 `history/2026-08-16-superpowers-migration.md`，记录字节级历史保全、语义映射、纠偏关系和完成门禁。
-- 重写 `proposal.md` / `design.md` / `tasks.md` 的迁移权威性说明，使当前工件完全独立于原 `docs/superpowers` 路径。
-- 删除两个旧 `docs/superpowers` 文件路径。
+- 原 `docs/superpowers/specs/2026-07-29-ai-rag-phase2-design.md` 已从工作分支删除；GitHub contents API 返回 404。
+- 原 `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md` 已从工作分支删除；GitHub contents API 返回 404。
+- design 历史快照迁入 `history/2026-07-29-ai-rag-phase2-design.superpowers.md`，blob SHA 仍为 `4514e5c1abe6659d6c6d6a78a4d7c9c36834b8d8`。
+- plan 历史快照迁入 `history/2026-07-29-ai-rag-phase2-plan.superpowers.md`，blob SHA 仍为 `58471a612223ff40e8197b129fbd08c4f1d6a00f`。
+- GitHub compare 将二者识别为 rename，均为 `0 additions / 0 deletions`，证明历史内容未发生字节级重写。
+- `history/2026-08-16-superpowers-migration.md` 已建立原路径、blob、OpenSpec 新路径、语义映射和纠偏规则。
+- `proposal.md`、`design.md`、`tasks.md` 已重建为不依赖旧路径的当前事实源；6 份 specs 保持行为权威性且本轮未修改。
 
-## 3. 状态保护
+## 3. 自检结论
 
-- 6 份 `specs/ai-rag/*/spec.md` 的行为权威性保持不变，本轮不虚构新增业务完成状态。
-- 已完成基线仍是结构化知识、API 离线合同、Chat UI/transport、VitePress 来源锚点、部署基础、runtime assembly。
-- P0/P1/P2 与 M1-M4 的未完成状态保持；历史快照中的复选框不参与判断。
-- Neon 命名继续区分 project `neon-smallalice-ai-rag` 与 database `neondb`。
+相对 `dev` 的第一阶段 compare 只有 8 个迁移相关文件：
 
-## 4. 待执行自检
+1. `proposal.md`
+2. `design.md`
+3. `tasks.md`
+4. `agent-progress.md`
+5. `agent-findings.md`
+6. 两个历史 snapshot rename
+7. 一个 migration manifest
 
-迁移任务 0.1 只有在以下分支级验证完成后才能勾选：
+没有业务源码、测试、数据库 migration 或部署配置变更。P0/P1/P2 与 M1-M4 保持原有未完成语义；旧快照复选框没有反向污染当前状态。
 
-1. `history/*.superpowers.md` 的 blob SHA 与原文件 SHA 完全相同。
-2. 两个原 `docs/superpowers/...` 路径已不存在。
-3. 与 `dev` 的 changed files 只包含 OpenSpec 工件和两个旧文件删除。
-4. diff 未把任何 P0/P1/P2 或 M1-M4 错误升级为完成。
-5. PR 复核确认没有重新建立第二套可执行任务源。
+本 cloud connector 会话没有本地工作树/CLI，因此本轮没有伪造 fresh `openspec validate ai-rag-phase2 --strict` 结果。首轮迁移已有 strict validate 历史记录；本轮新变更采用 GitHub tree、compare、blob SHA 与路径 404 完成迁移层验证。后续在本地 OpenSpec CLI 环境可补一次 fresh strict validation。
 
-本 cloud connector 会话无法直接运行本地 `openspec validate ... --strict` CLI；不得把首轮迁移曾有的 strict validate 记录冒充本轮 fresh validation。本轮将使用 GitHub tree/diff/blob/path 证据完成迁移层自检；后续有本地 CLI 环境时可再补 fresh strict validation。
+## 4. 继续执行规则
+
+- 后续只从 `tasks.md` 读取下一项，不得恢复 `docs/superpowers` 两条旧路径。
+- 历史原文只从 `history/*.superpowers.md` 审计，不得重新勾选其中任务。
+- 新发现工作先进入 `tasks.md`；失败与禁止重复路径进入 `agent-findings.md`。
+- 任何外部能力只有拿到自身真实证据后才允许勾选完成。

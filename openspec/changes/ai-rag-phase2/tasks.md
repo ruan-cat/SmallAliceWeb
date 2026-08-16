@@ -11,13 +11,13 @@
 
 ## 0. 工件迁移治理
 
-- [ ] 0.1 [docs] `openspec/changes/ai-rag-phase2/**` - 永久吸收并删除旧 superpowers 二期工件
+- [x] 0.1 [docs] `openspec/changes/ai-rag-phase2/**` - 永久吸收并删除旧 superpowers 二期工件
   - 原始来源：
     - `docs/superpowers/specs/2026-07-29-ai-rag-phase2-design.md`
     - `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md`
-  - 历史保全：原 blob 必须以相同 SHA 保存到 `history/2026-07-29-ai-rag-phase2-*.superpowers.md`。
+  - 历史保全：原 blob 已以相同 SHA 保存到 `history/2026-07-29-ai-rag-phase2-*.superpowers.md`。
   - 当前语义：设计进入 `design.md`；行为进入 6 份 specs；当前/剩余工作进入本文件；checkpoint 与失败进入 agent 文件。
-  - 完成门禁：原路径不存在；历史 blob SHA 一致；当前核心工件不依赖原路径；P0/P1/P2 与 M1-M4 状态未被旧复选框污染；diff 不包含业务代码或虚假的外部完成状态。
+  - 完成证据：GitHub compare 将两份旧文件识别为 100% rename（0 additions / 0 deletions）；history 新路径 SHA 与原 SHA 完全一致；两个原路径在工作分支均返回 404；相对 `dev` changed files 仅包含 OpenSpec 迁移工件与两次 rename，没有业务代码；P0/P1/P2 与 M1-M4 未被历史复选框污染。
   - 迁移映射：`history/2026-08-16-superpowers-migration.md`。
 
 ## 1. 已完成基线
