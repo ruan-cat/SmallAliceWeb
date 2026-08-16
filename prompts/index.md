@@ -317,6 +317,15 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
 
 ### <!-- TODO: ZCode正在做；ChatGPT web正在做；先等待其他的skills批量升级一次，再开始安排agent做格式转换任务 --> 实现任务格式改造
 
+@Github @Skill Router MCP
+
+1. PR 目标和信息表：
+   - 你的 pr github 仓库地址为： https://github.com/SmallAliceWeb
+   - 你的 pr 目标分支为： dev
+   - 你的 pr 工作主分支为： 2026-8-16-change-to-do-long-task
+
+---
+
 我要求你实现任务文档格式的大幅度改造。
 
 我不打算继续使用 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 文件来管理这个长任务了，我要求改换成基于 openspec 的 do-long-task 长任务任务存储体系。
@@ -333,9 +342,12 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
 
 ---
 
+我稍后会将任务委托给更强的 ChatGPT sol 模型来完成大规模的文本理解，迁移，改造，复核。但是有个缺点，就是云 ChatGPT web 是没有本地 memorix 的任何历史记忆的，因此我要求你将 memorix 相关的历史记忆和决策，都变成实体 markdown 文档。全部存储到 `openspec\changes\ai-rag-phase2\all-memorix` 目录内，作为可用 ChatGPT web 直接阅读的文本文件，请你主动使用 memorix 提供的能力完成这样的文本输出和导出。
+
 ---
 
-我稍后会将任务委托给更强的 ChatGPT sol 模型来完成大规模的文本理解，迁移，改造，复核。但是有个缺点，就是云 ChatGPT web 是没有本地 memorix 的任何历史记忆的，因此我要求你将 memorix 相关的历史记忆和决策，都变成实体 markdown 文档。全部存储到 `openspec\changes\ai-rag-phase2\all-memorix` 目录内，作为可用 ChatGPT web 直接阅读的文本文件，请你主动使用 memorix 提供的能力完成这样的文本输出和导出。
+请你继续完成上一轮云 ChatGPT web 没有完成的任务。
+我要求你彻底的，全面的让 `openspec\changes\ai-rag-phase2` 这个 do-long-task 长任务工件，永久吸收 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 文件，并彻底的，永久删除这两个文件。我要求你务必在 openspec 的 spec 或者是其他的文件完成对上述内容的吸收。以便彻底完成 superpower 任务工件迁移成基于 openspec 的 do-long-task 任务工件。
 
 ## 003 <!-- 已完成 --> 安装 grill-me 技能
 
