@@ -4,27 +4,33 @@
 
 - 日期：2026-08-16
 - Change：`ai-rag-phase2`
-- 当前状态：OpenSpec + do-long-task 首轮迁移已完成；本轮 ChatGPT web 二次审计完成历史上下文、旧台账、memorix、事故记录与当前 `dev` 文件树的交叉核验，并补强任务源边界与迁移纠偏说明。
-- 唯一任务源：`openspec/changes/ai-rag-phase2/tasks.md`。旧 `docs/superpowers/specs/2026-07-29-ai-rag-phase2-design.md` 与 `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md` 仅为冻结历史快照，正文中的复选框不得用于判断当前进度。
-- 当前待办：仍从 `tasks.md` §2.1.1 起步；真实 PostgreSQL、embedding、模型、生产浏览器回归与部署回归的外部门禁没有因本轮文档审计而改变。
+- 当前阶段：执行 superpowers → OpenSpec 永久迁移收尾，等待分支级 diff / 路径 / blob SHA 自检后关闭迁移任务。
+- 唯一任务源：`openspec/changes/ai-rag-phase2/tasks.md`。
+- 当前业务待办入口仍为 `tasks.md` §2.1.1；工件迁移不得改变 PostgreSQL、embedding、模型、生产浏览器或部署回归的外部门禁状态。
 
-## 2. 本轮二次审计范围
+## 2. 本轮迁移动作
 
-- 已读根 `AGENTS.md`、`.agents/skills/fix-bug/record-bug-fix-memory/SKILL.md` 与四份相关事故正文：Windows `neonctl` CPU 自旋、Nuxt Content 跨运行时依赖、Vercel 无 `.git` git-changelog、Vercel pnpm/Corepack。
-- 已读 Skill Router MCP 的 `do-long-task`、`openspec`、`git-commit`，以及项目级 `openspec-continue-change`、`openspec-verify-change`。
-- 已逐段复核两份旧 superpowers 设计/计划与当前 `proposal.md`、`design.md`、6 份规格、`tasks.md`、`agent-findings.md`。
-- 已读 `all-memorix/README.md`、`01-observations.md`、`02-session-highlights.md`；其余完整导出作为历史证据，不作为任务源。
-- 已核对当前 `dev` 的 `packages/ai-rag-api/tests` 文件树：根目录 12 个测试文件 + `tests/routes` 3 个测试文件，共 15 个；因此 2026-08-10 事故记录中的 `16 文件 / 51 用例` 只视为当时 fresh 验证快照，未重新运行测试前不覆盖 OpenSpec 的 `15 文件 / 49 用例` 基线。
+- 将旧 design 原 blob `4514e5c1abe6659d6c6d6a78a4d7c9c36834b8d8` 迁入 `history/2026-07-29-ai-rag-phase2-design.superpowers.md`。
+- 将旧 plan 原 blob `58471a612223ff40e8197b129fbd08c4f1d6a00f` 迁入 `history/2026-07-29-ai-rag-phase2-plan.superpowers.md`。
+- 新增 `history/2026-08-16-superpowers-migration.md`，记录字节级历史保全、语义映射、纠偏关系和完成门禁。
+- 重写 `proposal.md` / `design.md` / `tasks.md` 的迁移权威性说明，使当前工件完全独立于原 `docs/superpowers` 路径。
+- 删除两个旧 `docs/superpowers` 文件路径。
 
-## 3. 二次审计结论
+## 3. 状态保护
 
-- 现有 6 能力规格与 `tasks.md` 已覆盖旧计划的知识准备、Hybrid Search、评估、独立 Nitro、Chat UI、来源溯源、调优、README/视频、历史 Chroma 学习与 M1-M4；未发现需要重新拆出第二套任务清单的漏项。
-- 旧资料中的后续纠偏必须显式保留：Nuxt API → 独立 Nitro v3；`x-markdown-vue` → `markstream-vue`；“BM25” → PostgreSQL 词法全文检索；旧加权 RRF 草图 → 标准 `1/(k+rank)`；数据库来源阅读器/展开原文 → VitePress 静态来源跳转；自动滚动 → 因上游缺陷固定关闭。完整映射见 `agent-findings.md`。
-- Neon 命名已复核：`neon-smallalice-ai-rag` 是项目名，实际业务 database 为 `neondb`；不得再把两者混称。
-- `knowledge_sync_runs` 缺“写入 chunk 数”仍是待实现决策点；sync provider 仍是离线 fake；生产 search/chat 的真实装配与回归仍未验收。
+- 6 份 `specs/ai-rag/*/spec.md` 的行为权威性保持不变，本轮不虚构新增业务完成状态。
+- 已完成基线仍是结构化知识、API 离线合同、Chat UI/transport、VitePress 来源锚点、部署基础、runtime assembly。
+- P0/P1/P2 与 M1-M4 的未完成状态保持；历史快照中的复选框不参与判断。
+- Neon 命名继续区分 project `neon-smallalice-ai-rag` 与 database `neondb`。
 
-## 4. 验证与下一步
+## 4. 待执行自检
 
-- 首轮迁移已有 `openspec validate ai-rag-phase2 --strict` 通过记录；本轮只补强 Markdown 权威边界与审计说明，没有改动 `tasks.md` 或 6 份行为规格的结构。
-- 本轮云环境无独立子代理调度接口，因此未虚构“子代理执行”；采用旧设计、旧计划、memorix、事故正文、当前文件树五条独立证据轨交叉核验。
-- 后续继续按 `tasks.md` §2.1.1 推进；任何完成项只在获得新的可复核证据后更新。
+迁移任务 0.1 只有在以下分支级验证完成后才能勾选：
+
+1. `history/*.superpowers.md` 的 blob SHA 与原文件 SHA 完全相同。
+2. 两个原 `docs/superpowers/...` 路径已不存在。
+3. 与 `dev` 的 changed files 只包含 OpenSpec 工件和两个旧文件删除。
+4. diff 未把任何 P0/P1/P2 或 M1-M4 错误升级为完成。
+5. PR 复核确认没有重新建立第二套可执行任务源。
+
+本 cloud connector 会话无法直接运行本地 `openspec validate ... --strict` CLI；不得把首轮迁移曾有的 strict validate 记录冒充本轮 fresh validation。本轮将使用 GitHub tree/diff/blob/path 证据完成迁移层自检；后续有本地 CLI 环境时可再补 fresh strict validation。
