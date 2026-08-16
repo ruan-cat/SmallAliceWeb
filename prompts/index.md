@@ -524,9 +524,13 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 我们的 move-vercel-output-to-root 增加了新的 `--dereference` 用来解决特定问题，请你以升级加固全局技能 `use-vercel-deploy-in-monorepo` 为目的，在 `reports\2026-8-10-up-use-vercel-deploy-in-monorepo` 目录内，编写技能加固文档，便于我进一步升级这款技能，说明清楚 move-vercel-output-to-root 的参数以及适用情况。
 
-## 010 <!-- TODO: --> 检查 github workflow 流水线出现的 nuxt 构建内存超限的错误
+## 010 <!-- TODO: --> 检查并解决 github workflow 流水线出现的 nuxt 构建内存超限的错误
+
+阅读该故障：
 
 - https://github.com/ruan-cat/SmallAliceWeb/actions/runs/31272689831/job/93141201150
+- 以及最近的几个失败的 github workflow 流水线。
+- 以及该项目相关的 vercel 云流水线的失败日志。
 
 节选错误日志：nuxt content 项目，内存构建超限。
 
@@ -556,8 +560,3 @@ Aborted (core dumped)
 - https://github.com/ruan-cat/SmallAliceWeb/actions/workflows/ci.yaml
 
 我们的 ci.yaml 内的构建结果，全都是错误。请你想点办法完成批量修复。定位故障原因并且去修复。
-
----
-
-pre-commit hook 中 prettier --experimental-cli 在当前 Windows 环境下始终失败（WorkTankWorkerError: Terminated），普通 prettier --write 正常。这是 lint-staged.config.js 配置的环境兼容性问题，非文件内容问题。
-我完全不能接受，为什么我用其他模型的时候，不会出现这个兼容性问题呢？就你出现？你是不是误判了？把你的实力说出来，lint-staged.config.js 配置的环境兼容性问题你打算怎么处理？跟我说清楚。
