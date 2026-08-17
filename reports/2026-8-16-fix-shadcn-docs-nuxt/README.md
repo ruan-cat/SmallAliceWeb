@@ -1,92 +1,256 @@
-# 2026-08-18 Nuxt 文档构建 OOM 故障分析与修复
+# 2026-08-18 Nuxt 文档构建 OOM 故障分析与结构性修复实验
 
 ## 目标
 
-修复 `@ruan-cat-drill-doc/ai-vue-doc` 在 Windows、本项目 GitHub Actions Linux runner 以及 Vercel 类云构建环境中反复出现的 Node.js / V8 heap out of memory 问题，并给后续回归提供可观测证据。
+修复 `@ruan-cat-drill-doc/ai-vue-doc` 在 Windows、GitHub Actions Linux runner 与 Vercel 类云构建环境中反复出现的 Node.js / V8 heap out of memory，并尽量避免用持续提高 `--max-old-space-size` 的方式掩盖复杂依赖图中的结构性问题。
 
-## 关键证据
+本报告把“8 GiB heap 能稳定通过”定义为**对照组**，最终目标改为：在默认 Node/V8 heap 限制下，通过缩小生产 SSR/Nitro 构建图，使 Nitro prerender 能稳定完成。
 
-- 重点失败流水线：`actions/runs/31272689831/job/93141201150`。
-- 失败进程在 V8 heap 约 4 GiB 附近持续 Scavenge / Mark-Compact，最终出现：`Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`。
-- 该错误是 Node/V8 主动在 JavaScript heap 上限附近终止，不是 Linux 内核首先发出的 cgroup OOM kill。因此 Windows 与 Linux 出现近似错误并不矛盾：二者共同运行 Node/V8，并共同继承默认 heap 预算。
-- `packages/ai-vue-doc/content` 的 Markdown 数量很小，不能用“文档数量巨大”解释当前峰值。
-- 历史故障记录 `2026-08-01-nuxt-content-monorepo-compatibility.md` 已说明此包处于 Nuxt、Nitro、Nuxt Content、shadcn-docs-nuxt 与 monorepo workspace 依赖的高敏感组合中，并曾需要更高 Node heap 预算。
+## 关键失败证据
 
-## 为什么这个组合容易出现高内存峰值
+- 历史重点失败：Actions run `31272689831` / job `93141201150`。
+- 近期 `dev` 失败：run `31930697012` / job `95124914691`。
+- 两类失败均在约 4 GiB V8 heap 边界持续 Scavenge / Mark-Compact 后出现 `Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`，exit 134。
+- 近期失败中 Vite client build 已成功处理约 5414 modules，server build 已成功处理约 4028 modules；真正死亡位置在 `[nitro] Initializing prerenderer` 之后。
+- `packages/ai-vue-doc/content` 的 Markdown 数量很小，当前没有证据支持“内容文件太多直接撑爆 Nuxt Content”的解释。
 
-这不等价于“Nuxt / Nitro / Nuxt Content / shadcn-docs-nuxt 很垃圾”。当前证据更符合构建资源预算与任务编排问题，而不是已经证实的框架内存泄漏。
+因此应区分：
 
-生产构建并不只处理 Markdown。Nuxt/Nitro 会建立客户端与服务端模块图，Nuxt Content 会参与内容转换/索引，shadcn-docs-nuxt 会加入文档主题与组件层，workspace 包又让构建图跨越包边界。随后 Nitro 还需要生成服务器产物并处理依赖。即使页面很少，模块图、转换缓存、Rollup/Vite 中间对象、SSR 代码和依赖追踪也可能在同一阶段驻留于 heap。
+- **exit 134 + V8 heap OOM**：JavaScript heap ceiling 被击穿；
+- **exit 137 / Killed**：更偏向 runner/cgroup 物理内存压力；
+- 两者不能混为同一故障。
 
-此外，根 `turbo run //#docs:build:run` 的依赖链会拉起 workspace build。如果多个高内存 Node 任务并发，单进程的 V8 heap 上限与整机 RSS 峰值会叠加。原配置没有显式限制并发。
+## 第一阶段：8 GiB 对照组
 
-## 第一轮长期修复
+第一阶段采用以下措施建立稳定基线：
 
-### 1. 在 `ai-vue-doc` 包内固定生产构建 heap 预算
+1. `ai-vue-doc` 的生产 `prepare/build` 暂时通过 package-level wrapper 设置 `--max-old-space-size=8192`；
+2. 根 `build/docs:build` 使用 Turbo `--concurrency=1`，避免 workspace 高内存任务并行叠加；
+3. GitHub CI 和 Vercel workflow 从 Node 24 对齐项目 `engines.node = 22.x`；
+4. CI 输出 V8 heap limit、`free -h`，并通过 `/usr/bin/time -v` 记录进程资源数据。
 
-新增 `packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs`，由包自身在 `prebuild` / `build` 时设置：
+### 对照组验证
 
-```text
---max-old-space-size=8192
+| 验证 | 结果 |
+| --- | --- |
+| 主 PR #11 初次 CI | 成功 |
+| 主 PR #11 同功能 SHA rerun | 成功 |
+| 临时 PR #12 / run `32079043977` | 成功 |
+| 临时 PR #13 / run `32079230457` | 成功 |
+
+这证明：**增加 heap headroom 可以稳定绕过当前 OOM。**
+
+但该结论不能证明根因已经解决。`8192` 只是提高 V8 old-space 上限，不是减少构建工作量，也不是证明存在经典内存泄漏。
+
+## 第二阶段源码分析
+
+### 1. workspace package 已经具备正式 dist exports
+
+`packages/ai-vue/package.json` 已定义：
+
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles": {
+      "types": "./dist/style.d.ts",
+      "import": "./dist/style.css",
+      "default": "./dist/style.css"
+    }
+  }
+}
 ```
 
-这样本地 Windows、Linux、GitHub Actions、Vercel 等只要执行该包标准 `build` 脚本，就不需要调用者另外记忆环境变量。该值是 V8 old-space 的上限，而不是启动时立即占用 8 GiB。
+并且根 `turbo.json` 的通用 `build` task 配置：
 
-### 2. 根文档构建限制 Turbo 并发
-
-根 `build` 与 `docs:build` 增加：
-
-```text
---concurrency=1
+```json
+{
+  "build": {
+    "dependsOn": ["^build"]
+  }
+}
 ```
 
-目的不是修复单进程 heap，而是避免 workspace 构建任务并发把整机瞬时内存进一步放大。这里用构建时间换确定性。
+`ai-vue-doc` 又声明了 `@ruan-cat-drill-doc/ai-vue: workspace:*`，因此在标准 Turbo package graph 中，依赖包可以先 build 出 `dist`，文档站生产构建没有必然理由继续消费 `../ai-vue/src/index.ts`。
 
-### 3. GitHub Actions 与项目 Node 版本基线对齐
+### 2. 当前配置绕过 package exports，直接把源码拖入 Nuxt 构建图
 
-根 `package.json` 声明 `engines.node = 22.x`，旧 CI 却固定 `24.18.0`。第一轮修复将 CI 改回 `22.x`，减少本地/CI 两套 Node/V8 行为基线。
+`packages/ai-vue-doc/workspace-aliases.ts` 当前包含：
 
-CI 同时显式设置 `NODE_OPTIONS=--max-old-space-size=8192`，保证根构建链和其子进程也获得一致预算。
+```ts
+"@ruan-cat-drill-doc/ai-vue/styles": resolve(__dirname, "../ai-vue/src/styles/index.scss"),
+"@ruan-cat-drill-doc/ai-vue": resolve(__dirname, "../ai-vue/src/index.ts"),
+```
 
-### 4. CI 增加内存可观测性
+这会让生产文档站直接消费 workspace 源码，而不是正常使用 `package.json exports -> dist`。
 
-构建前输出 V8 heap limit 与 `free -h`；生产构建优先通过 `/usr/bin/time -v` 执行，以便失败后区分：
+开发模式这样做可能有 HMR / 联调价值，但生产构建会扩大 Nuxt/Vite 需要解析、转换和保留的 module graph。
 
-1. V8 heap 再次达到上限；
-2. runner 整机 RSS / cgroup 先耗尽并出现 exit 137 / killed；
-3. OOM 已解除但暴露下一层真实构建错误。
+### 3. Vite SSR 与 Nitro 又对同一批依赖做双重 blanket bundling
 
-这是后续迭代能否做对的关键，不能继续只看到一句 `pnpm run build failed`。
+当前 `nuxt.config.ts` 的 `vite.ssr.noExternal` 包含：
 
-## 为什么不直接无限增加 heap
+- `@ruan-cat-drill-doc/ai-vue`
+- Element Plus / `@element-plus/*`
+- VueUse
+- vue-demi
+- floating-ui / popper
+- async-validator
+- lodash 系列
+- tinycolor
+- entities 等
 
-`8192` 是第一轮上限，不代表应该继续无条件增加。如果串行化以后仍然把 heap 推到 8 GiB，说明需要进一步检查模块图、Nitro tracing 或某个转换阶段是否存在病态增长；继续把 heap 提到 12/16 GiB 只会掩盖问题。
+Nitro `externals.inline` 又几乎重复同一组依赖。
 
-如果下一轮 GitHub Actions 不是 V8 OOM，而是 exit 137 / `Killed`，则说明已经从“单进程 V8 上限”转变为“runner 整机内存不足”。此时应优先减少峰值，必要时再给 CI 增加 swap，而不是继续提高 old-space。
+这意味着大量本可作为正常 package dependency 处理的模块被强制参与 SSR/server bundling，并且在 Nitro server/prerender 生命周期继续扩大转换与保留对象集合。
 
-## Windows 专用历史 workaround
+### 4. Nitro prerender 是本次峰值的重要时间点
 
-现有 Nuxt 配置中 Windows 的 Nitro tracing workaround 已按 `process.platform === "win32"` 限定。当前 GitHub Linux 同样 OOM，说明不能把本次问题归因于那个 Windows workaround，也不应该把 `trace: false` 无条件扩展到 Linux。
+当前日志不是在 Markdown parse、client compile 或 server compile 初期死亡，而是在这两套 Vite build 已成功后，于 `[nitro] Initializing prerenderer` 后 OOM。
 
-## Vercel 证据边界
+针对当前 Nitro `2.13.4` 的源码检查表明，prerender 初始化并非只是在现有 bundle 上直接并发抓取页面；它还会创建 prerender renderer/Nitro 生命周期并进行对应 build 初始化。
 
-当前云任务能访问 GitHub 仓库、GitHub Actions 与仓库中的 Vercel 部署配置，但没有 Vercel Dashboard 日志连接器。因此不能声称已经直接读取所有 Vercel 平台内部构建日志。包级 build wrapper 与根 build 串行化的设计刻意不依赖 GitHub Actions，目的是让执行标准 pnpm package/build 链路的 Vercel 构建同样继承修复。
+因此这里很容易形成“旧 module graph 尚有大量对象存活，新 renderer/build 又开始建立”的晚期峰值。
 
-如果 Vercel 后续仍失败，需要按其实际日志区分 V8 heap OOM、平台总内存限制和 Nitro 输出/追踪故障，不能把三者混为一谈。
+### 5. `nitro.prerender.concurrency = 1` 不是根修复
 
-## 验证记录
+当前 Nitro 2.13.4 的 prerender 默认并发本身就是 1，而且现有 OOM 发生在真正 route 并发循环之前。
 
-| 轮次 | 环境 | 变更 | 结果 |
-| --- | --- | --- | --- |
-| 基线 | GitHub Actions | 默认 heap、Turbo 未限并发 | 约 4 GiB V8 heap OOM |
-| 第一轮 | GitHub Actions PR CI | 8 GiB heap、Turbo concurrency=1、Node 22.x、RSS 诊断 | 待 CI 实测更新 |
+因此把：
 
-## 长期判定标准
+```ts
+nitro: {
+  prerender: { concurrency: 1 }
+}
+```
 
-只有满足以下条件，才能把本故障视为真正稳定：
+作为主要修复，与当前证据不匹配。
 
-- PR CI 从干净依赖安装到生产构建完整通过；
-- 不再出现 V8 heap OOM 或系统 exit 137；
-- 后续重复 CI 不依赖手工重跑才能偶然成功；
-- Windows 本地执行包标准 `build` 时自动继承高 heap 入口；
-- 如果 Vercel 仍有失败，必须基于其真实失败阶段继续处理，而不能把 GitHub 绿色误认为 Vercel 已验证。
+### 6. shadcn-docs-nuxt / Nuxt Content 是基础负载放大器，但暂无单点泄漏证据
+
+当前 `shadcn-docs-nuxt@1.1.9` 文档层会带入 Nuxt Content / document-driven、indexed search、Shiki highlight preload、Icon scanning 等文档站能力。
+
+这些能力会增加生产构建的基础成本，但当前内容量很小，不能仅据此认定 Nuxt Content 本身泄漏。
+
+更符合当前证据的模型是：
+
+```text
+shadcn-docs-nuxt / Nuxt Content 基础构建成本
+  + workspace 源码 alias
+  + 大范围 Vite ssr.noExternal
+  + 大范围 Nitro externals.inline
+  + Nitro prerender 晚期 renderer/build
+  = 默认 V8 heap 附近的高瞬时/保留工作集
+```
+
+## 为什么会表现成“偶尔成功，大多数时候失败”
+
+如果真实峰值长期贴近默认 V8 old-space ceiling，那么以下微小变化就足以改变是否越线：
+
+- V8 GC 时机；
+- Rollup/Vite module graph 的对象释放时机；
+- Nitro prerender renderer 初始化时点；
+- runner 当时的 native/RSS 使用；
+- cache 与文件遍历顺序；
+- Node 版本及 native dependency 安装路径；
+- workspace 其他 task 是否同时存活。
+
+因此“偶发绿色”与“结构仍不健康”并不矛盾。
+
+## 第二阶段实验设计
+
+### 实验目标
+
+在**默认 Node/V8 heap**下完成生产构建，并验证成功不是偶发。
+
+### 保持不变的控制变量
+
+- Node 继续使用项目声明的 `22.x`；
+- 根 Turbo `--concurrency=1` 暂时保留；
+- shadcn-docs-nuxt 必需的内部兼容 alias 继续保留；
+- Windows-only `nitro.externals.trace=false` 继续只在 `win32` 生效；
+- 不新增 12/16 GiB heap；
+- 不用 `nitro.prerender.concurrency` 掩盖问题。
+
+### 结构实验候选变更
+
+1. 删除 `packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs`；
+2. 恢复标准 `nuxt prepare` / `nuxt build` scripts；
+3. GitHub CI 删除 `NODE_OPTIONS=--max-old-space-size=8192`，保留内存诊断；
+4. 生产构建停止把 `@ruan-cat-drill-doc/ai-vue` / styles alias 到 `src`，改走 workspace package exports 的 `dist`；
+5. 移除大范围 `vite.ssr.noExternal`；
+6. 移除大范围 `nitro.externals.inline`；
+7. 如果暴露真实 SSR externalization 或 module-resolution 错误，只根据错误逐项恢复**最小必要集合**。
+
+### 实验矩阵
+
+| 实验 | 默认 heap | 源码 alias | blanket `noExternal`/`inline` | 目的 |
+| --- | --- | --- | --- | --- |
+| Baseline | 否，8 GiB | 有 | 有 | 已建立稳定对照组 |
+| E1 | 是 | 无 | 无/最小 | 验证构建图缩减能否直接消除 OOM |
+| E1 rerun/独立 PR | 是 | 无 | 无/最小 | 验证不是偶发 green |
+| E2（仅 E1 出现解析错误时） | 是 | 无 | 按错误逐项恢复 | 找到真实最小 bundling 集合 |
+
+不再重复做一个“默认 heap + 原结构”的新实验，因为历史失败 run 已经多次提供该基线证据；新 runner 配额应该优先用于能区分根因的结构实验。
+
+## 实验判定标准
+
+### 成功
+
+- 从 clean install 到 `nuxt build`、Nitro prerender、根 docs build 全部通过；
+- 默认 V8 heap，无 8 GiB wrapper；
+- 至少一次 rerun 或第二个独立 PR 仍成功；
+- 不以关闭业务能力（如全文搜索/文档页面）换取绿色。
+
+### 失败：exit 134 / V8 OOM
+
+说明结构缩减仍不足。继续检查实际 module graph、Shiki/Icon/Nuxt Content 集成和 Nitro server/prerender build 的保留集合，而不是直接把 heap 提到 12/16 GiB。
+
+### 失败：exit 137 / Killed
+
+说明单进程 V8 ceiling 已不再是唯一限制，应转查 runner/cgroup 总内存和 RSS 峰值。
+
+### 失败：module resolution / SSR externalization
+
+这是有价值的实验结果。按错误逐个恢复最小 `noExternal` / `inline` 项，记录每一项为什么必须存在，禁止恢复整块 blanket 列表。
+
+## Windows tracing workaround 的边界
+
+现有：
+
+```ts
+...(process.platform === "win32" ? { trace: false } : {})
+```
+
+用于历史 Windows Nitro/NFT tracing 兼容问题。本次 Linux runner 同样 OOM，因此不能把 OOM 归咎于 Windows tracing，也不应该把 `trace: false` 无条件扩展到 Linux/Vercel。
+
+## 当前结论
+
+目前最符合源码、项目配置和 CI 崩溃时点的解释是：
+
+> `shadcn-docs-nuxt` / Nuxt Content 提供较重的文档站基础构建；项目又通过 workspace 源码 alias 让 `ai-vue` 源码进入生产 SSR graph，并用 Vite `noExternal` 与 Nitro `externals.inline` 对大批依赖进行双重强制 bundling。Nitro 2.13.4 在 prerender 初始化阶段建立新的 renderer/build 生命周期后，晚期高瞬时/保留工作集超过默认 V8 heap ceiling。
+
+目前没有足够证据证明经典 memory leak，也没有证据支持把 `prerender.concurrency` 当作核心修复。
+
+最终长期方案应优先**缩小和分离生产依赖图**，让 workspace package 通过正式 exports 消费已构建的 dist，只保留确有证据需要的 externalization 例外；8 GiB 仅作为回退与对照组。
+
+## PR / 分支记录
+
+- 主 PR：#11 `fix(ci): 稳定 Nuxt 文档构建内存`
+- 主工作分支：`2026-8-16-fix-shadcn-docs-nuxt`（不得删除，保持 Draft，不自动合并）
+- 已建立的临时对照验证：PR #12、#13
+- 后续结构实验继续使用独立临时 PR，实验结束后关闭但不合并，再把验证通过的最小修复回写主分支。
+
+## 工具状态
+
+本轮再次调用 Skill Router MCP 返回：
+
+```text
+FORBIDDEN: This conversation does not support developer MCPs
+```
+
+GitHub 连接器可正常读写仓库、PR 与 Actions，因此实验继续执行；PR/commit message 在 Skill Router 不可用时按项目既有规范和 Conventional Commits 编写。
