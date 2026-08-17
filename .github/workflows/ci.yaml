@@ -33,14 +33,10 @@ jobs:
       - name: 安装依赖
         run: pnpm install --no-frozen-lockfile
       - name: 记录构建前内存
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
         run: |
           node -e "const v8=require('node:v8'); console.log('V8 heap limit MiB:', Math.round(v8.getHeapStatistics().heap_size_limit / 1024 / 1024))"
           free -h
       - name: 生产构建
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
         run: |
           if [ -x /usr/bin/time ]; then
             /usr/bin/time -v pnpm run build
