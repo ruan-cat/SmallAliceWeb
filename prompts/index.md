@@ -274,6 +274,7 @@ Vercel 部署、线上回归和演示视频；
 - 完成了完整的 nitro 接口部署。
 - 改造了基于 superpower 的 spec 和 plan 文件，全部换成 do-long-task 的任务工件了。
 - 调研清楚 agent 继续完成本任务需要的授权信息。
+  - 本地 agent 无法持续完成任务的报告，和需要人工授权的内容： `reports\2026-08-04-ai-rag-phase2-external-authorization-guide.md`
 
 以下是我对之前授权卡顿的疑问，和我给你的授权情况。
 
@@ -524,7 +525,14 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 我们的 move-vercel-output-to-root 增加了新的 `--dereference` 用来解决特定问题，请你以升级加固全局技能 `use-vercel-deploy-in-monorepo` 为目的，在 `reports\2026-8-10-up-use-vercel-deploy-in-monorepo` 目录内，编写技能加固文档，便于我进一步升级这款技能，说明清楚 move-vercel-output-to-root 的参数以及适用情况。
 
-## 010 <!-- TODO: --> 检查并解决 github workflow 流水线出现的 nuxt 构建内存超限的错误
+## 010 <!-- TODO: ChatGPT web正在做 --> 检查并解决 github workflow 流水线出现的 nuxt 构建内存超限的错误
+
+@Github @Skill Router MCP
+
+1. PR 目标和信息表：
+   - 你的 pr github 仓库地址为： https://github.com/SmallAliceWeb
+   - 你的 pr 目标分支为： dev
+   - 你的 pr 工作主分支为： 2026-8-16-fix-shadcn-docs-nuxt
 
 阅读该故障：
 
@@ -560,3 +568,5 @@ Aborted (core dumped)
 - https://github.com/ruan-cat/SmallAliceWeb/actions/workflows/ci.yaml
 
 我们的 ci.yaml 内的构建结果，全都是错误。请你想点办法完成批量修复。定位故障原因并且去修复。
+
+在 `reports\2026-8-16-fix-shadcn-docs-nuxt` 目录内编写你的探索和判断。
