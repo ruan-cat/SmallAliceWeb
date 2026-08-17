@@ -24,25 +24,6 @@ export default defineNuxtConfig({
 				},
 			],
 		},
-		ssr: {
-			noExternal: [
-				"@ruan-cat-drill-doc/ai-vue",
-				/element-plus/,
-				/@element-plus/,
-				/@vueuse/,
-				/vue-demi/,
-				/@ctrl\/tinycolor/,
-				/@floating-ui/,
-				/@popperjs\/core/,
-				/async-validator/,
-				/escape-html/,
-				/lodash-unified/,
-				/lodash-es/,
-				/memoize-one/,
-				/normalize-wheel-es/,
-				/entities/,
-			],
-		},
 	},
 
 	i18n: {
@@ -66,25 +47,12 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
-		externals: {
-			inline: [
-				"@ruan-cat-drill-doc/ai-vue",
-				/element-plus/,
-				/@element-plus/,
-				/@vueuse/,
-				/vue-demi/,
-				/@ctrl\/tinycolor/,
-				/@floating-ui/,
-				/@popperjs\/core/,
-				/async-validator/,
-				/escape-html/,
-				/lodash-unified/,
-				/lodash-es/,
-				/memoize-one/,
-				/normalize-wheel-es/,
-				/entities/,
-			],
-			...(process.platform === "win32" ? { trace: false } : {}),
-		},
+		...(process.platform === "win32"
+			? {
+					externals: {
+						trace: false,
+					},
+				}
+			: {}),
 	},
 });
