@@ -24,6 +24,7 @@ const result = spawnSync(pnpmCommand, ["exec", "nuxt", command], {
 	cwd: packageRoot,
 	env: { ...process.env, NODE_OPTIONS: nodeOptions },
 	stdio: "inherit",
+	shell: process.platform === "win32",
 });
 
 if (result.error) {
