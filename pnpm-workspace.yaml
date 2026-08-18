@@ -1,3 +1,5 @@
+publicHoistPattern:
+  - "@popperjs/core"
 onlyBuiltDependencies:
   - "@biomejs/biome"
   - "@parcel/watcher"
