@@ -47,6 +47,9 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
+		rollupConfig: {
+			treeshake: false,
+		},
 		...(process.platform === "win32"
 			? {
 					externals: {
