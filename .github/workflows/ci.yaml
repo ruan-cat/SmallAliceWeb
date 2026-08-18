@@ -33,13 +33,39 @@ jobs:
       - name: 安装依赖
         run: pnpm install --no-frozen-lockfile
       - name: 记录构建前内存
+        env:
+          NODE_OPTIONS: --max-old-space-size=5120
         run: |
           node -e "const v8=require('node:v8'); console.log('V8 heap limit MiB:', Math.round(v8.getHeapStatistics().heap_size_limit / 1024 / 1024))"
           free -h
       - name: 生产构建
+        env:
+          NODE_OPTIONS: --max-old-space-size=5120
         run: |
           if [ -x /usr/bin/time ]; then
             /usr/bin/time -v pnpm run build
           else
             pnpm run build
           fi
+      - name: 验证 Nuxt 产物可启动
+        run: |
+          test -f packages/ai-vue-doc/.output/server/index.mjs
+          cd packages/ai-vue-doc
+          PORT=3010 HOST=127.0.0.1 node .output/server/index.mjs > /tmp/ai-vue-doc-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error --location http://127.0.0.1:3010/ > /tmp/ai-vue-doc-home.html; then
+              echo "Nuxt output smoke test passed on attempt ${attempt}."
+              exit 0
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              echo "Nuxt output server exited before becoming ready."
+              cat /tmp/ai-vue-doc-server.log
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "Nuxt output server did not become ready in time."
+          cat /tmp/ai-vue-doc-server.log
+          exit 1
