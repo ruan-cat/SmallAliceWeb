@@ -49,23 +49,85 @@ jobs:
           fi
       - name: 验证 Nuxt 产物可启动
         run: |
+          set -u
           test -f packages/ai-vue-doc/.output/server/index.mjs
           cd packages/ai-vue-doc
-          PORT=3010 HOST=127.0.0.1 node .output/server/index.mjs > /tmp/ai-vue-doc-server.log 2>&1 &
+
+          server_log=/tmp/ai-vue-doc-server.log
+          response_headers=/tmp/ai-vue-doc-headers.txt
+          response_body=/tmp/ai-vue-doc-home.html
+
+          : > "$server_log"
+          : > "$response_headers"
+          : > "$response_body"
+
+          NITRO_PORT=3010 NITRO_HOST=127.0.0.1 PORT=3010 HOST=127.0.0.1 \
+            node .output/server/index.mjs > "$server_log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          print_diagnostics() {
+            echo "===== Nuxt server process ====="
+            ps -p "$server_pid" -o pid=,ppid=,stat=,etime=,cmd= || true
+            echo "===== Nuxt server log ====="
+            cat "$server_log" || true
+            echo "===== HTTP response headers ====="
+            cat "$response_headers" || true
+            echo "===== HTTP response body (first 120 lines) ====="
+            sed -n '1,120p' "$response_body" || true
+          }
+
           for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error --location http://127.0.0.1:3010/ > /tmp/ai-vue-doc-home.html; then
-              echo "Nuxt output smoke test passed on attempt ${attempt}."
-              exit 0
-            fi
             if ! kill -0 "$server_pid" 2>/dev/null; then
-              echo "Nuxt output server exited before becoming ready."
-              cat /tmp/ai-vue-doc-server.log
+              set +e
+              wait "$server_pid"
+              server_status=$?
+              set -e
+              echo "Nuxt output server exited before becoming ready; exit=${server_status}."
+              print_diagnostics
               exit 1
             fi
+
+            http_status=$(curl \
+              --silent \
+              --show-error \
+              --location \
+              --connect-timeout 2 \
+              --max-time 10 \
+              --output "$response_body" \
+              --dump-header "$response_headers" \
+              --write-out '%{http_code}' \
+              http://127.0.0.1:3010/ || true)
+
+            case "$http_status" in
+              2*|3*)
+                echo "Nuxt output smoke test passed on attempt ${attempt}; HTTP ${http_status}."
+                exit 0
+                ;;
+              000|"")
+                echo "Nuxt output is not accepting HTTP yet (attempt ${attempt}/30)."
+                ;;
+              *)
+                echo "Nuxt output responded with HTTP ${http_status}; treating this as a runtime failure."
+                print_diagnostics
+                exit 1
+                ;;
+            esac
+
             sleep 1
           done
-          echo "Nuxt output server did not become ready in time."
-          cat /tmp/ai-vue-doc-server.log
+
+          echo "Nuxt output server did not become HTTP-ready in time."
+          print_diagnostics
           exit 1
+      - name: 上传 Nuxt 启动诊断
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuxt-runtime-smoke-diagnostics
+          path: |
+            /tmp/ai-vue-doc-server.log
+            /tmp/ai-vue-doc-headers.txt
+            /tmp/ai-vue-doc-home.html
+          if-no-files-found: warn
+          retention-days: 1
