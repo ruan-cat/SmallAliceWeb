@@ -5,12 +5,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "nuxt dev",
-		"predev": "nuxt prepare",
-		"prebuild": "nuxt prepare",
-		"build": "nuxt build",
+		"predev": "node ./scripts/run-nuxt-with-memory.mjs prepare",
+		"prebuild": "node ./scripts/run-nuxt-with-memory.mjs prepare",
+		"build": "node ./scripts/run-nuxt-with-memory.mjs build",
 		"typecheck": "nuxt typecheck",
 		"preview": "nuxt preview",
-		"postinstall": "nuxt prepare"
+		"postinstall": "node ./scripts/run-nuxt-with-memory.mjs prepare"
 	},
 	"dependencies": {
 		"@nuxt/icon": "1.15.0",
