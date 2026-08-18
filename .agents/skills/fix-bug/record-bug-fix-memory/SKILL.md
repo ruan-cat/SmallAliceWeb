@@ -220,6 +220,12 @@ metadata:
 - 适用场景：Vercel 自定义 Install Command 为 `pnpm install`，`packageManager` 声明未生效，安装阶段出现 `ERR_INVALID_THIS` / `ERR_PNPM_META_FETCH_FAIL`。
 - 关键约束：目标 Project 的 Production、Preview、Development 必须维护 `ENABLE_EXPERIMENTAL_COREPACK=1`，并用真实 Git 构建日志确认最终 pnpm 版本；prebuilt 部署不能替代安装链验收。
 
+### 13.5 Nitro standalone output 丢失 pnpm npm alias 依赖（2026-08-18）
+
+- 详细案例：`2026-08-18-nitro-pnpm-alias-tracing.md`
+- 适用场景：pnpm monorepo 中 Nuxt/Nitro 构建成功，但 `.output` 运行时因 npm alias 的逻辑包名未进入 standalone output 而 `MODULE_NOT_FOUND`。
+- 关键约束：把 build、standalone runtime、真实部署视为独立验收门；优先显式部署包 runtime dependency，禁止因单个 alias tracing 缺口全局启用 `nodeLinker: hoisted` 或 `shamefullyHoist`。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
