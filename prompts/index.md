@@ -570,3 +570,37 @@ Aborted (core dumped)
 我们的 ci.yaml 内的构建结果，全都是错误。请你想点办法完成批量修复。定位故障原因并且去修复。
 
 在 `reports\2026-8-16-fix-shadcn-docs-nuxt` 目录内编写你的探索和判断。
+
+---
+
+我要求你尝试去完成故障修理！尝试去用 github ci 去完成修复，确保这个问题不要再出现了，太折磨了。难道 Nuxt + Nitro + Nuxt Content + shadcn-docs-nuxt + workspace 真的很垃圾么？
+
+---
+
+我不喜欢你写 `node ./scripts/run-nuxt-with-memory.mjs` 的方式来完成修复，这种方式只能是临时记录信息，不能作为长期解决方案。这种做法很容易导致片面的修复。
+
+---
+
+我希望你适当的去看看 shadcn-docs-nuxt 的源码，找到该问题的核心故障。你去看看 nuxt 和 nuxt content 的官方文档，看看有什么方式来解决掉该故障？避免出现在复杂依赖场景下屡次出现内存不够的故障。
+
+---
+
+根因是 Element Plus 的 npm alias runtime dependency 没有进入 Nitro output。
+
+---
+
+我们项目肯定是出现了很多风险项，请你在这个过程中遇到的风险项，全部都记录到 `reports/2026-8-16-fix-shadcn-docs-nuxt/next-steps` 目录内，以 markdown 的形式记录好，便于我后续安排独立的 AI agent 或者是新的会话完成这些风险项的识别和封堵加固。
+
+---
+
+<!-- TODO: -->
+
+我们在 `packages/ai-vue-doc/nuxt.config.ts` 内大规模的删改掉这些依赖识别配置，请你补充专门的文档，说明清楚为什么你要选择删除这些配置，以及这些配置为什么不能有助于解决问题。在你处理这个配置时，你看看本项目还有哪些文档曾经说明清楚要这些罗列具体的排除依赖项的，由你来纠偏。并且说明清楚为什么在解决这种复杂依赖问题上，为什么不能按照旧的 ssr.noExternal 和 nitro.externals.inline 罗列依赖项的方式来解决问题？
+
+---
+
+<!-- TODO: -->
+
+`packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs` 的设计本质上是你设计的临时脚本吧。这本质上是一种错误收集和排查校验的经验教训，你记录好这种报错收集的经验技巧了么？
+你在 `packages/ai-vue-doc/package.json` 内有适当的回退对 `run-nuxt-with-memory.mjs` 的使用么？
+当我们回退该临时脚本使用后，我们项目在 github workflow 和 vercel ci 两个流水线内，都还能正常的完成 build 且不会报错是么？
