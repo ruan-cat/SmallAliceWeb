@@ -9,7 +9,7 @@ if (!new Set(["prepare", "build"]).has(command)) {
 	throw new Error(`unsupported Nuxt command: ${command ?? "<empty>"}`);
 }
 
-const memoryFlag = "--max-old-space-size=8192";
+const memoryFlag = "--max-old-space-size=5120";
 const existingNodeOptions = (process.env.NODE_OPTIONS ?? "")
 	.trim()
 	.split(/\s+/)
