@@ -13,7 +13,8 @@
 - [`hypotheses/ROOT-CAUSE-MODEL.md`](./hypotheses/ROOT-CAUSE-MODEL.md)：当前根因模型、待验证假设和误判纠偏。
 - [`experiments/E0-8G-control.md`](./experiments/E0-8G-control.md)：8 GiB 稳定控制组。
 - [`experiments/E1-default-heap-minimal-bundle.md`](./experiments/E1-default-heap-minimal-bundle.md)：默认 heap 下缩小 production bundling graph 的结果。
-- [`experiments/E2-final-nitro-rollup-externals.md`](./experiments/E2-final-nitro-rollup-externals.md)：final Nitro Rollup / externals 单变量实验。
+- [`experiments/E2-final-nitro-rollup-externals.md`](./experiments/E2-final-nitro-rollup-externals.md)：final Nitro Rollup / externals 单变量实验及失败结论。
+- E3：server sourcemap 单变量实验，Draft PR #17，当前执行中。
 - [`final/FINAL-FIX.md`](./final/FINAL-FIX.md)：最终修复与重复性验收；当前明确标记为“未完成”。
 
 ## 当前阶段结论
@@ -61,18 +62,49 @@ E1 在默认 V8 heap `4144 MiB` 下：
 
 因此不能再把“prerender 本身”写成 E1 的死亡点。更精确的定位是：**final Nitro server Rollup build/write path**。
 
-## 上游源码定位
+### E2：externals 两条简单路径均不足以根治
 
-Nitro v2 `src/core/build/prod.ts` 在打印 `Building Nitro Server` 后依次执行：
+两个实验都从固定 E1 SHA `964911ee5c4691cc88a0ddb7672c400f3fb7ef7e` 独立派生、使用默认 heap、保持 Draft 且不合并：
+
+| 实验 | 唯一变量 | PR | Run / Job | 结论 |
+| --- | --- | --- | --- | --- |
+| E2-A | Linux `nitro.externals.trace=false` | #15 | `32106327534` / `95616407587` | ❌ `Run documentation build` failure |
+| E2-B | `nitro.experimental.legacyExternals=true` | #16 | `32106392146` / `95616598844` | ❌ `Run documentation build` failure |
+
+GitHub Actions step 证据能够稳定确认：checkout、Node/pnpm setup、依赖安装成功，主体 documentation build 失败。当前 connector 没有返回可可靠解析的完整 job log，因此**不把具体 OOM 行号、max RSS、模块数写成已证实的 E2 指标**。
+
+现有证据只支持：
+
+- 单独关闭 modern externals tracing 不足以恢复默认 heap 绿色；
+- 单独切换 legacy externals 实现也不足以恢复默认 heap 绿色；
+- 不应继续把 E2-A/B 叠加到后续实验中。
+
+### E3：关闭 server sourcemap，诊断 final write 峰值
+
+E3 从固定 E1 SHA 独立派生，唯一有效变量：
 
 ```ts
-const rollupConfig = await getRollupConfig(nitro)
-const build = await rollup.rollup(rollupConfig)
-await build.write(rollupConfig.output)
-await build.close()
+sourcemap: {
+  server: false,
+}
 ```
 
-Nitro v2 的 modern externals 路径还会使用基于 `@vercel/nft` 的 tracing/依赖遍历。因此当前领先假设已经从“prerender concurrency”转为：**final Rollup + externals/NFT tracing 是否构成 E1 剩余峰值的重要部分。**
+执行信息：
+
+- Branch：`2026-8-18-nuxt-e3-server-sourcemap-off`
+- Commit：`7bd1594063134655ae101b651c90a4786cb72f0e`
+- Draft PR：#17
+- Run：`32108987079`
+- Job：`95624184590`
+- 当前状态：依赖安装与构建前内存记录均成功，`生产构建` 正在执行。
+
+E1 → E3 compare 已验证：ahead `1`、behind `0`，只有 `packages/ai-vue-doc/nuxt.config.ts` 一个文件，`+4/-0`，未夹带 E2-A/B 或主工作分支中的其他实验配置。
+
+## 上游定位与 E3 理由
+
+E1 已把问题定位到 prerender 之后的 final Nitro server Rollup/write。Nuxt 3 默认生成 server sourcemap，而 Nuxt 官方也明确指出 sourcemap 有生成成本，不使用时可关闭。因此 E3 选择 `sourcemap.server=false` 作为与最终 server write 阶段直接相关、且不会同时改 externals/依赖图的单变量诊断。
+
+如果 E3 失败，则继续从固定 E1 SHA 派生新的单变量，不在 E3 上叠加；如果 E3 绿色，则先进行 `.output` / runtime、同 SHA 重跑、cold-runner PR 与 Vercel 验收，仍不直接回写主分支。
 
 ## 已纠正的误判
 
@@ -84,31 +116,19 @@ components: [{ path: "../ai-vue/src" }]
 
 重新直接读取 E1 固定 SHA 的 `packages/ai-vue-doc/nuxt.config.ts` 后确认：**不存在该项。**
 
-因此不会创建一个“删除 components source scan”的无效 E2。该错误已写入证据与根因模型文档，避免后续复盘继续传播。
+因此不会创建一个“删除 components source scan”的无效实验。
 
-## 下一阶段：E2
+## 可复现性噪声：当前无 pnpm lockfile
 
-### E2-A：trace-off diagnostic
+仓库当前没有提交 `pnpm-lock.yaml`，CI 使用：
 
-从 E1 固定 SHA 派生，只把 `nitro.externals.trace=false` 临时扩展到 Linux，在默认 heap 下运行。
-
-用途：判断 modern NFT tracing 是否是 final Nitro Rollup 峰值的重要贡献者。
-
-**即使绿色也不作为最终修复**，因为关闭 tracing 可能改变 node-server 输出的可移植性/依赖复制语义。
-
-### E2-B：legacyExternals structural candidate
-
-同样从 E1 固定 SHA独立派生，只开启：
-
-```ts
-nitro: {
-  experimental: {
-    legacyExternals: true,
-  },
-}
+```sh
+pnpm install --no-frozen-lockfile
 ```
 
-Linux 保持正常外部依赖打包语义。若默认 heap 绿色，再验证 `.output`、runtime、重复 CI 和 Vercel，才有资格成为最终候选。
+同时 `packages/ai-vue-doc/package.json` 中包含例如 `nuxt: "^3.21.2"` 等 range dependency。故“同 Git SHA”并不自动等价于“完全相同的依赖解析快照”。
+
+该项**暂不混入 E3**，否则会破坏单变量实验；但最终重复性验收必须把依赖解析漂移作为独立噪声源处理或记录。
 
 ## 禁止的“假修复”
 
@@ -144,4 +164,10 @@ Linux 保持正常外部依赖打包语义。若默认 heap 绿色，再验证 `
 
 ## 工具状态
 
-当前 GitHub 连接器可正常执行仓库读写、PR 和 Actions 操作。Skill Router MCP 在本会话不可用，因此 commit/PR message 按项目既有习惯与 Conventional Commits 编写，不伪造 Skill Router 调用。
+本轮 GitHub 与 Skill Router MCP 均可用：
+
+- GitHub：仓库读写、分支/PR、compare、Actions run/job/step 查询均已实际调用；
+- Skill Router MCP：已从 snapshot `8a6bf845eff1e3f42f7e01fa5a5b3f0715468929` 加载 `init-shadcn-docs-nuxt`、`do-long-task`、`git-commit`；
+- `git-commit` 技能要求的 commit type authority 已读取，当前文档提交使用仓库定义的 `📃 docs`，构建实验使用 `🔨 build`。
+
+旧报告中“Skill Router MCP 本会话不可用”的记录已经失效，以本节为准。
