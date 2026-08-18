@@ -47,12 +47,8 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
-		...(process.platform === "win32"
-			? {
-					externals: {
-						trace: false,
-					},
-				}
-			: {}),
+		externals: {
+			trace: false,
+		},
 	},
 });
