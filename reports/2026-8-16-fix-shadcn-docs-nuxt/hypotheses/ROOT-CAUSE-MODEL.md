@@ -17,7 +17,7 @@ E1 移除上述主要放大器后：
 
 但随后：
   Nitro final server Rollup
-  + modern externals / NFT tracing 与依赖遍历
+  + externals tracing / 依赖解析与结果处理
   + 前序生命周期仍存活的对象/缓存
   = 峰值仍略超过默认 V8 old-space ceiling
 ```
@@ -50,24 +50,32 @@ E1 在默认 heap 下显著减少 server modules，并把死亡点推迟到完�
 
 除非 E2/E3 反证，否则不应通过关闭全文搜索等用户功能换取绿色。
 
-## H4：Nitro v2 modern externals / NFT tracing 是 E1 剩余峰值的重要来源
+## H4：Nitro v2 externals tracing / NFT 路径是 E1 剩余峰值的重要来源
 
 **状态：领先但未证实。**
 
-源码依据：Nitro v2 最终 production build 进入 Rollup；现代 externals plugin 使用 NFT tracing/依赖遍历。E1 正是在 final Nitro server Rollup 阶段 OOM。
+源码依据：Nitro v2 最终 production build 进入 Rollup；modern externals plugin 在 `buildEnd()` 中调用 `@vercel/nft.nodeFileTrace()`，随后解析 trace reasons、package versions、复制文件并生成输出 metadata。E1 正是在 final Nitro server Rollup 阶段 OOM。
 
 验证方法：
 
-- E2-A：只把 `externals.trace=false` 扩展到 Linux。若默认 heap 绿色，则确认 tracing/NFT 是重要贡献者。
+- E2-A：只把 `externals.trace=false` 扩展到 Linux。若默认 heap 绿色，则确认 tracing/trace-result processing 是重要贡献者。
 - E2-A 仅用于归因，不能直接成为最终修复，因为跳过 tracing 可能让 node-server 输出依赖宿主环境中的 node_modules。
 
-## H5：legacyExternals 可以在保留可部署输出的同时降低峰值
+## H5：legacyExternals 的旧版解析/trace-result 处理路径可能降低峰值
 
-**状态：待验证的结构候选。**
+**状态：待验证的结构候选；已纠正表述。**
 
-Nitro v2 仍保留 legacy externals 路径，其实现与 NFT tracing 不同。若 E2-A 证明 NFT 路径昂贵，则 E2-B 用 `experimental.legacyExternals=true` 测试是否能在默认 heap 下完成，同时保留依赖复制/输出打包。
+源码复核确认：Nitro v2 的 `externals-legacy.ts` **同样调用 `@vercel/nft.nodeFileTrace()`**。因此 `experimental.legacyExternals=true` 并不是“绕过 NFT”。
 
-只有 `.output` sanity、重复 CI 和 Vercel 均通过后，H5 才能升级为候选最终修复。
+Legacy 与 modern externals 的关键差异在于：
+
+- external resolution/normalization 实现不同；
+- 对 `nodeFileTrace()` 结果的展开和 package/version 处理方式不同；
+- 复制依赖与生成 output metadata 的实现不同。
+
+因此 E2-B 实际回答的是：**旧版 externals 实现是否在保留 tracing/依赖复制语义时显著降低 final Rollup 峰值。**
+
+只有 `.output` sanity、runtime、重复 CI 和 Vercel 均通过后，H5 才能升级为候选最终修复。
 
 ## H6：默认 4.1 GiB 对该框架组合本身就略显不足
 
@@ -88,3 +96,7 @@ E1 最大 RSS 约 4.55 GiB，V8 heap 紧贴 4.1 GiB ceiling。这可能意味着
 - 不删除一个实际不存在的变量；
 - 报告明确纠偏，防止后续复盘把无效实验误算为证据；
 - 后续实验统一从 E1 固定 SHA 派生，并先检查真实 diff。
+
+### `legacyExternals` 会绕过 NFT
+
+E2 设计初稿曾把 legacy externals 描述为可避开 modern NFT path。源码复核后确认 legacy 实现仍直接调用 `nodeFileTrace()`；这个表述已纠正。E2-B 现在只比较两种 externals 实现的解析、trace-result 处理和依赖复制峰值。
