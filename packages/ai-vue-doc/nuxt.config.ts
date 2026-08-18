@@ -47,6 +47,11 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
+		traceOpts: {
+			traceAlias: {
+				"@sxzz/popperjs-es": "@popperjs/core",
+			},
+		},
 		...(process.platform === "win32"
 			? {
 					externals: {
