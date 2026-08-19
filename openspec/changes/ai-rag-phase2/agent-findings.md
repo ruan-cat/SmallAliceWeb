@@ -10,34 +10,22 @@
 
 ## 2. 旧资料纠偏映射
 
-| 旧设计/计划表述 | 当前权威表述 |
-| --- | --- |
-| Nuxt/Nitro API 倾向 | 独立 Nitro v3 API；不引入 Nuxt API/Bun |
-| `x-markdown-vue` | `markstream-vue@1.0.8` |
-| “BM25 + Vector” | PostgreSQL 词法全文检索 + pgvector；未真实验证前禁止称 BM25 |
-| 旧 RRF 加权/score 草图 | 标准 RRF `1/(k+rank)`，默认 `k=60` |
-| `conversations/messages/embeddings` 数据草图 | 当前核心持久化 `documents/chunks/knowledge_sync_runs`，向量在 `chunks.embedding` |
-| 数据库 Markdown 阅读器/展开原文 | VitePress 静态 `sourceUrl#headingAnchor` |
-| 自动滚动能力 | `vue-element-plus-x@1.3.98` 下固定 `auto-scroll=false`，重新开启前独立复验 |
-| Chroma 本地 demo | 仅历史学习任务，不是正式向量库主线 |
-| 旧计划所有复选框 | 只作历史文本；当前状态只读 `tasks.md` |
-
-完整迁移追踪：`history/2026-08-16-superpowers-migration.md`。
+- 历史 superpowers 内容仅作 `history/*.superpowers.md` 证据；当前行为以 `design.md`、`specs/*`、`tasks.md` 为准。关键纠偏包括独立 Nitro v3、PostgreSQL FTS + pgvector、标准 RRF、Neon/pgvector 主线和 `markstream-vue`。
 
 ## 3. 已知风险与事故约束
 
-| 风险/事故 | 当前约束 |
-| --- | --- |
-| Windows `neonctl` CPU 自旋 | 禁止 `neonctl`（含 help/version）和包装器；只用官方 `neon`；先跑 `pnpm run neon:guard` |
-| Vercel pnpm/Corepack | 三环境保持 `ENABLE_EXPERIMENTAL_COREPACK=1`；以真实构建日志确认 pnpm 版本 |
-| Vercel 无 `.git` + git-changelog | 保留 `shouldDisableGitChangelog()`；生产优先 Git 集成 |
-| Nuxt Content/H3 跨运行时 | 保留已验证 `@ztl-uwu/nuxt-content@2.13.9`、`h3@1.15.11`、`@vueuse/nuxt@14.3.0` 兼容矩阵 |
-| Windows docs build | 约 8 GiB Node heap、串行；短时高 CPU/无输出不能直接判死锁 |
-| `pnpm-lock.yaml` 被忽略 | 无 Git diff 不能证明依赖解析未变化 |
-| sync provider 离线 fake | 必须由 `tasks.md` 2.1.2 的真实同步实现替换，不能以 accepted/空数组宣称成功 |
-| Shiki 兼容性未证实 | 先验证 markstream 自带 shiki 路径；无证据前禁止独立接入 `@shikijs/stream` |
-| 生产浏览器回归未完成 | 本地受控 fetch 流不能代替生产后端驱动 E2E |
-| 本地 build/test ≠ 云端可用 | PostgreSQL、embedding、模型、Vercel/浏览器均要独立外部证据 |
+| 风险/事故                        | 当前约束                                                                                |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| Windows `neonctl` CPU 自旋       | 禁止 `neonctl`（含 help/version）和包装器；只用官方 `neon`；先跑 `pnpm run neon:guard`  |
+| Vercel pnpm/Corepack             | 三环境保持 `ENABLE_EXPERIMENTAL_COREPACK=1`；以真实构建日志确认 pnpm 版本               |
+| Vercel 无 `.git` + git-changelog | 保留 `shouldDisableGitChangelog()`；生产优先 Git 集成                                   |
+| Nuxt Content/H3 跨运行时         | 保留已验证 `@ztl-uwu/nuxt-content@2.13.9`、`h3@1.15.11`、`@vueuse/nuxt@14.3.0` 兼容矩阵 |
+| Windows docs build               | 约 8 GiB Node heap、串行；短时高 CPU/无输出不能直接判死锁                               |
+| `pnpm-lock.yaml` 被忽略          | 无 Git diff 不能证明依赖解析未变化                                                      |
+| sync provider 离线 fake          | 必须由 `tasks.md` 2.1.2 的真实同步实现替换，不能以 accepted/空数组宣称成功              |
+| Shiki 兼容性未证实               | 先验证 markstream 自带 shiki 路径；无证据前禁止独立接入 `@shikijs/stream`               |
+| 生产浏览器回归未完成             | 本地受控 fetch 流不能代替生产后端驱动 E2E                                               |
+| 本地 build/test ≠ 云端可用       | PostgreSQL、embedding、模型、Vercel/浏览器均要独立外部证据                              |
 
 ## 4. 迁移与当前实现决策点
 
@@ -65,3 +53,21 @@
 - P1：`tasks.md` §2.2——Shiki、同步触发、真实评估调优、build/deploy 回归。
 - P2：`tasks.md` §2.3——README 与演示视频。
 - 历史学习 / 里程碑：`tasks.md` §3–§4；无新证据不得勾选。
+
+## 7. 2026-08-19 授权推进发现
+
+- **resolved**：A0 `pnpm run neon:guard` 通过；A1 通过 Vercel CLI 重新拉取 development env，确认 `POSTGRES_URL_NON_POOLING`、Neon project ID 与 Nitro 配置存在，且目标为 `patient-cloud-43432277` / `neondb`。
+- **resolved**：本地 Drizzle 资产误生成的重复 `0000_nosy_punisher.sql` 与 snapshot 已移除；保留已跟踪 `0000_ai_rag.sql`，journal 唯一登记 `0000_ai_rag`。16 个测试文件/55 个用例、typecheck、diff check 均通过。
+- **active**：不能因 journal baseline 或离线 PostgreSQL provider 合同而宣称 2.1.1 完成；真实 development DB 可能已执行初始 SQL，恢复时先只读核对 `__drizzle_migrations`、extension、tables、HNSW index，再决定 baseline/增量策略。
+- **active**：A4 preview 依据更具体的授权布尔值保持 `SKIPPED_NOT_AUTHORIZED`；A5 production 不得在 development 真实闭环、Git SHA/READY 与 docs/API 两项目证据齐全前执行。
+- **resolved**：A2 `db:migrate` 已成功应用 0000 baseline 与 0001 `written_chunk_count`；只读核对确认 vector extension、3 张核心表、embedding 列、HNSW index 和 `drizzle.__drizzle_migrations` 均存在。实际 FTS/vector SQL smoke 成功执行，结果为空库 0 行。
+- **active**：A3 真实同步扫描 271 个文件/5534 个 chunk；硬上限 100 生效，但当前渠道模型列表只有 GPT/图像模型，`text-embedding-3-small` 不受支持。真实同步返回 partial、`writtenChunkCount=0`，数据库 `documents=0`、`chunks=0`，无半成品。替换为支持 embedding 的授权渠道后再继续。
+- **resolved**：development `NITRO_CHAT_MODEL` 已通过 Vercel CLI 切换为 `gpt-5.4-mini`；单条 `generateText` smoke 成功返回 `RAG smoke ok`。该文本模型不能替代 embedding provider。
+- **active**：Drizzle `meta` 当前只有 journal、没有 snapshots；虽然 migration 已成功，但未来 `drizzle-kit generate` 的增量历史仍需单独治理，不能宣称 migration 工件完整。
+
+## 8. 2026-08-19 Embedding 供应商调研
+
+- **resolved**：当前 chat 渠道仍是 `api.code-tab.com`；其模型列表包含 GPT 文本模型但没有 embedding 模型。`gpt-5.4-mini` 已通过单条文本生成 smoke；Vercel CLI 只负责读取环境变量，不是模型能力目录。
+- **active**：2.1.2 的 `vector(1536)` 不能由 GPT 文本模型替代。embedding 必须返回有限的 1536 维数字向量，才能写入 Neon `chunks.embedding` 并执行 `<=>` 检索；当前渠道不满足该接口契约。
+- **candidate**：Google `gemini-embedding-001` 官方 API 支持 `output_dimensionality`，可评估 1536 维；Google 当前价格页标注文本 embedding 有 Free Tier，但免费层数据使用条款需单独确认。Cloudflare Workers AI `bge-m3` 提供 OpenAI-compatible `/v1/embeddings` 且有每日免费 Neurons 配额；Hugging Face Feature Extraction 有少量免费额度。三者均尚未取得本项目凭据或真实 smoke 证据。
+- **next**：取得一个明确支持 1536 维 embedding 的 provider/key/model 后，先执行 1 条维度 smoke，再执行最多 100 条真实同步；未验证维度前禁止 migration 重建或写入向量。

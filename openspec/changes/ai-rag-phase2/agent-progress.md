@@ -2,41 +2,19 @@
 
 ## 1. 当前 checkpoint
 
-- 日期：2026-08-16
+- 日期：2026-08-19
 - Change：`ai-rag-phase2`
-- 当前状态：superpowers → OpenSpec 永久迁移已完成并通过 GitHub 分支级自检；迁移治理任务 `tasks.md` 0.1 已可关闭。
-- 唯一任务源：`openspec/changes/ai-rag-phase2/tasks.md`。
-- 下一业务入口：`tasks.md` §2.1.1（真实 PostgreSQL lexical + pgvector provider）。真实 PostgreSQL、embedding、模型、生产浏览器和部署回归状态没有因本轮文档迁移发生改变。
+- 当前状态：`tasks.md` 仍为唯一任务源；OpenSpec CLI 显示 23 项中 7 项完成，当前推进 §2.1.1/§2.1.2 外部证据收口。
+- 本 checkpoint：A0/A1/A2 已完成；真实 development Neon 已连接，0000/0001 migration、vector/核心表/HNSW 与 FTS/vector SQL smoke 已验证；真实 embedding 尚未成功。
+- 阻塞点：`api.code-tab.com` 的 `/v1/models` 没有 embedding 模型，配置的 `text-embedding-3-small` 返回“不受该账户支持”；已执行的真实同步为 partial，0 个 chunk 写入，数据库无半成品。文本模型已切换并验证为 `gpt-5.4-mini`。
+- 本 checkpoint 调研结论：当前 `vector(1536)` 设计仍需要真正的 embedding provider；推荐优先验证 Gemini `gemini-embedding-001` 的 1536 维输出，Cloudflare Workers AI / Hugging Face 作为备选；尚未取得这些渠道的凭据或真实调用证据。
+- Preview 明确 `SKIPPED_NOT_AUTHORIZED`；不创建 preview 部署或 preview 回归。
+- 证据：`.superpowers/sdd/2026-07-29-ai-rag-phase2-plan/runs/2026-08-19-ai-rag-phase2/`。
 
-## 2. 永久迁移结果
-
-- 原 `docs/superpowers/specs/2026-07-29-ai-rag-phase2-design.md` 已从工作分支删除；GitHub contents API 返回 404。
-- 原 `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md` 已从工作分支删除；GitHub contents API 返回 404。
-- design 历史快照迁入 `history/2026-07-29-ai-rag-phase2-design.superpowers.md`，blob SHA 仍为 `4514e5c1abe6659d6c6d6a78a4d7c9c36834b8d8`。
-- plan 历史快照迁入 `history/2026-07-29-ai-rag-phase2-plan.superpowers.md`，blob SHA 仍为 `58471a612223ff40e8197b129fbd08c4f1d6a00f`。
-- GitHub compare 将二者识别为 rename，均为 `0 additions / 0 deletions`，证明历史内容未发生字节级重写。
-- `history/2026-08-16-superpowers-migration.md` 已建立原路径、blob、OpenSpec 新路径、语义映射和纠偏规则。
-- `proposal.md`、`design.md`、`tasks.md` 已重建为不依赖旧路径的当前事实源；6 份 specs 保持行为权威性且本轮未修改。
-
-## 3. 自检结论
-
-相对 `dev` 的第一阶段 compare 只有 8 个迁移相关文件：
-
-1. `proposal.md`
-2. `design.md`
-3. `tasks.md`
-4. `agent-progress.md`
-5. `agent-findings.md`
-6. 两个历史 snapshot rename
-7. 一个 migration manifest
-
-没有业务源码、测试、数据库 migration 或部署配置变更。P0/P1/P2 与 M1-M4 保持原有未完成语义；旧快照复选框没有反向污染当前状态。
-
-本 cloud connector 会话没有本地工作树/CLI，因此本轮没有伪造 fresh `openspec validate ai-rag-phase2 --strict` 结果。首轮迁移已有 strict validate 历史记录；本轮新变更采用 GitHub tree、compare、blob SHA 与路径 404 完成迁移层验证。后续在本地 OpenSpec CLI 环境可补一次 fresh strict validation。
-
-## 4. 继续执行规则
+## 2. 继续执行规则
 
 - 后续只从 `tasks.md` 读取下一项，不得恢复 `docs/superpowers` 两条旧路径。
 - 历史原文只从 `history/*.superpowers.md` 审计，不得重新勾选其中任务。
 - 新发现工作先进入 `tasks.md`；失败与禁止重复路径进入 `agent-findings.md`。
 - 任何外部能力只有拿到自身真实证据后才允许勾选完成。
+- 恢复入口：提供支持 1536 维 embedding 的已授权渠道/模型后，重新拉取 development env，执行最多 100 条真实 embedding；随后验证重复同步、失败保留、并发 409 与真实向量检索。当前 journal baseline 不替代完整 migration snapshot 治理。
