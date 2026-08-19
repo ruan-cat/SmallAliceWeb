@@ -1,6 +1,7 @@
 import { definePlugin } from "nitro";
 import { useRuntimeConfig } from "nitro/runtime-config";
 import postgres from "postgres";
+import { resolve } from "node:path";
 import { createOpenAI } from "@ai-sdk/openai";
 import { embed } from "ai";
 import {
@@ -9,7 +10,9 @@ import {
 	type RagRuntimeProviderFactories,
 } from "../runtime/rag-assembly";
 import { createPostgresSearchProvider } from "../search/postgres-search";
-import { createOpenAiChatStream } from "../services/openai-chat";
+import { createOpenAiChatStream, normalizeOpenAIBaseUrl } from "../services/openai-chat";
+import { createKnowledgeSyncService, type SyncSqlExecutor } from "../services/knowledge-sync";
+import { scanKnowledgeSources } from "../services/knowledge-source";
 
 /** 插件必须校验的六项私有配置字段；任一为空则不挂载运行时。 */
 const REQUIRED_CONFIG_FIELDS = [
@@ -21,6 +24,17 @@ const REQUIRED_CONFIG_FIELDS = [
 	"cronSecret",
 ] as const;
 
+/** 只允许扫描仓库根目录下固定的 docs/docx 知识源。 */
+function resolveKnowledgeSourceRoot(config: ResolvedRagConfig) {
+	const repositoryRoot = resolve(config.repositoryRoot || process.cwd());
+	const expectedRoot = resolve(repositoryRoot, "docs", "docx");
+	const configuredRoot = resolve(config.knowledgeSourceRoot || expectedRoot);
+	if (configuredRoot !== expectedRoot) {
+		throw new Error("NITRO_KNOWLEDGE_SOURCE_ROOT 必须指向 repositoryRoot/docs/docx。");
+	}
+	return { repositoryRoot, sourceRoot: expectedRoot };
+}
+
 /** 插件内部使用的已解析运行时配置形状。 */
 type ResolvedRagConfig = {
 	databaseUrl: string;
@@ -30,6 +44,8 @@ type ResolvedRagConfig = {
 	chatModel: string;
 	knowledgeSyncToken: string;
 	cronSecret: string;
+	knowledgeSourceRoot: string;
+	repositoryRoot: string;
 	public: { apiBase: string };
 };
 
@@ -51,6 +67,8 @@ function resolveRuntimeConfig(): ResolvedRagConfig {
 		chatModel: String(raw.chatModel ?? ""),
 		knowledgeSyncToken: String(raw.knowledgeSyncToken ?? ""),
 		cronSecret: String(raw.cronSecret ?? ""),
+		knowledgeSourceRoot: String(raw.knowledgeSourceRoot ?? ""),
+		repositoryRoot: String(raw.repositoryRoot ?? ""),
 		public: (raw.public as ResolvedRagConfig["public"]) ?? { apiBase: "/v1" },
 	};
 }
@@ -66,6 +84,49 @@ function findMissingFields(config: ResolvedRagConfig): string[] {
 /** 创建全部 provider factory 并初始化 RAG 运行时上下文。 */
 async function buildRagContext(config: ResolvedRagConfig): Promise<RagRuntimeContext> {
 	const sql = postgres(config.databaseUrl);
+	const createSyncExecutor = (client: typeof sql): SyncSqlExecutor => ({
+		execute: (statement, parameters) =>
+			client.unsafe(statement, [...parameters] as Parameters<typeof client.unsafe>[1]),
+		transaction: async <T>(callback: (transaction: SyncSqlExecutor) => Promise<T>) => {
+			const result = await client.begin(async (transaction) =>
+				callback({
+					execute: (statement, parameters) =>
+						transaction.unsafe(statement, [...parameters] as Parameters<typeof transaction.unsafe>[1]),
+					transaction: async (nestedCallback) =>
+						nestedCallback({
+							execute: (statement, parameters) =>
+								transaction.unsafe(statement, [...parameters] as Parameters<typeof transaction.unsafe>[1]),
+							transaction: async () => {
+								throw new Error("nested sync transaction is not supported");
+							},
+						}),
+				}),
+			);
+			return result as T;
+		},
+	});
+	const syncExecutor = createSyncExecutor(sql);
+	syncExecutor.reserve = async () => {
+		const reserved = await sql.reserve();
+		const executor = createSyncExecutor(reserved);
+		return {
+			...executor,
+			release: async () => {
+				reserved.release();
+			},
+		};
+	};
+	const embeddingProvider = createOpenAI({
+		apiKey: config.openaiApiKey,
+		...(config.baseUrl ? { baseURL: normalizeOpenAIBaseUrl(config.baseUrl) } : {}),
+	});
+	const sourcePaths = resolveKnowledgeSourceRoot(config);
+	const syncEmbedding = {
+		createEmbedding: async (query: string) => {
+			const { embedding } = await embed({ model: embeddingProvider.embedding(config.embeddingModel), value: query });
+			return embedding;
+		},
+	};
 
 	const factories: RagRuntimeProviderFactories = {
 		createDatabase: () =>
@@ -73,22 +134,27 @@ async function buildRagContext(config: ResolvedRagConfig): Promise<RagRuntimeCon
 				execute: (statement, parameters) => sql.unsafe(statement, [...parameters] as Parameters<typeof sql.unsafe>[1]),
 			}),
 		createEmbedding: ({ model }) => {
-			const provider = createOpenAI({
-				apiKey: config.openaiApiKey,
-				...(config.baseUrl ? { baseURL: config.baseUrl } : {}),
-			});
 			return {
 				createEmbedding: async (query) => {
-					const { embedding } = await embed({ model: provider.embedding(model), value: query });
+					const { embedding } = await embed({ model: embeddingProvider.embedding(model), value: query });
 					return embedding;
 				},
 			};
 		},
 		createModel: () => ({ stream: createOpenAiChatStream(config) }),
-		createSync: () => ({
-			sync: async ({ dryRun }) => ({ accepted: true, dryRun }),
-			syncRuns: async () => [],
-		}),
+		createSync: () =>
+			createKnowledgeSyncService({
+				executor: syncExecutor,
+				embedding: syncEmbedding,
+				scanner: () =>
+					scanKnowledgeSources({
+						repositoryRoot: sourcePaths.repositoryRoot,
+						sourceRoot: sourcePaths.sourceRoot,
+					}),
+				profileVersion: "markdown-structure-v1",
+				embeddingModel: config.embeddingModel,
+				maxEmbeddingTexts: 100,
+			}),
 	};
 
 	return createRagRuntimeContext(config, factories);

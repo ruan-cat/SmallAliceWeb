@@ -11,6 +11,8 @@ export type RagNitroConfig = {
 		chatModel: string;
 		knowledgeSyncToken: string;
 		cronSecret: string;
+		knowledgeSourceRoot?: string;
+		repositoryRoot?: string;
 		public: {
 			apiBase: string;
 		};
@@ -29,6 +31,8 @@ export const ragNitroConfig = {
 		chatModel: "",
 		knowledgeSyncToken: "",
 		cronSecret: "",
+		knowledgeSourceRoot: "",
+		repositoryRoot: "",
 		public: {
 			apiBase: "/v1",
 		},

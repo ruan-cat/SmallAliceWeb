@@ -43,6 +43,7 @@ export const knowledgeSyncRuns = pgTable("knowledge_sync_runs", {
 	createdFileCount: integer("created_file_count").notNull(),
 	updatedFileCount: integer("updated_file_count").notNull(),
 	deletedFileCount: integer("deleted_file_count").notNull(),
+	writtenChunkCount: integer("written_chunk_count").notNull(),
 	failedFiles: jsonb("failed_files").$type<string[]>().notNull(),
 	startedAt: timestamp("started_at").notNull(),
 	finishedAt: timestamp("finished_at"),

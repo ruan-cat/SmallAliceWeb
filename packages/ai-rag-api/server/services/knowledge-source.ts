@@ -17,6 +17,17 @@ export type KnowledgeSourceDocument = {
 	sourcePath: string;
 };
 
+/** 一次扫描的完整性和逐文件失败路径。 */
+export type KnowledgeSourceScan = {
+	documents: KnowledgeSourceDocument[];
+	failedFiles: string[];
+	complete: boolean;
+	errorCode?: KnowledgeSourceErrorCode;
+};
+
+/** 可注入文件读取器，以便验证单文件失败不会丢失其他来源。 */
+export type KnowledgeSourceReader = (filePath: string) => Promise<string>;
+
 /** 表示知识源本地扫描期间可由调用方明确处理的失败。 */
 export class KnowledgeSourceError extends Error {
 	constructor(
@@ -63,30 +74,71 @@ async function collectMarkdownFiles(directory: string): Promise<string[]> {
 
 /** 从配置的本地根目录读取全部 Markdown 知识源。 */
 export async function readKnowledgeSources(options: KnowledgeSourceOptions): Promise<KnowledgeSourceDocument[]> {
+	const result = await scanKnowledgeSources(options);
+	if (!result.complete) {
+		const failedFile = result.failedFiles[0] ?? options.sourceRoot;
+		const errorCode = result.errorCode ?? "SOURCE_FILE_READ_FAILED";
+		const message =
+			errorCode === "SOURCE_ROOT_NOT_FOUND"
+				? `知识源根目录不存在：${options.sourceRoot}`
+				: errorCode === "SOURCE_ROOT_NOT_DIRECTORY"
+					? `知识源根路径不是目录：${options.sourceRoot}`
+					: `无法读取 Markdown 知识源：${failedFile}`;
+		throw new KnowledgeSourceError(errorCode, message);
+	}
+	return result.documents;
+}
+
+/** 扫描全部 Markdown，并保留成功文档与失败路径，供增量同步处理 partial 状态。 */
+export async function scanKnowledgeSources(
+	options: KnowledgeSourceOptions,
+	reader: KnowledgeSourceReader = (filePath) => readFile(filePath, "utf8"),
+): Promise<KnowledgeSourceScan> {
 	let sourceRootStat;
 	try {
 		sourceRootStat = await stat(options.sourceRoot);
 	} catch (error) {
-		throw new KnowledgeSourceError("SOURCE_ROOT_NOT_FOUND", `知识源根目录不存在：${options.sourceRoot}`, error);
+		return {
+			documents: [],
+			failedFiles: [toSourcePath(options.repositoryRoot, options.sourceRoot)],
+			complete: false,
+			errorCode: "SOURCE_ROOT_NOT_FOUND",
+		};
 	}
 
 	if (!sourceRootStat.isDirectory()) {
-		throw new KnowledgeSourceError("SOURCE_ROOT_NOT_DIRECTORY", `知识源根路径不是目录：${options.sourceRoot}`);
+		return {
+			documents: [],
+			failedFiles: [toSourcePath(options.repositoryRoot, options.sourceRoot)],
+			complete: false,
+			errorCode: "SOURCE_ROOT_NOT_DIRECTORY",
+		};
 	}
 
-	const files = await collectMarkdownFiles(options.sourceRoot);
-	const documents = await Promise.all(
-		files.map(async (filePath) => {
-			try {
-				return {
-					content: await readFile(filePath, "utf8"),
-					sourcePath: toSourcePath(options.repositoryRoot, filePath),
-				};
-			} catch (error) {
-				throw new KnowledgeSourceError("SOURCE_FILE_READ_FAILED", `无法读取 Markdown 知识源：${filePath}`, error);
-			}
-		}),
-	);
+	let files: string[];
+	try {
+		files = await collectMarkdownFiles(options.sourceRoot);
+	} catch {
+		return {
+			documents: [],
+			failedFiles: [toSourcePath(options.repositoryRoot, options.sourceRoot)],
+			complete: false,
+			errorCode: "SOURCE_DIRECTORY_READ_FAILED",
+		};
+	}
 
-	return documents.sort(compareBySourcePath);
+	const documents: KnowledgeSourceDocument[] = [];
+	const failedFiles: string[] = [];
+	for (const filePath of files) {
+		try {
+			documents.push({
+				content: await reader(filePath),
+				sourcePath: toSourcePath(options.repositoryRoot, filePath),
+			});
+		} catch {
+			failedFiles.push(toSourcePath(options.repositoryRoot, filePath));
+		}
+	}
+
+	return { documents: documents.sort(compareBySourcePath), failedFiles, complete: failedFiles.length === 0 };
 }
