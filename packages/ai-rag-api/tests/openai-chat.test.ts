@@ -7,9 +7,16 @@ const ai = vi.hoisted(() => ({
 
 vi.mock("ai", () => ai);
 
-import { createOpenAiChatStream } from "../server/services/openai-chat";
+import { createOpenAiChatStream, normalizeOpenAIBaseUrl } from "../server/services/openai-chat";
 
 describe("OpenAI 聊天流适配器", () => {
+	test("规范化 OpenAI base URL，避免遗漏或重复 /v1", () => {
+		expect(normalizeOpenAIBaseUrl("https://api.example.com")).toBe("https://api.example.com/v1");
+		expect(normalizeOpenAIBaseUrl("https://api.example.com/")).toBe("https://api.example.com/v1");
+		expect(normalizeOpenAIBaseUrl("https://api.example.com/v1")).toBe("https://api.example.com/v1");
+		expect(normalizeOpenAIBaseUrl("https://api.example.com/v1/")).toBe("https://api.example.com/v1");
+	});
+
 	test("缺少 Nitro 私有配置时拒绝创建适配器且不请求模型", () => {
 		expect(() =>
 			createOpenAiChatStream({
