@@ -150,7 +150,7 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 这个命令冗长不优雅。
 我要求你这样做： 利用 pnpm 的工作区协议，将全部子包都加入到根包的依赖内。你应该酌情增加到 dependencies 和 devDependencies 内。这样能充分发挥 turbo 的拓扑依赖构建能力，这样能完成更好的依赖调度行为。我很讨厌这种 --filter 参数写法。这加剧了固定的耦合度，依赖顺序调度能力是 turbo 本身就有的，我们要做的是在根包内建立依赖，建立依赖拓扑关系。
 
-## 002 <!-- TODO: Codex正在做 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
+## 002 <!-- 任务太长，移交给其他章节继续； Codex正在做 --> 以拓展简历能力为核心目的，逐步增加核心 AI 能力
 
 <!--
 docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md
@@ -267,8 +267,6 @@ Vercel 部署、线上回归和演示视频；
 
 ---
 
-<!-- TODO: 等待开启新的独立会话继续完成任务 -->
-
 请你先用 openspec 的技能，检查清楚现在的 openspec 工件内的任务进度。用 memorix 去检查二期 AI 项目的进度。我们准备完成授权，并继续推进任务。在此之前，我们已经做了：
 
 - 完成了完整的 nitro 接口部署。
@@ -314,7 +312,7 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
 - vercel cli 已授权，可使用。
 - 浏览器工具优先使用 agent-browser ，实在不行才使用谷歌浏览器 MCP。
 
-现在我已经给够你东西了，请你调查清楚上下文。明确清楚自己要做的任务和内容，然后继续推进这款长任务。
+现在我已经给够你东西了，请你调查清楚上下文。明确清楚自己要做的任务和内容，然后继续推进这款 `openspec\changes\ai-rag-phase2` 长任务。
 
 ### <!-- 已完成； ZCode正在做；ChatGPT web正在做；先等待其他的skills批量升级一次，再开始安排agent做格式转换任务 --> 实现任务格式改造
 
@@ -385,9 +383,17 @@ skills add https://github.com/mattpocock/skills `
    - 应该使用 vueuse 的工具函数，来实现你的浏览器标题切换功能。
    - 在你的 vitepress 应用中，你应该注意看清楚在哪里去实现这个功能，你可能是在 `packages\ai-vitepress-plugins\package.json` 子包内完成这个浏览器标题切换功能。注意你是在 vitepress 应用内完成这个功能。我给的建议可能不对，你做好调研和思考后再开始做。核心查询点是： 在 vitepress 应用内使用 vueuse 的 useTitle 函数完成应用的标题切换。
 
-## 006 <!-- TODO: --> 持续推进二期 AI 项目改造
+## 006 <!-- TODO: codex 正在做 --> 持续推进二期 AI 项目改造
 
 <!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。 -->
+
+---
+
+需要一个支持 /v1/embeddings 且返回 1536 维向量的渠道 ？
+
+---
+
+把你对免费 embeddings 模型的推荐，在 `D:\store\WorkBuddy\2026-6-30-common\docs\plan\2026-8-19-learn-embedding` 目录内编写报告文档，我稍后专门安排别的 AI，专门去学习了解这个知识点。我晚点专门学习 embeddings 这个概念和基础的模型。
 
 ## 007 <!-- 已完成 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
 
@@ -592,8 +598,6 @@ Aborted (core dumped)
 我们项目肯定是出现了很多风险项，请你在这个过程中遇到的风险项，全部都记录到 `reports/2026-8-16-fix-shadcn-docs-nuxt/next-steps` 目录内，以 markdown 的形式记录好，便于我后续安排独立的 AI agent 或者是新的会话完成这些风险项的识别和封堵加固。
 
 ---
-
-<!-- TODO: -->
 
 我们在 `packages/ai-vue-doc/nuxt.config.ts` 内大规模的删改掉这些依赖识别配置，请你补充专门的文档，说明清楚为什么你要选择删除这些配置，以及这些配置为什么不能有助于解决问题。在你处理这个配置时，你看看本项目还有哪些文档曾经说明清楚要这些罗列具体的排除依赖项的，由你来纠偏。并且说明清楚为什么在解决这种复杂依赖问题上，为什么不能按照旧的 ssr.noExternal 和 nitro.externals.inline 罗列依赖项的方式来解决问题？
 
