@@ -1,122 +1,186 @@
-# Nuxt 文档构建 OOM：实验与验收计划
+# Nuxt 文档构建稳定化测试计划与结果
 
-## 1. 研究问题
+> 更新：2026-08-20
+>
+> 状态：**实验阶段已完成。** 本文件现在记录已执行测试矩阵、因果结论和当前验收覆盖，不再作为“正在运行的任务队列”。
 
-本轮不把“提高 V8 heap”当作第一反应，而按以下顺序回答：
+## 1. 测试目标
 
-1. 哪些项目配置实际放大 Nuxt/Vite/Nitro production graph？
-2. 默认 Node 22 V8 heap 下，OOM 最终发生在哪个生命周期阶段？
-3. final Nitro server Rollup 中，externals / sourcemap / tree-shaking 等单变量能否显著降低剩余峰值？
-4. 若结构措施仍不足，最小、可解释且可跨 CI/Vercel 复现的 old-space headroom 是多少？
+本轮测试同时回答两个独立问题：
 
-## 2. 已确认事实
+1. production build 为什么会在约 4 GiB old-space 附近 OOM，怎样降低 graph 并找到合理 headroom；
+2. full build 成功后，Nitro standalone `.output` 是否真的包含完整 runtime dependency closure。
 
-- 历史默认 heap 失败为 Node/V8 exit 134，不是 runner exit 137。
-- E0：8 GiB heap + Turbo `--concurrency=1` 可稳定完成 CI；同功能 SHA rerun、两个独立临时 PR 与 Vercel 均成功。
-- E1：移除 ai-vue production source alias、blanket `vite.ssr.noExternal`、blanket `nitro.externals.inline`，恢复标准 Nuxt scripts，并取消 8 GiB heap。
-- E1 默认 V8 heap limit 约 4144 MiB；server transform 从历史约 4028 modules 降至 2449（约 -39%）。
-- E1 prerender 两条 Content 路由完整完成；OOM 出现在随后 final Nitro server build，exit 134。
-- E1 maximum RSS `4,768,884 kB`（约 4.55 GiB）；runner 物理内存仍充足且无 swap 使用。
-- E1 实际解析 Nuxt `3.21.11` / Nitro `2.13.4` / Vite `7.3.6`。
-- E1 固定 SHA：`964911ee5c4691cc88a0ddb7672c400f3fb7ef7e`。
-- 仓库当前没有提交 `pnpm-lock.yaml`，CI 使用 `pnpm install --no-frozen-lockfile`；同 Git SHA 仍可能出现依赖解析漂移，最终重复性验收必须单独记录这一噪声。
+测试始终把下面几个 gate 分开：
 
-## 3. 固定环境与控制变量
-
-除单变量实验明确说明外：
-
-- Node：22.x；
-- pnpm：10.29.2；
-- root docs build：Turbo `--concurrency=1`；
-- 默认 V8 heap；
-- 不关闭全文搜索、文档页面、Shiki 等用户功能换取绿色；
-- 不把 `nitro.prerender.concurrency=1` 当修复（Nitro v2 默认即为 1，且 E1 prerender 已完成）；
-- Windows-only `externals.trace=false` 保持 E1 行为；
-- 所有 E2+ 实验从 E1 固定 SHA 独立派生，禁止变量串联；
-- 实验 PR 均为 Draft，目标 `dev`，不合并。
-
-## 4. 已执行实验矩阵
-
-| 实验 | 唯一变量 | 结果 | 结论 |
-| --- | --- | --- | --- |
-| E0 | 8 GiB heap + 串行 | ✅ 稳定通过 | 成功控制组，不是根修复 |
-| E1 | 缩小 source/blanket bundling graph，恢复默认 heap | ❌ final Nitro Rollup OOM | 图放大器得到强证据；剩余峰值略高于默认 heap |
-| E2-A | Linux `nitro.externals.trace=false` | ❌ build failure | 单独关闭 tracing 不足 |
-| E2-B | `nitro.experimental.legacyExternals=true` | ❌ build failure | 单独切 legacy externals 不足 |
-| E3 | `sourcemap.server=false` | ❌ build failure | server sourcemap 单独不是根因 |
-| E4 | `nitro.rollupConfig.treeshake=false` | ❌ build failure | tree-shaking 单独不是根因 |
-| E5-A | CI old-space = 4608 MiB | 运行中 | 量化最低 headroom |
-| E5-B | CI old-space = 5120 MiB | 运行中 | 与 4608 并行夹逼阈值 |
-
-E2–E4 都没有把对应诊断开关回写主工作分支。
-
-## 5. E5：最小 old-space headroom 定量
-
-E5-A / E5-B 都只在 `.github/workflows/ci.yaml` 的“构建前内存记录”和“生产构建” step 设置 `NODE_OPTIONS`，不改变应用或 Nitro 配置：
-
-```yaml
-env:
-  NODE_OPTIONS: --max-old-space-size=<threshold>
+```text
+install
+→ Vite client/server build
+→ Nitro prerender
+→ final Nitro server build/write
+→ .output startup
+→ HTTP runtime
+→ Vercel
 ```
 
-阈值：
+## 2. 实验纪律
 
-- E5-A：4608 MiB，Draft PR #19，head `7a352c6a19e556531a70695dec9090983da79796`；
-- E5-B：5120 MiB，Draft PR #20，head `88d17073a5937cb17c992b1940404034152ea2e0`。
+- 每个诊断实验尽量从固定基线独立派生；
+- 一次只改变一个主要变量；
+- 失败实验同样保留，因为它们排除高诱惑性的错误方向；
+- build success 与 runtime success 分开记录；
+- heap、module count、RSS、output/runtime 都属于验收指标。
 
-两者相对 E1 均为 ahead 1 / behind 0，仅 `.github/workflows/ci.yaml` `+4/-0`。
+## 3. 已完成实验矩阵
 
-判定：
+| 实验 | 主要变量 | 结果 | 结论 |
+| --- | --- | --- | --- |
+| E0 | 8 GiB old-space 控制组 | ✅ | 增加 heap 可以稳定控制症状，但不能说明 graph 健康。 |
+| E1 | 删除 production source alias、blanket `ssr.noExternal`、blanket `externals.inline`；默认 heap | ❌ final Nitro OOM | server modules 约 4028 → 2449，约 -39%；graph 放大器被证实。 |
+| E2-A | Linux `nitro.externals.trace=false` | ❌ | 单独关闭 modern tracing 不足以恢复默认 heap。 |
+| E2-B | `experimental.legacyExternals=true` | ❌ | legacy externals 不足以恢复默认 heap。 |
+| E3 | `sourcemap.server=false` | ❌ | sourcemap 不是决定性剩余峰值来源。 |
+| E4 | Rollup `treeshake=false` | ❌ | 不采用。 |
+| E5-A | 4608 MiB | ❌ | 小于当前稳定需求。 |
+| E5-B | 5120 MiB | ✅ | 当前最低已测试通过档。 |
+| E5-C | 6144 MiB | ✅ | 为 E5-B 提供上界稳定对照。 |
+| E6-A | app-local `@popperjs/core` npm alias dependency | ✅ build + HTTP runtime | **最终采用的 runtime 修复。** |
+| E6-B | `nitro.externals.inline=["element-plus"]` | ❌ 5120 MiB build | 即使 selective inline 大 UI 包也会重新放大 working set。 |
+| E6-C | `nitro.traceOpts.traceAlias` | ✅ build / ❌ runtime | 当前 Nuxt/Nitro/pnpm 组合下不能补齐 standalone alias。 |
+| E7-A | `nodeLinker: hoisted` | ❌ 5120 MiB build OOM | 全局 linker 改动爆炸半径过大。 |
+| E7-B | `publicHoistPattern: ["@popperjs/core"]` | ✅ build + runtime | 证明 pnpm visibility/layout 参与故障；保留为 fallback。 |
 
-- 4608 通过：优先以 4608 为候选，不因 5120 也通过而自动上调；
-- 4608 失败、5120 通过：最低稳定阈值位于 `(4608, 5120] MiB`；
-- 5120 也失败：再独立测试 6144 MiB；
-- 单次绿色只证明阈值候选，不等于最终修复。
+## 4. E1：production graph 收敛
 
-## 6. 候选落地方式
+E1 的关键数据：
 
-阈值确认后，不直接把 CI-only `NODE_OPTIONS` 当最终方案。应从 E1 派生候选实现：
+- V8 heap limit：约 4144 MiB；
+- server transformed modules：2449；
+- 历史失败基线：约 4028；
+- graph 减少：约 39%；
+- Nitro prerender：完整成功；
+- 最终在 `[nitro] Building Nuxt Nitro server ...` 后的 final Rollup/write path OOM；
+- max RSS：约 4.55 GiB。
 
-1. 复用 E0 已验证的跨平台 `run-nuxt-with-memory.mjs` wrapper；
-2. 将 wrapper 的 old-space 从 8192 降到已证实的最小阈值；
-3. package-level `prepare/build/postinstall` 通过 wrapper，确保 Vercel 与本地生产构建也获得同样 headroom；
-4. CI 继续明确记录实际 V8 heap limit 与 `/usr/bin/time -v`；
-5. 不恢复 E1 已移除的 source alias / blanket bundling 配置。
+E1 因此证明：删除旧 bundling/source-alias 配置是结构性改善，即使默认 heap 仍不足以完成最后的 server build。
 
-## 7. 必须记录的指标
+## 5. E5：heap 阈值
 
-每次实验尽可能记录：
+E5 的目的不是“找一个越大越好”的数字，而是在 graph 已经收敛后测量剩余真实 headroom。
 
-- commit SHA / PR / run ID / job ID；
-- Node / pnpm / Nuxt / Nitro / Vite 版本；
-- V8 heap limit；
-- runner RAM / swap；
-- client/server transformed modules；
-- prerender 是否完成；
-- final Nitro server build 是否开始/完成；
-- exit code；
-- `/usr/bin/time -v` maximum RSS；
-- 成功时 `.output` sanity。
+结果：
 
-若 connector 无法返回完整 job log，必须明确标记字段“未取得可靠数据”，禁止臆造。
+```text
+4608 MiB -> FAIL
+5120 MiB -> PASS
+6144 MiB -> PASS
+```
 
-## 8. 最终重复性验收（E6）
+因此当前只允许表述为：
 
-最终候选必须同时满足：
+> **最低已测试通过档为 5120 MiB，已测稳定边界在 `(4608, 5120] MiB`。**
 
-1. full Nitro server build 完成；
-2. `.output` 存在且可启动/可部署；
-3. docs 页面、组件展示、Content/search 无已知回归；
-4. 同一候选 SHA rerun 成功；
-5. 两个独立 cold-runner Draft PR 成功；
-6. Vercel 成功；
-7. 只把有证据的最小配置回写主工作分支；
-8. 最终经验写入 `.agents/skills/fix-bug/record-bug-fix-memory/`。
+不能声称 5120 是精确数学最小值，也不能把未来 graph 增长简单用更大 heap 掩盖。
 
-## 9. 停止条件
+## 6. E6：build 绿色后暴露 standalone runtime 缺包
 
-- 不继续随机枚举 Nitro/Rollup 开关制造低信号实验；E2–E4 已完成四条高信号结构诊断。
-- 不恢复 8 GiB 作为默认方案，除非更低阈值全部经证据否定。
-- 不通过关闭搜索/Content 等用户功能换取绿色。
-- 不把单次 CI 成功写成“彻底修复”。
-- 主 PR #11 始终保持 Draft，实验 PR 不合并。
+初始 5120 candidate 的 full production build 已经成功，但真实 HTTP runtime 报：
+
+```text
+ERR_MODULE_NOT_FOUND: Cannot find package '@popperjs/core'
+imported from .output/server/node_modules/element-plus/...
+```
+
+这使调查从“构建内存”进入第二条独立轴：standalone dependency closure。
+
+### E6-A：最终采用
+
+在 `packages/ai-vue-doc/package.json` 中显式加入：
+
+```json
+"@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.7"
+```
+
+结果：full build + `.output` startup + HTTP smoke 全部成功。
+
+### E6-B：拒绝
+
+只 inline `element-plus` 即导致 5120 MiB build 失败，因此不能用重新扩大 bundling graph 的方式修 alias runtime 缺包。
+
+### E6-C：拒绝
+
+`traceAlias` 不改变最终 runtime 缺包结果。
+
+## 7. E7：pnpm 拓扑因果验证
+
+E7-A：全局 `nodeLinker: hoisted`，run `32117268637` 失败；生产构建重新 OOM，max RSS `5,646,292 kB`。
+
+E7-B：只 public-hoist `@popperjs/core`，run `32117424893` 成功，并通过 runtime smoke。
+
+联合结论：pnpm visibility/layout 确实参与 alias tracing 问题，但 workspace-wide topology change 不是最小责任边界。最终仍采用 app-local runtime dependency。
+
+详见 [`experiments/E7-pnpm-layout-alias-visibility.md`](./experiments/E7-pnpm-layout-alias-visibility.md)。
+
+## 8. 最终候选重复性验证
+
+候选最终 tree 在多条独立路径通过：
+
+- PR #22 candidate：full build + HTTP smoke ✅
+- cold PR #23：full build + HTTP smoke ✅
+- cold PR #24：full build + HTTP smoke ✅
+
+最终功能 commit：
+
+```text
+a021ce96534360029e579183b8b5841b785f048a
+```
+
+对应 GitHub Actions：
+
+- run `32118675630`：success；
+- job `95653890207`：success；
+- production build：success；
+- `.output` HTTP smoke：success。
+
+对应 Vercel deployment：
+
+```text
+dpl_4CwrYxzyzRAs5zFebEFkbHUsagTs
+```
+
+- READY；
+- `/` HTTP 200；
+- 查询到的近期 error/fatal logs：0。
+
+## 9. 当前验收覆盖
+
+### 已完成
+
+- [x] production graph 收敛有量化证据；
+- [x] final Nitro server build 完成；
+- [x] 5120 MiB 最低已测试通过档被独立测量；
+- [x] `.output/server/index.mjs` 可启动；
+- [x] 对 `.output` 发起真实 HTTP 请求成功；
+- [x] candidate/cold-runner 重复验证；
+- [x] Vercel Git Preview READY；
+- [x] Preview 根路由 HTTP 200。
+
+### 后续加固，不影响当前修复结论
+
+- [ ] 把 `.output` 复制到 monorepo 之外再 smoke；
+- [ ] 增加代表性 docs / Content / search / static asset runtime route matrix；
+- [ ] 固定 dependency resolution 快照；
+- [ ] 把 module count / RSS / heap 纳入持续回归预算。
+
+这些事项已进入 [`next-steps/README.md`](./next-steps/README.md)，不再混入“当前实验是否完成”的状态描述。
+
+## 10. 停止条件
+
+当前调查已经满足停止条件：
+
+- 根因模型可以解释 graph OOM 与 standalone runtime 缺包两条独立轴；
+- 采用方案的责任边界小于被拒绝方案；
+- 同类高诱惑替代方案已通过单变量实验排除；
+- build、runtime、真实 Vercel 三个 gate 均有 fresh 成功证据。
+
+后续若再次出现依赖问题，应创建新的故障假设，不再把 E2/E3/E4 或旧依赖枚举方案重新当“待尝试项”。

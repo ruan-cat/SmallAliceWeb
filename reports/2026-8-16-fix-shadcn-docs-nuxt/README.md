@@ -1,173 +1,168 @@
-# 2026-08-18 Nuxt 文档构建 OOM：结构性修复调查
+# 2026-08-18～20 Nuxt 文档构建与 standalone runtime 稳定化调查
 
-## 目标
+> 状态：**调查已完成，当前修复已通过 GitHub Actions 与 Vercel 验证。**
+>
+> 主 PR：#11 `fix(ci): 稳定 Nuxt 文档构建内存`，当前保持 Draft / open / 未合并。
+>
+> 本文件是当前调查的**权威状态入口**。各 `experiments/` 文件保留单次实验历史，不再承担“当前进度”说明职责。
 
-修复 `@ruan-cat-drill-doc/ai-vue-doc` 在 GitHub Actions、Vercel 与本地环境中的 Node/V8 heap OOM，同时避免把长期方案简化成不断提高 `--max-old-space-size`。
+## 1. 最终结论
 
-当前要求是：**先缩小生产依赖图并定位 final Nitro server build 的真实峰值来源，再决定是否仍需要最小、可解释的 heap headroom。**
+这次故障不是一个单一的“Nuxt 需要更大内存”问题，而是两条相互独立的故障轴叠加：
 
-## 文档索引
+1. **production graph 被历史 bundling/source-alias 配置显著放大。** 移除 production source alias、blanket `vite.ssr.noExternal` 与 blanket `nitro.externals.inline` 后，server transformed modules 从历史约 4028 降至 2449，约减少 39%。
+2. **Nitro standalone output 对 pnpm npm alias 的 runtime dependency tracing/copy 不完整。** 初始 5120 MiB candidate 可以完成 full build，但真实 `.output` HTTP 请求因 `@popperjs/core` 缺失而 500；最终通过在实际部署 package 显式声明逻辑 runtime dependency 修复。
 
-- [`TEST-PLAN.md`](./TEST-PLAN.md)：实验矩阵、控制变量、指标、停止条件和最终验收门槛。
-- [`evidence/KNOWN-EVIDENCE.md`](./evidence/KNOWN-EVIDENCE.md)：只记录 CI/仓库/上游源码直接支持的事实。
-- [`hypotheses/ROOT-CAUSE-MODEL.md`](./hypotheses/ROOT-CAUSE-MODEL.md)：当前根因模型、待验证假设和误判纠偏。
-- [`experiments/E0-8G-control.md`](./experiments/E0-8G-control.md)：8 GiB 稳定控制组。
-- [`experiments/E1-default-heap-minimal-bundle.md`](./experiments/E1-default-heap-minimal-bundle.md)：默认 heap 下缩小 production bundling graph 的结果。
-- [`experiments/E2-final-nitro-rollup-externals.md`](./experiments/E2-final-nitro-rollup-externals.md)：final Nitro Rollup / externals 单变量实验及失败结论。
-- E3：server sourcemap 单变量实验，Draft PR #17，当前执行中。
-- [`final/FINAL-FIX.md`](./final/FINAL-FIX.md)：最终修复与重复性验收；当前明确标记为“未完成”。
+在 graph 收敛后，构建内存实测边界为：
 
-## 当前阶段结论
+```text
+4608 MiB -> FAIL
+5120 MiB -> PASS
+6144 MiB -> PASS
+```
 
-### E0：8 GiB 是稳定控制组，不是根修复
+因此当前准确说法是：
 
-已确认：
+> **5120 MiB 是最低已测试通过档，已测稳定边界位于 `(4608, 5120] MiB`；它是必要 headroom，不应被描述成全部根因。**
 
-- 主 PR #11 首次 CI 成功；
-- 同功能 SHA rerun 成功；
-- 独立临时 PR #12、#13 成功；
-- Vercel 同功能 SHA 成功。
+## 2. 最终采用的修复
 
-功能基线 SHA：`9864aaea67394e2db1e917b1ee0ea86c6ddfd0e1`。
+最终功能提交：
 
-这证明提高 V8 old-space 可以稳定控制症状，但不能证明 production graph 健康，也不能证明 8 GiB 是真实最低需求。
+```text
+a021ce96534360029e579183b8b5841b785f048a
+🐞 fix: 收敛 Nuxt 文档构建与运行时依赖
+```
 
-### E1：生产依赖图放大器被证实，但还不是全部根因
+功能变更只涉及 4 个文件：
 
-E1 Draft PR #14：
+1. `.github/workflows/ci.yaml`
+2. `packages/ai-vue-doc/nuxt.config.ts`
+3. `packages/ai-vue-doc/package.json`
+4. `packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs`
 
-- 分支：`2026-8-18-nuxt-default-heap-bundle-min`
-- head：`964911ee5c4691cc88a0ddb7672c400f3fb7ef7e`
-- run：`32081792392`
-- job：`95546058440`
+核心策略：
 
-E1 在默认 V8 heap `4144 MiB` 下：
+- 删除 production source alias；
+- 删除 blanket `vite.ssr.noExternal`；
+- 删除 blanket `nitro.externals.inline`；
+- 保留必要的兼容 aliases 与 Windows-only `nitro.externals.trace=false`；
+- build/prepare wrapper 使用当前已验证的 5120 MiB old-space；
+- 在 `packages/ai-vue-doc` 中显式声明：
 
-- 移除 ai-vue production source alias；
-- 移除 blanket `vite.ssr.noExternal`；
-- 移除 blanket `nitro.externals.inline`；
-- 恢复标准 `nuxt prepare` / `nuxt build`；
-- 移除 8 GiB wrapper/CI heap override；
-- 保留 Node 22、Turbo `--concurrency=1`、内部兼容 aliases 和 Windows-only `trace:false`。
+```json
+"@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.7"
+```
+
+- CI 在 production build 后真实启动 `.output/server/index.mjs` 并执行 HTTP smoke。
+
+## 3. 完整实验矩阵
+
+| 实验 | 变量 | 结果 | 当前结论 |
+| --- | --- | --- | --- |
+| E0 | 8 GiB 控制组 | ✅ build 稳定 | 证明额外 heap 能控制症状，但不是根修复。 |
+| E1 | 删除 source alias + blanket noExternal/inline，回到默认 heap | ❌ final Nitro OOM；server modules 约 -39% | 历史 bundling 配置是确定的 graph amplifier。 |
+| E2-A | Linux `externals.trace=false` | ❌ | modern NFT trace 不是单独根因；不采用。 |
+| E2-B | `legacyExternals=true` | ❌ | legacy externals 不能恢复默认 heap；不采用。 |
+| E3 | `sourcemap.server=false` | ❌ | server sourcemap 不是决定性峰值来源。 |
+| E4 | `treeshake=false` | ❌ | 不采用。 |
+| E5 | 4608 / 5120 / 6144 MiB | ❌ / ✅ / ✅ | 5120 为最低已测试通过档。 |
+| E6-A | app-local `@popperjs/core` npm alias dependency | ✅ build + runtime | **采用。** 修复实际 standalone runtime dependency boundary。 |
+| E6-B | inline `element-plus` | ❌ 5120 MiB build OOM | selective large-package inline 仍会重新放大 working set。 |
+| E6-C | `traceOpts.traceAlias` | ✅ build / ❌ runtime | 不能修复当前 alias output 缺包。 |
+| E7-A | `nodeLinker: hoisted` | ❌ 5120 MiB build OOM | 全局扁平化爆炸半径过大。 |
+| E7-B | public-hoist `@popperjs/core` | ✅ build + runtime | 证明 layout/visibility 参与故障；作为 fallback，不作为首选。 |
+
+详细实验见 [`experiments/`](./experiments/)。E7 已补齐为独立记录。
+
+## 4. 最终验证证据
+
+### GitHub Actions
+
+最终功能 SHA `a021ce96534360029e579183b8b5841b785f048a`：
+
+- run `32118675630`：`completed / success`；
+- job `95653890207`：成功；
+- production build：成功；
+- `.output` server startup + HTTP smoke：成功。
+
+最终候选相同 tree 还通过：
+
+- PR #22 candidate；
+- cold PR #23；
+- cold PR #24。
+
+这三条验证都覆盖 full build + runtime smoke。
+
+### Vercel
+
+最终功能 SHA 对应 deployment：
+
+```text
+dpl_4CwrYxzyzRAs5zFebEFkbHUsagTs
+```
 
 结果：
 
-- client：5409 modules；
-- server：2449 modules；历史默认-heap 失败约 4028 modules，下降约 **39%**；
-- Nitro prerender 两条 Content route **完整成功**，44.534s；
-- `.output/public` 已生成；
-- 随后进入 `[nitro] Building Nuxt Nitro server ...`；
-- 最终在约 4.1 GiB heap ceiling 触发 `Reached heap limit`，exit 134；
-- maximum RSS `4,768,884 kB`（约 4.55 GiB）。
+- deployment：READY；
+- Preview `/`：HTTP 200；
+- 查询到的近期 `error` / `fatal` runtime logs：0。
 
-因此不能再把“prerender 本身”写成 E1 的死亡点。更精确的定位是：**final Nitro server Rollup build/write path**。
+因此当前结论同时建立在 build、standalone runtime 和真实云部署上，而不是只看编译日志。
 
-### E2：externals 两条简单路径均不足以根治
+## 5. 当前配置应如何理解
 
-两个实验都从固定 E1 SHA `964911ee5c4691cc88a0ddb7672c400f3fb7ef7e` 独立派生、使用默认 heap、保持 Draft 且不合并：
+### `nuxt.config.ts`
 
-| 实验 | 唯一变量 | PR | Run / Job | 结论 |
-| --- | --- | --- | --- | --- |
-| E2-A | Linux `nitro.externals.trace=false` | #15 | `32106327534` / `95616407587` | ❌ `Run documentation build` failure |
-| E2-B | `nitro.experimental.legacyExternals=true` | #16 | `32106392146` / `95616598844` | ❌ `Run documentation build` failure |
+当前没有：
 
-GitHub Actions step 证据能够稳定确认：checkout、Node/pnpm setup、依赖安装成功，主体 documentation build 失败。当前 connector 没有返回可可靠解析的完整 job log，因此**不把具体 OOM 行号、max RSS、模块数写成已证实的 E2 指标**。
+- production alias 到 `../ai-vue/src`；
+- blanket/wide `vite.ssr.noExternal`；
+- blanket/wide `nitro.externals.inline`。
 
-现有证据只支持：
+这不是禁止 Nuxt/Vite 官方能力，而是禁止把它们当成“传递依赖白名单”。任何未来 narrow exception 必须由 exact error + 单变量实验支持。
 
-- 单独关闭 modern externals tracing 不足以恢复默认 heap 绿色；
-- 单独切换 legacy externals 实现也不足以恢复默认 heap 绿色；
-- 不应继续把 E2-A/B 叠加到后续实验中。
+专项规则：[`DEPENDENCY-EXTERNALIZATION-POLICY.md`](./DEPENDENCY-EXTERNALIZATION-POLICY.md)。
 
-### E3：关闭 server sourcemap，诊断 final write 峰值
+### pnpm / npm alias
 
-E3 从固定 E1 SHA 独立派生，唯一有效变量：
+`@popperjs/core -> npm:@sxzz/popperjs-es` 的 direct dependency 是当前最小生产 workaround。E7-B 已证明 targeted public hoist 也能绕过问题，但其作用域是整个 workspace，因此当前不采用。
 
-```ts
-sourcemap: {
-  server: false,
-}
-```
+### 5120 MiB
 
-执行信息：
+5120 是当前测得的 build budget，不是永久常数。未来任何 graph 增长都应同时比较 transformed modules、RSS、heap 与 duration，不能直接继续上调 heap。
 
-- Branch：`2026-8-18-nuxt-e3-server-sourcemap-off`
-- Commit：`7bd1594063134655ae101b651c90a4786cb72f0e`
-- Draft PR：#17
-- Run：`32108987079`
-- Job：`95624184590`
-- 当前状态：依赖安装与构建前内存记录均成功，`生产构建` 正在执行。
+## 6. 文档索引
 
-E1 → E3 compare 已验证：ahead `1`、behind `0`，只有 `packages/ai-vue-doc/nuxt.config.ts` 一个文件，`+4/-0`，未夹带 E2-A/B 或主工作分支中的其他实验配置。
+### 当前结论
 
-## 上游定位与 E3 理由
+- [`final/FINAL-FIX.md`](./final/FINAL-FIX.md)：最终修复、拒绝方案、验证结果。
+- [`evidence/KNOWN-EVIDENCE.md`](./evidence/KNOWN-EVIDENCE.md)：只记录可复核事实。
+- [`hypotheses/ROOT-CAUSE-MODEL.md`](./hypotheses/ROOT-CAUSE-MODEL.md)：最终根因模型。
+- [`TEST-PLAN.md`](./TEST-PLAN.md)：已完成实验矩阵与验收结果。
 
-E1 已把问题定位到 prerender 之后的 final Nitro server Rollup/write。Nuxt 3 默认生成 server sourcemap，而 Nuxt 官方也明确指出 sourcemap 有生成成本，不使用时可关闭。因此 E3 选择 `sourcemap.server=false` 作为与最终 server write 阶段直接相关、且不会同时改 externals/依赖图的单变量诊断。
+### 可复用方法
 
-如果 E3 失败，则继续从固定 E1 SHA 派生新的单变量，不在 E3 上叠加；如果 E3 绿色，则先进行 `.output` / runtime、同 SHA 重跑、cold-runner PR 与 Vercel 验收，仍不直接回写主分支。
+- [`DEPENDENCY-EXTERNALIZATION-POLICY.md`](./DEPENDENCY-EXTERNALIZATION-POLICY.md)：`noExternal` / `inline` 专项边界。
+- [`COMPLEX-DEPENDENCY-TROUBLESHOOTING-METHODOLOGY.md`](./COMPLEX-DEPENDENCY-TROUBLESHOOTING-METHODOLOGY.md)：复杂依赖通用排障方法论。
+- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`：本次 standalone alias 事故经验。
 
-## 已纠正的误判
+### 后续真正技术风险
 
-早期上下文摘要曾声称 E1 仍存在：
+- [`next-steps/README.md`](./next-steps/README.md)：只保留尚未完成的构建/runtime/依赖技术风险。
 
-```ts
-components: [{ path: "../ai-vue/src" }]
-```
+## 7. 当前剩余边界
 
-重新直接读取 E1 固定 SHA 的 `packages/ai-vue-doc/nuxt.config.ts` 后确认：**不存在该项。**
+当前修复已经满足本轮生产构建和基础 runtime 验收，但仍有后续加固项：
 
-因此不会创建一个“删除 components source scan”的无效实验。
+- 将 `.output` 复制到 monorepo 外再做 isolated smoke；
+- 扩大 runtime route/Content/search 覆盖；
+- 提升 dependency resolution 可复现性；
+- 建立 memory/module-count 回归预算；
+- 持续验证 Windows/Linux 与 CI/Vercel 工具链差异。
 
-## 可复现性噪声：当前无 pnpm lockfile
+这些事项不推翻当前修复，只是进一步提高可复现性和覆盖面。
 
-仓库当前没有提交 `pnpm-lock.yaml`，CI 使用：
+## 8. 当前状态
 
-```sh
-pnpm install --no-frozen-lockfile
-```
-
-同时 `packages/ai-vue-doc/package.json` 中包含例如 `nuxt: "^3.21.2"` 等 range dependency。故“同 Git SHA”并不自动等价于“完全相同的依赖解析快照”。
-
-该项**暂不混入 E3**，否则会破坏单变量实验；但最终重复性验收必须把依赖解析漂移作为独立噪声源处理或记录。
-
-## 禁止的“假修复”
-
-当前证据不支持直接采用：
-
-- 把 heap 从 8 GiB 继续加到 12/16 GiB；
-- `nitro.prerender.concurrency=1`；
-- Linux/Vercel 永久全局 `trace=false`；
-- 为了 CI 绿色直接关闭 docs search / Nuxt Content 功能；
-- 强行跨大版本覆盖到 Nitro 3；
-- 把单次偶发绿色写成“彻底修复”。
-
-## 最终验收
-
-最终候选必须：
-
-1. 完成 full Nitro server build；
-2. `.output` 可运行/可部署；
-3. docs 页面、组件与 search 无已知回归；
-4. 同 SHA rerun 成功；
-5. 两个独立 cold-runner PR 成功；
-6. Vercel 成功；
-7. 最小必要配置回写主工作分支；
-8. 最终经验写入 `.agents/skills/fix-bug/record-bug-fix-memory/`。
-
-## PR / 分支纪律
-
-- 主 PR：#11 `fix(ci): 稳定 Nuxt 文档构建内存`
-- 主工作分支：`2026-8-16-fix-shadcn-docs-nuxt`
-- 主 PR 保持 Draft；**不合并**。
-- 实验 PR 使用独立分支、Draft、目标 `dev`；实验结束不合并。
-- 最终只把有证据支持的最小变更回写主工作分支。
-
-## 工具状态
-
-本轮 GitHub 与 Skill Router MCP 均可用：
-
-- GitHub：仓库读写、分支/PR、compare、Actions run/job/step 查询均已实际调用；
-- Skill Router MCP：已从 snapshot `8a6bf845eff1e3f42f7e01fa5a5b3f0715468929` 加载 `init-shadcn-docs-nuxt`、`do-long-task`、`git-commit`；
-- `git-commit` 技能要求的 commit type authority 已读取，当前文档提交使用仓库定义的 `📃 docs`，构建实验使用 `🔨 build`。
-
-旧报告中“Skill Router MCP 本会话不可用”的记录已经失效，以本节为准。
+调查阶段已经结束。后续如果出现新的 Nuxt/pnpm 依赖问题，应从最终根因模型和通用排障方法论开始，不要从已经被否定的 E2/E3/E4 或旧依赖枚举表重新试起。
