@@ -2,14 +2,13 @@ import { definePlugin } from "nitro";
 import { useRuntimeConfig } from "nitro/runtime-config";
 import postgres from "postgres";
 import { resolve } from "node:path";
-import { createOpenAI } from "@ai-sdk/openai";
-import { embed } from "ai";
 import {
 	createRagRuntimeContext,
 	type RagRuntimeContext,
 	type RagRuntimeProviderFactories,
 } from "../runtime/rag-assembly";
 import { createPostgresSearchProvider } from "../search/postgres-search";
+import { createCloudflareEmbeddingProvider } from "../providers/cloudflare-embedding";
 import { createOpenAiChatStream, normalizeOpenAIBaseUrl } from "../services/openai-chat";
 import { createKnowledgeSyncService, type SyncSqlExecutor } from "../services/knowledge-sync";
 import { scanKnowledgeSources } from "../services/knowledge-source";
@@ -20,6 +19,8 @@ const REQUIRED_CONFIG_FIELDS = [
 	"openaiApiKey",
 	"chatModel",
 	"embeddingModel",
+	"cloudflareAccountId",
+	"cloudflareApiToken",
 	"knowledgeSyncToken",
 	"cronSecret",
 ] as const;
@@ -39,6 +40,8 @@ function resolveKnowledgeSourceRoot(config: ResolvedRagConfig) {
 type ResolvedRagConfig = {
 	databaseUrl: string;
 	embeddingModel: string;
+	cloudflareAccountId: string;
+	cloudflareApiToken: string;
 	openaiApiKey: string;
 	baseUrl: string;
 	chatModel: string;
@@ -62,6 +65,8 @@ function resolveRuntimeConfig(): ResolvedRagConfig {
 	return {
 		databaseUrl: String(raw.databaseUrl ?? ""),
 		embeddingModel: String(raw.embeddingModel ?? ""),
+		cloudflareAccountId: String(raw.cloudflareAccountId ?? ""),
+		cloudflareApiToken: String(raw.cloudflareApiToken ?? ""),
 		openaiApiKey: String(raw.openaiApiKey ?? ""),
 		baseUrl: String(raw.baseUrl ?? ""),
 		chatModel: String(raw.chatModel ?? ""),
@@ -116,16 +121,15 @@ async function buildRagContext(config: ResolvedRagConfig): Promise<RagRuntimeCon
 			},
 		};
 	};
-	const embeddingProvider = createOpenAI({
-		apiKey: config.openaiApiKey,
-		...(config.baseUrl ? { baseURL: normalizeOpenAIBaseUrl(config.baseUrl) } : {}),
+	const embeddingProvider = createCloudflareEmbeddingProvider({
+		accountId: config.cloudflareAccountId,
+		apiToken: config.cloudflareApiToken,
+		model: config.embeddingModel,
 	});
 	const sourcePaths = resolveKnowledgeSourceRoot(config);
 	const syncEmbedding = {
-		createEmbedding: async (query: string) => {
-			const { embedding } = await embed({ model: embeddingProvider.embedding(config.embeddingModel), value: query });
-			return embedding;
-		},
+		createEmbedding: (query: string) => embeddingProvider.createEmbedding(query).then((embedding) => [...embedding]),
+		createEmbeddings: (contents: readonly string[]) => embeddingProvider.createEmbeddings(contents),
 	};
 
 	const factories: RagRuntimeProviderFactories = {
@@ -135,10 +139,7 @@ async function buildRagContext(config: ResolvedRagConfig): Promise<RagRuntimeCon
 			}),
 		createEmbedding: ({ model }) => {
 			return {
-				createEmbedding: async (query) => {
-					const { embedding } = await embed({ model: embeddingProvider.embedding(model), value: query });
-					return embedding;
-				},
+				createEmbedding: (query) => embeddingProvider.createEmbedding(query).then((embedding) => [...embedding]),
 			};
 		},
 		createModel: () => ({ stream: createOpenAiChatStream(config) }),

@@ -385,8 +385,8 @@ function titleFromSourcePath(sourcePath: string) {
 function assertEmbeddings(embeddings: readonly (readonly number[])[], expected: number) {
 	if (embeddings.length !== expected) throw new Error("embedding 数量与 chunk 数不一致。");
 	for (const embedding of embeddings) {
-		if (embedding.length !== 1536 || embedding.some((value) => !Number.isFinite(value))) {
-			throw new Error("embedding 必须是 1536 维有限数值。");
+		if (embedding.length !== 1024 || embedding.some((value) => !Number.isFinite(value))) {
+			throw new Error("embedding 必须是 1024 维有限数值。");
 		}
 	}
 }

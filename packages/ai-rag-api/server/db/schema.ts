@@ -31,7 +31,7 @@ export const chunks = pgTable("chunks", {
 	imageUrls: jsonb("image_urls").$type<string[]>().notNull(),
 	contentHash: text("content_hash").notNull(),
 	profileVersion: text("profile_version").notNull(),
-	embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+	embedding: vector("embedding", { dimensions: 1024 }).notNull(),
 });
 
 /** 记录每轮完整扫描与增量对账结果。 */

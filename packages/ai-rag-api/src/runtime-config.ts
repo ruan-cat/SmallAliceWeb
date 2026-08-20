@@ -6,6 +6,8 @@ export type RagNitroConfig = {
 	runtimeConfig: {
 		databaseUrl: string;
 		embeddingModel: string;
+		cloudflareAccountId?: string;
+		cloudflareApiToken?: string;
 		openaiApiKey: string;
 		baseUrl: string;
 		chatModel: string;
@@ -26,6 +28,8 @@ export const ragNitroConfig = {
 	runtimeConfig: {
 		databaseUrl: "",
 		embeddingModel: "",
+		cloudflareAccountId: "",
+		cloudflareApiToken: "",
 		openaiApiKey: "",
 		baseUrl: "",
 		chatModel: "",

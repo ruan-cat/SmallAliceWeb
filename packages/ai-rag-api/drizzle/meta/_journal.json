@@ -15,6 +15,13 @@
 			"when": 1787166672000,
 			"tag": "0001_add_written_chunk_count",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1787241600000,
+			"tag": "0002_switch_embedding_to_bge_m3_1024",
+			"breakpoints": true
 		}
 	]
 }

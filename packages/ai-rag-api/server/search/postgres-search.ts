@@ -1,6 +1,6 @@
 import type { HybridSearchItem } from "./hybrid-search";
 
-export const EMBEDDING_DIMENSIONS = 1536;
+export const EMBEDDING_DIMENSIONS = 1024;
 
 type PostgresSearchRow = {
 	chunkIndex: unknown;
