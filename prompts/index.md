@@ -398,7 +398,9 @@ skills add https://github.com/mattpocock/skills `
 
 ## 006 <!-- TODO: codex 正在做 --> 持续推进二期 AI 项目改造
 
-<!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。 -->
+<!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。
+ 已完成openspec的任务工件改造
+ -->
 
 ---
 
@@ -407,6 +409,43 @@ skills add https://github.com/mattpocock/skills `
 ---
 
 把你对免费 embeddings 模型的推荐，在 `D:\store\WorkBuddy\2026-6-30-common\docs\plan\2026-8-19-learn-embedding` 目录内编写报告文档，我稍后专门安排别的 AI，专门去学习了解这个知识点。我晚点专门学习 embeddings 这个概念和基础的模型。
+
+### 先完成 embeddings 的事情
+
+阅读 D:\store\WorkBuddy\2026-6-30-common\docs\plan\2026-8-19-learn-embedding\2026-08-19-free-embedding-models-for-rag.md 和 `openspec\changes\ai-rag-phase2` 必要的进度文档。以及 memorix 相关的历史记忆。
+
+我打算使用 Cloudflare Workers AI 提供 `@cf/baai/bge-m3`，你帮我调研一下，能不能设置模型的向量维度啊，看看能不能满足我们项目的要求，你现在的 wrangler cli 能帮我完成这个云能力的接入和使用么？
+
+---
+
+放弃 1536 维设计，大胆的，全面的改动 二期的 embedding 契约；
+做好 vercel nitro 项目接入，读取来自 cloudflare embedding 模型的接口设计；
+你的这个更改预期是先更改好 `openspec\changes\ai-rag-phase2` 内全部必要的文档，和其他目录内的相关文档。
+你先完成计划，调研，改动文档。稍后我会要你完成这个代码修改和数据库改动设计的任务。
+
+---
+
+你的卡点是这几个环境变量。
+
+NITRO_CLOUDFLARE_ACCOUNT_ID
+NITRO_CLOUDFLARE_API_TOKEN
+NITRO_EMBEDDING_MODEL=@cf/baai/bge-m3
+
+CLOUDFLARE_ACCOUNT_ID 和 CLOUDFLARE_API_TOKEN 怎么获取？你不是有办法直接完成环境变量的上传么？你不是有本地的 vercel cli 么？你直接上传环境变量到对应的 vercel 项目内不行么？就比如 `NITRO_EMBEDDING_MODEL=@cf/baai/bge-m3` ，这个你现在不能完成么？
+
+---
+
+对于 CLOUDFLARE_API_TOKEN 来说，你要的是 `Account-scoped tokens` 还是 `User-scoped API token` ？cloudflare 的 token 有两个种类的。
+
+---
+
+你现在确认 `NITRO_CLOUDFLARE_ACCOUNT_ID=3412269ab0def154c8806e38acd1b493` cloudflare 的用户 id，本质上不是敏感变量对不对？你能不能写到根目录的 `README.md` 内？不是有很多非敏感的变量都写到这里方便查阅和使用的么？
+
+---
+
+CLOUDFLARE_API_TOKEN 是 `Account-scoped tokens` ，我现在给你：
+
+### 后继续
 
 ## 007 <!-- 已完成 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
 

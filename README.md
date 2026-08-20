@@ -56,3 +56,13 @@
 - 生产：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`
 - Vercel 默认地址（不使用）：`https://smallalice-docs-ai-nitro-api.vercel.app`
 - 路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`
+
+### 4.4 Nitro RAG 环境变量
+
+二期 RAG 的 Cloudflare embedding 运行时会读取以下环境变量：
+
+- `NITRO_CLOUDFLARE_ACCOUNT_ID`：`3412269ab0def154c8806e38acd1b493`
+- `NITRO_EMBEDDING_MODEL`：`@cf/baai/bge-m3`
+- `NITRO_CLOUDFLARE_API_TOKEN`：Cloudflare Workers AI 专用 API token，必须保密；Vercel 的 Production / Preview 使用 Sensitive，Development 受平台限制只能用 Non-sensitive
+
+其中 `ACCOUNT_ID` 可以公开写入文档，`API_TOKEN` 不能提交到仓库。你贴出的 R2/S3 兼容密钥属于另一组云存储凭证，不参与 embedding 接入，也不应写入 README。
