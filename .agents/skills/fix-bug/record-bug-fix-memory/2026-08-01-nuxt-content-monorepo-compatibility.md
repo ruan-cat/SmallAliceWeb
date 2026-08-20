@@ -1,6 +1,6 @@
 # 2026-08-01 Nuxt Content 在 pnpm monorepo 中跨运行时世代解析错误
 
-> **2026-08-19 后续纠偏**：本案例中的 `8 GiB` 是 2026-08-01 当时的构建控制结果，不是当前永久基线。后续 E1/E5 在移除 production source alias、blanket `vite.ssr.noExternal` 与 blanket `nitro.externals.inline` 等图放大器后，测得 4608 MiB 失败、5120/6144 MiB 成功，当前最低已测试通过档为 5120 MiB。另一个仓库 `eams-component-lib` 曾使用 narrow `noExternal` / `inline` 处理其特定 externalization 事故，这不能推广成 SmallAliceWeb 的依赖族枚举策略。当前规则见 `reports/2026-8-16-fix-shadcn-docs-nuxt/DEPENDENCY-EXTERNALIZATION-POLICY.md`。
+> **2026-08-19 后续纠偏**：本案例中的 `8 GiB` 是 2026-08-01 当时的构建控制结果，不是当前永久基线。后续 E1/E5 在移除 production source alias、blanket `vite.ssr.noExternal` 与 blanket `nitro.externals.inline` 等图放大器后，测得 4608 MiB 失败、5120/6144 MiB 成功，当前最低已测试通过档为 5120 MiB。另一个仓库 `eams-component-lib` 曾使用 narrow `noExternal` / `inline` 处理其特定 externalization 事故，这不能推广成 SmallAliceWeb 的依赖族枚举策略。当前规则见 `reports/2026-8-16-fix-shadcn-docs-nuxt/dependency-externalization-policy.md`。
 
 ## 1. 问题现象
 
