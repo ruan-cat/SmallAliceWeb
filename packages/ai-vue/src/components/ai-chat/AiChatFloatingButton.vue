@@ -54,7 +54,11 @@ function closeDock() {
 					@send="emit('send', $event)"
 					@stop="emit('stop')"
 					@clear-error="emit('clear-error')"
-				/>
+				>
+					<template #notification-control>
+						<slot name="notification-control" />
+					</template>
+				</AiChat>
 			</div>
 		</aside>
 

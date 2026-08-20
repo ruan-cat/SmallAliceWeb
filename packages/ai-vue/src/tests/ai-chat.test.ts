@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { createApp, nextTick, type App } from "vue";
+import { createApp, h, nextTick, type App } from "vue";
 
 vi.mock("vue-element-plus-x", async () => {
 	const { defineComponent, h } = await import("vue");
@@ -126,6 +126,7 @@ vi.mock("markstream-vue", async () => {
 });
 
 import AiChat from "../components/ai-chat/AiChat.vue";
+import AiChatFloatingButton from "../components/ai-chat/AiChatFloatingButton.vue";
 
 const mountedApps: App[] = [];
 const originalMatchMediaDescriptor = Object.getOwnPropertyDescriptor(window, "matchMedia");
@@ -134,6 +135,34 @@ function mountAiChat(props: Record<string, unknown>) {
 	const host = document.createElement("div");
 	document.body.append(host);
 	const app = createApp(AiChat, props);
+	app.mount(host);
+	mountedApps.push(app);
+	return host;
+}
+
+function mountAiChatWithNotificationControl(props: Record<string, unknown>) {
+	const host = document.createElement("div");
+	document.body.append(host);
+	const app = createApp({
+		render: () =>
+			h(AiChat, props, {
+				"notification-control": () => h("button", { class: "notification-control", type: "button" }, "启用文档提醒"),
+			}),
+	});
+	app.mount(host);
+	mountedApps.push(app);
+	return host;
+}
+
+function mountFloatingButtonWithNotificationControl(props: Record<string, unknown>) {
+	const host = document.createElement("div");
+	document.body.append(host);
+	const app = createApp({
+		render: () =>
+			h(AiChatFloatingButton, props, {
+				"notification-control": () => h("button", { class: "notification-control", type: "button" }, "启用文档提醒"),
+			}),
+	});
 	app.mount(host);
 	mountedApps.push(app);
 	return host;
@@ -165,6 +194,33 @@ afterEach(() => {
 });
 
 describe("AiChat library adapters", () => {
+	test("在 external 模式渲染 notification-control 插槽", () => {
+		const host = mountAiChatWithNotificationControl({ mode: "external", messages: [] });
+
+		expect(host.querySelector(".notification-control")?.textContent).toBe("启用文档提醒");
+	});
+
+	test("在 mock 模式渲染 notification-control 插槽", () => {
+		const host = mountAiChatWithNotificationControl({ mode: "mock" });
+
+		expect(host.querySelector(".notification-control")?.textContent).toBe("启用文档提醒");
+	});
+
+	test("未提供 notification-control 插槽时不渲染额外控件", () => {
+		const host = mountAiChat({ mode: "external", messages: [] });
+
+		expect(host.querySelector(".notification-control")).toBeNull();
+	});
+
+	test("AiChatFloatingButton 将 notification-control 插槽透传给 AiChat", async () => {
+		const host = mountFloatingButtonWithNotificationControl({ messages: [] });
+		await nextTick();
+		host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__trigger")?.click();
+		await nextTick();
+
+		expect(host.querySelector(".notification-control")?.textContent).toBe("启用文档提醒");
+	});
+
 	test("renders BubbleList-managed Bubble content/footer slots and maps assistant final state to MarkdownRender", () => {
 		const host = mountAiChat({
 			mode: "external",

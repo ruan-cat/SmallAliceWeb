@@ -137,6 +137,8 @@ function handleStop() {
 			停止生成
 		</button>
 
+		<slot name="notification-control" />
+
 		<Sender
 			v-model="input"
 			:auto-size="{ minRows: 1, maxRows: 4 }"
