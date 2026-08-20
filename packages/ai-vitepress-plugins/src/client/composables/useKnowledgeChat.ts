@@ -13,8 +13,11 @@ type SourceFrame = {
 };
 
 type ActiveRequest = {
+	requestId: number;
 	knownMessageIds: Set<string>;
 	targetAssistantMessageId?: string;
+	stopped: boolean;
+	completionNotified: boolean;
 };
 
 export type KnowledgeChatOptions = {
@@ -22,6 +25,8 @@ export type KnowledgeChatOptions = {
 	api?: string;
 	/** 覆盖 AI SDK 使用的 fetch，实现本地 HTTP 或运行时代理。 */
 	fetch?: typeof globalThis.fetch;
+	/** 当前请求自然完成且产生新助手消息时触发一次。 */
+	onResponseComplete?: () => void;
 };
 
 /** 将 data-stream 中的来源帧缩减为聊天组件可展示的安全字段。 */
@@ -55,6 +60,7 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		},
 	});
 	const activeRequest = ref<ActiveRequest>();
+	let nextRequestId = 0;
 	const sourcesByAssistantMessageId = ref<Record<string, AiChatSource[]>>({});
 	const sources = computed(() =>
 		(chat.data.value ?? []).flatMap((frame) => {
@@ -107,15 +113,34 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	async function send(message: AiChatMessage) {
 		const content = message.content.trim();
 		if (!content) return;
+		const requestId = ++nextRequestId;
 		activeRequest.value = {
+			requestId,
 			knownMessageIds: new Set(chat.messages.value.map((item) => item.id)),
+			stopped: false,
+			completionNotified: false,
 		};
 		chat.setData(undefined);
 		await chat.append({ ...message, content });
+
+		const request = activeRequest.value;
+		if (!request || request.requestId !== requestId || request.stopped || request.completionNotified) return;
+		if (chat.error.value) return;
+		const hasNewAssistantMessage = chat.messages.value.some(
+			(item) => item.role === "assistant" && !request.knownMessageIds.has(item.id),
+		);
+		if (!hasNewAssistantMessage) return;
+
+		activeRequest.value = { ...request, completionNotified: true };
+		options.onResponseComplete?.();
 	}
 
 	/** 中止当前 SDK 请求并保留已接收的流内容。 */
 	function stop() {
+		const request = activeRequest.value;
+		if (request && !request.stopped) {
+			activeRequest.value = { ...request, stopped: true };
+		}
 		chat.stop();
 	}
 

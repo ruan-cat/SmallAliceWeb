@@ -1,5 +1,5 @@
 import { createServer, type Server } from "node:http";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
 import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
@@ -112,7 +112,14 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 
 		const scope = effectScope();
 		scopes.push(scope);
-		const chat = scope.run(() => useKnowledgeChat("http-complete", { api: server.url, fetch: globalThis.fetch }))!;
+		const completed = vi.fn();
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-complete", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onResponseComplete: completed,
+			}),
+		)!;
 		await chat.send({ id: "user-1", role: "user", content: "什么是 RAG？" });
 		await nextTick();
 
@@ -126,6 +133,7 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		]);
 		expect(chat.messages.value.at(-1)?.sources).toEqual([{ id: "source-1", label: "指南", sourceHref: "/guide" }]);
 		expect(chat.isResponding.value).toBe(false);
+		expect(completed).toHaveBeenCalledTimes(1);
 	});
 
 	test("调用 stop 时通过 AbortController 中止 HTTP 流并保留已接收内容", async () => {
@@ -135,7 +143,14 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 
 		const scope = effectScope();
 		scopes.push(scope);
-		const chat = scope.run(() => useKnowledgeChat("http-abort", { api: server.url, fetch: globalThis.fetch }))!;
+		const completed = vi.fn();
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-abort", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onResponseComplete: completed,
+			}),
+		)!;
 		const sendPromise = chat.send({ id: "user-2", role: "user", content: "开始流式回答" });
 		await waitFor(() => chat.messages.value.some((message) => message.content === "第一段"));
 
@@ -149,5 +164,6 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		expect(chat.messages.value.at(-1)?.content).toBe("第一段");
 		expect(chat.isResponding.value).toBe(false);
 		expect(chat.errorMessage.value).toBeUndefined();
+		expect(completed).not.toHaveBeenCalled();
 	});
 });

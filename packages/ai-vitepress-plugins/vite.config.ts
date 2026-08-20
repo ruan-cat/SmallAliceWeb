@@ -14,7 +14,7 @@ export default defineConfig({
 			cssFileName: "style",
 		},
 		rollupOptions: {
-			external: ["vue", "@ruan-cat-drill-doc/ai-vue"],
+			external: ["vue", "vitepress", "@ruan-cat-drill-doc/ai-vue"],
 			output: {
 				assetFileNames: (assetInfo) =>
 					assetInfo.name === "style.css" ? "client/style.css" : "assets/[name]-[hash][extname]",

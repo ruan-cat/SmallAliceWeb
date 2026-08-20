@@ -31,9 +31,11 @@
 	"dependencies": {
 		"@ai-sdk/vue": "1.2.12",
 		"@ruan-cat-drill-doc/ai-vue": "workspace:*",
+		"@vueuse/core": "^14.3.0",
 		"element-plus": "^2.11.8"
 	},
 	"peerDependencies": {
+		"vitepress": "^1.6.4",
 		"vue": "^3.5.28"
 	},
 	"devDependencies": {
@@ -43,6 +45,7 @@
 		"typescript": "^5.9.3",
 		"vite": "^6.3.5",
 		"vite-plugin-dts": "^4.5.4",
+		"vitepress": "^1.6.4",
 		"vitest": "^2.1.9",
 		"vue": "^3.5.28",
 		"vue-tsc": "^3.1.5"

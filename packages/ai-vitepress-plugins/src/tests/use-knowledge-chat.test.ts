@@ -36,6 +36,96 @@ describe("useKnowledgeChat", () => {
 		expect(append).toHaveBeenCalledWith({ id: "user-1", role: "user", content: "什么是 RAG？" });
 	});
 
+	test("自然流结束后只触发一次完成回调", async () => {
+		const completed = vi.fn();
+		const messages = ref<Array<{ id: string; role: "user" | "assistant"; content: string }>>([]);
+		const append = vi.fn().mockImplementation(async () => {
+			messages.value = [
+				{ id: "user-1", role: "user", content: "问题" },
+				{ id: "assistant-1", role: "assistant", content: "回答" },
+			];
+		});
+		chat.useChat.mockReturnValue({
+			messages,
+			error: ref(undefined),
+			input: ref(""),
+			append,
+			stop: vi.fn(),
+			status: ref("ready"),
+			data: ref(undefined),
+			setData: vi.fn(),
+		});
+
+		const knowledgeChat = useKnowledgeChat("completion-once", { onResponseComplete: completed });
+		await knowledgeChat.send({ id: "user-1", role: "user", content: "问题" });
+
+		expect(completed).toHaveBeenCalledTimes(1);
+	});
+
+	test("上一轮助手消息或请求错误不会触发完成回调", async () => {
+		const completed = vi.fn();
+		const messages = ref<Array<{ id: string; role: "user" | "assistant"; content: string }>>([
+			{ id: "assistant-old", role: "assistant", content: "上一轮回答" },
+		]);
+		const error = ref<Error | undefined>(undefined);
+		const append = vi
+			.fn()
+			.mockImplementationOnce(async () => {
+				messages.value = [...messages.value, { id: "user-1", role: "user", content: "没有新回答" }];
+			})
+			.mockImplementationOnce(async () => {
+				messages.value = [
+					...messages.value,
+					{ id: "user-2", role: "user", content: "失败问题" },
+					{ id: "assistant-2", role: "assistant", content: "部分回答" },
+				];
+				error.value = new Error("请求失败");
+			});
+		chat.useChat.mockReturnValue({
+			messages,
+			error,
+			input: ref(""),
+			append,
+			stop: vi.fn(),
+			status: ref("ready"),
+			data: ref(undefined),
+			setData: vi.fn(),
+		});
+
+		const knowledgeChat = useKnowledgeChat("completion-guards", { onResponseComplete: completed });
+		await knowledgeChat.send({ id: "user-1", role: "user", content: "没有新回答" });
+		await knowledgeChat.send({ id: "user-2", role: "user", content: "失败问题" });
+
+		expect(completed).not.toHaveBeenCalled();
+	});
+
+	test("同一请求即使助手消息重复更新也只触发一次完成回调", async () => {
+		const completed = vi.fn();
+		const messages = ref<Array<{ id: string; role: "user" | "assistant"; content: string }>>([]);
+		const append = vi.fn().mockImplementation(async () => {
+			messages.value = [
+				{ id: "user-1", role: "user", content: "问题" },
+				{ id: "assistant-1", role: "assistant", content: "第一段" },
+			];
+			messages.value = [...messages.value.slice(0, -1), { id: "assistant-1", role: "assistant", content: "完整回答" }];
+		});
+		chat.useChat.mockReturnValue({
+			messages,
+			error: ref(undefined),
+			input: ref(""),
+			append,
+			stop: vi.fn(),
+			status: ref("ready"),
+			data: ref(undefined),
+			setData: vi.fn(),
+		});
+
+		const knowledgeChat = useKnowledgeChat("completion-single", { onResponseComplete: completed });
+		await knowledgeChat.send({ id: "user-1", role: "user", content: "问题" });
+
+		expect(completed).toHaveBeenCalledTimes(1);
+	});
+
 	test("将多来源绑定到本轮稳定助手消息，并在下一轮请求隔离累计 data", async () => {
 		const stop = vi.fn();
 		const status = ref("streaming");
