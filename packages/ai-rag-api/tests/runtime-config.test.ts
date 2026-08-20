@@ -7,6 +7,8 @@ describe("RAG API runtime configuration", () => {
 		expect(nitroConfig.runtimeConfig).toMatchObject({
 			databaseUrl: "",
 			embeddingModel: "",
+			cloudflareAccountId: "",
+			cloudflareApiToken: "",
 			openaiApiKey: "",
 			chatModel: "",
 			public: { apiBase: "/v1" },

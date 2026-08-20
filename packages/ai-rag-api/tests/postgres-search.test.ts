@@ -35,7 +35,7 @@ describe("createPostgresSearchProvider", () => {
 		expect(lexicalSearchStatement).not.toContain("RAG' OR true --");
 	});
 
-	test("向量检索固定余弦距离、验证 1536 维度，并按参数传递 pgvector 文本", async () => {
+	test("向量检索固定余弦距离、验证 1024 维度，并按参数传递 pgvector 文本", async () => {
 		const calls: Array<{ parameters: readonly unknown[]; statement: string }> = [];
 		const provider = createPostgresSearchProvider({
 			async execute(statement, parameters) {

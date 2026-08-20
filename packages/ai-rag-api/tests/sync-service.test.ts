@@ -51,7 +51,7 @@ function makeService(state: FakeState, source: { content: string; sourcePath: st
 			},
 		],
 		embedding: {
-			createEmbedding: async () => embeddings?.[embeddingIndex++] ?? Array.from({ length: 1536 }, () => 0.1),
+			createEmbedding: async () => embeddings?.[embeddingIndex++] ?? Array.from({ length: 1024 }, () => 0.1),
 		},
 		idFactory: () => "fixed-id",
 		clock: () => new Date("2026-08-19T00:00:00.000Z"),
@@ -229,9 +229,9 @@ describe("createKnowledgeSyncService", () => {
 			embedding: {
 				createEmbeddings: async (contents) => {
 					state.batchSizes?.push(contents.length);
-					return contents.map(() => Array.from({ length: 1536 }, () => 0.1));
+					return contents.map(() => Array.from({ length: 1024 }, () => 0.1));
 				},
-				createEmbedding: async () => Array.from({ length: 1536 }, () => 0.1),
+				createEmbedding: async () => Array.from({ length: 1024 }, () => 0.1),
 			},
 			maxEmbeddingTexts: 205,
 		});
@@ -266,9 +266,9 @@ describe("createKnowledgeSyncService", () => {
 				createEmbeddings: async (contents) => {
 					called = true;
 					state.batchSizes?.push(contents.length);
-					return contents.map(() => Array.from({ length: 1536 }, () => 0.1));
+					return contents.map(() => Array.from({ length: 1024 }, () => 0.1));
 				},
-				createEmbedding: async () => Array.from({ length: 1536 }, () => 0.1),
+				createEmbedding: async () => Array.from({ length: 1024 }, () => 0.1),
 			},
 		});
 
@@ -303,7 +303,7 @@ describe("createKnowledgeSyncService", () => {
 					imageUrls: [],
 				},
 			],
-			embedding: { createEmbedding: async () => Array.from({ length: 1536 }, () => 0.1) },
+			embedding: { createEmbedding: async () => Array.from({ length: 1024 }, () => 0.1) },
 		});
 
 		await expect(service.sync({ dryRun: false })).rejects.toThrow("transaction");

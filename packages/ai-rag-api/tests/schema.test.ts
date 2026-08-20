@@ -34,4 +34,16 @@ describe("RAG Drizzle schema", () => {
 		expect(journalTags).toEqual(sqlTags);
 		expect(journalTags).toEqual(sqlTags);
 	});
+
+	test("1024 维 Cloudflare migration 在重建索引前拒绝已有向量", async () => {
+		const testDirectory = dirname(fileURLToPath(import.meta.url));
+		const migration = await readFile(
+			join(testDirectory, "..", "drizzle", "0002_switch_embedding_to_bge_m3_1024.sql"),
+			"utf8",
+		);
+		expect(migration).toContain("vector(1024)");
+		expect(migration).toContain("DROP INDEX IF EXISTS chunks_embedding_hnsw_cosine_idx");
+		expect(migration).toContain("CREATE INDEX chunks_embedding_hnsw_cosine_idx");
+		expect(migration).toContain("chunks contains existing vectors");
+	});
 });
