@@ -5,6 +5,8 @@
 > 本目录只保留与 `packages/ai-vue-doc` **构建正确性、运行时完整性、依赖可复现性和资源回归**直接相关、尚未完成的技术风险。
 >
 > 已完成的调查整理工作不作为风险继续登记；与仓库治理或任务调度有关的事项也不放在本目录。
+>
+> 当前风险卡已重新压缩为连续编号 **R01–R12**。后续若删除风险卡，应同步重排本目录编号与所有内部引用，避免再次出现编号断层。
 
 ## 当前已验证基线
 
@@ -25,27 +27,22 @@
 - [`../DEPENDENCY-EXTERNALIZATION-POLICY.md`](../DEPENDENCY-EXTERNALIZATION-POLICY.md)
 - [`../COMPLEX-DEPENDENCY-TROUBLESHOOTING-METHODOLOGY.md`](../COMPLEX-DEPENDENCY-TROUBLESHOOTING-METHODOLOGY.md)
 
-## P0：优先处理
+## 风险清单（按编号）
 
-| 编号 | 风险 | 为什么重要 |
-| --- | --- | --- |
-| [R01](./R01-dependency-resolution-reproducibility.md) | 依赖解析不可完全复现 | 当前没有提交 `pnpm-lock.yaml`，CI 仍使用 `--no-frozen-lockfile`；同 Git SHA 不等于同 dependency graph。 |
-| [R02](./R02-isolated-nitro-output-smoke.md) | standalone smoke 仍位于 monorepo 内 | 父级 `node_modules` 理论上可能救活不完整 `.output`；应把产物复制到仓库外再启动。 |
-| [R04](./R04-memory-headroom-regression-budget.md) | 5120 MiB headroom 可能被未来 graph 增长吃掉 | 5120 只是最低已测试通过档，需要持续比较 module count / RSS / heap。 |
-| [R05](./R05-production-bundling-regression-guard.md) | production bundling graph 可能被历史配置重新放大 | E1/E6 已证明 wide source alias / noExternal / inline 会造成显著资源回归。 |
-| [R07](./R07-pnpm-linker-hoist-policy.md) | workspace 级 linker/hoist 改动可能重写构建边界 | E7-A 的 `nodeLinker: hoisted` 已直接使 5120 MiB build OOM。 |
-
-## P1：持续加固
-
-| 编号 | 风险 | 后续方向 |
-| --- | --- | --- |
-| [R03](./R03-runtime-functional-coverage.md) | runtime smoke 当前覆盖路由有限 | 增加代表性 docs、组件、Content/search、静态资源探针。 |
-| [R06](./R06-npm-alias-workaround-lifecycle.md) | `@popperjs/core` direct alias workaround 未来可能过期 | 上游 Nitro/pnpm/Element Plus 升级后重新做 isolated output 验证，再决定是否移除。 |
-| [R08](./R08-windows-linux-nitro-parity.md) | Windows-only `trace:false` 与 Linux/Vercel 输出路径不同 | 保持平台条件化，并定期做跨平台产物验证。 |
-| [R09](./R09-ci-vercel-toolchain-parity.md) | CI 与 Vercel 工具链可能漂移 | 记录 Node/pnpm/Nuxt/Nitro/Vite 与 exact Git SHA。 |
-| [R10](./R10-observability-and-artifact-retention.md) | 失败证据留存仍偏弱 | 延长诊断留存并输出 machine-readable summary。 |
-| [R13](./R13-memory-wrapper-contract.md) | 5120 配置存在 wrapper/CI 双写 | 收敛单一真值并验证 Windows/Linux spawn 行为。 |
-| [R14](./R14-framework-compatibility-matrix.md) | Nuxt/Content/H3/Element Plus 组合仍存在升级漂移面 | 建立受控升级矩阵，逐组验证而不是单包跳版本。 |
+| 编号 | 优先级 | 风险 | 后续方向 |
+| --- | --- | --- | --- |
+| [R01](./R01-dependency-resolution-reproducibility.md) | P0 | 依赖解析不可完全复现 | 提交 lockfile、使用 frozen install，并记录实际工具链版本。 |
+| [R02](./R02-isolated-nitro-output-smoke.md) | P0 | standalone smoke 仍位于 monorepo 内 | 把 `.output` 复制到仓库外，排除父级 `node_modules` 偶然救活。 |
+| [R03](./R03-runtime-functional-coverage.md) | P1 | runtime smoke 当前覆盖路由有限 | 增加代表性 docs、组件、Content/search、静态资源探针。 |
+| [R04](./R04-memory-headroom-regression-budget.md) | P0 | 5120 MiB headroom 可能被未来 graph 增长吃掉 | 持续比较 transformed modules、RSS、heap 和 build duration。 |
+| [R05](./R05-production-bundling-regression-guard.md) | P0 | production bundling graph 可能被历史配置重新放大 | 防止 wide source alias / noExternal / inline 回归。 |
+| [R06](./R06-npm-alias-workaround-lifecycle.md) | P1 | `@popperjs/core` direct alias workaround 未来可能过期 | 跟踪上游并通过 isolated output 验证决定是否移除。 |
+| [R07](./R07-pnpm-linker-hoist-policy.md) | P0 | workspace 级 linker/hoist 改动可能重写构建边界 | 对 linker/hoist 变更执行专项 graph、内存与 runtime 回归。 |
+| [R08](./R08-windows-linux-nitro-parity.md) | P1 | Windows-only `trace:false` 与 Linux/Vercel 输出路径不同 | 保持平台条件化，并定期做跨平台产物验证。 |
+| [R09](./R09-ci-vercel-toolchain-parity.md) | P1 | CI 与 Vercel 工具链可能漂移 | 记录 Node/pnpm/Nuxt/Nitro/Vite 与 exact Git SHA。 |
+| [R10](./R10-observability-and-artifact-retention.md) | P1 | 失败证据留存仍偏弱 | 延长诊断留存并输出 machine-readable summary。 |
+| [R11](./R11-memory-wrapper-contract.md) | P1 | 5120 配置存在 wrapper/CI 双写 | 收敛单一真值并验证 Windows/Linux spawn 行为。 |
+| [R12](./R12-framework-compatibility-matrix.md) | P1 | Nuxt/Content/H3/Element Plus 组合仍存在升级漂移面 | 建立受控兼容矩阵，逐组验证而不是单包跳版本。 |
 
 ## 后续任务统一原则
 

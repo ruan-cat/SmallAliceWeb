@@ -1,4 +1,4 @@
-# R13 5120 MiB memory wrapper 存在双重配置与脚本契约风险
+# R11 5120 MiB memory wrapper 存在双重配置与脚本契约风险
 
 - **优先级**：P1
 - **状态**：OPEN

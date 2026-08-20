@@ -1,4 +1,4 @@
-# R14 Nuxt / Nitro / Content / H3 / Vite / shadcn-docs 组合缺少显式兼容矩阵
+# R12 Nuxt / Nitro / Content / H3 / Vite / shadcn-docs 组合缺少显式兼容矩阵
 
 - **优先级**：P1
 - **状态**：OPEN
