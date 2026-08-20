@@ -124,7 +124,23 @@
 - **WHEN** 客户端向同步接口提交 Markdown 内容或文件路径
 - **THEN** 系统 MUST 忽略这些输入，仅扫描 `NITRO_KNOWLEDGE_SOURCE_ROOT` 指向的 `docs/docx` 目录
 
-### Requirement: 6. 只读准备 CLI
+### Requirement: 6. embedding 生成与维度契约
+
+同步服务 MUST 对文档 chunk 与用户查询使用显式注入的 Cloudflare Workers AI `@cf/baai/bge-m3` embedding provider；每个批次 MUST 保持输入顺序，最多接受 100 条文本，并且在任何文档事务写入前校验每个返回向量正好是 1024 个有限数值。embedding 模型标识 MUST 参与幂等身份；模型或维度变化 MUST 触发 migration 与全量重嵌入，MUST NOT 在同一个 `chunks.embedding` 列中混用新旧向量。
+
+#### Scenario: 批量 embedding 保持顺序与上限
+
+- **WHEN** 同步任务向 embedding provider 发送 chunk 内容
+- **THEN** 每个请求 SHALL 最多包含 100 条文本
+- **AND** 返回向量 SHALL 映射到相同的输入顺序
+
+#### Scenario: 无效 Cloudflare embedding 在写入前被拒绝
+
+- **WHEN** provider 响应包含缺失向量、非有限数值、数量不匹配或长度不是 1024 的向量
+- **THEN** 文档事务 MUST 在替换旧 chunk 前失败
+- **AND** 旧文档版本 SHALL 继续保持可检索
+
+### Requirement: 7. 只读准备 CLI
 
 系统 MUST 提供知识准备命令，并强制要求显式传入 `--dry-run` 才允许执行；该命令 MUST 复用本地扫描与 chunk 合同，SHALL 只输出 JSON 摘要，且 MUST NOT 生成 embedding、写入数据库或构成同步事务。
 

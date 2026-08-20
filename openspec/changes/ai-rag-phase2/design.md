@@ -34,16 +34,16 @@
 
 ### 3.1 技术栈与职责
 
-| 层次 | 当前选型 | 约束 |
-| --- | --- | --- |
-| 前端 UI | Vue3 + `vue-element-plus-x@1.3.98` | `Bubble`、`BubbleList`、`Sender` 是唯一聊天 UI 主线 |
-| Transport | `@ai-sdk/vue@1.2.12` | 仅由业务使用方 `useKnowledgeChat` 管理 transport/state/abort |
-| Markdown | `markstream-vue@1.0.8` | 助手 Markdown 唯一渲染主线 |
-| 代码高亮 | `@shikijs/stream@4.4.1`（受控候选） | 未完成真实兼容验证前不得接入或宣称兼容 |
-| API | 独立 Nitro v3 | 不引入 Nuxt API；路由从 `nitro/h3` 导入 |
-| 数据 | Neon + drizzle + pgvector | 正式环境唯一向量持久化主线 |
-| 校验 | zod | 所有外部输入必须真实映射 HTTP 错误状态 |
-| RAG | Vercel AI SDK / LangChain.js 能力边界 | 以当前实际实现和 specs 为准，不引入第二套平台 |
+| 层次      | 当前选型                              | 约束                                                         |
+| --------- | ------------------------------------- | ------------------------------------------------------------ |
+| 前端 UI   | Vue3 + `vue-element-plus-x@1.3.98`    | `Bubble`、`BubbleList`、`Sender` 是唯一聊天 UI 主线          |
+| Transport | `@ai-sdk/vue@1.2.12`                  | 仅由业务使用方 `useKnowledgeChat` 管理 transport/state/abort |
+| Markdown  | `markstream-vue@1.0.8`                | 助手 Markdown 唯一渲染主线                                   |
+| 代码高亮  | `@shikijs/stream@4.4.1`（受控候选）   | 未完成真实兼容验证前不得接入或宣称兼容                       |
+| API       | 独立 Nitro v3                         | 不引入 Nuxt API；路由从 `nitro/h3` 导入                      |
+| 数据      | Neon + drizzle + pgvector             | 正式环境唯一向量持久化主线                                   |
+| 校验      | zod                                   | 所有外部输入必须真实映射 HTTP 错误状态                       |
+| RAG       | Vercel AI SDK / LangChain.js 能力边界 | 以当前实际实现和 specs 为准，不引入第二套平台                |
 
 Nitro 使用 `nitro` v3，`compatibilityDate` 固定为 `2024-09-19`；不安装 `nitropack` 或独立 `h3` 作为二期 API 入口。
 
@@ -72,10 +72,10 @@ Nitro 使用 `nitro` v3，`compatibilityDate` 固定为 `2024-09-19`；不安装
 
 ```ts
 interface ChunkConfig {
-  targetTokens: number;      // 500
-  overlapTokens: number;     // 50
-  tableRowsPerChunk: number; // 12
-  profileVersion: string;    // "markdown-structure-v1"
+	targetTokens: number; // 500
+	overlapTokens: number; // 50
+	tableRowsPerChunk: number; // 12
+	profileVersion: string; // "markdown-structure-v1"
 }
 ```
 
@@ -99,8 +99,8 @@ headingAnchor = "rag-heading-" + base64url(sha256(input))
 
 ```ts
 function createSourceUrl(sourcePath: string): string {
-  const relativePath = sourcePath.replace(/^docs\//, "").replace(/\.md$/, ".html");
-  return `/${relativePath.split("/").map(encodeURIComponent).join("/")}`;
+	const relativePath = sourcePath.replace(/^docs\//, "").replace(/\.md$/, ".html");
+	return `/${relativePath.split("/").map(encodeURIComponent).join("/")}`;
 }
 ```
 
@@ -120,18 +120,33 @@ VitePress 构建期必须使用与入库相同的 AST/标题路径/序号算法�
 
 ### 3.7 Embedding
 
-首期固定：
+当前二期固定：
 
 ```ts
 {
-  provider: "openai",
-  model: "text-embedding-3-small",
-  dimension: 1536,
+  provider: "cloudflare-workers-ai",
+  model: "@cf/baai/bge-m3",
+  dimension: 1024,
   batchSize: 100
 }
 ```
 
-Cohere 或本地模型仅作为后续评估候选。模型/维度变化意味着 schema 迁移与全量重嵌入；禁止不同维度混写同一 `chunks.embedding`。
+Cloudflare Workers AI 是当前正式候选，不再把 OpenAI `text-embedding-3-small` 作为二期首期实现。Nitro 通过 Cloudflare OpenAI-compatible endpoint 调用 embedding，chat provider 继续独立配置。模型/维度变化意味着 schema 迁移与全量重嵌入；禁止不同维度混写同一 `chunks.embedding`。
+
+Cloudflare embedding provider 的接口边界固定为：
+
+```plain
+POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/embeddings
+Authorization: Bearer ${NITRO_CLOUDFLARE_API_TOKEN}
+Content-Type: application/json
+
+{
+  "model": "@cf/baai/bge-m3",
+  "input": ["chunk-1", "chunk-2"]
+}
+```
+
+provider MUST 将返回结果按 `data[].embedding` 映射为与输入同序的 `number[][]`，并在进入同步或检索前校验每个向量为 1024 个有限数值。请求 MUST NOT 依赖 `dimensions`/`output_dimensionality` 参数；BGE-M3 的 1024 维是固定模型输出。Vercel Nitro 只读取显式注入的 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN` 与 `NITRO_EMBEDDING_MODEL`，不得把凭据写入仓库。
 
 ### 3.8 Neon / pgvector 资源契约
 
@@ -152,7 +167,9 @@ CREATE INDEX chunks_embedding_hnsw_cosine_idx
   ON chunks USING hnsw (embedding vector_cosine_ops);
 ```
 
-`chunks.embedding` 固定 `vector(1536)`；检索使用余弦距离 `<=>`。HNSW 是近似检索，必须用固定评估集与无索引精确检索对比后才能作为生产默认。
+`chunks.embedding` 固定 `vector(1024)`；检索使用余弦距离 `<=>`。HNSW 是近似检索，必须用固定评估集与无索引精确检索对比后才能作为生产默认。
+
+维度迁移顺序固定为：先只读核对 `chunks` 行数与现有向量维度；确认当前 development 库无可保留向量后，删除 HNSW 索引、将列改为 `vector(1024)`、重建余弦 HNSW 索引，再执行 1024 维全量重嵌入。若已经存在 1536 维数据，禁止直接 cast 覆盖，必须先在受控事务/影子列完成新向量生成与校验，再原子替换。
 
 ### 3.9 Neon CLI 与安全记录
 
@@ -199,7 +216,7 @@ score(d) = Σ 1 / (k + rank_i(d)), k = 60
 - 500 / 50 / topK 10
 - 800 / 100 / topK 15
 
-默认基线为 chunk 500、overlap 50、topK 10、rerankTopK 5、scoreThreshold 0.5、embedding 1536/batch 100。最终参数必须由真实索引评估结果选择，不能把历史示例当生产结论。
+默认基线为 chunk 500、overlap 50、topK 10、rerankTopK 5、scoreThreshold 0.5、embedding 1024/batch 100。最终参数必须由真实索引评估结果选择，不能把历史示例当生产结论。
 
 ### 3.13 Nitro API
 
@@ -239,12 +256,12 @@ GET  /v1/knowledge/sync-runs
 
 ### 3.16 学习路径与里程碑
 
-| 阶段 | 内容 |
-| --- | --- |
+| 阶段     | 内容                                                          |
+| -------- | ------------------------------------------------------------- |
 | RAG 基础 | Chunk、Chroma add/query/delete、首个 embedding、最小 RAG demo |
-| 检索质量 | PostgreSQL FTS、向量检索、RRF、可选 ReRank、固定评估集 |
-| 工程落地 | Neon/drizzle/pgvector、Nitro、同步、流式问答、来源、zod |
-| 展示优化 | 参数调优、成本/批量、README、技术说明、演示视频 |
+| 检索质量 | PostgreSQL FTS、向量检索、RRF、可选 ReRank、固定评估集        |
+| 工程落地 | Neon/drizzle/pgvector、Nitro、同步、流式问答、来源、zod       |
+| 展示优化 | 参数调优、成本/批量、README、技术说明、演示视频               |
 
 里程碑：
 
@@ -278,13 +295,13 @@ README 至少包含功能、技术栈、架构、运行/验证方式、演示截
 
 ## 4. Risks / Trade-offs
 
-| 风险 | 处理 |
-| --- | --- |
-| 检索质量不足 | 用固定评估集比较 chunk/topK/lexical/vector/hybrid/HNSW |
-| embedding 成本 | 小模型 + batch；未变化文档跳过重嵌入 |
-| 流式渲染性能 | 使用成熟 Markdown renderer，避免双动画；长内容专项测试 |
-| 向量库反复选型 | Chroma 仅学习；正式统一 Neon/pgvector |
-| 作品缺乏亮点 | 突出 Hybrid Search、稳定来源、流式停止、真实工程证据 |
+| 风险                   | 处理                                                     |
+| ---------------------- | -------------------------------------------------------- |
+| 检索质量不足           | 用固定评估集比较 chunk/topK/lexical/vector/hybrid/HNSW   |
+| embedding 成本         | 小模型 + batch；未变化文档跳过重嵌入                     |
+| 流式渲染性能           | 使用成熟 Markdown renderer，避免双动画；长内容专项测试   |
+| 向量库反复选型         | Chroma 仅学习；正式统一 Neon/pgvector                    |
+| 作品缺乏亮点           | 突出 Hybrid Search、稳定来源、流式停止、真实工程证据     |
 | 云端状态与本地证据混淆 | 每个外部能力必须有自身真实证据，本地 build/test 不能替代 |
 
 必须持续保留的事故约束：

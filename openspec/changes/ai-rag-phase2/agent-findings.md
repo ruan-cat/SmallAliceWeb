@@ -68,6 +68,9 @@
 ## 8. 2026-08-19 Embedding 供应商调研
 
 - **resolved**：当前 chat 渠道仍是 `api.code-tab.com`；其模型列表包含 GPT 文本模型但没有 embedding 模型。`gpt-5.4-mini` 已通过单条文本生成 smoke；Vercel CLI 只负责读取环境变量，不是模型能力目录。
-- **active**：2.1.2 的 `vector(1536)` 不能由 GPT 文本模型替代。embedding 必须返回有限的 1536 维数字向量，才能写入 Neon `chunks.embedding` 并执行 `<=>` 检索；当前渠道不满足该接口契约。
-- **candidate**：Google `gemini-embedding-001` 官方 API 支持 `output_dimensionality`，可评估 1536 维；Google 当前价格页标注文本 embedding 有 Free Tier，但免费层数据使用条款需单独确认。Cloudflare Workers AI `bge-m3` 提供 OpenAI-compatible `/v1/embeddings` 且有每日免费 Neurons 配额；Hugging Face Feature Extraction 有少量免费额度。三者均尚未取得本项目凭据或真实 smoke 证据。
-- **next**：取得一个明确支持 1536 维 embedding 的 provider/key/model 后，先执行 1 条维度 smoke，再执行最多 100 条真实同步；未验证维度前禁止 migration 重建或写入向量。
+- **resolved**：原 1536 维 embedding 契约已按用户决策废弃；不再评估 GPT 文本模型替代 embedding，也不再把 Gemini 1536 维作为当前主线。
+- **active**：当前正式 embedding 契约为 Cloudflare Workers AI `@cf/baai/bge-m3` 固定 1024 维；Nitro 通过 `POST /client/v4/accounts/{account_id}/ai/v1/embeddings` 的 OpenAI-compatible 接口调用，body 使用 `model` + `input`，不得发送 `dimensions`/`output_dimensionality`。
+- **resolved**：development Neon 只读核对确认 `chunks=0`、`documents=0`、原列为 `vector(1536)` 且 HNSW cosine index 存在；随后执行 0002 并复核为 `vector(1024)` 与同名 HNSW cosine index，未发生数据重嵌入或混写。
+- **resolved**：`NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_EMBEDDING_MODEL=@cf/baai/bge-m3` 与 `NITRO_CLOUDFLARE_API_TOKEN` 已进入 Vercel 项目 `smallalice-docs-ai-nitro-api`；前两项覆盖 Production、Preview、Development，token 覆盖 Production、Preview 的 Sensitive 与 Development 的 Non-sensitive。
+- **active**：Cloudflare 真实 embedding smoke 尚未执行；虽然 Vercel env 已就位，但仍不能宣称真实 provider 已闭环。
+- **next**：先完成 tasks §2.1.0b 的真实 Cloudflare 单条 smoke，再执行 5–10 条批量 smoke 与最多 100 条真实同步；未验证维度和 migration 状态前禁止写入正式向量。

@@ -58,7 +58,7 @@
 
 ### Requirement: 3. 环境变量接线
 
-应用运行 MUST 使用 Vercel 集成提供的 pooled URL，Drizzle migration MUST 使用非 pooled URL（通常为 POSTGRES*URL_NON_POOLING）；缺少非 pooled URL 时 MUST NOT 执行迁移；7 个 NITRO*\* 环境变量 MUST 跨 production、preview 与 development 三环境接线；Nitro API 连接数据库前 MUST 先执行 "vercel env pull .env.local --environment=development"；Vercel Project 使用自定义 pnpm install 时，三环境 MUST 维护 ENABLE_EXPERIMENTAL_COREPACK=1。
+应用运行 MUST 使用 Vercel 集成提供的 pooled URL，Drizzle migration MUST 使用非 pooled URL（通常为 POSTGRES*URL*NON_POOLING）；缺少非 pooled URL 时 MUST NOT 执行迁移；既有 NITRO\*\* 私有环境变量与 Cloudflare embedding 所需的 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL` MUST 跨 production、preview 与 development 三环境接线；Nitro API 连接数据库前 MUST 先执行 "vercel env pull .env.local --environment=development"；Vercel Project 使用自定义 pnpm install 时，三环境 MUST 维护 ENABLE_EXPERIMENTAL_COREPACK=1。
 
 #### Scenario: pooled 与非 pooled URL 分工
 
@@ -67,10 +67,10 @@
 - **AND** 执行 Drizzle migration 时 MUST 使用非 pooled URL（通常为 POSTGRES_URL_NON_POOLING）
 - **AND** 缺少非 pooled URL 时 MUST NOT 执行迁移
 
-#### Scenario: NITRO\_\* 环境变量三环境接线
+#### Scenario: RAG 环境变量三环境接线
 
 - **WHEN** 配置 Nitro API 环境变量
-- **THEN** 7 个 NITRO\_\* 环境变量 MUST 在 production、preview 与 development 三环境全部接线
+- **THEN** 既有 NITRO\_\* 私有变量与 Cloudflare embedding 的 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL` MUST 在 production、preview 与 development 三环境全部接线
 
 #### Scenario: 先拉取环境变量再连接数据库
 
@@ -84,7 +84,31 @@
 - **THEN** production、preview 与 development 三环境 MUST 维护 ENABLE_EXPERIMENTAL_COREPACK=1
 - **AND** 缺失该开关导致 ERR_PNPM_META_FETCH_FAIL 或 ERR_INVALID_THIS 时，不得将远程构建记录为成功
 
-### Requirement: 4. 官方 neon CLI 强制
+### Requirement: 4. Cloudflare embedding provider 接线
+
+Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/embeddings` endpoint 使用 Cloudflare Workers AI `@cf/baai/bge-m3` 作为 embedding 模型；请求 MUST 包含 `model` 与 `input`，MUST NOT 依赖不支持的 dimensions 参数；provider MUST 校验每个返回的 `data[].embedding` 都按输入顺序包含 1024 个有限数值。所有运行真实 RAG 的 Vercel 环境 MUST 以服务端环境变量配置 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN` 与 `NITRO_EMBEDDING_MODEL`；凭据 MUST NOT 暴露到浏览器代码或提交文件。
+
+#### Scenario: Cloudflare embedding 请求形态
+
+- **WHEN** Nitro 创建文档向量或查询向量
+- **THEN** 系统 MUST 调用 Cloudflare OpenAI-compatible embeddings endpoint
+- **AND** 请求 MUST 使用 `@cf/baai/bge-m3`（或显式配置的等价模型）与 `input` 文本
+- **AND** 请求 MUST NOT 发送 `dimensions` 或 `output_dimensionality` 来尝试改变 BGE-M3 输出
+
+#### Scenario: Cloudflare embedding 响应校验
+
+- **WHEN** Cloudflare 返回 embedding 数据
+- **THEN** Nitro MUST 保持输入顺序
+- **AND** 每个向量 MUST 正好包含 1024 个有限数值
+- **AND** 维度、数量或非有限数值不匹配 MUST 使同步或查询失败，MUST NOT 写入部分数据
+
+#### Scenario: Cloudflare 凭据保持服务端私有
+
+- **WHEN** Vercel 运行 Nitro API
+- **THEN** API token MUST 仅由服务端 provider 装配读取
+- **AND** token MUST NOT 出现在浏览器响应、bundle、日志、报告或仓库文件中
+
+### Requirement: 5. 官方 neon CLI 强制
 
 项目执行入口 MUST 只调用官方 neon CLI，MUST NOT 使用 neonctl、其包装器或以 npx 临时安装的同名替代命令（Windows 已复现 neonctl@2.30.1 的 CPU 自旋事故，包括 --help 与 --version 等只读检查均属禁止路径）；scripts/guard-neon-cli.ts MUST 作为后续数据库脚本的前置步骤，仅 Windows 扫描仓库可执行文件并排除依赖目录、构建产物与守卫自身，Linux、macOS 与 Vercel 构建环境直接成功；每次实际云端操作 MUST 留下不含密钥的执行记录。
 
@@ -108,7 +132,7 @@
 - **THEN** MUST 留下执行记录（执行时间、已确认认证状态、工作目录、脱敏命令模板、目标 project/branch/database、退出码与验证结果）
 - **AND** 记录 MUST NOT 包含连接串、密码或 token
 
-### Requirement: 5. 生产同步触发与构建输入
+### Requirement: 6. 生产同步触发与构建输入
 
 生产环境在上游 DOCX 转换写入 Markdown 后 MUST 调用携带 NITRO_KNOWLEDGE_SYNC_TOKEN 的 POST /v1/knowledge/sync；Vercel Cron 调用 GET /v1/knowledge/sync 时由平台注入 Authorization: Bearer $CRON_SECRET；鉴权 MUST 兼容这两种受控凭据；生产 API 构建 MUST 显式把 docs/docx 纳入函数可读的部署输入，MUST NOT 假定 Vercel 运行目录保留完整 Git 工作区；Nitro 的 Vercel 兼容日期 MUST 锁定为 2024-09-19。
 
@@ -134,7 +158,7 @@
 - **WHEN** 配置 Nitro
 - **THEN** compatibilityDate MUST 锁定为 2024-09-19
 
-### Requirement: 6. 生产域名
+### Requirement: 7. 生产域名
 
 Nitro API 的生产域名 MUST 固定为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/，其下 MUST 提供 /v1/chat、/v1/search、/v1/knowledge/sync 与 /v1/knowledge/sync-runs 路由前缀。
 

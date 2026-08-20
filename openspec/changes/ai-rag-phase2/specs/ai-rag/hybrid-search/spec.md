@@ -23,7 +23,7 @@ Hybrid Search 混合检索能力：基于 PostgreSQL 全文检索与 pgvector �
 
 ### Requirement: 2. 向量检索
 
-系统 MUST 提供基于 pgvector 余弦距离（`<=>`）的向量检索，并按相似度返回 Top-K 结果；查询向量维度 MUST 校验为 1536，与首期 embedding 模型维度一致；embedding 模型或维度变更 MUST 作为一次迁移与全量重嵌入处理，MUST NOT 混写同一 `embedding` 列。
+系统 MUST 提供基于 pgvector 余弦距离（`<=>`）的向量检索，并按相似度返回 Top-K 结果；查询向量维度 MUST 校验为 1024，与当前 Cloudflare Workers AI `@cf/baai/bge-m3` embedding 模型维度一致；embedding 模型或维度变更 MUST 作为一次迁移与全量重嵌入处理，MUST NOT 混写同一 `embedding` 列。
 
 #### Scenario: 向量检索按余弦相似度返回 Top-K
 
@@ -33,7 +33,7 @@ Hybrid Search 混合检索能力：基于 PostgreSQL 全文检索与 pgvector �
 
 #### Scenario: 维度校验失败报错
 
-- **WHEN** 传入向量的维度不等于 1536
+- **WHEN** 传入向量的维度不等于 1024
 - **THEN** 系统 MUST 拒绝该查询并报错，不得静默接受
 
 #### Scenario: 维度变更不混写同一列

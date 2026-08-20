@@ -38,7 +38,7 @@
   - 路由：chat/search/sync POST/sync GET/sync-runs GET。
   - 未装配统一 `503 RAG_NOT_CONFIGURED`，禁止空结果/accepted 假成功。
   - zod 400、鉴权 401/403、并发同步 409、未知 500；HTTP 状态必须真实。
-  - PostgreSQL lexical/vector SQL 采用 executor 注入，离线不建真实连接；embedding 维度校验 1536。
+  - PostgreSQL lexical/vector SQL 采用 executor 注入，离线不建真实连接；embedding 维度校验 1024。
   - 固定 10 题 lexical/vector/hybrid 评估器已存在，但未以真实索引运行。
   - `knowledge:prepare:dry-run` 只扫描/切分并输出 JSON，历史实测 271 Markdown / 5534 chunks / `failedFiles: []`，不生成 embedding、不写库。
   - 历史证据基线：`ai-rag-api` 15 测试文件 / 49 用例、typecheck、`build:vercel` 通过。2026-08-10 的 16/51 只作点时快照，未 fresh rerun 前不得覆盖本基线。
@@ -83,6 +83,18 @@
 
 ### 2.1 P0：真实数据链路与生产装配
 
+#### 2.1.0 1024 维契约迁移试点
+
+- [x] 2.1.0a [code/db/test] `packages/ai-rag-api/server/db/schema.ts`, `packages/ai-rag-api/drizzle/**`, `packages/ai-rag-api/server/search/postgres-search.ts` - 将 embedding schema、pgvector 检索常量与校验从 1536 切换为 1024；migration 必须删除并重建 HNSW 余弦索引，执行前只读核对 `chunks` 行数与当前向量维度；禁止新旧向量混写。
+  - 若 development `chunks` 为空，可直接执行受控列类型迁移；若已存在 1536 维数据，必须先影子生成 1024 维向量并原子替换，不得直接截断或 cast 覆盖。
+  - 完成证据：migration 文件、数据库 schema 核对、HNSW 索引核对、1024 维检索 SQL smoke。
+  - 2026-08-20 证据：`pnpm run neon:guard` 通过；development 数据库迁移前 `chunks_count=0`、`documents_count=0`、`embedding_type=vector(1536)`、存在 `chunks_embedding_hnsw_cosine_idx`；已应用 `0002_switch_embedding_to_bge_m3_1024.sql`；迁移后核对为 `chunks_count=0`、`documents_count=0`、`embedding_type=vector(1024)`，HNSW 余弦索引仍存在；`pnpm --filter @ruan-cat-drill-doc/ai-rag-api test` 覆盖 1024 维检索 SQL 与 schema migration smoke。
+
+- [ ] 2.1.0b [code/test] `packages/ai-rag-api/server/providers/**`, `packages/ai-rag-api/server/plugins/rag.ts`, `packages/ai-rag-api/src/runtime-config.ts` - 接入 Cloudflare Workers AI OpenAI-compatible embedding provider，固定 endpoint、model、批量 100、输入顺序和 1024 维有限数值校验。
+  - 请求使用 `POST /client/v4/accounts/{account_id}/ai/v1/embeddings`，body 使用 `model` + `input`；不得发送 `dimensions`/`output_dimensionality` 伪造维度能力。
+  - 凭据仅允许通过显式 runtime config 注入 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL`；不得 import 时建立连接或输出 token。
+  - 完成证据：provider 单元测试、真实单条 Cloudflare smoke（脱敏记录维度/数量/有限性）、运行时装配测试。
+
 - [ ] 2.1.1 [code/infra/test] `packages/ai-rag-api/**` - 装配真实 PostgreSQL lexical + pgvector provider
   - 进入条件：用户明确允许数据库操作；安全获得 Vercel development 环境变量；用户已完成官方 `neon` CLI 安装/认证。
   - 执行门禁：先 `pnpm run neon:guard`；禁止 `neonctl`、包装器或 `npx` 临时替代。
@@ -93,9 +105,10 @@
   - pgvector 采用 `<=>` cosine；验证 vector extension 和 HNSW index；HNSW 需与精确检索对比。
   - 完成证据：脱敏 migration/查询记录、provider 集成测试、真实目标数据库 lexical/vector 查询结果。
 
-- [ ] 2.1.2 [code/db/test] `packages/ai-rag-api/**` - 真实 embedding、增量同步、单文档事务、advisory lock、同步记录
+- [ ] 2.1.2 [code/db/test] `packages/ai-rag-api/**` - 使用 Cloudflare `@cf/baai/bge-m3` 真实 embedding、增量同步、单文档事务、advisory lock、同步记录
   - 进入条件：真实 database provider + 可用 embedding 凭据。
-  - 首期 embedding：OpenAI `text-embedding-3-small` / 1536 / batch 100。
+  - 当前 embedding：Cloudflare Workers AI `@cf/baai/bge-m3` / 1024 / batch 100；Nitro 调用 OpenAI-compatible `/v1/embeddings`，不使用 Cloudflare Worker binding 作为 Vercel Nitro 的隐式依赖。
+  - 真实同步前必须完成 1 条维度 smoke 与 5–10 条批量 smoke；所有向量必须是 1024 维有限数值。
   - 未变化文件必须跳过重嵌入；变化文件先构建完整新版本，再单文档事务替换；失败保留旧版本。
   - 只有完整扫描成功后才删除缺失来源；扫描失败时禁止删除。
   - PostgreSQL advisory lock 拒绝并发同步，冲突返回 409。
@@ -132,7 +145,7 @@
 - [ ] 2.2.3 [eval/docs] 固定题集真实评估与参数调优
   - 依赖 2.1.1–2.1.3。
   - lexical/vector/hybrid 对同一固定题集运行；记录命中率、关键词覆盖率、排名与检索 ID。
-  - 比较 300/30/5、500/50/10、800/100/15 等参数集；HNSW 与精确向量检索对比。
+  - 比较 300/30/5、500/50/10、800/100/15 等参数集；HNSW 与精确向量检索对比；记录 Cloudflare BGE-M3 1024 维模型标识。
   - 评估结果必须落成可复核文档，不得只保留终端口头结论。
 
 - [ ] 2.2.4 [build/deploy/e2e] 完整 docs build 与 Git 集成部署回归
@@ -184,20 +197,20 @@
 
 ## 5. 旧计划映射
 
-| 旧计划区域 | 当前任务 |
-| --- | --- |
-| 1.1 Chroma 环境 | 3.1 |
-| 1.2 Markdown Chunk | 1.1 |
-| 1.3 RAG demo | 3.2 / 2.1 |
-| 2.1 Neon/pgvector/FTS | 1.5 + 2.1.1 |
-| 2.2 Hybrid Search/RRF | 1.1/1.2 + 2.1.3 |
-| 2.3 评估集 | 1.2 + 2.2.3 |
-| 3.1 Nitro API | 1.2/1.6 + 2.1/2.2.2 |
-| 3.2 Chat UI/Markdown | 1.3 + 2.2.1 |
-| 3.3 来源溯源 | 1.4 + 2.1.4 |
-| 4.1 参数调优 | 2.2.3 |
-| 4.2 README/视频 | 2.3 |
-| 旧 Task 5 runtime assembly | 1.6 |
-| 旧 §5 高频状态台账 | `history/*.superpowers.md`（审计）+ `agent-progress.md`（当前 checkpoint） |
+| 旧计划区域                 | 当前任务                                                                   |
+| -------------------------- | -------------------------------------------------------------------------- |
+| 1.1 Chroma 环境            | 3.1                                                                        |
+| 1.2 Markdown Chunk         | 1.1                                                                        |
+| 1.3 RAG demo               | 3.2 / 2.1                                                                  |
+| 2.1 Neon/pgvector/FTS      | 1.5 + 2.1.1                                                                |
+| 2.2 Hybrid Search/RRF      | 1.1/1.2 + 2.1.3                                                            |
+| 2.3 评估集                 | 1.2 + 2.2.3                                                                |
+| 3.1 Nitro API              | 1.2/1.6 + 2.1/2.2.2                                                        |
+| 3.2 Chat UI/Markdown       | 1.3 + 2.2.1                                                                |
+| 3.3 来源溯源               | 1.4 + 2.1.4                                                                |
+| 4.1 参数调优               | 2.2.3                                                                      |
+| 4.2 README/视频            | 2.3                                                                        |
+| 旧 Task 5 runtime assembly | 1.6                                                                        |
+| 旧 §5 高频状态台账         | `history/*.superpowers.md`（审计）+ `agent-progress.md`（当前 checkpoint） |
 
 完整逐类吸收与纠偏见 `history/2026-08-16-superpowers-migration.md`。

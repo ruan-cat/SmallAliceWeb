@@ -104,3 +104,13 @@
 - **WHEN** provider 初始化抛出错误
 - **THEN** 系统 MUST 将该错误映射为 HTTP 500
 - **AND** MUST NOT 将其转换为 HTTP 200 假成功
+
+### Requirement: 7. Cloudflare embedding provider
+
+Nitro runtime MUST 为 `/v1/search` 查询向量与知识同步暴露同一个显式 embedding provider。provider MUST 使用 Cloudflare Workers AI 的 OpenAI-compatible `/v1/embeddings` endpoint 与 `@cf/baai/bge-m3`；MUST 按输入顺序映射 `data[].embedding`；当任一返回向量不是 1024 维有限数值时 MUST 拒绝响应。provider MUST 通过注入配置初始化，MUST NOT 在模块 import 时读取凭据。
+
+#### Scenario: 检索与同步共享同一 embedding 契约
+
+- **WHEN** `/v1/search` 创建查询向量，或同步流程创建 chunk 向量
+- **THEN** 两类操作 MUST 使用同一个已配置 Cloudflare 模型与 1024 维校验
+- **AND** provider 失败 MUST 作为真实错误暴露，MUST NOT 产生空结果或 accepted 假成功
