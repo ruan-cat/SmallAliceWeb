@@ -1,12 +1,3 @@
-> **2026-08-19 后续纠偏 / 阅读前必看**
->
-> 本文件保留 2026-08-01 当时的事故证据与调查结论，但其中两项泛化建议已经被 SmallAliceWeb 后续 E1～E7 实验收窄：
->
-> 1. `8 GiB` 是当时的症状控制组，不是当前永久构建基线；后续已测得 4608 MiB 失败、5120/6144 MiB 成功，5120 MiB 为当前最低已测试通过档。
-> 2. 本文对 `eams-component-lib` 所写“保留 SSR noExternal、精准 inline”只属于该仓库、该历史故障的 narrow workaround，**不得复制成 SmallAliceWeb 的依赖族枚举策略**。SmallAliceWeb 已实测：删除 blanket `vite.ssr.noExternal` / `nitro.externals.inline` 后 server graph 约缩小 39%，而仅 inline `element-plus` 就会使 5120 MiB production build 失败。
->
-> 当前权威规则见：`reports/2026-8-16-fix-shadcn-docs-nuxt/DEPENDENCY-EXTERNALIZATION-POLICY.md`；详细勘误见：`reports/2026-08-01-nuxt-content-monorepo-build-fragility-incident-ERRATA-2026-08-19.md`。
-
 # 2026-08-01 Nuxt Content 组件库文档站依赖与构建脆弱性事故报告
 
 ## 1. 结论摘要
