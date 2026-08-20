@@ -373,7 +373,7 @@ skills add https://github.com/mattpocock/skills `
 
 ---
 
-## 005 <!-- TODO: 作为交互优化级别的项目 --> 网站 title 标题的动态切换
+## 005 <!-- 2026-8-20 已完成 作为交互优化级别的项目；codex正在做 --> 网站 title 标题的动态切换
 
 我要求你实现 AI 应用标题的动态切换功能，我们完成一轮对话沟通后，标题应该立刻切换，并且去提示用户尽快处理。
 
@@ -382,6 +382,19 @@ skills add https://github.com/mattpocock/skills `
 2. 浏览器标题应该立刻切换，以便完成通知用户的效果。
    - 应该使用 vueuse 的工具函数，来实现你的浏览器标题切换功能。
    - 在你的 vitepress 应用中，你应该注意看清楚在哪里去实现这个功能，你可能是在 `packages\ai-vitepress-plugins\package.json` 子包内完成这个浏览器标题切换功能。注意你是在 vitepress 应用内完成这个功能。我给的建议可能不对，你做好调研和思考后再开始做。核心查询点是： 在 vitepress 应用内使用 vueuse 的 useTitle 函数完成应用的标题切换。
+
+---
+
+我们目前没有多轮并发对话的场景，我们只有一个单独的对话框。未来我可能会采用多个并行对话的形式，但是目前我在做 MVP，暂时不考虑多并发对话的情况。
+所以我们目前不可能有超过 1 的数字计数。不会有错过对话漏回复的情况；
+
+---
+
+请注意，我现在没有完成 openspec\changes\ai-rag-phase2 要求的 embeddings 任务，这会不会影响你的自主浏览器测试？
+
+---
+
+/goal 完成 `docs\superpowers\specs\2026-08-20-ai-chat-completion-attention-design.md` 和 `docs\superpowers\plans\2026-08-20-ai-chat-completion-attention-plan.md` 的任务。
 
 ## 006 <!-- TODO: codex 正在做 --> 持续推进二期 AI 项目改造
 
@@ -602,8 +615,6 @@ Aborted (core dumped)
 我们在 `packages/ai-vue-doc/nuxt.config.ts` 内大规模的删改掉这些依赖识别配置，请你补充专门的文档，说明清楚为什么你要选择删除这些配置，以及这些配置为什么不能有助于解决问题。在你处理这个配置时，你看看本项目还有哪些文档曾经说明清楚要这些罗列具体的排除依赖项的，由你来纠偏。并且说明清楚为什么在解决这种复杂依赖问题上，为什么不能按照旧的 ssr.noExternal 和 nitro.externals.inline 罗列依赖项的方式来解决问题？
 
 ---
-
-<!-- TODO: -->
 
 `packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs` 的设计本质上是你设计的临时脚本吧。这本质上是一种错误收集和排查校验的经验教训，你记录好这种报错收集的经验技巧了么？
 你在 `packages/ai-vue-doc/package.json` 内有适当的回退对 `run-nuxt-with-memory.mjs` 的使用么？
