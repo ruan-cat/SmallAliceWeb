@@ -50,6 +50,10 @@ const userConfig = setUserConfig(
 
 			nav: [
 				{
+					text: "关于本站",
+					link: "/about/",
+				},
+				{
 					text: "仓库地址",
 					link: "https://github.com/ruan-cat/SmallAliceWeb",
 				},
