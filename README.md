@@ -49,6 +49,8 @@
 
 仓库根 `vercel.json` 已于 2026-08-07 删除（备份在 QoderWork 工作区）。原因：`vercel.json` 会覆盖云端 Project Settings，在同一仓库绑定多个 Vercel 项目时会造成跨项目配置污染。原 `vercel.json` 中的文档站配置已迁移到 `small-alice-web-odse` 的云端 Project Settings，两者值完全一致。
 
+`vercel.old.json` 是更早期 VuePress 的遗留配置，仍指向 `vuepress-vite build docs` 与 `docs/.vuepress/dist`。当前文档站已经使用 VitePress，其构建入口和输出目录分别为 `pnpm run build` 与 `docs/.vitepress/dist`；因此移除该旧文件属于清理过期配置，不会改变当前两个 Vercel 项目的云端 Project Settings，也不得将其恢复为有效部署配置。
+
 ### 4.2 CLI 单槽绑定纪律
 
 `.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
