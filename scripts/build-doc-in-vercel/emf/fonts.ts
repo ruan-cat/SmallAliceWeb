@@ -27,20 +27,39 @@ const fontsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "assets
  * emf-converter 契约要求键全部小写（内部以 `face.toLowerCase().trim()` 查表），
  * 因此中文键「宋体」等不做小写变换（无大小写概念），英文键必须小写。
  */
-export const fontFamilyMap: Record<string, string> = {
+const explicitFontFamilyMap: Record<string, string> = {
 	simsun: REGISTERED_FONT_ALIAS,
 	宋体: REGISTERED_FONT_ALIAS,
 	nsimsun: REGISTERED_FONT_ALIAS,
 	新宋体: REGISTERED_FONT_ALIAS,
+	黑体: REGISTERED_FONT_ALIAS,
 	calibri: REGISTERED_FONT_ALIAS,
 	cambria: REGISTERED_FONT_ALIAS,
 	"courier new": REGISTERED_FONT_ALIAS,
 	arial: REGISTERED_FONT_ALIAS,
+	tahoma: REGISTERED_FONT_ALIAS,
+	"franklin gothic book": REGISTERED_FONT_ALIAS,
+	"segoe ui": REGISTERED_FONT_ALIAS,
 	"microsoft yahei": REGISTERED_FONT_ALIAS,
 	微软雅黑: REGISTERED_FONT_ALIAS,
 	kaiti: REGISTERED_FONT_ALIAS,
 	楷体: REGISTERED_FONT_ALIAS,
 };
+
+/**
+ * EMF 内部字体名 → 注册字体别名的映射表。
+ *
+ * 除了保留实测字体名的显式条目，未知的字符串键也会解析到随包中文字体，
+ * 避免 Vercel 容器把未映射的 faceName 交给缺少 CJK 字形的系统回退字体。
+ */
+export const fontFamilyMap: Record<string, string> = new Proxy(explicitFontFamilyMap, {
+	get(target, property, receiver) {
+		if (typeof property === "string" && !(property in target)) {
+			return REGISTERED_FONT_ALIAS;
+		}
+		return Reflect.get(target, property, receiver);
+	},
+});
 
 /**
  * 注册随包携带的中文字体。
