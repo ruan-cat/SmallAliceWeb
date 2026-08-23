@@ -771,8 +771,6 @@ Aborted (core dumped)
 
 ---
 
-<!-- TODO: -->
-
 更多的抽样检查情况如下：
 
 - `drill.ruan-cat.com/docx/插件详细手册/21.管理器/关于全局存储.html`
@@ -782,3 +780,18 @@ Aborted (core dumped)
 ---
 
 给你安排临时任务，在 docs\about 目录内，将你的 emf 特殊处理方式和缘由，都用 markdown 写清楚。我希望看到本站点的其他人，能够知道本站点是如何处理 emf 的，以及为什么要处理 `patches\emf-converter@2.0.2.patch` 。
+
+---
+
+我们加快一下本地验证的速度，你按照这样的方式完成本地验证：
+让 `@ruan-cat-temp/build-doc-in-vercel` 子包完成本地 emf 矢量图的转换，转换好了你在本地完成视觉验证。对大多数矢量图完成验证后，再开始 push origin main，完成下一步的生产环境视觉验证。多使用本地 window 的 emf 转换流程，加快你的验证和 debug 效率。
+
+---
+
+你本地 dev 服务所找到的 url 很差，总是找不对，总是 404。这些才是你要访问并完成本地验证的 html 页面：
+
+- `/docx/插件详细手册/19.控件/关于技能窗口块元素.html`
+- `/docx/插件详细手册/2.战斗/关于战斗活动镜头.html`
+- `/docx/插件详细手册/20.标题/关于全自定义标题界面.html`
+- `/docx/插件详细手册/21.管理器/关于素材库.html`
+- `/docx/插件详细手册/21.管理器/数据存储的载体.html`
