@@ -27,10 +27,15 @@
 
 6. **结论**：第二批质量回归包含三个独立根因：`offDx` 被整串绘制忽略、mapping-mode 文本未减去 `rclBounds.left/top`、`ETO_GLYPH_INDEX` 被误当 Unicode。
    **证据**：真实样本 RED：5→17 次 `fillText`、X/Y 偏差 +25/+46、黑体 glyph id 266 渲染为 `Ċ`；Windows GDI+ 原图与 patched PNG 对照。
-   **状态**：active。
-   **后续动作**：以 pnpm patch 消费逐字符 advance、统一裁剪原点和 source glyph map；必须完成 Vercel/Chrome 五页复测后才标记 resolved。
+   **状态**：resolved。
+   **后续动作**：后续新 glyph-index 样本仍须先反查 source font/glyph id，再扩展受版本控制映射；不得猜测 Unicode。
 
 7. **风险**：补丁提交 `e62d11b` 的首个 CI 被后续用户提交自动取消；替代 CI 已成功，但 `dev` 还包含用户提交 `8cd6fc7` 与未提交工作区改动。
    **证据**：GitHub Actions `32642386364=cancelled`、`32642480630=success`；`git status` 和 `git log`。
+   **状态**：resolved。
+   **后续动作**：用户授权后，工作区已分类提交，`main` 已正常 rebase/push 至 `305ad8b`；生产 Vercel Ready 作为发布完成证据。
+
+8. **风险**：五页 EMF 验收无图片加载失败，但 Agent Browser 控制台累计报告 6 次 hydration mismatch。
+   **证据**：`evidence/2026-08-23-text-layout-regression-verification.md` §4。
    **状态**：active。
-   **后续动作**：用户处理工作区并确认同步范围后，才能安全 rebase 到 main；不得把 CI success 误报为生产发布完成。
+   **后续动作**：由站点 SSR/client hydration 链路单独定位；不得将其归因于 EMF PNG 转换。

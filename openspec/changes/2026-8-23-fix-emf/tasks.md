@@ -35,5 +35,5 @@
 - [x] 4.3 [修改] `patches/emf-converter@2.0.2.patch` - 通过 pnpm patch 补逐字符 advance、mapping-mode 裁剪原点、正确 `lfFaceName` 偏移和 glyph-index 映射消费；在项目转换入口传入已反查的黑体/Calibri 映射。
 - [x] 4.4 [验证] `scripts/build-doc-in-vercel` - 运行完整子包 Vitest 和 `pnpm run build:doc-in-vercel`，确认回归测试、全量 EMF/WMF 统计和原始图参照均通过。
 - [x] 4.5 [提交] 当前 change 关联文件 - 审查 pnpm patch、测试 fixture、OpenSpec 工件和用户已有 `prompts/index.md` 修改的边界后，创建有意义的 `dev` 提交。
-- [ ] 4.6 [部署] `small-alice-web-odse` - 推送 `dev`、确认 CI 后 rebase 到 `main` 触发 Vercel Git 集成，并用可见 Chrome 的 Agent Browser 复测五个用户页面。
-- [ ] 4.7 [证据] `openspec/changes/2026-8-23-fix-emf/evidence/2026-08-23-text-layout-regression-verification.md` - 记录 GDI+ 对照、Vercel SHA/日志、五页截图和仍未映射 glyph 的风险。
+- [x] 4.6 [部署] `small-alice-web-odse` - 推送 `dev`、确认 CI 后 rebase 到 `main` 触发 Vercel Git 集成，并用可见 Chrome 的 Agent Browser 复测五个用户页面。
+- [x] 4.7 [证据] `openspec/changes/2026-8-23-fix-emf/evidence/2026-08-23-text-layout-regression-verification.md` - 记录 GDI+ 对照、Vercel SHA/日志、五页截图和仍未映射 glyph 的风险。
