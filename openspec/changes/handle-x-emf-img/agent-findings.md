@@ -32,6 +32,12 @@
 |                    vitest 基建                    | 测试落点已定 **B 方案：build-doc-in-vercel 升级为 workspace 子包**（先例 `scripts/decompress-porn-img-package/`；`scripts/*` 本就在 pnpm workspace packages 内），vitest/emf-converter/@napi-rs/canvas 进子包 devDependencies；**`index.ts:363` import 即执行 `main()`，测试禁止 import index.ts**；`imageTypesSet` 为模块级单例，跨用例需清理 |
 |                     序号空洞                      |                                                                                                                     `imageCounter++`（L215）先于黑名单检查（L221）；转换失败回退占位图时序号占用、文件缺失属既有行为，不修                                                                                                                     |
 |           `pnpm-lock.yaml` 被 gitignore           |                                                                                                                                                依赖解析以 lock 文件内容核对，不以 Git diff 为证                                                                                                                                                |
+|       napi 原型链不可变（2026-08-23 实测）        |                                                           `Object.setPrototypeOf(Canvas.prototype, X)` 静默不生效（原型链 `CanvasElement → Object` 不可变）；shim 改用 `Object.defineProperty(HTMLCanvasElement, Symbol.hasInstance, { value: c => c instanceof Canvas })`，实测通过                                                           |
+|       napi 原生类型检查（2026-08-23 实测）        |                                               `ctx.drawImage` 仅接受 CanvasElement/SVGCanvas/Image，Proxy 包装的 Image 抛 TypeError；且 emf-converter 的 deferred image 绘制包在 try/catch 中会**静默吞掉**该错误（只 warn 不中断）——shim 必须直接给 Image 实例挂 `close` 属性，禁止 Proxy 包装                                                |
+|     emf-converter 容错语义（2026-08-23 实测）     |                                                                                record 流截断（保留头部）仍输出残片 PNG 不抛错；只有头部魔数非法/canvas 不可用/导出失败才返回 null——「截断输入」不是 throw 用例，测试断言按实测调整（design §6.3 用例 4 已同步）                                                                                |
+| drill-docx 全库 100% EMF+（2026-08-23 全量统计）  |                                                                                           382 个 EMF 全部含 `EMF+` 签名，零经典 EMF、零 WMF；fixtures 的 `classic.emf` 实为 EMF+ dual，WMF fixture 为手工构造（evidence/2026-08-23-emf-sampling.md）                                                                                           |
+|               PNG IHDR 宽高为大端序               |                                                                                                                              读 PNG 尺寸断言用 `readUInt32BE(16)/(20)`；vitest 首轮误用 LE 导致 3355443200 假失败                                                                                                                              |
+|             Windows Git Bash 探针纪律             |                                                                                     `node -e`/`tsx -e` 多行脚本的 console.log 输出会被吞；shell cwd 会跨命令持久化（cd 进子包后相对路径重复）。探针一律写临时 .cjs/.ts 文件执行后删除，并显式 cd 回仓库根                                                                                      |
 
 ## 4. 禁止重复路径（调研已否决，不得再走）
 
@@ -49,3 +55,4 @@
 
 - 试点批次执行：见 `tasks.md` 试点批次章节（4 项）。
 - 实施前若 `emf-converter` 已发布新版本，允许升级到新精确版本，但须在 `agent-findings.md` 本节记录版本变化与理由。
+- 剩余主体任务：本地管线验证（evidence/2026-08-23-local-pipeline.md）、Vercel 容器验证（evidence/2026-08-23-vercel-build.md）、目视对比（evidence/2026-08-23-visual-check.md）、CI 自检（合入 dev 后）、收尾门禁。

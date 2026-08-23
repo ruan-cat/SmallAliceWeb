@@ -68,12 +68,12 @@ emf-converter 的 canvas 获取优先级是全局 `OffscreenCanvas` → `documen
 
 shim 只需补 **4 个全局**（emf-converter 运行时全局依赖面经 dist 产物源码 grep + Node 22 实测复核，不需要 FileReader/DOMMatrix/Path2D/OffscreenCanvas——Blob/atob/TextDecoder Node 22 原生已有）：
 
-|           全局           |                                                                                                                                                                                     实现方式                                                                                                                                                                                     |
-| :----------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| `document.createElement` |                                                                                                                                                      映射到 `createCanvas(1, 1)`（emf-converter 拿到后自行赋 width/height）                                                                                                                                                      |
-|   `HTMLCanvasElement`    |                                                                                                                                       空类 + `Object.setPrototypeOf(Canvas.prototype, HTMLCanvasElement.prototype)` 使 instanceof 分派成立                                                                                                                                       |
-|   `createImageBitmap`    | `async (blob) => { const img = loadImage(Buffer.from(await blob.arrayBuffer())); return new Proxy(img, { get: (t, k) => (k === "close" ? () => {} : Reflect.get(t, k)) }); }`——**必须附带 no-op `close()`**：emf-converter 在 `drawImage(bitmap, ...)` 后调用 `bitmap.close()`（deferred image 路径），而 napi Image 类没有 close 方法，缺失会在 EMF+ 嵌入图像样本上抛 TypeError |
-|       `ImageData`        |                                                                                         直接挂 @napi-rs/canvas 导出的 `ImageData` 类——emf-converter 的 DIB 位图解码主路径调用 `new ImageData(...)`（含位图记录的经典层/EMF+ dual 样本必经），Node 22 无此原生全局，缺失即 ReferenceError                                                                                         |
+|           全局           |                                                                                                                                                                                                                        实现方式                                                                                                                                                                                                                         |
+| :----------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| `document.createElement` |                                                                                                                                                                                         映射到 `createCanvas(1, 1)`（emf-converter 拿到后自行赋 width/height）                                                                                                                                                                                          |
+|   `HTMLCanvasElement`    |                                                                                    空类 + **`Object.defineProperty(HTMLCanvasElement, Symbol.hasInstance, { value: (c) => c instanceof Canvas })`** 使 instanceof 分派成立（2026-08-23 试点实测修正：`Object.setPrototypeOf(Canvas.prototype, ...)` 对 napi 内部原型 `CanvasElement → Object` 静默不生效，禁止再用）                                                                                    |
+|   `createImageBitmap`    | `async (blob) => { const img = await loadImage(Buffer.from(await blob.arrayBuffer())); (img as any).close = () => {}; return img; }`——**直接给实例挂 no-op `close()`，禁止 Proxy 包装**（2026-08-23 测试实测修正）：napi `drawImage` 对参数做原生类型检查（仅接受 CanvasElement/SVGCanvas/Image），Proxy 包装会被拒绝抛 TypeError，且 emf-converter 的 deferred image 绘制包在 try/catch 中会静默吞掉该错误导致位图不绘制；实例挂属性不影响原生类型判定 |
+|       `ImageData`        |                                                                                                                            直接挂 @napi-rs/canvas 导出的 `ImageData` 类——emf-converter 的 DIB 位图解码主路径调用 `new ImageData(...)`（含位图记录的经典层/EMF+ dual 样本必经），Node 22 无此原生全局，缺失即 ReferenceError                                                                                                                             |
 
 shim 安装必须幂等（重复调用无副作用、引用不漂移），并在模块加载时自动执行一次。
 
@@ -143,32 +143,32 @@ drill-docx 为中文文档项目，EMF 内嵌文本几乎必然使用中文/Offi
 
 ### 6.2 fixture 清单
 
-|        文件        |                  来源/构造方式                  |                                   用途                                   |
-| :----------------: | :---------------------------------------------: | :----------------------------------------------------------------------: |
-|   `classic.emf`    |       drill-docx 真实样本（Word 公式类）        | 经典 EMF 转换正例；改写头部 frame 声明尺寸字段得 `oversize` 变体供用例 8 |
-| `emfplus-dual.emf` | drill-docx 真实样本（Excel 图表类，含位图记录） |       EMF+ dual 转换正例、`createImageBitmap`/`ImageData` 路径覆盖       |
-|   `classic.wmf`    |               drill-docx 真实样本               |                               WMF 分流正例                               |
-| `text-sample.emf`  |       drill-docx 真实样本（内嵌中文文字）       |                          用例 10 字体映射 smoke                          |
-| `broken-trunc.emf` |             真实样本头部 + 截断主体             |                               损坏输入负例                               |
-|   `garbage.bin`    |                    随机字节                     |                               非法输入负例                               |
-|   `not-emf.png`    |                  任意 PNG 字节                  |                                 魔数负例                                 |
+|        文件        |                            来源/构造方式                             |                                                   用途                                                   |
+| :----------------: | :------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
+|   `classic.emf`    |    drill-docx 真实样本（Word 公式类，全库实测 100% 为 EMF+ dual）    |               EMF+ 转换正例；改写头部 bounds/frame 声明尺寸字段得 `oversize` 变体供用例 8                |
+| `emfplus-dual.emf` |           drill-docx 真实样本（Excel 图表类，含位图记录）            |                       EMF+ dual 转换正例、`createImageBitmap`/`ImageData` 路径覆盖                       |
+|   `classic.wmf`    |    手工构造最小合法 placeable WMF（46 字节，全库无真实 WMF 样本）    |                                               WMF 分流正例                                               |
+| `text-sample.emf`  | drill-docx 真实样本（注意\_v3.80 升级说明.docx image3，含 CJK 码点） |                                          用例 10 字体映射 smoke                                          |
+| `broken-trunc.emf` |                 真实样本头部 + 主体截断（2048 字节）                 | 截断容忍行为正例（实测：emf-converter 对 record 流截断容错，输出残片 PNG 而非异常；用例 4 按此实测断言） |
+|   `garbage.bin`    |                               随机字节                               |                                               非法输入负例                                               |
+|   `not-emf.png`    |                            任意 PNG 字节                             |                                                 魔数负例                                                 |
 
 ### 6.3 用例矩阵
 
 **`emf-converter.test.ts` — describe("convertEmfToPng 转换封装")：**
 
-|  #  |                              test 用例                              |                                             断言要点                                              |
-| :-: | :-----------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------: |
-|  1  |                     经典 EMF 样本转换为非空 PNG                     |                         输出以 `\x89PNG` 魔数开头、长度大于阈值、非 null                          |
-|  2  |                    EMF+ dual 样本转换为非空 PNG                     | 同上；不因含 EMF+ 记录输出空白（长度下限）；含位图记录时覆盖 `createImageBitmap`/`ImageData` 路径 |
-|  3  |           WMF 样本分流到 `convertWmfToDataUrl` 并输出 PNG           |                                               同上                                                |
-|  4  |                       截断的 EMF 输入抛出异常                       |                              `rejects.toThrow`（含 null→throw 语义）                              |
-|  5  |                        随机字节输入抛出异常                         |                                         `rejects.toThrow`                                         |
-|  6  |                 PNG 字节（非 EMF 魔数）输入抛出异常                 |                                  `rejects.toThrow`，不产出伪 PNG                                  |
-|  7  |                         空 buffer 抛出异常                          |                                         `rejects.toThrow`                                         |
-|  8  | 超大尺寸样本（frame 头改写变体）被 `maxCanvasDimension` 钳制不崩溃  |                                 正常返回或抛出可控错误，进程不崩                                  |
-|  9  |                   `maxWidth`/`maxHeight` 限制生效                   |                           输出宽度不超过 1024（从 PNG IHDR 读尺寸断言）                           |
-| 10  | fontFamilyMap 含中文字体映射时含文字样本（`text-sample.emf`）不抛错 |                                   smoke 级（像素级断言不可行）                                    |
+|  #  |                              test 用例                              |                                                          断言要点                                                          |
+| :-: | :-----------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: |
+|  1  |                     经典 EMF 样本转换为非空 PNG                     |                                      输出以 `\x89PNG` 魔数开头、长度大于阈值、非 null                                      |
+|  2  |                    EMF+ dual 样本转换为非空 PNG                     |             同上；不因含 EMF+ 记录输出空白（长度下限）；含位图记录时覆盖 `createImageBitmap`/`ImageData` 路径              |
+|  3  |           WMF 样本分流到 `convertWmfToDataUrl` 并输出 PNG           |                                                            同上                                                            |
+|  4  |                       截断的 EMF 输入不抛异常                       | `resolves` 且输出合法 PNG（emf-converter 实测对 record 流截断容错，输出残片而非 null；null→throw 语义仍由用例 5/6/7 覆盖） |
+|  5  |                        随机字节输入抛出异常                         |                                                     `rejects.toThrow`                                                      |
+|  6  |                 PNG 字节（非 EMF 魔数）输入抛出异常                 |                                              `rejects.toThrow`，不产出伪 PNG                                               |
+|  7  |                         空 buffer 抛出异常                          |                                                     `rejects.toThrow`                                                      |
+|  8  | 超大尺寸样本（frame 头改写变体）被 `maxCanvasDimension` 钳制不崩溃  |                                              正常返回或抛出可控错误，进程不崩                                              |
+|  9  |                   `maxWidth`/`maxHeight` 限制生效                   |                                       输出宽度不超过 1024（从 PNG IHDR 读尺寸断言）                                        |
+| 10  | fontFamilyMap 含中文字体映射时含文字样本（`text-sample.emf`）不抛错 |                                                smoke 级（像素级断言不可行）                                                |
 
 **`canvas-shim.test.ts` — describe("canvas-shim 全局适配")：**
 
