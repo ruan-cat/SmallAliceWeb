@@ -369,7 +369,19 @@ skills add https://github.com/mattpocock/skills `
 每一个子包应该自己在 package.json 内完成自己要负责的 export 路径，和必要的 typescript 类型文件的生成，和 `*.d.ts` 文件的生成。而不是用这种变通的方式来完成全局整体性质的路径处理。这就很偷懒，而且耦合度很高，万一我以后增加了更多的子包，岂不是根包 tsconfig.json 配置越来越臃肿了？
 你去看看 D:\code\ruan-cat\monorepo 和 D:\code\ruan-cat\01s-11comm ，D:\code\ruan-cat\eams-component-lib ，这几个项目那个会想你一样弄这种根 tsconfig.json 的写死路径别名？你这个做法就不优雅，耦合度很大。每个子包的 typescript 路径暴露职责都没做好！
 
-## 004 <!-- TODO: --> 调研来自 docx 文档生成的 x-emf 格式文件的转换方案
+## 004 <!-- TODO: ZCode体验额度的 glm5.3 正在做 --> 调研来自 docx 文档生成的 x-emf 格式文件的转换方案
+
+<!-- 有效文档： reports\2026-08-22-docx-x-emf-conversion-research.md -->
+
+我们项目的处理脚本，曾经是没办法解决 x-emf 文件格式的。
+
+1. 你先给我看看我们整个项目，是在哪里处理 x-emf 文件格式的。
+2. 告诉我为什么曾经的纯 node typescript 方案内为什么不能实现该需求。
+3. 然后我要求你做好充分的调研，告诉我要用那些合适点的方案实现这个任务。rust 行不行？纯 node 还行不行？
+
+---
+
+按照 `reports\2026-08-22-docx-x-emf-conversion-research.md` 报告，在 `openspec\changes\handle-x-emf-img` 目录内新建完整的，基于 openspec 的长任务执行工件。你的任务是新建一些列的 markdown 任务工件，而不是执行任务。
 
 ---
 
