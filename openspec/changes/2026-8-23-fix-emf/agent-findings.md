@@ -17,5 +17,10 @@
 
 4. **风险**：当前 `origin/main` 落后 `dev` 7 个提交，快进会发布本 change 之外的 6 个历史 EMF/文档提交。
    **证据**：`origin/main=0a81861`，`git log origin/main..dev` 显示 7 个提交，且 `git merge-base --is-ancestor origin/main dev` 为真。
+   **状态**：resolved。
+   **后续动作**：用户已授权，`main` 已通过 rebase 更新并推送；以后仍须在发现历史提交随附发布时先取得授权。
+
+5. **风险**：生产视觉验收已证明文本可读，但未完成 Word 原图逐像素保真比对。
+   **证据**：`evidence/2026-08-23-production-visual-verification.md` §2–§3；009 原始问题截图与当前生产截图。
    **状态**：active。
-   **后续动作**：获得用户明确授权前不得运行 `git push origin dev:main`；CI 成功只证明 `dev` 提交可构建，不证明生产已发布。
+   **后续动作**：若未来要求字形风格或像素保真，另建变更并以 Word 原图进行人工对照。

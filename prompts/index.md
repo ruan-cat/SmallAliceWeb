@@ -710,7 +710,7 @@ Aborted (core dumped)
 你在 `packages/ai-vue-doc/package.json` 内有适当的回退对 `run-nuxt-with-memory.mjs` 的使用么？
 当我们回退该临时脚本使用后，我们项目在 github workflow 和 vercel ci 两个流水线内，都还能正常的完成 build 且不会报错是么？
 
-## 009 <!-- TODO: --> emf 矢量图转换出现文本丢失的情况
+## 009 <!-- 已完成 --> emf 矢量图转换出现文本丢失的情况
 
 我们的文档站点，现在终于实现的了 emf 矢量图的转换了。但是我们项目很多图片仍然是出现乱码。
 
