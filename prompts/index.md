@@ -771,14 +771,6 @@ Aborted (core dumped)
 
 ---
 
-更多的抽样检查情况如下：
-
-- `drill.ruan-cat.com/docx/插件详细手册/21.管理器/关于全局存储.html`
-
-![2026-08-23-20-49-45](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-49-45.png)
-
----
-
 给你安排临时任务，在 docs\about 目录内，将你的 emf 特殊处理方式和缘由，都用 markdown 写清楚。我希望看到本站点的其他人，能够知道本站点是如何处理 emf 的，以及为什么要处理 `patches\emf-converter@2.0.2.patch` 。
 
 ---
@@ -795,3 +787,38 @@ Aborted (core dumped)
 - `/docx/插件详细手册/20.标题/关于全自定义标题界面.html`
 - `/docx/插件详细手册/21.管理器/关于素材库.html`
 - `/docx/插件详细手册/21.管理器/数据存储的载体.html`
+
+---
+
+我看你用 agent browser 用的很吃力，你的 agent browser 这个 cli 用的不好么？全局技能 agent browser 的使用多么？ 在 `reports\2026-8-24-use-agent-browser` 目录内编写你的调研报告，跟我说一下为什么你用的不好，而且你总是出现路由索引错误 404 的故障啊？你不会用 agent browser 么？还是指导效果很差啊？
+
+### 继续完成 emf 矢量图问题处理
+
+<!-- TODO: -->
+
+我们现在是全新的对话，我们正在完成 `openspec\changes\2026-8-23-fix-emf` 任务，修复 emf 矢量图转换成图片的显示效果不好的任务。请你先用 memorix 完成历史上下文的获取。
+
+请你在做浏览器视觉验证时，注意 `reports\2026-8-24-use-agent-browser\2026-08-24-agent-browser-local-chrome-and-route-incident.md` 文档的要求：
+
+本轮新对话必须从“全量质量未解决”继续，先做大覆盖率/全量视觉审计，再按乱码、错位、重复、裁断、占位符建立真实 EMF + GDI+ 回归门禁。
+
+更多的文档站点生产环境图片的抽样检查情况，如下：
+
+- `drill.ruan-cat.com/docx/插件详细手册/0.基本定义/界面.html`
+
+![2026-08-24-00-19-40](https://gh-img-store.ruan-cat.com/img/2026-08-24-00-19-40.png)
+
+- `drill.ruan-cat.com/docx/插件详细手册/5.战斗UI/关于高级角色肖像.html`
+
+![2026-08-24-00-13-26](https://gh-img-store.ruan-cat.com/img/2026-08-24-00-13-26.png)
+
+- `drill.ruan-cat.com/docx/插件详细手册/21.管理器/关于全局存储.html`
+
+![2026-08-23-20-49-45](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-49-45.png)
+![2026-08-24-00-15-44](https://gh-img-store.ruan-cat.com/img/2026-08-24-00-15-44.png)
+![2026-08-24-00-16-15](https://gh-img-store.ruan-cat.com/img/2026-08-24-00-16-15.png)
+
+具体结论：
+仍然有`图片错位`，`乱码`的情况。你的乱码处理方案是不是要实现合适的动态处理和计算方案啊？
+
+pua grill-me 你的方案是不是要换一下？`patches\emf-converter@2.0.2.patch` 是不是要试试用 svg 的方案？而不是强制用基于 canvas 的方案？我总觉得基于 canvas 的方案永远也没办法完成精确计算，能不能直接换成 svg 图片啊？这样浏览器本身也能识别 svg 这种格式的矢量图，效果还好的多。
