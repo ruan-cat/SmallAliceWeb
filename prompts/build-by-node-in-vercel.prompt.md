@@ -130,7 +130,6 @@ const obj = {
 
 4. 不处理特定格式的图片
    不要处理以下格式的图片，如果在转换过程中遇到以下格式的图片，就不予处理，并提供一个默认的错误占位图片即可。
-   - `x-emf`
    - `gif`
 
 5. 默认的错误占位图片
@@ -198,9 +197,9 @@ const docx2html: FileChange = async function (params) {
 						const imageName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType}`;
 						const imagePath = join(imagesDir, imageName);
 						// jpeg 格式没有错
-						// 如果是 x-emf 格式的图片 即矢量图
+						// 如果是 x-emf/emf/wmf 格式的图片即矢量图，调用 convertEmfToPng 转换后以 .png 落盘
 						// 暂时跳过gif的处理
-						if (imageType === "x-emf" || imageType === "gif") {
+						if (imageType === "gif") {
 							return {
 								src: errorImgUrl,
 							};
