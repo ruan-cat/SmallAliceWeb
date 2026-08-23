@@ -4,6 +4,14 @@
  * emf-converter 获取 canvas 的优先级是全局 OffscreenCanvas → document.createElement("canvas")，
  * 输出导出用 instanceof 分派。本 shim 必须走 HTMLCanvasElement/document 路径，
  * 因此禁止注入 OffscreenCanvas 全局。
+ *
+ * 执行中实测修正（2026-08-23，详见 change 工件 design.md §3.1 与 agent-findings.md）：
+ * 1. napi Canvas 原型不可变：`Object.setPrototypeOf(Canvas.prototype, ...)` 静默不生效
+ *    （实例原型链固定为 CanvasElement → Object），instanceof 分派必须改用
+ *    `Symbol.hasInstance` 自定义判定，否则 convertEmfToDataUrl 一律返回 null；
+ * 2. napi drawImage 原生类型检查：仅接受 CanvasElement/SVGCanvas/Image，Proxy 包装的
+ *    Image 会被类型检查拒绝抛 TypeError，且该错误会被 emf-converter 的 deferred image
+ *    try/catch 静默吞掉导致位图不绘制——必须直接给 Image 实例挂 close 属性，禁止 Proxy。
  */
 import { Canvas, createCanvas, ImageData, loadImage } from "@napi-rs/canvas";
 
@@ -16,10 +24,10 @@ const SHIM_INSTALLED_FLAG = "__emfCanvasShimInstalled__";
 /**
  * 安装 emf-converter 所需的浏览器全局适配层。
  *
- * 补齐四个全局：
+ * 补齐四个全局（编号与「执行中实测修正」对应，见模块头注释）：
  * 1. document —— 提供 createElement 方法返回 napi canvas（emf-converter 拿到 canvas 后自行赋 width/height）
- * 2. HTMLCanvasElement —— 空类，通过原型链使 napi Canvas 实例通过 instanceof 分派
- * 3. createImageBitmap —— 用 napi loadImage 解码 Blob，并代理出 no-op 的 close()
+ * 2. HTMLCanvasElement —— 通过 Symbol.hasInstance 使 napi Canvas 实例通过 instanceof 分派
+ * 3. createImageBitmap —— 用 napi loadImage 解码 Blob，并给实例直接挂 no-op 的 close()
  * 4. ImageData —— Node 22 无此原生全局，挂 @napi-rs/canvas 导出的 ImageData 类
  */
 export function installCanvasShim(): void {

@@ -41,6 +41,11 @@ function matchesMagic(buffer: Buffer, magic: number[]): boolean {
  * 根据文件头魔数自动分流 EMF 与 placeable WMF，调用 emf-converter 渲染为 dataURL，
  * 再解码为 PNG Buffer 返回。失败语义：向上抛异常，本模块不做任何兜底决策。
  *
+ * emf-converter 实测容错语义（2026-08-23，详见 change 工件 design.md §6.3 用例 4）：
+ * - 失败（无效文件 / canvas 不可用 / 导出失败）返回 null 而非抛错 → 本封装 null→throw；
+ * - record 流截断（仅保留头部）仍会输出残片 PNG 而非抛错——截断输入不是 throw 用例；
+ * - 仅当头部魔数无法识别、buffer 过短或输出非 PNG 时，本封装主动 throw。
+ *
  * @param buffer - 输入的 EMF/WMF 文件字节
  * @param options - 转换选项（尺寸上限与字体映射）
  * @returns PNG 格式的 Buffer
