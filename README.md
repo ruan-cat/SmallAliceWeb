@@ -53,15 +53,27 @@
 
 ### 4.2 CLI 单槽绑定纪律
 
-`.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
+`.vercel/project.json` 是单槽绑定。**仅当用户明确要求本地 CLI 诊断、应急部署或操作 Nitro API 项目时**，才先 `vercel link --project <name> --yes` 切换到目标项目，再执行本地 `vercel deploy`。`small-alice-web-odse` 的常规文档站 Production 由 Git Integration 触发，不需要也不得借此改走本地上传。
 
-### 4.3 Nitro API 生产域名
+### 4.3 `small-alice-web-odse` 文档站生产发布纪律
+
+文档站的正式生产链路唯一使用 **Git Integration**，不是本地 CLI 上传。开发始终在 `dev` 分支完成；仅当需要真实生产部署和验收时，才按以下顺序执行：
+
+1. 使用全局 `git-commit` 技能审查工作区、按功能/文件类型分组创建有意义的提交。提交前确认 `.gitattributes` 保持二进制文件属性，`.gitignore` 没有遗漏本地生成物或调试垃圾。
+2. `git push origin dev`，让 Preview/CI 消费开发提交。
+3. 工作树干净后，将 `dev` rebase 到本地 `main`，普通 `git push origin main` 推送 remote `main`，最后切回 `dev`。禁止 force push；不得在 `main` 直接开发。
+4. `main` 出现有意义提交即自动触发 `small-alice-web-odse` 的真实 Vercel Production deployment。随后只用 Vercel CLI/MCP 读取 deployment 状态、Git SHA 和构建日志。
+5. Production Ready 后，使用本机 Google Chrome 的 Agent Browser 完成功能和视觉验收；先本地转换/本地页面验收，再复测同一生产 URL。
+
+**禁止**以 `pnpm run deploy-vercel` 或本地 `vercel deploy` 替代上述正式发布链路。CLI `vercel link`/`vercel deploy` 仅适用于另一个项目的显式诊断或已授权应急操作，不是文档站的常规发布动作。
+
+### 4.4 Nitro API 生产域名
 
 - 生产：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`
 - Vercel 默认地址（不使用）：`https://smallalice-docs-ai-nitro-api.vercel.app`
 - 路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`
 
-### 4.4 Nitro RAG 环境变量
+### 4.5 Nitro RAG 环境变量
 
 二期 RAG 的 Cloudflare embedding 运行时会读取以下环境变量：
 

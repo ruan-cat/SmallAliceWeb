@@ -450,7 +450,19 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 **破坏性变更**：仓库根 `vercel.json` 已于 2026-08-07 删除。原因：`vercel.json` 覆盖云端 Project Settings，多项目 monorepo 中会造成跨项目配置污染。原文档中 `small-alice-web-odse` 的配置已迁移到该项目云端 Project Settings，值完全一致。
 
-**CLI 单槽绑定纪律**：`.vercel/project.json` 是单槽绑定。部署任一项目前必须先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。禁止在未确认绑定状态时直接部署。
+**CLI 单槽绑定纪律**：`.vercel/project.json` 是单槽绑定。仅在用户明确要求本地 CLI 诊断、应急部署或操作 Nitro API 项目时，才先 `vercel link --project <name> --yes` 切换到目标项目，再执行 `vercel deploy`。`small-alice-web-odse` 的常规文档站 Production 由 Git Integration 触发，不得借此改走本地上传。
+
+### 1. `small-alice-web-odse` 文档站 Git Integration 发布纪律
+
+`small-alice-web-odse` 的正式 Production 部署唯一由 remote `main` 的有意义 Git commit 触发。不得在 `main` 开发，也不得用 `pnpm run deploy-vercel` 或本地 `vercel deploy` 替代此链路。
+
+1. 始终在 `dev` 开发；若当前在 `main`，先确认工作树干净并切换 `dev`。
+2. 仅在需要生产部署/验收时使用全局 `git-commit` 技能：按修改职责拆分提交，审查暂存区，并确认 `.gitattributes` 的二进制属性与 `.gitignore` 的垃圾文件规则未被破坏。
+3. `git push origin dev` 后，确认工作树干净；`git fetch origin main dev`、切换 `main`、`git rebase dev`、普通 `git push origin main`，最后切回 `dev`。禁止 force push。
+4. `main` 推送后，等待 Git Integration 触发真实 Production deployment；用 Vercel CLI/MCP 读取 deployment 状态、checkout SHA、EMF/WMF 转换统计和构建结果。不得把本地 build、Preview 或 CLI upload 当作生产证据。
+5. 先完成本地 `drill-docx` 转换与本机 Google Chrome 验收，再在 Production Ready 后用同一浏览器完成用户给定 URL 的视觉/功能复验。资源加载计数只证明加载，目标图视口截图和人工判读才证明布局通过。
+
+**CLI 单槽说明**：`vercel link`/`vercel deploy` 仍可用于已授权的 Nitro API 诊断或应急操作；它们不是 `small-alice-web-odse` 的常规发布入口。
 
 **Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`（用户自定义域名，实际使用此地址）。Vercel 默认地址 `https://smallalice-docs-ai-nitro-api.vercel.app` 不使用。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。
 
