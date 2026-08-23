@@ -717,6 +717,11 @@ Aborted (core dumped)
 ![2026-08-23-11-43-24](https://gh-img-store.ruan-cat.com/img/2026-08-23-11-43-24.png)
 
 我这边认定是 emf 转换成 png 图片的时候，字体文件或者是 UTF-8 中文字符的转换处理没做好。请你重点看看这方面的问题，并且完成处置。
+你阅读这几个文件后，了解一下别人给的方案后，再继续处理故障：
+
+- reports\2026-08-23-emf-text-loss-handoff.md
+- reports\2026-08-23-emf-text-loss-research.md
+- reports\2026-08-23-emf-text-loss-solution.md
 
 ### 自主部署与验证要求
 
