@@ -29,3 +29,8 @@
    **证据**：真实样本 RED：5→17 次 `fillText`、X/Y 偏差 +25/+46、黑体 glyph id 266 渲染为 `Ċ`；Windows GDI+ 原图与 patched PNG 对照。
    **状态**：active。
    **后续动作**：以 pnpm patch 消费逐字符 advance、统一裁剪原点和 source glyph map；必须完成 Vercel/Chrome 五页复测后才标记 resolved。
+
+7. **风险**：补丁提交 `e62d11b` 的首个 CI 被后续用户提交自动取消；替代 CI 已成功，但 `dev` 还包含用户提交 `8cd6fc7` 与未提交工作区改动。
+   **证据**：GitHub Actions `32642386364=cancelled`、`32642480630=success`；`git status` 和 `git log`。
+   **状态**：active。
+   **后续动作**：用户处理工作区并确认同步范围后，才能安全 rebase 到 main；不得把 CI success 误报为生产发布完成。
