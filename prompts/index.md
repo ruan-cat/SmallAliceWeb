@@ -634,7 +634,7 @@ Neon ID: patient-cloud-43432277 的数据库 `neon-smallalice-ai-rag` ，现在�
 
 我们的 move-vercel-output-to-root 增加了新的 `--dereference` 用来解决特定问题，请你以升级加固全局技能 `use-vercel-deploy-in-monorepo` 为目的，在 `reports\2026-8-10-up-use-vercel-deploy-in-monorepo` 目录内，编写技能加固文档，便于我进一步升级这款技能，说明清楚 move-vercel-output-to-root 的参数以及适用情况。
 
-## 010 <!-- TODO: ChatGPT web正在做 --> 检查并解决 github workflow 流水线出现的 nuxt 构建内存超限的错误
+## 010 <!-- 已完成 ChatGPT web正在做 --> 检查并解决 github workflow 流水线出现的 nuxt 构建内存超限的错误
 
 @Github @Skill Router MCP
 
@@ -749,6 +749,36 @@ Aborted (core dumped)
 
 找到关于 `openspec\changes\2026-8-23-fix-emf` 长任务的 memorix 历史记忆。本会话完成接力任务。
 
+### 继续处理少数文本显示效果不好的情况
+
+阅读以下生产环境的 html url 地址，看看为什么有些 emf 图片的文本，显示效果很差。
+
+- 错位
+- 少数文本显示了占位符
+
+- `drill.ruan-cat.com/docx/插件详细手册/19.控件/关于技能窗口块元素.html`
+  > ![2026-08-23-20-36-57](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-36-57.png)
+- `drill.ruan-cat.com/docx/插件详细手册/2.战斗/关于战斗活动镜头.html`
+  > ![2026-08-23-20-37-25](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-37-25.png)
+- `drill.ruan-cat.com/docx/插件详细手册/20.标题/关于全自定义标题界面.html`
+  > ![2026-08-23-20-37-47](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-37-47.png)
+- `drill.ruan-cat.com/docx/插件详细手册/21.管理器/关于素材库.html`
+  > ![2026-08-23-20-38-08](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-38-08.png)
+- `drill.ruan-cat.com/docx/插件详细手册/21.管理器/数据存储的载体.html`
+  > ![2026-08-23-20-38-24](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-38-24.png)
+
+你的抽样检查数量太少，效果不好，请你继续解决这些问题。
+
 ---
 
-执行 `openspec\changes\2026-8-23-fix-emf` 长任务。
+<!-- TODO: -->
+
+更多的抽样检查情况如下：
+
+- `drill.ruan-cat.com/docx/插件详细手册/21.管理器/关于全局存储.html`
+
+![2026-08-23-20-49-45](https://gh-img-store.ruan-cat.com/img/2026-08-23-20-49-45.png)
+
+---
+
+给你安排临时任务，在 docs\about 目录内，将你的 emf 特殊处理方式和缘由，都用 markdown 写清楚。我希望看到本站点的其他人，能够知道本站点是如何处理 emf 的，以及为什么要处理 `patches\emf-converter@2.0.2.patch` 。
