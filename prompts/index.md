@@ -740,3 +740,15 @@ Aborted (core dumped)
 但是很容易让你误解上下文，加载过多不必要的上下文文件。
 而且加载等待 vercel 部署时，也需要花费时间，可能会导致你误解误导。
 对于生产环境的浏览器视觉测试，对你来说也是较大的 token 消耗挑战。
+
+### 具体指令
+
+你先完成 do-long-task 长任务的新建，预期在 `openspec\changes\2026-8-23-fix-emf` 内新建基于 openspec 的长任务工件。你先完成新建任务。而不是在 `fix-emf-text-loss` 内新建。
+
+---
+
+找到关于 `openspec\changes\2026-8-23-fix-emf` 长任务的 memorix 历史记忆。本会话完成接力任务。
+
+---
+
+执行 `openspec\changes\2026-8-23-fix-emf` 长任务。
