@@ -2,6 +2,7 @@
 	"name": "@ruan-cat/drill-doc",
 	"description": "阮喵喵维护的钻头文档，用docx直接生成的md文档。",
 	"version": "3.7.2",
+	"homepage": "https://drill.ruan-cat.com",
 	"private": true,
 	"type": "module",
 	"packageManager": "pnpm@10.29.2",

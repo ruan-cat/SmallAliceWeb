@@ -369,7 +369,11 @@ skills add https://github.com/mattpocock/skills `
 每一个子包应该自己在 package.json 内完成自己要负责的 export 路径，和必要的 typescript 类型文件的生成，和 `*.d.ts` 文件的生成。而不是用这种变通的方式来完成全局整体性质的路径处理。这就很偷懒，而且耦合度很高，万一我以后增加了更多的子包，岂不是根包 tsconfig.json 配置越来越臃肿了？
 你去看看 D:\code\ruan-cat\monorepo 和 D:\code\ruan-cat\01s-11comm ，D:\code\ruan-cat\eams-component-lib ，这几个项目那个会想你一样弄这种根 tsconfig.json 的写死路径别名？你这个做法就不优雅，耦合度很大。每个子包的 typescript 路径暴露职责都没做好！
 
-## 004 <!-- TODO: ZCode体验额度的 glm5.3 正在做 --> 调研来自 docx 文档生成的 x-emf 格式文件的转换方案
+## 004 已完成 调研并落地 docx 文档生成的 x-emf 格式文件转换方案
+
+> 状态：**全部完成并上线验证**（2026-08-23）。调研与实施方案详见 `openspec/changes/handle-x-emf-img/`（tasks.md 21/21 完成、evidence/ 六份验证证据），生产站点 drill.ruan-cat.com 的 EMF 图片已全部以 PNG 形态上线。历史过程记录保留如下，供追溯。
+
+### 调研并生成任务工件
 
 <!-- 有效文档： reports\2026-08-22-docx-x-emf-conversion-research.md -->
 
@@ -384,6 +388,41 @@ skills add https://github.com/mattpocock/skills `
 按照 `reports\2026-08-22-docx-x-emf-conversion-research.md` 报告，在 `openspec\changes\handle-x-emf-img` 目录内新建完整的，基于 openspec 的长任务执行工件。你的任务是新建一些列的 markdown 任务工件，而不是执行任务。
 
 ---
+
+### 持续执行任务工件并完成任务
+
+先用 memorix 获取 `handle-x-emf-img` 相关的记忆，然后开始持续执行 `openspec\changes\handle-x-emf-img` 任务。
+
+---
+
+你用这样的方式触发文档站点的部署与验证：
+
+对于 small-alice-web-odse(docs 项目) 来说，你首先触发有意义的 git commit 即可。确保 main 主分支出现了有意义的 git commit，那么文档站点就会出现真实的 vercel 部署。随后，你就能用 vercel MCP 或者是 vercel cli 来获取部署情况了。
+你稍后还可以用 agent-browser 来完成浏览器视觉验证和功能验证。
+不要用 `pnpm run deploy-vercel` 命令来完成部署。
+你要用全局技能 git-commit 来完成分门别类编写提交信息，完成有意义的部署。
+你要及时的 rebase dev 的内容到 remote main 内，才能完成生产环境的部署。
+你的开发始终在 dev 内，而不是直接在 main 内完成开发。
+只在你需要完成生产环境部署并完成验证时，你才使用 git commit。
+你的 git-commit 看清楚修改的内容，确保做好 .gitattributes 二进制文件的设置，和 .gitignore 垃圾文件的忽略。
+
+---
+
+1. 以注释的形式在关键地方增加说明：
+
+```txt
+执行中抓出的关键实测修正（已回写 design/findings）
+napi Canvas 原型不可变：setPrototypeOf 静默失效 → 改用 Symbol.hasInstance（否则 instance 分派失败全部转换返 null）
+napi drawImage 原生类型检查：Proxy 包装被拒且错误被 emf-converter 静默吞掉 → 改给 Image 实例直接挂 close 属性
+emf-converter 截断容错：截断输入输出残片 PNG 不抛错，测试断言按实测调整
+PNG IHDR 大端序：测试首轮 LE 误读假失败
+```
+
+既然你已经找到问题了，就用 jsdoc 注释的形式来补充这些东西。
+
+2. 用 `.agents\skills\fix-bug\record-bug-fix-memory\SKILL.md` 项目级技能，增加经验教训。
+3. 及时去看看本项目其他的 readme 文档，为本次重大变更做出及时的文档更新，我们成功实现了 emf 矢量图变成可阅读的 png 图片了！重大技术突破，应该要在 readme 文档内说明这个情况。过往的很多 markdown 肯定记录不准确，需要你做出更新的。
+4. 用 memorix 做好记录。
 
 ## 005 <!-- 2026-8-20 已完成 作为交互优化级别的项目；codex正在做 --> 网站 title 标题的动态切换
 
@@ -670,3 +709,29 @@ Aborted (core dumped)
 `packages/ai-vue-doc/scripts/run-nuxt-with-memory.mjs` 的设计本质上是你设计的临时脚本吧。这本质上是一种错误收集和排查校验的经验教训，你记录好这种报错收集的经验技巧了么？
 你在 `packages/ai-vue-doc/package.json` 内有适当的回退对 `run-nuxt-with-memory.mjs` 的使用么？
 当我们回退该临时脚本使用后，我们项目在 github workflow 和 vercel ci 两个流水线内，都还能正常的完成 build 且不会报错是么？
+
+## 009 <!-- TODO: --> emf 矢量图转换出现文本丢失的情况
+
+我们的文档站点，现在终于实现的了 emf 矢量图的转换了。但是我们项目很多图片仍然是出现乱码。
+
+![2026-08-23-11-43-24](https://gh-img-store.ruan-cat.com/img/2026-08-23-11-43-24.png)
+
+我这边认定是 emf 转换成 png 图片的时候，字体文件或者是 UTF-8 中文字符的转换处理没做好。请你重点看看这方面的问题，并且完成处置。
+
+### 自主部署与验证要求
+
+对于 small-alice-web-odse(docs 项目) 来说，你首先触发有意义的 git commit 即可。确保 main 主分支出现了有意义的 git commit，那么文档站点就会出现真实的 vercel 部署。随后，你就能用 vercel MCP 或者是 vercel cli 来获取部署情况了。
+你稍后用 agent-browser 来完成浏览器视觉验证和功能验证。
+不要用 `pnpm run deploy-vercel` 命令来完成部署。
+你要用全局技能 git-commit 来完成分门别类编写提交信息，完成有意义的部署。
+你要及时的 rebase dev 的内容到 remote main 内，才能完成生产环境的部署。
+你的开发始终在 dev 内，而不是直接在 main 内完成开发。
+只在你需要完成生产环境部署并完成验证时，你才使用 git commit。
+你的 git-commit 看清楚修改的内容，确保做好 .gitattributes 二进制文件的设置，和 .gitignore 垃圾文件的忽略。
+
+### 本任务特点
+
+本任务可能 debug 难度不大。
+但是很容易让你误解上下文，加载过多不必要的上下文文件。
+而且加载等待 vercel 部署时，也需要花费时间，可能会导致你误解误导。
+对于生产环境的浏览器视觉测试，对你来说也是较大的 token 消耗挑战。
