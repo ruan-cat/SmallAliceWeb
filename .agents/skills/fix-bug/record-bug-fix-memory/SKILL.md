@@ -232,6 +232,12 @@ metadata:
 - 适用场景：对 @napi-rs/canvas 等 napi 类做 instance hack 或包装（EMF 转换 shim、canvas 类 polyfill）。
 - 关键约束：napi 类原型不可变，instanceof 适配用 `Symbol.hasInstance`、禁止 `setPrototypeOf`；drawImage 等 API 只接受原生实例，附加方法直接挂实例属性、禁止 Proxy；对方库 try/catch 宽容路径会静默吞掉绘制错误，验证必须检查输出内容质量而非只看"转换成功"。
 
+### 13.7 EMF 字体覆盖与生产容器验收（2026-08-23）
+
+- 详细案例：`2026-08-23-emf-font-coverage-production-validation.md`
+- 适用场景：Vercel 容器将 EMF 转 PNG 后，图片内的中文空白、乱码或豆腐块。
+- 关键约束：字符集必须从 `emf-converter → Canvas fillText` 的可读输出提取；以 TTF cmap 测试约束资产，并用 Git SHA、Vercel 容器日志和可见 Chrome 验收闭环；空临时文件不得机械提交。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
