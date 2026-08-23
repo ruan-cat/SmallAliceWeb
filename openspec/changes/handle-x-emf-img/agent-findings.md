@@ -56,3 +56,4 @@
 - 试点批次执行：见 `tasks.md` 试点批次章节（4 项）。
 - 实施前若 `emf-converter` 已发布新版本，允许升级到新精确版本，但须在 `agent-findings.md` 本节记录版本变化与理由。
 - 剩余主体任务：本地管线验证（evidence/2026-08-23-local-pipeline.md）、Vercel 容器验证（evidence/2026-08-23-vercel-build.md）、目视对比（evidence/2026-08-23-visual-check.md）、CI 自检（合入 dev 后）、收尾门禁。
+- **2026-08-23 完成态**：21/21 任务完成。部署与 CI 验证结论：Vercel 生产部署 READY（drill.ruan-cat.com）、CI ubuntu 403/403 EMF 零失败；容器内 `[emf-converter] Unhandled EMR record type: 90` 为库跳过个别记录（转换仍成功），若目视复核发现该类样本质量不合格，作为库升级/追加记录的追踪项。人工目视复核待办见 visual-check.md §5。

@@ -29,14 +29,14 @@
 - [x] [修改] `scripts/build-doc-in-vercel/transformers.ts` - 在 `docx2html()` 的 `convertImage` 回调中拆分 `unsupportedFormats` 黑名单：`x-emf`/`emf`/`wmf` 改为调用 `convertEmfToPng`，成功后**显式以 `.png` 扩展名落盘**（不得沿用现有 `imageName` 拼接——`split("/")[1]` 会产出 `.x-emf` 扩展名，仿照 L252 的 replace 先例）到 `docs/docx/images/{文档名}/` 并返回相对 `src`，异常时 `consola.warn` + 记入 `errorFilesPath` + 返回 `errorImgUrl`；`gif` 行为不变；新增 EMF/WMF 转换成功/失败计数器并入现有输出报告（现有 `imageTypesSet` 无失败通道且黑名单格式被排除在统计外）；`imageCounter` 递增位置不动（序号空洞属既有行为）
 - [x] [修改] `prompts/build-by-node-in-vercel.prompt.md` - 更新「不处理特定格式的图片」章节：从清单中移除 `x-emf`（`emf`/`wmf` 本不在现有清单内），仅保留 `gif` 维持不处理，避免历史规范文档误导后续代理
 - [x] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-local-pipeline.md` - 本地管线级验证证据：**直接跑 `pnpm run build:doc-in-vercel`（tsx 直跑，禁用 `pnpm run build`——turbo inputs 不含 drill-docx 可能命中缓存跳过转换）**，核对 `docs/docx/**/*.md` 中原占位图位置变为 `.png` 扩展名的相对链接、EMF 转换成功/失败计数输出正确、构建无中断、序号空洞属预期，记录命令与输出摘要
-- [ ] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-vercel-build.md` - Vercel 容器级验证证据：走 `pnpm run deploy-vercel`（docs 项目 `small-alice-web-odse`）或 Git 集成触发真实构建（**不得使用 `.vercel/project.json` 当前凭据——其指向 nitro API 项目**），核对构建日志含 EMF 转换统计、中文字体渲染无豆腐块、无系统依赖缺失报错、构建时长与内存增长可接受，记录部署 URL 与日志摘要
+- [x] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-vercel-build.md` - Vercel 容器级验证证据：走 `pnpm run deploy-vercel`（docs 项目 `small-alice-web-odse`）或 Git 集成触发真实构建（**不得使用 `.vercel/project.json` 当前凭据——其指向 nitro API 项目**），核对构建日志含 EMF 转换统计、中文字体渲染无豆腐块、无系统依赖缺失报错、构建时长与内存增长可接受，记录部署 URL 与日志摘要
 - [x] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-visual-check.md` - 目视对比证据：抽取至少 5 张转换后 PNG 与 Word 原图对比（样本注明来源，本地 drill-docx 与 GitHub 仓库样本可能不一致），记录文字（重点中文）、图表、颜色三类要素的渲染质量结论与遗留瑕疵清单
-- [ ] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-ci-check.md` - CI 自检证据：任务合入 dev 后核对 `.github/workflows/ci.yaml` 的 ubuntu 构建日志（该 CI 完整执行 clone+docx 转换+vitepress+Nuxt 冒烟，`NODE_OPTIONS` 为 5120MB），记录构建时长、内存表现与 `图片处理失败` 条目数量
+- [x] [新增] `openspec/changes/handle-x-emf-img/evidence/YYYY-MM-DD-ci-check.md` - CI 自检证据：任务合入 dev 后核对 `.github/workflows/ci.yaml` 的 ubuntu 构建日志（该 CI 完整执行 clone+docx 转换+vitepress+Nuxt 冒烟，`NODE_OPTIONS` 为 5120MB），记录构建时长、内存表现与 `图片处理失败` 条目数量
 
 ## 收尾门禁
 
 > 以下全部满足后本 change 才允许进入 verify/archive 流程。
 
-- [ ] 上述任务全部勾选完成，且 `openspec validate handle-x-emf-img --strict` 通过
-- [ ] `agent-progress.md` 已更新最终 checkpoint，`agent-findings.md` 已沉淀本变更期间的失败索引与禁止重复路径
-- [ ] `reports/2026-08-22-docx-x-emf-conversion-research.md` 中「实施前验证步骤」（报告 4.3 节）四步均有对应证据文件
+- [x] 上述任务全部勾选完成，且 `openspec validate handle-x-emf-img --strict` 通过
+- [x] `agent-progress.md` 已更新最终 checkpoint，`agent-findings.md` 已沉淀本变更期间的失败索引与禁止重复路径
+- [x] `reports/2026-08-22-docx-x-emf-conversion-research.md` 中「实施前验证步骤」（报告 4.3 节）四步均有对应证据文件
