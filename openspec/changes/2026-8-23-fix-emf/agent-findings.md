@@ -42,5 +42,5 @@
 
 9. **结论**：上一轮 mapping-mode 修复错误地将 `rclBounds.left/top` 从已经按 window/viewport 映射的坐标再次扣除，并继续以 816×208 的 `rclBounds` 裁剪本应使用 841×335 frame 的 EMF。
    **证据**：真实 title fixture RED：首字符 X 差 25、Y 差 46，输出 816×208；Windows GDI+ 原图为 841×335。回退重复扣减并按 frame/device/millimeters 计算 mapping EMF 画布后，子包 25/25 通过，本机 Google Chrome 的五个指定页面视觉正常。
-   **状态**：active。
-   **后续动作**：提交前保留 frame 尺寸和文字坐标回归门禁；生产部署后用同一 Google Chrome 验证用户提供的五个 URL，才可 resolved。
+   **状态**：resolved。
+   **后续动作**：后续所有 mapping EMF 改动均须保留 frame 尺寸和文字坐标回归门禁，并用本机 Google Chrome 先验收本地再验收生产。
