@@ -1,26 +1,60 @@
 diff --git a/dist/index.js b/dist/index.js
-index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e703f3500 100644
+index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412b132e756 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -643,7 +643,7 @@ function gmx(r, x) {
-   const wt = r.state.worldTransform;
-   const px = wt[0] * x + wt[4];
-   if (r.useMappingMode) {
--    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x;
-+    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x - r.bounds.left;
-   }
-   return (px - r.bounds.left) * r.sx;
+@@ -574,6 +574,12 @@ function parseEmfHeader(view) {
+   const frameBottom = view.getInt32(36, true);
+   const frameW = frameRight - frameLeft;
+   const frameH = frameBottom - frameTop;
++  const deviceX = view.getInt32(72, true);
++  const deviceY = view.getInt32(76, true);
++  const millimetersX = view.getInt32(80, true);
++  const millimetersY = view.getInt32(84, true);
++  const framePixelW = millimetersX > 0 ? Math.floor(frameW * deviceX / (millimetersX * 100)) + 1 : 0;
++  const framePixelH = millimetersY > 0 ? Math.floor(frameH * deviceY / (millimetersY * 100)) + 1 : 0;
+   return {
+     bounds: {
+       left: boundsLeft,
+@@ -582,10 +588,15 @@ function parseEmfHeader(view) {
+       bottom: boundsBottom
+     },
+     frameW,
+-    frameH
++    frameH,
++    framePixelW,
++    framePixelH
+   };
  }
-@@ -651,7 +651,7 @@ function gmy(r, y) {
-   const wt = r.state.worldTransform;
-   const py = wt[3] * y + wt[5];
-   if (r.useMappingMode) {
--    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y;
-+    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y - r.bounds.top;
+-function getRenderableEmfBounds(header) {
++function getRenderableEmfBounds(header, useFrameBounds = false) {
++  if (useFrameBounds && header.framePixelW > 0 && header.framePixelH > 0) {
++    return { left: 0, top: 0, right: header.framePixelW, bottom: header.framePixelH };
++  }
+   const boundsW = header.bounds.right - header.bounds.left;
+   const boundsH = header.bounds.bottom - header.bounds.top;
+   if (boundsW > 0 && boundsH > 0) {
+@@ -599,6 +610,20 @@ function getRenderableEmfBounds(header) {
    }
-   return (py - r.bounds.top) * r.sy;
+   return null;
  }
-@@ -1399,9 +1399,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
++function hasGdiMappingRecords(view) {
++  for (let offset = 0; offset + 8 <= view.byteLength; ) {
++    const type = view.getUint32(offset, true);
++    const size = view.getUint32(offset + 4, true);
++    if (size < 8 || offset + size > view.byteLength) {
++      break;
++    }
++    if (type === EMR_SETWINDOWEXTEX || type === EMR_SETWINDOWORGEX || type === EMR_SETVIEWPORTEXTEX || type === EMR_SETVIEWPORTORGEX || type === EMR_SETMAPMODE || type === EMR_SCALEVIEWPORTEXTEX || type === EMR_SCALEWINDOWEXTEX) {
++      return true;
++    }
++    offset += size;
++  }
++  return false;
++}
+ function parseWmfHeader(view) {
+   if (view.byteLength < 22) {
+     return null;
+@@ -1399,9 +1424,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
      const refY = view.getInt32(dataOff + 32, true);
      const nChars = view.getUint32(dataOff + 36, true);
      const offString = view.getUint32(dataOff + 40, true);
@@ -39,7 +73,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e
        if (text.length > 0) {
          const fontScale = Math.abs(gmh(rCtx, 1));
          applyFont(ctx, state, fontScale);
-@@ -1416,20 +1424,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1416,20 +1449,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
            alignHoriz = "right";
          }
          ctx.textBaseline = alignBaseline;
@@ -83,7 +117,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e
          }
        }
      }
-@@ -2038,7 +2061,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -2038,7 +2086,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -92,7 +126,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4305,7 +4328,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4305,7 +4353,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -101,7 +135,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4924,7 +4947,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4924,7 +4972,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -111,29 +145,72 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
+@@ -4943,7 +4992,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+       emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
+       return null;
+     }
+-    const renderBounds = getRenderableEmfBounds(header);
++    const renderBounds = getRenderableEmfBounds(header, hasGdiMappingRecords(view));
+     if (!renderBounds) {
+       emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
+       return null;
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55802329f3 100644
+index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53fd21eaa8 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
-@@ -641,7 +641,7 @@ function gmx(r, x) {
-   const wt = r.state.worldTransform;
-   const px = wt[0] * x + wt[4];
-   if (r.useMappingMode) {
--    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x;
-+    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x - r.bounds.left;
-   }
-   return (px - r.bounds.left) * r.sx;
+@@ -572,6 +572,12 @@ function parseEmfHeader(view) {
+   const frameBottom = view.getInt32(36, true);
+   const frameW = frameRight - frameLeft;
+   const frameH = frameBottom - frameTop;
++  const deviceX = view.getInt32(72, true);
++  const deviceY = view.getInt32(76, true);
++  const millimetersX = view.getInt32(80, true);
++  const millimetersY = view.getInt32(84, true);
++  const framePixelW = millimetersX > 0 ? Math.floor(frameW * deviceX / (millimetersX * 100)) + 1 : 0;
++  const framePixelH = millimetersY > 0 ? Math.floor(frameH * deviceY / (millimetersY * 100)) + 1 : 0;
+   return {
+     bounds: {
+       left: boundsLeft,
+@@ -580,10 +586,15 @@ function parseEmfHeader(view) {
+       bottom: boundsBottom
+     },
+     frameW,
+-    frameH
++    frameH,
++    framePixelW,
++    framePixelH
+   };
  }
-@@ -649,7 +649,7 @@ function gmy(r, y) {
-   const wt = r.state.worldTransform;
-   const py = wt[3] * y + wt[5];
-   if (r.useMappingMode) {
--    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y;
-+    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y - r.bounds.top;
+-function getRenderableEmfBounds(header) {
++function getRenderableEmfBounds(header, useFrameBounds = false) {
++  if (useFrameBounds && header.framePixelW > 0 && header.framePixelH > 0) {
++    return { left: 0, top: 0, right: header.framePixelW, bottom: header.framePixelH };
++  }
+   const boundsW = header.bounds.right - header.bounds.left;
+   const boundsH = header.bounds.bottom - header.bounds.top;
+   if (boundsW > 0 && boundsH > 0) {
+@@ -597,6 +608,20 @@ function getRenderableEmfBounds(header) {
    }
-   return (py - r.bounds.top) * r.sy;
+   return null;
  }
-@@ -1397,9 +1397,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
++function hasGdiMappingRecords(view) {
++  for (let offset = 0; offset + 8 <= view.byteLength; ) {
++    const type = view.getUint32(offset, true);
++    const size = view.getUint32(offset + 4, true);
++    if (size < 8 || offset + size > view.byteLength) {
++      break;
++    }
++    if (type === EMR_SETWINDOWEXTEX || type === EMR_SETWINDOWORGEX || type === EMR_SETVIEWPORTEXTEX || type === EMR_SETVIEWPORTORGEX || type === EMR_SETMAPMODE || type === EMR_SCALEVIEWPORTEXTEX || type === EMR_SCALEWINDOWEXTEX) {
++      return true;
++    }
++    offset += size;
++  }
++  return false;
++}
+ function parseWmfHeader(view) {
+   if (view.byteLength < 22) {
+     return null;
+@@ -1397,9 +1422,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
      const refY = view.getInt32(dataOff + 32, true);
      const nChars = view.getUint32(dataOff + 36, true);
      const offString = view.getUint32(dataOff + 40, true);
@@ -152,7 +229,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55
        if (text.length > 0) {
          const fontScale = Math.abs(gmh(rCtx, 1));
          applyFont(ctx, state, fontScale);
-@@ -1414,20 +1422,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1414,20 +1447,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
            alignHoriz = "right";
          }
          ctx.textBaseline = alignBaseline;
@@ -196,7 +273,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55
          }
        }
      }
-@@ -2036,7 +2059,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -2036,7 +2084,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -205,7 +282,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4303,7 +4326,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4303,7 +4351,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -214,7 +291,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4922,7 +4945,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4922,7 +4970,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -224,3 +301,12 @@ index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
+@@ -4941,7 +4990,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+       emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
+       return null;
+     }
+-    const renderBounds = getRenderableEmfBounds(header);
++    const renderBounds = getRenderableEmfBounds(header, hasGdiMappingRecords(view));
+     if (!renderBounds) {
+       emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
+       return null;

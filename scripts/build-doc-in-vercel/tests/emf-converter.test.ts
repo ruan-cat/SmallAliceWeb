@@ -101,7 +101,7 @@ describe("convertEmfToPng 转换封装", () => {
 		expect(calls.every((text) => text.length === 1)).toBe(true);
 	});
 
-	test("mapping-mode 文本与图形共用裁剪原点", async () => {
+	test("mapping-mode 文本不重复扣减 header bounds", async () => {
 		const prototype = Object.getPrototypeOf(createCanvas(1, 1).getContext("2d")) as {
 			fillText: (text: string, ...args: unknown[]) => unknown;
 		};
@@ -113,14 +113,15 @@ describe("convertEmfToPng 转换封装", () => {
 		};
 
 		try {
-			await convertEmfToPng(readFixture("title-mapping-origin.emf"), { fontFamilyMap });
+			const png = await convertEmfToPng(readFixture("title-mapping-origin.emf"), { fontFamilyMap });
+			expect(pngDimensions(png)).toEqual({ width: 841, height: 335 });
 		} finally {
 			prototype.fillText = originalFillText;
 		}
 
 		expect(calls[0]).toMatchObject({ text: "D" });
-		expect(calls[0].x).toBeCloseTo(314.018, 3);
-		expect(calls[0].y).toBeCloseTo(165.648, 3);
+		expect(calls[0].x).toBeCloseTo(339.018, 3);
+		expect(calls[0].y).toBeCloseTo(211.648, 3);
 	});
 
 	test("真实 ETO_GLYPH_INDEX 文本按源字体映射为 Unicode", async () => {

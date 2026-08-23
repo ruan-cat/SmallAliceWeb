@@ -42,3 +42,9 @@ Windows GDI+ 原图与本地 patched PNG 已用于定位和回归对照；本次
 ## 4. 非 EMF 观察项
 
 Agent Browser 控制台累计报告 6 次 `Hydration completed but contains mismatches`。五页图片没有未加载项，这些 hydration 信息不构成此次 EMF 文本回归失败，但也不属于本 change 已修复的问题，应由站点渲染链路单独排查。
+
+## 5. 验收结论修正
+
+本记录最初把“图片已加载且文字可见”误作为布局通过。用户随后提供的生产截图证明标题、战斗和数据存储关系图仍有背景框与文字层错位、重复或裁断；因此第 2 节的布局通过结论已撤销。
+
+后续验证必须同时满足：使用 Windows GDI+ frame 尺寸对照、在本机 Google Chrome 的页面视口观察图形/文字相对位置、并在生产部署后复测相同 URL。仅检查 `naturalWidth` 或资源加载状态不足以关闭该回归。

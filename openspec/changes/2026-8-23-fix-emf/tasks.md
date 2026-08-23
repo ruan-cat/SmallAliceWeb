@@ -37,3 +37,10 @@
 - [x] 4.5 [提交] 当前 change 关联文件 - 审查 pnpm patch、测试 fixture、OpenSpec 工件和用户已有 `prompts/index.md` 修改的边界后，创建有意义的 `dev` 提交。
 - [x] 4.6 [部署] `small-alice-web-odse` - 推送 `dev`、确认 CI 后 rebase 到 `main` 触发 Vercel Git 集成，并用可见 Chrome 的 Agent Browser 复测五个用户页面。
 - [x] 4.7 [证据] `openspec/changes/2026-8-23-fix-emf/evidence/2026-08-23-text-layout-regression-verification.md` - 记录 GDI+ 对照、Vercel SHA/日志、五页截图和仍未映射 glyph 的风险。
+
+## 5. 生产视觉回归纠偏
+
+- [x] 5.1 [调试] 用户生产截图与 Windows GDI+ 原图 - 对照标题、战斗和数据存储图的背景图元、边框和文字坐标，确认重复裁剪或图层重绘的确切来源。
+- [x] 5.2 [测试] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 将 mapping-mode 回归断言改为 GDI+ 对照的坐标，并新增图元与文字相对位移门禁；必须先在当前错误实现下失败。
+- [x] 5.3 [修改] `patches/emf-converter@2.0.2.patch` - 仅修正已证明的 mapping-mode 坐标变换，避免对 non-mapping EMF、offDx 和 glyph-index 分支造成行为漂移。
+- [ ] 5.4 [验证] `scripts/build-doc-in-vercel` - 完整子包 Vitest、针对三个真实 fixture 的本地 PNG/GDI+ 对照，以及 Vercel 生产可见 Chrome 原始尺寸复测。
