@@ -27,3 +27,13 @@
 - [x] 3.4 [部署] `scripts/build-doc-in-vercel/emf/assets/fonts/NotoSansSC-Regular.ttf` - 推送 `dev` 并确认 CI Ubuntu 构建成功后，将同一已验证提交推进 remote `main` 触发 `small-alice-web-odse` 的 Git 集成生产部署；禁止使用 `pnpm run deploy-vercel`。
 - [x] 3.5 [新增] `openspec/changes/2026-8-23-fix-emf/evidence/2026-08-23-production-visual-verification.md` - 使用 Vercel 部署信息与 agent-browser 抽查 009 对应图片及至少五张含中文 EMF 文本样本，记录 URL、截图路径、逐项比对结论、CI 统计和未解决风险。
 - [x] 3.6 [修改] `prompts/index.md` - 仅在 3.5 的生产视觉证据证明无整段空白和豆腐块后，将 009 标为已完成；若验收失败，保留未完成状态并将失败原因回写到本任务清单。
+
+## 4. 文本布局与 glyph-index 质量回归
+
+- [x] 4.1 [调试] 用户给出的五个生产页面与截图 - 复现图内文本错位、重影和占位符，提取对应 DOCX 内的 EMF 输入并用 Windows GDI+ 生成原图参照。
+- [x] 4.2 [测试] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 新增真实 `offDx`、mapping-mode 和 `ETO_GLYPH_INDEX` EMF fixtures；在实现前记录 5→17 次绘制、+25/+46 原点偏差和 glyph `Ċ` 占位的失败结果。
+- [x] 4.3 [修改] `patches/emf-converter@2.0.2.patch` - 通过 pnpm patch 补逐字符 advance、mapping-mode 裁剪原点、正确 `lfFaceName` 偏移和 glyph-index 映射消费；在项目转换入口传入已反查的黑体/Calibri 映射。
+- [x] 4.4 [验证] `scripts/build-doc-in-vercel` - 运行完整子包 Vitest 和 `pnpm run build:doc-in-vercel`，确认回归测试、全量 EMF/WMF 统计和原始图参照均通过。
+- [ ] 4.5 [提交] 当前 change 关联文件 - 审查 pnpm patch、测试 fixture、OpenSpec 工件和用户已有 `prompts/index.md` 修改的边界后，创建有意义的 `dev` 提交。
+- [ ] 4.6 [部署] `small-alice-web-odse` - 推送 `dev`、确认 CI 后 rebase 到 `main` 触发 Vercel Git 集成，并用可见 Chrome 的 Agent Browser 复测五个用户页面。
+- [ ] 4.7 [证据] `openspec/changes/2026-8-23-fix-emf/evidence/2026-08-23-text-layout-regression-verification.md` - 记录 GDI+ 对照、Vercel SHA/日志、五页截图和仍未映射 glyph 的风险。

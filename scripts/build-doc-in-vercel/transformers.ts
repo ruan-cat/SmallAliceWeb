@@ -7,7 +7,7 @@ import htmlToMd from "html-to-md";
 import type { FormatEnum } from "sharp";
 import { ensureTargetDirectoryExists, createTargetFilePath, errorImgUrl } from "./utils";
 import { convertEmfToPng } from "./emf/convert";
-import { fontFamilyMap } from "./emf/fonts";
+import { fontFamilyMap, glyphIndexMap } from "./emf/fonts";
 
 // 记录已处理的图片类型
 const imageTypesSet = new Set<string>();
@@ -252,7 +252,7 @@ async function docx2html(params: {
 								imageName = imageName.replace(/\.[^.]+$/, ".png");
 								const emfPngPath = path.join(documentImagesDir, imageName);
 
-								const pngBuffer = await convertEmfToPng(imageData, { fontFamilyMap });
+								const pngBuffer = await convertEmfToPng(imageData, { fontFamilyMap, glyphIndexMap });
 								fs.writeFileSync(emfPngPath, pngBuffer);
 								emfConvertSuccess++;
 

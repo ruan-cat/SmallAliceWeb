@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createCanvas } from "@napi-rs/canvas";
 import { convertEmfToPng } from "../emf/convert";
 import { fontFamilyMap } from "../emf/fonts";
 
@@ -77,5 +78,72 @@ describe("convertEmfToPng 转换封装", () => {
 	test("fontFamilyMap 含中文字体映射时文字样本不抛错", async () => {
 		const png = await convertEmfToPng(readFixture("text-sample.emf"), { fontFamilyMap });
 		expect(png.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+	});
+
+	test("真实 offDx 文本记录按字符定位绘制", async () => {
+		const prototype = Object.getPrototypeOf(createCanvas(1, 1).getContext("2d")) as {
+			fillText: (text: string, ...args: unknown[]) => unknown;
+		};
+		const originalFillText = prototype.fillText;
+		const calls: string[] = [];
+		prototype.fillText = function (this: unknown, text: string, ...args: unknown[]) {
+			calls.push(text);
+			return originalFillText.call(this, text, ...args);
+		};
+
+		try {
+			await convertEmfToPng(readFixture("skill-window-offdx.emf"), { fontFamilyMap });
+		} finally {
+			prototype.fillText = originalFillText;
+		}
+
+		expect(calls).toHaveLength(17);
+		expect(calls.every((text) => text.length === 1)).toBe(true);
+	});
+
+	test("mapping-mode 文本与图形共用裁剪原点", async () => {
+		const prototype = Object.getPrototypeOf(createCanvas(1, 1).getContext("2d")) as {
+			fillText: (text: string, ...args: unknown[]) => unknown;
+		};
+		const originalFillText = prototype.fillText;
+		const calls: Array<{ text: string; x: number; y: number }> = [];
+		prototype.fillText = function (this: unknown, text: string, ...args: unknown[]) {
+			calls.push({ text, x: Number(args[0]), y: Number(args[1]) });
+			return originalFillText.call(this, text, ...args);
+		};
+
+		try {
+			await convertEmfToPng(readFixture("title-mapping-origin.emf"), { fontFamilyMap });
+		} finally {
+			prototype.fillText = originalFillText;
+		}
+
+		expect(calls[0]).toMatchObject({ text: "D" });
+		expect(calls[0].x).toBeCloseTo(314.018, 3);
+		expect(calls[0].y).toBeCloseTo(165.648, 3);
+	});
+
+	test("真实 ETO_GLYPH_INDEX 文本按源字体映射为 Unicode", async () => {
+		const prototype = Object.getPrototypeOf(createCanvas(1, 1).getContext("2d")) as {
+			fillText: (text: string, ...args: unknown[]) => unknown;
+		};
+		const originalFillText = prototype.fillText;
+		const calls: string[] = [];
+		prototype.fillText = function (this: unknown, text: string, ...args: unknown[]) {
+			calls.push(text);
+			return originalFillText.call(this, text, ...args);
+		};
+
+		try {
+			await convertEmfToPng(readFixture("asset-library-glyph-index.emf"), {
+				fontFamilyMap,
+				glyphIndexMap: { 黑体: { 266: "…" } },
+			} as Parameters<typeof convertEmfToPng>[1]);
+		} finally {
+			prototype.fillText = originalFillText;
+		}
+
+		expect(calls.filter((text) => text === "…")).toHaveLength(2);
+		expect(calls).not.toContain("Ċ");
 	});
 });

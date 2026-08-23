@@ -24,3 +24,8 @@
    **证据**：`evidence/2026-08-23-production-visual-verification.md` §2–§3；009 原始问题截图与当前生产截图。
    **状态**：active。
    **后续动作**：若未来要求字形风格或像素保真，另建变更并以 Word 原图进行人工对照。
+
+6. **结论**：第二批质量回归包含三个独立根因：`offDx` 被整串绘制忽略、mapping-mode 文本未减去 `rclBounds.left/top`、`ETO_GLYPH_INDEX` 被误当 Unicode。
+   **证据**：真实样本 RED：5→17 次 `fillText`、X/Y 偏差 +25/+46、黑体 glyph id 266 渲染为 `Ċ`；Windows GDI+ 原图与 patched PNG 对照。
+   **状态**：active。
+   **后续动作**：以 pnpm patch 消费逐字符 advance、统一裁剪原点和 source glyph map；必须完成 Vercel/Chrome 五页复测后才标记 resolved。

@@ -10,6 +10,8 @@ export interface ConvertOptions {
 	maxHeight?: number;
 	/** EMF 内部字体名到可用字体名的映射 */
 	fontFamilyMap?: Record<string, string>;
+	/** ETO_GLYPH_INDEX 源字体 glyph id 到 Unicode 字符的映射 */
+	glyphIndexMap?: Record<string, Record<number, string>>;
 }
 
 /** 输出尺寸默认上限 */
@@ -63,6 +65,7 @@ export async function convertEmfToPng(buffer: Buffer, options?: ConvertOptions):
 		maxWidth: options?.maxWidth ?? DEFAULT_MAX_SIZE,
 		maxHeight: options?.maxHeight ?? DEFAULT_MAX_SIZE,
 		fontFamilyMap: options?.fontFamilyMap,
+		glyphIndexMap: options?.glyphIndexMap,
 	};
 
 	/** 魔数分流：EMF 头 record type 1 小端 → convertEmfToDataUrl；placeable WMF 魔数 → convertWmfToDataUrl */

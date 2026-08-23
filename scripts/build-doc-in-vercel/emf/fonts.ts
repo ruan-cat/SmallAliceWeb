@@ -62,6 +62,27 @@ export const fontFamilyMap: Record<string, string> = new Proxy(explicitFontFamil
 });
 
 /**
+ * ETO_GLYPH_INDEX 记录使用的源字体 glyph id 到 Unicode 字符映射。
+ *
+ * EMF 仅保存 glyph id，Canvas 无法直接按 glyph id 绘制。此表由当前文档集内
+ * 使用的 Windows 原字体 cmap 反查得出，键必须与 EMF faceName 归一化结果一致。
+ */
+export const glyphIndexMap: Record<string, Record<number, string>> = {
+	黑体: {
+		263: "“",
+		264: "”",
+		266: "…",
+		319: "∧",
+		320: "∨",
+		333: "≠",
+	},
+	calibri: {
+		858: "‘",
+		859: "’",
+	},
+};
+
+/**
  * 注册随包携带的中文字体。
  *
  * 注册失败（文件缺失、字体损坏等）仅 consola.warn 不中断——字体缺失只影响

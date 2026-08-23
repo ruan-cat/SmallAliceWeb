@@ -1,0 +1,226 @@
+diff --git a/dist/index.js b/dist/index.js
+index 4e58922988e6277d5bb039c59b8a8d1b2152e596..47c369285852de27762f98f79da0da2e703f3500 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -643,7 +643,7 @@ function gmx(r, x) {
+   const wt = r.state.worldTransform;
+   const px = wt[0] * x + wt[4];
+   if (r.useMappingMode) {
+-    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x;
++    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x - r.bounds.left;
+   }
+   return (px - r.bounds.left) * r.sx;
+ }
+@@ -651,7 +651,7 @@ function gmy(r, y) {
+   const wt = r.state.worldTransform;
+   const py = wt[3] * y + wt[5];
+   if (r.useMappingMode) {
+-    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y;
++    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y - r.bounds.top;
+   }
+   return (py - r.bounds.top) * r.sy;
+ }
+@@ -1399,9 +1399,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+     const refY = view.getInt32(dataOff + 32, true);
+     const nChars = view.getUint32(dataOff + 36, true);
+     const offString = view.getUint32(dataOff + 40, true);
++    const options = view.getUint32(dataOff + 44, true);
++    const offDx = view.getUint32(dataOff + 64, true);
+     const maxOffset = view.byteLength;
+     if (nChars > 0 && offString > 0 && offset + offString + nChars * 2 <= maxOffset) {
+-      const text = readUtf16LE(view, offset + offString, nChars);
++      let text = readUtf16LE(view, offset + offString, nChars);
++      if ((options & 16) !== 0 && state.glyphIndexMap) {
++        const glyphMap = state.glyphIndexMap[state.fontFamily.toLowerCase().trim()];
++        if (glyphMap) {
++          text = Array.from({ length: nChars }, (_value, index) => glyphMap[view.getUint16(offset + offString + index * 2, true)] ?? text.slice(index, index + 1)).join("");
++        }
++      }
+       if (text.length > 0) {
+         const fontScale = Math.abs(gmh(rCtx, 1));
+         applyFont(ctx, state, fontScale);
+@@ -1416,20 +1424,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+           alignHoriz = "right";
+         }
+         ctx.textBaseline = alignBaseline;
+-        ctx.textAlign = alignHoriz;
++        const hasPdy = (options & 8192) !== 0;
++        const advanceCount = hasPdy ? nChars * 2 : nChars;
++        const hasAdvances = offDx > 0 && offset + offDx + advanceCount * 4 <= maxOffset;
++        const advances = hasAdvances ? Array.from({ length: advanceCount }, (_value, index) => view.getInt32(offset + offDx + index * 4, true)) : [];
++        const totalWidth = hasAdvances ? advances.filter((_value, index) => !hasPdy || index % 2 === 0).reduce((sum, advance) => sum + gmw(rCtx, advance), 0) : ctx.measureText(text).width;
++        const baseX = gmx(rCtx, refX);
++        const baseY = gmy(rCtx, refY);
++        ctx.textAlign = hasAdvances ? "left" : alignHoriz;
+         if (state.bkMode === 2) {
+-          const measured = ctx.measureText(text);
+           const bgH = fontSizePx(state, fontScale);
+           ctx.fillStyle = state.bkColor;
+-          ctx.fillRect(gmx(rCtx, refX), gmy(rCtx, refY) - bgH, measured.width, bgH);
++          const bgX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          ctx.fillRect(bgX, baseY - bgH, totalWidth, bgH);
+           ctx.fillStyle = state.textColor;
+         }
+-        ctx.fillText(text, gmx(rCtx, refX), gmy(rCtx, refY));
++        if (hasAdvances) {
++          let drawX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          let drawY = baseY;
++          for (let index = 0; index < nChars; index++) {
++            ctx.fillText(text.slice(index, index + 1), drawX, drawY);
++            drawX += gmw(rCtx, advances[hasPdy ? index * 2 : index]);
++            if (hasPdy) drawY += gmh(rCtx, advances[index * 2 + 1]);
++          }
++        } else {
++          ctx.fillText(text, baseX, baseY);
++        }
+         if (state.fontUnderline || state.fontStrikeOut) {
+-          const w = ctx.measureText(text).width;
+-          const baseX = gmx(rCtx, refX);
+-          const startX = alignHoriz === "center" ? baseX - w / 2 : alignHoriz === "right" ? baseX - w : baseX;
+-          drawTextDecorations(ctx, state, startX, gmy(rCtx, refY), w, fontScale);
++          const startX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          drawTextDecorations(ctx, state, startX, baseY, totalWidth, fontScale);
+         }
+       }
+     }
+@@ -2038,7 +2061,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+         const italic = view.getUint8(dataOff + 24);
+         const underline = view.getUint8(dataOff + 25);
+         const strikeOut = view.getUint8(dataOff + 26);
+-        const family = readUtf16LE(view, dataOff + 28, 32) || "sans-serif";
++        const family = readUtf16LE(view, dataOff + 32, 32) || "sans-serif";
+         rCtx.objectTable.set(ihFont, {
+           kind: "font",
+           height: Math.abs(height),
+@@ -4305,7 +4328,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+     ctx,
+     view,
+     objectTable: /* @__PURE__ */ new Map(),
+-    state: { ...defaultState(), fontFamilyMap: replayOptions.fontFamilyMap },
++    state: { ...defaultState(), fontFamilyMap: replayOptions.fontFamilyMap, glyphIndexMap: replayOptions.glyphIndexMap },
+     stateStack: [],
+     inPath: false,
+     windowOrg: { x: bounds.left, y: bounds.top },
+@@ -4924,7 +4947,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+   const replayOptions = {
+     maxRecords: opts.maxRecords,
+     maxRecordsEmfPlus: opts.maxRecords,
+-    fontFamilyMap: opts.fontFamilyMap
++    fontFamilyMap: opts.fontFamilyMap,
++    glyphIndexMap: opts.glyphIndexMap
+   };
+   try {
+     emfLog("=== convertEmfToDataUrl START ===");
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 6f0899197373c38402da4274db8667cca19079a4..6eea60c6e324b02b06f8ea3dd78c5c55802329f3 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -641,7 +641,7 @@ function gmx(r, x) {
+   const wt = r.state.worldTransform;
+   const px = wt[0] * x + wt[4];
+   if (r.useMappingMode) {
+-    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x;
++    return (px - r.windowOrg.x) / (r.windowExt.cx || 1) * (r.viewportExt.cx || 1) + r.viewportOrg.x - r.bounds.left;
+   }
+   return (px - r.bounds.left) * r.sx;
+ }
+@@ -649,7 +649,7 @@ function gmy(r, y) {
+   const wt = r.state.worldTransform;
+   const py = wt[3] * y + wt[5];
+   if (r.useMappingMode) {
+-    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y;
++    return (py - r.windowOrg.y) / (r.windowExt.cy || 1) * (r.viewportExt.cy || 1) + r.viewportOrg.y - r.bounds.top;
+   }
+   return (py - r.bounds.top) * r.sy;
+ }
+@@ -1397,9 +1397,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+     const refY = view.getInt32(dataOff + 32, true);
+     const nChars = view.getUint32(dataOff + 36, true);
+     const offString = view.getUint32(dataOff + 40, true);
++    const options = view.getUint32(dataOff + 44, true);
++    const offDx = view.getUint32(dataOff + 64, true);
+     const maxOffset = view.byteLength;
+     if (nChars > 0 && offString > 0 && offset + offString + nChars * 2 <= maxOffset) {
+-      const text = readUtf16LE(view, offset + offString, nChars);
++      let text = readUtf16LE(view, offset + offString, nChars);
++      if ((options & 16) !== 0 && state.glyphIndexMap) {
++        const glyphMap = state.glyphIndexMap[state.fontFamily.toLowerCase().trim()];
++        if (glyphMap) {
++          text = Array.from({ length: nChars }, (_value, index) => glyphMap[view.getUint16(offset + offString + index * 2, true)] ?? text.slice(index, index + 1)).join("");
++        }
++      }
+       if (text.length > 0) {
+         const fontScale = Math.abs(gmh(rCtx, 1));
+         applyFont(ctx, state, fontScale);
+@@ -1414,20 +1422,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+           alignHoriz = "right";
+         }
+         ctx.textBaseline = alignBaseline;
+-        ctx.textAlign = alignHoriz;
++        const hasPdy = (options & 8192) !== 0;
++        const advanceCount = hasPdy ? nChars * 2 : nChars;
++        const hasAdvances = offDx > 0 && offset + offDx + advanceCount * 4 <= maxOffset;
++        const advances = hasAdvances ? Array.from({ length: advanceCount }, (_value, index) => view.getInt32(offset + offDx + index * 4, true)) : [];
++        const totalWidth = hasAdvances ? advances.filter((_value, index) => !hasPdy || index % 2 === 0).reduce((sum, advance) => sum + gmw(rCtx, advance), 0) : ctx.measureText(text).width;
++        const baseX = gmx(rCtx, refX);
++        const baseY = gmy(rCtx, refY);
++        ctx.textAlign = hasAdvances ? "left" : alignHoriz;
+         if (state.bkMode === 2) {
+-          const measured = ctx.measureText(text);
+           const bgH = fontSizePx(state, fontScale);
+           ctx.fillStyle = state.bkColor;
+-          ctx.fillRect(gmx(rCtx, refX), gmy(rCtx, refY) - bgH, measured.width, bgH);
++          const bgX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          ctx.fillRect(bgX, baseY - bgH, totalWidth, bgH);
+           ctx.fillStyle = state.textColor;
+         }
+-        ctx.fillText(text, gmx(rCtx, refX), gmy(rCtx, refY));
++        if (hasAdvances) {
++          let drawX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          let drawY = baseY;
++          for (let index = 0; index < nChars; index++) {
++            ctx.fillText(text.slice(index, index + 1), drawX, drawY);
++            drawX += gmw(rCtx, advances[hasPdy ? index * 2 : index]);
++            if (hasPdy) drawY += gmh(rCtx, advances[index * 2 + 1]);
++          }
++        } else {
++          ctx.fillText(text, baseX, baseY);
++        }
+         if (state.fontUnderline || state.fontStrikeOut) {
+-          const w = ctx.measureText(text).width;
+-          const baseX = gmx(rCtx, refX);
+-          const startX = alignHoriz === "center" ? baseX - w / 2 : alignHoriz === "right" ? baseX - w : baseX;
+-          drawTextDecorations(ctx, state, startX, gmy(rCtx, refY), w, fontScale);
++          const startX = alignHoriz === "center" ? baseX - totalWidth / 2 : alignHoriz === "right" ? baseX - totalWidth : baseX;
++          drawTextDecorations(ctx, state, startX, baseY, totalWidth, fontScale);
+         }
+       }
+     }
+@@ -2036,7 +2059,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+         const italic = view.getUint8(dataOff + 24);
+         const underline = view.getUint8(dataOff + 25);
+         const strikeOut = view.getUint8(dataOff + 26);
+-        const family = readUtf16LE(view, dataOff + 28, 32) || "sans-serif";
++        const family = readUtf16LE(view, dataOff + 32, 32) || "sans-serif";
+         rCtx.objectTable.set(ihFont, {
+           kind: "font",
+           height: Math.abs(height),
+@@ -4303,7 +4326,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+     ctx,
+     view,
+     objectTable: /* @__PURE__ */ new Map(),
+-    state: { ...defaultState(), fontFamilyMap: replayOptions.fontFamilyMap },
++    state: { ...defaultState(), fontFamilyMap: replayOptions.fontFamilyMap, glyphIndexMap: replayOptions.glyphIndexMap },
+     stateStack: [],
+     inPath: false,
+     windowOrg: { x: bounds.left, y: bounds.top },
+@@ -4922,7 +4945,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+   const replayOptions = {
+     maxRecords: opts.maxRecords,
+     maxRecordsEmfPlus: opts.maxRecords,
+-    fontFamilyMap: opts.fontFamilyMap
++    fontFamilyMap: opts.fontFamilyMap,
++    glyphIndexMap: opts.glyphIndexMap
+   };
+   try {
+     emfLog("=== convertEmfToDataUrl START ===");
