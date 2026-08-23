@@ -6,9 +6,15 @@ import sharp from "sharp";
 import htmlToMd from "html-to-md";
 import type { FormatEnum } from "sharp";
 import { ensureTargetDirectoryExists, createTargetFilePath, errorImgUrl } from "./utils";
+import { convertEmfToPng } from "./emf/convert";
+import { fontFamilyMap } from "./emf/fonts";
 
 // 记录已处理的图片类型
 const imageTypesSet = new Set<string>();
+
+// 记录 EMF/WMF 转换统计（黑名单格式原本不进入 imageTypesSet 且无失败通道，此计数器弥补静默绿灯问题）
+let emfConvertSuccess = 0;
+let emfConvertFail = 0;
 
 // 文件处理接口
 interface FileProcessorParams {
@@ -111,6 +117,8 @@ async function processDocxFiles(docxFiles: string[], outputDir: string): Promise
 
 	// 输出图片处理统计信息
 	consola.info(`处理的图片类型: ${Array.from(imageTypesSet).join(", ") || "无"}`);
+	// EMF/WMF 转换统计并入输出报告（弥补失败静默绿灯问题）
+	consola.info(`EMF/WMF 转换统计: 成功 ${emfConvertSuccess} 张，失败 ${emfConvertFail} 张`);
 
 	return errorFiles;
 }
@@ -216,9 +224,9 @@ async function docx2html(params: {
 
 						const imagePath = path.join(documentImagesDir, imageName);
 
-						// 处理特殊格式的图片
-						const unsupportedFormats = ["x-emf", "gif", "wmf", "emf"];
-						if (unsupportedFormats.includes(imageType)) {
+						// 处理特殊格式的图片：gif 维持不处理走占位图；EMF/WMF 走矢量转换（见下方分支）
+						const emfFormats = ["x-emf", "emf", "wmf"];
+						if (imageType === "gif") {
 							consola.warn(`跳过不支持的图片格式: ${imageType}，使用占位图片`);
 							return {
 								src: errorImgUrl,
@@ -233,6 +241,33 @@ async function docx2html(params: {
 							return {
 								src: errorImgUrl,
 							};
+						}
+
+						// EMF/WMF 矢量图转换：渲染为 PNG 落盘，失败回退占位图且不中断构建
+						if (emfFormats.includes(imageType)) {
+							try {
+								const imageData = Buffer.from(imageBuffer, "base64");
+
+								// 显式以 .png 扩展名落盘（不得沿用上文 imageName 拼接出的 .x-emf 扩展名）
+								imageName = imageName.replace(/\.[^.]+$/, ".png");
+								const emfPngPath = path.join(documentImagesDir, imageName);
+
+								const pngBuffer = await convertEmfToPng(imageData, { fontFamilyMap });
+								fs.writeFileSync(emfPngPath, pngBuffer);
+								emfConvertSuccess++;
+
+								consola.debug(`EMF/WMF 转换成功: ${imageName}`);
+								return {
+									src: `./images/${safeFileName}/${imageName}`,
+								};
+							} catch (error) {
+								consola.error(`EMF/WMF 转换失败 [${imageName}]: ${(error as Error).message}`);
+								errorFilesPath.push(`${filePath} - 图片处理失败 [${imageType}]: ${(error as Error).message}`);
+								emfConvertFail++;
+								return {
+									src: errorImgUrl,
+								};
+							}
 						}
 
 						// 使用sharp压缩图片

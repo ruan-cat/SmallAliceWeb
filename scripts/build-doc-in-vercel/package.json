@@ -1,0 +1,14 @@
+{
+	"name": "@ruan-cat-temp/build-doc-in-vercel",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@napi-rs/canvas": "^1.0.7",
+		"emf-converter": "2.0.2",
+		"vitest": "^2.1.9"
+	}
+}

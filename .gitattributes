@@ -42,3 +42,6 @@
 *.xlsx binary
 *.ppt binary
 *.pptx binary
+*.emf binary
+*.wmf binary
+*.bin binary
