@@ -226,6 +226,12 @@ metadata:
 - 适用场景：pnpm monorepo 中 Nuxt/Nitro 构建成功，但 `.output` 运行时因 npm alias 的逻辑包名未进入 standalone output 而 `MODULE_NOT_FOUND`。
 - 关键约束：把 build、standalone runtime、真实部署视为独立验收门；优先显式部署包 runtime dependency，禁止因单个 alias tracing 缺口全局启用 `nodeLinker: hoisted` 或 `shamefullyHoist`。
 
+### 13.6 napi Canvas 原型不可变与 drawImage 原生类型检查（2026-08-23）
+
+- 详细案例：`2026-08-23-napi-canvas-prototype-and-typecheck.md`
+- 适用场景：对 @napi-rs/canvas 等 napi 类做 instance hack 或包装（EMF 转换 shim、canvas 类 polyfill）。
+- 关键约束：napi 类原型不可变，instanceof 适配用 `Symbol.hasInstance`、禁止 `setPrototypeOf`；drawImage 等 API 只接受原生实例，附加方法直接挂实例属性、禁止 Proxy；对方库 try/catch 宽容路径会静默吞掉绘制错误，验证必须检查输出内容质量而非只看"转换成功"。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
