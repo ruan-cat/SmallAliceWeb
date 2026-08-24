@@ -39,7 +39,7 @@
 | 前端 UI   | Vue3 + `vue-element-plus-x@1.3.98`    | `Bubble`、`BubbleList`、`Sender` 是唯一聊天 UI 主线          |
 | Transport | `@ai-sdk/vue@1.2.12`                  | 仅由业务使用方 `useKnowledgeChat` 管理 transport/state/abort |
 | Markdown  | `markstream-vue@1.0.8`                | 助手 Markdown 唯一渲染主线                                   |
-| 代码高亮  | `@shikijs/stream@4.4.1`（受控候选）   | 未完成真实兼容验证前不得接入或宣称兼容                       |
+| 代码高亮  | `markstream-vue` 默认 `<pre>`         | 内置 Shiki 路径验证失败，暂不接入第二条流式高亮链            |
 | API       | 独立 Nitro v3                         | 不引入 Nuxt API；路由从 `nitro/h3` 导入                      |
 | 数据      | Neon + drizzle + pgvector             | 正式环境唯一向量持久化主线                                   |
 | 校验      | zod                                   | 所有外部输入必须真实映射 HTTP 错误状态                       |
@@ -55,7 +55,7 @@ Nitro 使用 `nitro` v3，`compatibilityDate` 固定为 `2024-09-19`；不安装
 - 默认 `smoothStreaming="auto"` + `typewriter`，同时固定 `fade=false`。
 - `prefers-reduced-motion: reduce` 时关闭正文 typewriter/动画，但不得停止真实内容流、Markdown 解析或 `final` 收敛。
 - Element Plus X 的 `Typewriter` 只允许用于 Welcome 等非 Markdown 短文案，禁止包裹助手 Markdown 正文。
-- `@shikijs/stream` 只可作为代码块高亮的受控候选。当前已知 `markstream-vue` 有自身 `codeRenderer`/`codeBlockStream` 能力，但没有已证实的直接 fenced-code 注入点可接受独立 Shiki stream；优先验证 `markstream-vue` 自带 `codeRenderer="shiki"` 路径。
+- `@shikijs/stream` 只可作为代码块高亮的受控候选。2026-08-24 已对 `markstream-vue@1.0.8` 的 `codeRenderer="shiki"` 进行实际挂载验证：即使暂时安装其声明的 `shiki` 与 `stream-markdown` 可选 peer，仍稳定降级为安全 `<pre>`，未形成可验证高亮容器；因此不接入独立 Shiki stream，也不改变当前安全默认渲染。
 - 由于 `vue-element-plus-x@1.3.98` 单消息列表上游 `getBoundingClientRect()` 缺陷，当前明确固定 `auto-scroll=false`。这属于受控放弃，不是迁移漏项；重新启用或升级前必须独立验证。
 
 ### 3.3 知识源与多模态边界

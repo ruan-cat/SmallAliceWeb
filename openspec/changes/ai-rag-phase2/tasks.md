@@ -137,11 +137,12 @@
 
 ### 2.2 P1：验证、触发与调优
 
-- [ ] 2.2.1 [spike/test] `packages/ai-vue/**` - 验证 Shiki 流式代码块高亮边界
+- [x] 2.2.1 [spike/test] `packages/ai-vue/**` - 验证 Shiki 流式代码块高亮边界
   - 当前禁止直接接入 `@shikijs/stream`。
   - 先验证 `markstream-vue` 自带 `codeRenderer="shiki"`，再决定是否需要独立 Shiki stream。
   - 必须覆盖表格、未闭合 fenced code、长回复、XSS、`final` 收敛、reduced-motion。
   - 失败时保留安全默认渲染，不允许为“功能完整”强行引入第二渲染路径。
+  - 2026-08-24 完成证据：实际挂载 `markstream-vue@1.0.8` 的 `codeRenderer="shiki"`，并模拟可见 viewport；即使临时补齐 `shiki@3.23.0` 与 `stream-markdown@0.0.16` peer，代码块仍为 `code-pre-fallback`，没有高亮容器。依赖已回退，新增回归固定安全 fallback；`ai-vue` 4 文件 / 20 用例、typecheck、build 均通过。
 
 - [ ] 2.2.2 [code/infra/test] 同步入口 - `rag:sync`、可选 `rag:watch` 与生产触发
   - 依赖 2.1.2。

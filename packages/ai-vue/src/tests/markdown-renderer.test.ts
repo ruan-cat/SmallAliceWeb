@@ -4,7 +4,7 @@ import { createApp, defineComponent, h, nextTick, ref, type App, type Ref } from
 
 const mountedApps: App[] = [];
 
-function mountMarkdownRenderer(content: string, final = true) {
+function mountMarkdownRenderer(content: string, final = true, codeRenderer: "pre" | "shiki" = "pre") {
 	const host = document.createElement("div");
 	const messageContent = ref(content);
 	const isFinal = ref(final);
@@ -17,7 +17,8 @@ function mountMarkdownRenderer(content: string, final = true) {
 						final: isFinal.value,
 						htmlPolicy: "escape",
 						mode: "chat",
-						renderCodeBlocksAsPre: true,
+						codeRenderer,
+						renderCodeBlocksAsPre: codeRenderer === "pre",
 						smoothStreaming: false,
 						typewriter: false,
 						fade: false,
@@ -73,6 +74,47 @@ describe("markstream-vue 真实流式 Markdown 渲染", () => {
 		await updateMessage(messageContent, isFinal, code, true);
 		expect(host.textContent).toContain("const answer = 42;");
 		expect(host.querySelector("pre, code")).not.toBeNull();
+	});
+
+	test("内置 Shiki renderer 无法挂载时保留安全 pre fallback", async () => {
+		const originalIntersectionObserver = globalThis.IntersectionObserver;
+		class VisibleIntersectionObserver {
+			constructor(private readonly callback: IntersectionObserverCallback) {}
+
+			observe(target: Element) {
+				this.callback(
+					[{ isIntersecting: true, target } as IntersectionObserverEntry],
+					this as unknown as IntersectionObserver,
+				);
+			}
+
+			unobserve() {}
+			disconnect() {}
+			takeRecords() {
+				return [];
+			}
+			readonly root = null;
+			readonly rootMargin = "0px";
+			readonly thresholds = [];
+		}
+		Object.defineProperty(globalThis, "IntersectionObserver", {
+			configurable: true,
+			value: VisibleIntersectionObserver,
+		});
+		try {
+			const { host } = mountMarkdownRenderer("```ts\nconst answer = 42;\n```", true, "shiki");
+			await waitForRender();
+			await new Promise((resolve) => window.setTimeout(resolve, 500));
+			await waitForRender();
+			expect(host.querySelector("[data-markstream-code-block='1']")).toBeNull();
+			expect(host.querySelector(".code-pre-fallback")).not.toBeNull();
+			expect(host.textContent).toContain("const answer = 42;");
+		} finally {
+			Object.defineProperty(globalThis, "IntersectionObserver", {
+				configurable: true,
+				value: originalIntersectionObserver,
+			});
+		}
 	});
 
 	test("渲染至少 20,000 字符且 1,000 行的长回答而不截断末行", async () => {
