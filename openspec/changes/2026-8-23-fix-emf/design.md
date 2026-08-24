@@ -74,7 +74,9 @@ GDI 普通图元与 mapping-mode 文本都必须相对同一个 `rclBounds.left/
 
 ### 7.1 只新增明确 SVG API，不改变 PNG 默认契约
 
-`emf-converter@2.0.2` 公开入口和当前项目调用链均固定为 PNG。因此 pnpm patch 必须新增独立的 `convertEmfToSvgDataUrl` 与 `convertWmfToSvgDataUrl`，并保留既有 PNG API、默认 Canvas 路径和 PNG 语义不变。项目封装层新增 `convertEmfToSvg`，仅在 POC 显式调用；`transformers.ts` 在 SVG 与 GDI+ 视觉门禁通过前不得切换默认生产落盘格式。
+`emf-converter@2.0.2` 公开入口和当前项目调用链均固定为 PNG。因此 pnpm patch 必须新增独立的 `convertEmfToSvgDataUrl` 与 `convertWmfToSvgDataUrl`，并保留既有 PNG API、默认 Canvas 路径和 PNG 语义不变。项目封装层新增 `convertEmfToSvg`。
+
+2026-08-24 经用户明确授权，EMF/WMF 文档图片默认落盘格式切换为 SVG；`transformers.ts` 仅对 `x-emf`、`emf`、`wmf` 分支写入 `.svg`，其余 PNG/JPEG/GIF 处理语义不变。此切换以 Dual 记录仅回放 GDI 回退层的真实 WPS/GDI+ 对照为前提，仍需 Production Git Integration 与目标图截图复验。
 
 ### 7.2 主画布使用 SvgCanvas，临时位图画布继续使用 Raster Canvas
 

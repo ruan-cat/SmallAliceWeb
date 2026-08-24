@@ -61,7 +61,7 @@ EMF 内嵌文本 MUST 通过随包注册的中文字体与字体族映射完成�
 
 ### Requirement: SVG 输出 POC 必须保留真实矢量语义与 PNG 兼容路径
 
-转换模块 MAY 为 EMF/WMF 提供独立 SVG 输出 API。SVG POC MUST 保留既有 PNG API 及其默认行为，MUST 使用由真实 SVG 图元组成的根 `<svg>`，MUST NOT 仅用单张全画布 PNG 作为 SVG 内容。源 EMF 自带 DIB、位图或嵌入图片时，转换 MAY 使用局部 SVG `<image>` 表达该原始位图内容。
+转换模块 MUST 为 EMF/WMF 提供 SVG 输出，并将文档转换链中的 EMF/WMF 图片落盘为 `.svg`。SVG MUST 使用由真实 SVG 图元组成的根 `<svg>`，MUST NOT 仅用单张全画布 PNG 作为 SVG 内容。源 EMF 自带 DIB、位图或嵌入图片时，转换 MAY 使用局部 SVG `<image>` 表达该原始位图内容。既有显式 PNG API MUST 保留，供回归和非 EMF 图像分支使用。
 
 #### Scenario: SVG POC 生成真实混合矢量输出
 
@@ -70,11 +70,11 @@ EMF 内嵌文本 MUST 通过随包注册的中文字体与字体族映射完成�
 - **AND** SVG 具有根 `<svg>`、有效 viewBox，且至少保留输入图中可表达的路径、文字或裁剪图元
 - **AND** 输出不得退化成唯一一个覆盖完整画布的 PNG `<image>`
 
-#### Scenario: SVG POC 不改变 PNG 默认转换
+#### Scenario: SVG 默认转换不改变非 EMF 图片和显式 PNG API
 
-- **WHEN** 既有调用方继续调用 PNG 转换 API
+- **WHEN** 调用方处理 PNG/JPEG 等非 EMF 图片，或显式调用 PNG 转换 API
 - **THEN** 输出仍是通过 PNG 文件签名校验的 PNG Buffer
-- **AND** SVG POC 的 SVGCanvas、SVG 导出器或文字轮廓化设置不得污染 PNG 主画布和 DIB 临时 Raster Canvas
+- **AND** SVGCanvas、SVG 导出器或文字轮廓化设置不得污染显式 PNG 主画布和 DIB 临时 Raster Canvas
 
 #### Scenario: 真实文本布局 fixture 在 SVG 中不退化
 

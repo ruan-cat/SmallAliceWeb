@@ -9,6 +9,7 @@
 - 审计进展：已从 DOCX 关系顺序确认该资源为 `word/media/image4.emf`，提取为 `portrait-high-contrast.emf` fixture（375,056 字节），并生成 1094×405 Windows GDI+ 参照；详细证据为 `evidence/2026-08-24-svg-quality-audit.md`。
 - 最新转换验证：白底 RED→GREEN 后重跑 `pnpm run build:doc-in-vercel`；重建的 `关于高级角色肖像-003.png` 为 1024×379，非不透明像素数为 0。
 - Dual 修复验证：原始 Dual 与屏蔽 EMF+ comment 的 GDI-only PNG 的 SHA-256 RED 不同、GREEN 相等；子包测试已为 31/31 通过。重建页面的 Agent Browser 复验仍被 daemon EOF/目标元素未找到阻断，未记作视觉通过。
+- Production 复验：Git Integration deployment `dpl_6rHWuuruwdDWYhvvmeayhwng4xe8` Ready，checkout 为 `main@d288ded`；生产目标资源仍是 hashed `.png`，已截图确认 Dual 图元错位消失。SVG 默认输出未上线。
 - 阻塞点：现存 Agent Browser 会话在第二页前失效；随后自动启动和 `--no-sandbox` 均出现 daemon EOF。后者虽返回 `界面 | 小爱丽丝官网` 标题，但按复盘约束不构成视口截图验收。
 - 本轮批次抽样：已完成用户点名三页的目标图视口截图与 DOCX 媒体类型反查；两张正常图是原始 PNG，不属于 EMF 转换范围；详细表在 `evidence/2026-08-24-svg-quality-audit.md`。
 - 最近验证：`pnpm --filter @ruan-cat-temp/build-doc-in-vercel test` 为 30/30 通过；其中关系图白底 fixture 的 GDI+ alpha 回归通过。

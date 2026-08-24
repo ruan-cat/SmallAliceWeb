@@ -57,3 +57,14 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 ## 5. 后续门禁
 
 此类别的修复只能在以下证据齐全后标记通过：真实 fixture 的 RED→GREEN 回归、Windows GDI+ 对照、Agent Browser 目标图视口截图和生产容器复验。其余乱码、错位、重复、裁断与占位符类别仍未完成审计。
+
+## 6. Production Git Integration 复验
+
+- Production deployment：`dpl_6rHWuuruwdDWYhvvmeayhwng4xe8`。
+- Git checkout 证据：Vercel 构建日志记录 `Cloning github.com/ruan-cat/SmallAliceWeb (Branch: main, Commit: d288ded)`。
+- Production URL：`https://drill.ruan-cat.com/docx/插件详细手册/5.战斗UI/关于高级角色肖像.html`。
+- 目标资源：生产 DOM 的第 3 张图为 `/assets/关于高级角色肖像-003.CPfcR1wh.png`，原始尺寸 1024×379；扩展名和响应资源均为 PNG，不是 SVG。
+- 目标图视口截图：`C:\Users\pc\AppData\Local\Temp\smallalice-emf-production-dual-fixed.png`。
+- 判读：框、箭头和文字不再双层错位，关系图恢复与 WPS/GDI+ 基线一致的紧凑单一布局。
+
+因此本次生产环境验证的结论是“EMF+ Dual 的 PNG 转换修复已上线”；不是“默认 SVG 图片修复已上线”。`transformers.ts` 仍保持 PNG 产物分支，SVG 继续仅作为 POC。

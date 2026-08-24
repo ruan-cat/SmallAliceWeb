@@ -6,7 +6,7 @@ import sharp from "sharp";
 import htmlToMd from "html-to-md";
 import type { FormatEnum } from "sharp";
 import { ensureTargetDirectoryExists, createTargetFilePath, errorImgUrl } from "./utils";
-import { convertEmfToPng } from "./emf/convert";
+import { convertEmfToSvg } from "./emf/convert";
 import { fontFamilyMap, glyphIndexMap } from "./emf/fonts";
 
 // 记录已处理的图片类型
@@ -243,17 +243,17 @@ async function docx2html(params: {
 							};
 						}
 
-						// EMF/WMF 矢量图转换：渲染为 PNG 落盘，失败回退占位图且不中断构建
+						// EMF/WMF 矢量图转换：输出真实 SVG 落盘，失败回退占位图且不中断构建
 						if (emfFormats.includes(imageType)) {
 							try {
 								const imageData = Buffer.from(imageBuffer, "base64");
 
-								// 显式以 .png 扩展名落盘（不得沿用上文 imageName 拼接出的 .x-emf 扩展名）
-								imageName = imageName.replace(/\.[^.]+$/, ".png");
-								const emfPngPath = path.join(documentImagesDir, imageName);
+								// 显式以 .svg 扩展名落盘（不得沿用上文 imageName 拼接出的 .x-emf 扩展名）
+								imageName = imageName.replace(/\.[^.]+$/, ".svg");
+								const emfSvgPath = path.join(documentImagesDir, imageName);
 
-								const pngBuffer = await convertEmfToPng(imageData, { fontFamilyMap, glyphIndexMap });
-								fs.writeFileSync(emfPngPath, pngBuffer);
+								const svgBuffer = await convertEmfToSvg(imageData, { fontFamilyMap, glyphIndexMap });
+								fs.writeFileSync(emfSvgPath, svgBuffer);
 								emfConvertSuccess++;
 
 								consola.debug(`EMF/WMF 转换成功: ${imageName}`);
