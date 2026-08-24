@@ -4,7 +4,7 @@
 
 - 日期：2026-08-24；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
 - 进度：13 / 25 已完成。当前主阻塞是 §2.1.4 生产浏览器流式闭环；§2.2.1 已完成并维持安全默认代码块渲染。
-- 工作分支：`dev`；`origin/main` 当前为 `d019749`；用户既有 `prompts/index.md` 未触碰。
+- 工作分支：`dev`；`origin/main` 当前为 `2c3d666`；用户既有 `prompts/index.md` 未触碰。
 
 ## 2. 已完成的最近 checkpoint
 
