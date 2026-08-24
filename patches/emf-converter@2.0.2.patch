@@ -41,7 +41,7 @@ index a5b8822b48f7ee86d3cea5c8f3892ffdfc76fd4d..979a3fdf17d817d45d2eab4ce8976c45
 -export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertWmfToDataUrl };
 +export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertEmfToSvgDataUrl, convertWmfToDataUrl, convertWmfToSvgDataUrl };
 diff --git a/dist/index.js b/dist/index.js
-index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed57ad70bd 100644
+index 4e58922988e6277d5bb039c59b8a8d1b2152e596..758d4970dcf7d0eb5c1f925a63581b4b218ee7ae 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -294,6 +294,44 @@ function createCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI
@@ -229,7 +229,51 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
          }
        }
      }
-@@ -2038,7 +2142,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -1437,7 +1541,25 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+   return true;
+ }
+ var ROP_PATCOPY = 15728673;
++var ROP_SRCAND = 8913094;
++var ROP_SRCPAINT = 15597702;
+ var BS_NULL = 1;
++function isSvgCanvasContext(ctx) {
++  return Boolean(ctx?.canvas && typeof ctx.canvas.getContent === "function");
++}
++function isAdjacentStretchDibitsMaskPair(view, offset, recSize, dataOff, dstX, dstY, dstW, dstH) {
++  const rop = view.getUint32(dataOff + 60, true);
++  if (rop !== ROP_SRCAND && rop !== ROP_SRCPAINT) return null;
++  const nextOffset = offset + recSize;
++  if (nextOffset + 80 > view.byteLength || view.getUint32(nextOffset, true) !== EMR_STRETCHDIBITS) return null;
++  const nextSize = view.getUint32(nextOffset + 4, true);
++  if (nextSize < 80 || nextOffset + nextSize > view.byteLength) return null;
++  const nextDataOff = nextOffset + 8;
++  const nextRop = view.getUint32(nextDataOff + 60, true);
++  if (!((rop === ROP_SRCAND && nextRop === ROP_SRCPAINT) || (rop === ROP_SRCPAINT && nextRop === ROP_SRCAND))) return null;
++  if (view.getInt32(nextDataOff + 16, true) !== dstX || view.getInt32(nextDataOff + 20, true) !== dstY || view.getInt32(nextDataOff + 64, true) !== dstW || view.getInt32(nextDataOff + 68, true) !== dstH) return null;
++  return nextOffset;
++}
+ function handleBitBlt(rCtx, offset, dataOff, recSize) {
+   const { ctx, view, state } = rCtx;
+   if (recSize >= 96) {
+@@ -1490,6 +1612,17 @@ function handleStretchDibits(rCtx, offset, dataOff, recSize) {
+     const dstY = view.getInt32(dataOff + 20, true);
+     const dstW = view.getInt32(dataOff + 64, true);
+     const dstH = view.getInt32(dataOff + 68, true);
++    if (isSvgCanvasContext(ctx)) {
++      const skippedOffsets = rCtx.svgMaskPairSkipOffsets;
++      if (skippedOffsets?.has(offset)) return true;
++      const nextOffset = isAdjacentStretchDibitsMaskPair(view, offset, recSize, dataOff, dstX, dstY, dstW, dstH);
++      if (nextOffset !== null) {
++        const offsets = rCtx.svgMaskPairSkipOffsets ?? (rCtx.svgMaskPairSkipOffsets = /* @__PURE__ */ new Set());
++        offsets.add(offset);
++        offsets.add(nextOffset);
++        return true;
++      }
++    }
+     const offBmiSrc = view.getUint32(dataOff + 40, true);
+     const cbBmiSrc = view.getUint32(dataOff + 44, true);
+     const offBitsSrc = view.getUint32(dataOff + 48, true);
+@@ -2038,7 +2171,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -238,7 +282,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4286,11 +4390,30 @@ var GDI_NAMES = {
+@@ -4286,11 +4419,30 @@ var GDI_NAMES = {
    88: "EMR_POLYBEZIERTO16",
    91: "EMR_POLYPOLYGON16"
  };
@@ -269,7 +313,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
    const emfPlusState = createEmfPlusState();
    const maxRecords = replayOptions.maxRecords ?? MAX_RECORDS_DEFAULT;
    const maxRecordsEmfPlus = replayOptions.maxRecordsEmfPlus ?? MAX_RECORDS_EMFPLUS_DEFAULT;
-@@ -4305,7 +4428,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4305,7 +4457,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -278,7 +322,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4335,6 +4458,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4335,6 +4487,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      const dataOff = offset + 8;
      gdiRecordTypes.set(recType, (gdiRecordTypes.get(recType) ?? 0) + 1);
      if (recType === EMR_COMMENT) {
@@ -289,7 +333,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
        if (recSize >= 16) {
          const commentDataSize = view.getUint32(dataOff, true);
          const sig = view.getUint32(dataOff + 4, true);
-@@ -4924,7 +5051,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4924,7 +5080,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -299,7 +343,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
-@@ -4943,7 +5071,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4943,7 +5100,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
        return null;
      }
@@ -308,7 +352,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
      if (!renderBounds) {
        emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
        return null;
-@@ -4964,6 +5092,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4964,6 +5121,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        return null;
      }
      const { canvas, ctx } = setup;
@@ -319,7 +363,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
      emfLog(
        `convertEmfToDataUrl: canvas created ${canvas.width}\xD7${canvas.height} (dpiScale=${dpiScale})`
      );
-@@ -5041,6 +5173,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -5041,6 +5202,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
      }
      const { canvas, ctx } = setup;
      ctx.save();
@@ -330,7 +374,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
      replayWmfRecords(view, ctx, header, canvas.width, canvas.height, replayOptions);
      ctx.restore();
      const result = await exportCanvasToPngDataUrl(canvas);
-@@ -5053,7 +5189,56 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -5053,7 +5218,56 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
      return null;
    }
  }
@@ -388,7 +432,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed
  exports.convertWmfToDataUrl = convertWmfToDataUrl;
 +exports.convertWmfToSvgDataUrl = convertWmfToSvgDataUrl;
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab2151a0ca 100644
+index 6f0899197373c38402da4274db8667cca19079a4..63e8bb46a31936514ad071a2d317eac0efa04980 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
 @@ -292,6 +292,44 @@ function createCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI
@@ -576,7 +620,51 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
          }
        }
      }
-@@ -2036,7 +2140,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -1435,7 +1539,25 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+   return true;
+ }
+ var ROP_PATCOPY = 15728673;
++var ROP_SRCAND = 8913094;
++var ROP_SRCPAINT = 15597702;
+ var BS_NULL = 1;
++function isSvgCanvasContext(ctx) {
++  return Boolean(ctx?.canvas && typeof ctx.canvas.getContent === "function");
++}
++function isAdjacentStretchDibitsMaskPair(view, offset, recSize, dataOff, dstX, dstY, dstW, dstH) {
++  const rop = view.getUint32(dataOff + 60, true);
++  if (rop !== ROP_SRCAND && rop !== ROP_SRCPAINT) return null;
++  const nextOffset = offset + recSize;
++  if (nextOffset + 80 > view.byteLength || view.getUint32(nextOffset, true) !== EMR_STRETCHDIBITS) return null;
++  const nextSize = view.getUint32(nextOffset + 4, true);
++  if (nextSize < 80 || nextOffset + nextSize > view.byteLength) return null;
++  const nextDataOff = nextOffset + 8;
++  const nextRop = view.getUint32(nextDataOff + 60, true);
++  if (!((rop === ROP_SRCAND && nextRop === ROP_SRCPAINT) || (rop === ROP_SRCPAINT && nextRop === ROP_SRCAND))) return null;
++  if (view.getInt32(nextDataOff + 16, true) !== dstX || view.getInt32(nextDataOff + 20, true) !== dstY || view.getInt32(nextDataOff + 64, true) !== dstW || view.getInt32(nextDataOff + 68, true) !== dstH) return null;
++  return nextOffset;
++}
+ function handleBitBlt(rCtx, offset, dataOff, recSize) {
+   const { ctx, view, state } = rCtx;
+   if (recSize >= 96) {
+@@ -1488,6 +1610,17 @@ function handleStretchDibits(rCtx, offset, dataOff, recSize) {
+     const dstY = view.getInt32(dataOff + 20, true);
+     const dstW = view.getInt32(dataOff + 64, true);
+     const dstH = view.getInt32(dataOff + 68, true);
++    if (isSvgCanvasContext(ctx)) {
++      const skippedOffsets = rCtx.svgMaskPairSkipOffsets;
++      if (skippedOffsets?.has(offset)) return true;
++      const nextOffset = isAdjacentStretchDibitsMaskPair(view, offset, recSize, dataOff, dstX, dstY, dstW, dstH);
++      if (nextOffset !== null) {
++        const offsets = rCtx.svgMaskPairSkipOffsets ?? (rCtx.svgMaskPairSkipOffsets = /* @__PURE__ */ new Set());
++        offsets.add(offset);
++        offsets.add(nextOffset);
++        return true;
++      }
++    }
+     const offBmiSrc = view.getUint32(dataOff + 40, true);
+     const cbBmiSrc = view.getUint32(dataOff + 44, true);
+     const offBitsSrc = view.getUint32(dataOff + 48, true);
+@@ -2036,7 +2169,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -585,7 +673,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4284,11 +4388,30 @@ var GDI_NAMES = {
+@@ -4284,11 +4417,30 @@ var GDI_NAMES = {
    88: "EMR_POLYBEZIERTO16",
    91: "EMR_POLYPOLYGON16"
  };
@@ -616,7 +704,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
    const emfPlusState = createEmfPlusState();
    const maxRecords = replayOptions.maxRecords ?? MAX_RECORDS_DEFAULT;
    const maxRecordsEmfPlus = replayOptions.maxRecordsEmfPlus ?? MAX_RECORDS_EMFPLUS_DEFAULT;
-@@ -4303,7 +4426,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4303,7 +4455,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -625,7 +713,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4333,6 +4456,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4333,6 +4485,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      const dataOff = offset + 8;
      gdiRecordTypes.set(recType, (gdiRecordTypes.get(recType) ?? 0) + 1);
      if (recType === EMR_COMMENT) {
@@ -636,7 +724,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
        if (recSize >= 16) {
          const commentDataSize = view.getUint32(dataOff, true);
          const sig = view.getUint32(dataOff + 4, true);
-@@ -4922,7 +5049,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4922,7 +5078,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -646,7 +734,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
-@@ -4941,7 +5069,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4941,7 +5098,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
        return null;
      }
@@ -655,7 +743,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
      if (!renderBounds) {
        emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
        return null;
-@@ -4962,6 +5090,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4962,6 +5119,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        return null;
      }
      const { canvas, ctx } = setup;
@@ -666,7 +754,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
      emfLog(
        `convertEmfToDataUrl: canvas created ${canvas.width}\xD7${canvas.height} (dpiScale=${dpiScale})`
      );
-@@ -5039,6 +5171,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -5039,6 +5200,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
      }
      const { canvas, ctx } = setup;
      ctx.save();
@@ -677,7 +765,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab
      replayWmfRecords(view, ctx, header, canvas.width, canvas.height, replayOptions);
      ctx.restore();
      const result = await exportCanvasToPngDataUrl(canvas);
-@@ -5051,5 +5187,52 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -5051,5 +5216,52 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
      return null;
    }
  }

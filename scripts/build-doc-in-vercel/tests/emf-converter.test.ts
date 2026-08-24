@@ -255,4 +255,14 @@ describe("convertEmfToPng 转换封装", () => {
 			createHash("sha256").update(fallbackPng).digest("hex"),
 		);
 	});
+
+	test("ROP3 DIB 掩膜不导出为地图活动镜头 SVG 的点阵 use 图元", async () => {
+		const svg = await convertEmfToSvg(readFixture("map-camera-rop3.emf"), { fontFamilyMap });
+		const content = svg.toString("utf8");
+
+		expect(svgRoot(svg)).toMatch(/viewBox="0 0 1024 241"/);
+		expect(content).toContain('fill="#4F88BB"');
+		expect(content.match(/<image\b/g) ?? []).toHaveLength(0);
+		expect(content.match(/<use\b/g) ?? []).toHaveLength(0);
+	});
 });
