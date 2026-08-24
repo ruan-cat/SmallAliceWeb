@@ -7,4 +7,9 @@ export default {
 			inlineDynamicImports: true,
 		},
 	},
+	routeRules: {
+		"/v1/**": {
+			cors: true,
+		},
+	},
 };

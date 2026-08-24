@@ -5,9 +5,18 @@ const chat = vi.hoisted(() => ({ useChat: vi.fn() }));
 
 vi.mock("@ai-sdk/vue", () => chat);
 
-import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
+import { resolveKnowledgeChatApi, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
 describe("useKnowledgeChat", () => {
+	test("使用 VITE_RAG_API_BASE 将文档站请求指向绝对 Nitro API 域名", () => {
+		vi.stubEnv("VITE_RAG_API_BASE", "https://api.example.com/");
+		try {
+			expect(resolveKnowledgeChatApi()).toBe("https://api.example.com/v1/chat");
+		} finally {
+			vi.unstubAllEnvs();
+		}
+	});
+
 	test("使用已锁定 SDK 向本地聊天端点发送文本与会话 ID", async () => {
 		const append = vi.fn();
 		chat.useChat.mockReturnValue({

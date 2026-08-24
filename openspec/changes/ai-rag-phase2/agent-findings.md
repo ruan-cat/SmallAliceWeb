@@ -82,3 +82,4 @@
 - **active**：agent-browser 无法启动 Chrome（exit 3，未生成 DevToolsActivePort）；本轮没有浏览器验收结论，不能将 API/Nitro 证据扩大为 UI 或生产浏览器通过。
 - **resolved**：真实 pgvector 查询行中的 `heading_path`、`image_urls` 在当前 driver 下是 JSON 字符串而非数组，导致 Hybrid Search 映射 500。`postgres-search` 现仅对合法 JSON 字符串数组解析，非法值仍抛 `PostgresSearchError`；Development `/v1/search` 与 `/v1/chat` 已验证通过。
 - **active**：首次 `main@c0ab120` Production build Ready 后，`/v1/search` 在加载 `_libs/extend.mjs` 时因 `__commonJSMin is not a function` 失败。根因是 Rolldown 将 CommonJS helper 放在 `_chunks/errors.mjs`，而该 chunk 又经 unified/extend 形成初始化循环；`rolldownConfig.output.inlineDynamicImports=true` 已通过本地 Vercel 函数 entry import 验证，仍需下一条 main Git deployment 验证线上 runtime。
+- **active**：文档聊天组件默认相对请求 `/v1/chat`，无法跨域访问独立 Nitro Project。现通过 `VITE_RAG_API_BASE` 生成绝对 chat URL，并为 Nitro `/v1/**` 启用 CORS；文档站 Production/Preview 变量已回读，仍需双项目 main deployment 与可见 Chrome 复验。

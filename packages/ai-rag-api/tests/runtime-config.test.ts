@@ -15,6 +15,7 @@ describe("RAG API runtime configuration", () => {
 			public: { apiBase: "/v1" },
 		});
 		expect(nitroConfig.rolldownConfig).toMatchObject({ output: { inlineDynamicImports: true } });
+		expect(nitroConfig.routeRules).toMatchObject({ "/v1/**": { cors: true } });
 	});
 
 	test("does not embed a connection string or credential in the configuration", () => {

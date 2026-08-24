@@ -21,4 +21,5 @@
 - `NITRO_SYNC_DATABASE_URL` 已三环境接线；以 scanner gate 固定临界区后，真实 Development service 的第二轮同步返回 `KNOWLEDGE_SYNC_CONFLICT` / 409，回归测试已覆盖。
 - Vercel `smallalice-docs-ai-nitro-api` 的 Production Branch 已从 `dev` 改为 `main` 并由登录 Chrome 页面回读；下一条同步到 main 的提交将触发目标 Production build。
 - 首次 main Production deployment 已完成 Git checkout/build，但 `/v1/search` 在函数加载阶段触发 Rolldown 跨 chunk CommonJS helper 循环。`rolldownConfig.output.inlineDynamicImports=true` 已使本地函数产物收敛为单个可直接 import 的 entry；待下一条 main Git deployment 验证。
+- 文档站 Project `small-alice-web-odse` 已确认追踪 `main`，并已写入 Production/Preview 的 `VITE_RAG_API_BASE`；客户端 transport 与 Nitro `/v1/**` CORS 变更待下一条 main commit 的双项目 Git deployment 验证。
 - 生产部署与浏览器验证尚未完成；下一步以修复后的 main Git Integration deployment 完成 §2.1.4 的生产后端驱动浏览器回归。

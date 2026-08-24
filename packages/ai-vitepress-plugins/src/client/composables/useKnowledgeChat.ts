@@ -29,6 +29,13 @@ export type KnowledgeChatOptions = {
 	onResponseComplete?: () => void;
 };
 
+/** 解析文档站聊天 API，生产环境可通过 VITE_RAG_API_BASE 指向独立 Nitro 域名。 */
+export function resolveKnowledgeChatApi(api?: string) {
+	if (api?.trim()) return api.trim();
+	const base = import.meta.env.VITE_RAG_API_BASE?.trim().replace(/\/+$/, "");
+	return base ? `${base}/v1/chat` : "/v1/chat";
+}
+
 /** 将 data-stream 中的来源帧缩减为聊天组件可展示的安全字段。 */
 function toSource(frame: unknown): AiChatSource | undefined {
 	if (!frame || typeof frame !== "object" || !("type" in frame) || frame.type !== "source") return;
@@ -48,7 +55,7 @@ function toSource(frame: unknown): AiChatSource | undefined {
 /** 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。 */
 export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const chat = useChat({
-		api: options.api ?? "/v1/chat",
+		api: resolveKnowledgeChatApi(options.api),
 		id: conversationId,
 		fetch: options.fetch,
 		experimental_prepareRequestBody({ messages }) {
