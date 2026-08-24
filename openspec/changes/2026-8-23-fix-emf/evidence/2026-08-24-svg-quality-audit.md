@@ -82,12 +82,12 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 
 ### 5.1 已固定与待补齐的代表样本
 
-|          类别           |                       真实样本与现有参照                       |                     当前状态                      |
-| :---------------------: | :------------------------------------------------------------: | :-----------------------------------------------: |
-|   错位 / 重复 / 裁断    |    `portrait-high-contrast.emf` 与 Windows GDI+ 关系图参照     | 已证实 Dual 双回放是根因；生产 SVG 已完成一图复验 |
-|      乱码 / 占位符      |    `asset-library-glyph-index.emf`，黑体 glyph id 266 → `…`    | 回归已固定；仍需在 SVG 覆盖清单中做目标图视口复验 |
-|     复杂裁剪 / 位图     | 清单中 399/399 全部命中，候选样本见 `插件类型.docx` image1.emf |      尚未完成 GDI+ 与 Chrome 的代表样本验收       |
-| ROP2 / DrawDriverString |                    当前 399 个输入均未检出                     |  没有可用真实样本，不能将“零检出”宣传为格式保真   |
+|          类别           |                    真实样本与现有参照                    |                                    当前状态                                     |
+| :---------------------: | :------------------------------------------------------: | :-----------------------------------------------------------------------------: |
+|   错位 / 重复 / 裁断    | `portrait-high-contrast.emf` 与 Windows GDI+ 关系图参照  |                已证实 Dual 双回放是根因；生产 SVG 已完成一图复验                |
+|      乱码 / 占位符      | `asset-library-glyph-index.emf`，黑体 glyph id 266 → `…` |                回归已固定；仍需在 SVG 覆盖清单中做目标图视口复验                |
+|     复杂裁剪 / 位图     |  `插件类型.docx` image1.emf，GDI+ 与生产 SVG 截图已保存  | 失败：生产 SVG 在椭圆节点后多出灰色矩形图元，需定位 SVG 局部 `<image>`/裁剪状态 |
+| ROP2 / DrawDriverString |                 当前 399 个输入均未检出                  |                 没有可用真实样本，不能将“零检出”宣传为格式保真                  |
 
 ## 6. Production Git Integration 复验
 
@@ -107,3 +107,12 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 - 人工判读：文本框、三条箭头和动画序列均为紧凑单一布局，与 WPS/GDI+ 基准的相对位置一致；未见此前 SVG POC 中“全套文本、箭头和框体彼此错开”的错误，也未见 EMF+ Dual 的重复图层。
 
 结论：默认 SVG 的真实 Git Integration 生产链路和该高风险 Dual 关系图通过。该结论不替代任务 6.6 的全量分类与 6.7 的覆盖清单逐图视觉验收。
+
+### 6.3 复杂裁剪 / 位图代表样本失败
+
+- 原始输入：`drill-docx/插件详细手册/0.基本定义/插件类型.docx` 的 `word/media/image1.emf`，SHA-256 为 `cbe8fddff5e2afaf23d955e7c3cad5470d629c3bc181d0207cc673b22c105901`，256,864 字节。
+- Windows GDI+ 参照：`C:\Users\pc\AppData\Local\Temp\smallalice-plugin-type-image1-gdiplus.png`，806×397，显示为蓝色椭圆节点、文字和连线，不含节点外的灰色矩形图元。
+- 原样生产 URL：`https://drill.ruan-cat.com/docx/插件详细手册/0.基本定义/插件类型.html`。
+- 目标生产资源：`/assets/插件类型-001.CS04AMfI.svg`，HTTP `200 image/svg+xml`，806×397，69 个 `<path>`、20 个局部 `<image>`。
+- Agent Browser 视口截图：`C:\Users\pc\AppData\Local\Temp\smallalice-plugin-type-image1-production-svg.png`。
+- 人工判读：每个蓝色椭圆节点后出现 GDI+ 参照中不存在的灰色矩形边界；这是实际 SVG 图元/裁剪状态错误，属于重复或错位候选，不能因 SVG MIME、加载数或路径数量正常而判为通过。
