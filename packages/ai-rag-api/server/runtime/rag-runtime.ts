@@ -120,7 +120,9 @@ export function createReservedSyncExecutor(createClient: () => ReservableSyncSql
 }
 
 /** 创建 HTTP plugin 与本地 CLI 共用的真实 RAG runtime。 */
-export async function createRagRuntime(config: ResolvedRagConfig): Promise<RagRuntimeContext> {
+export async function createRagRuntime(
+	config: ResolvedRagConfig,
+): Promise<RagRuntimeContext & { close: () => Promise<void> }> {
 	const missing = requiredConfigFields.filter((field) => !config[field].trim());
 	if (missing.length) throw new Error(`RAG 运行时配置不完整，缺失字段: ${missing.join(", ")}`);
 	const repositoryRoot = resolve(config.repositoryRoot || process.cwd());
@@ -154,8 +156,8 @@ export async function createRagRuntime(config: ResolvedRagConfig): Promise<RagRu
 				scanner: () => scanKnowledgeSources({ repositoryRoot, sourceRoot }),
 				profileVersion: "markdown-structure-v1",
 				embeddingModel: config.embeddingModel,
-				maxEmbeddingTexts: 100,
 			}),
 	};
-	return createRagRuntimeContext(config, factories);
+	const runtime = await createRagRuntimeContext(config, factories);
+	return { ...runtime, close: () => sql.end({ timeout: 5 }) };
 }

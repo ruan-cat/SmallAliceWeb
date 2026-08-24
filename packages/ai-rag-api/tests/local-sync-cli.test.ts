@@ -4,15 +4,17 @@ import { createLocalKnowledgeWatch, executeLocalKnowledgeSync } from "../server/
 describe("本地知识同步 CLI", () => {
 	test("默认执行真实同步，并将同一 runtime sync 结果输出为 JSON", async () => {
 		const sync = vi.fn(async (input: { dryRun: boolean }) => ({ status: "succeeded", dryRun: input.dryRun }));
+		const close = vi.fn(async () => undefined);
 		const write = vi.fn();
 
 		const exitCode = await executeLocalKnowledgeSync([], {
-			createRuntime: async () => ({ sync }),
+			createRuntime: async () => ({ sync, close }),
 			write,
 		});
 
 		expect(exitCode).toBe(0);
 		expect(sync).toHaveBeenCalledWith({ dryRun: false });
+		expect(close).toHaveBeenCalledTimes(1);
 		expect(JSON.parse(write.mock.calls[0]?.[0] ?? "")).toEqual({ status: "succeeded", dryRun: false });
 	});
 

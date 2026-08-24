@@ -3,6 +3,7 @@ import { watch as watchFileSystem, type FSWatcher } from "node:fs";
 
 type LocalSyncRuntime = {
 	sync: (input: { dryRun: boolean }) => Promise<unknown>;
+	close?: () => Promise<void>;
 };
 
 type LocalSyncOptions = {
@@ -74,7 +75,11 @@ export async function executeLocalKnowledgeSync(argumentsList: string[], options
 		}
 
 		const runtime = await options.createRuntime();
-		options.write(JSON.stringify(await runtime.sync({ dryRun: argumentsWithoutSeparator.includes("--dry-run") })));
+		try {
+			options.write(JSON.stringify(await runtime.sync({ dryRun: argumentsWithoutSeparator.includes("--dry-run") })));
+		} finally {
+			await runtime.close?.();
+		}
 		return 0;
 	} catch (error) {
 		options.write(JSON.stringify({ error: { message: error instanceof Error ? error.message : "本地知识同步失败" } }));

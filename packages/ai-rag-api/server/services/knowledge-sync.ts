@@ -79,7 +79,7 @@ export function createKnowledgeSyncService(options: KnowledgeSyncOptions): Knowl
 	const idFactory = options.idFactory ?? defaultIdFactory;
 	const clock = options.clock ?? (() => new Date());
 	const lockKey = options.lockKey ?? DEFAULT_LOCK_KEY;
-	const maxEmbeddingTexts = options.maxEmbeddingTexts ?? 100;
+	const maxEmbeddingTexts = options.maxEmbeddingTexts ?? Number.MAX_SAFE_INTEGER;
 	if (!Number.isInteger(maxEmbeddingTexts) || maxEmbeddingTexts < 1) {
 		throw new Error("maxEmbeddingTexts 必须是正整数。");
 	}
@@ -125,6 +125,10 @@ async function runSync(
 			throw new ApiHttpError(409, "KNOWLEDGE_SYNC_CONFLICT", "已有同步任务正在运行。");
 		}
 		lockAcquired = true;
+		await session.execute(
+			`UPDATE knowledge_sync_runs SET status = 'failed', finished_at = $1 WHERE status = 'running'`,
+			[input.clock()],
+		);
 		const scan = await safeScan(options.scanner);
 		const documents = scan.documents;
 		const failedFiles = [...scan.failedFiles];

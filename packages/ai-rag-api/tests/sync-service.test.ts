@@ -311,7 +311,7 @@ describe("createKnowledgeSyncService", () => {
 		expect(state.batchSizes?.every((size) => size <= 100)).toBe(true);
 	});
 
-	test("累计 embedding 文本超过 100 时在调用 provider 前停止", async () => {
+	test("默认同步可跨多个 100 条 provider batch 完成同一文档", async () => {
 		const state: FakeState = { documents: [], mutations: [], transactions: 0, locked: true, batchSizes: [] };
 		let called = false;
 		const chunks = Array.from({ length: 101 }, (_, index) => ({
@@ -343,11 +343,11 @@ describe("createKnowledgeSyncService", () => {
 		const result = await service.sync({ dryRun: false });
 
 		expect(called).toBe(true);
-		expect(state.batchSizes).toEqual([100]);
-		expect(result.writtenChunkCount).toBe(100);
+		expect(state.batchSizes).toEqual([100, 1]);
+		expect(result.writtenChunkCount).toBe(101);
 		expect(state.transactions).toBe(1);
-		expect(result.status).toBe("partial");
-		expect(result.failedFiles).toEqual(["docs/docx/over-limit.md"]);
+		expect(result.status).toBe("succeeded");
+		expect(result.failedFiles).toEqual([]);
 	});
 
 	test("没有 transaction 能力时拒绝执行文档替换", async () => {
