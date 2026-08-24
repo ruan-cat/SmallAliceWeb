@@ -14,6 +14,7 @@ describe("RAG API runtime configuration", () => {
 			chatModel: "",
 			public: { apiBase: "/v1" },
 		});
+		expect(nitroConfig.rolldownConfig).toMatchObject({ output: { inlineDynamicImports: true } });
 	});
 
 	test("does not embed a connection string or credential in the configuration", () => {
