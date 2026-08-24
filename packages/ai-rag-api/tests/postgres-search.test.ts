@@ -64,4 +64,14 @@ describe("createPostgresSearchProvider", () => {
 		await expect(provider.lexicalSearch("RAG", 0)).rejects.toThrow("limit");
 		await expect(provider.lexicalSearch("RAG", 1)).rejects.toThrow("headingPath");
 	});
+
+	test("将 PostgreSQL JSON 列返回的字符串数组解析为来源元数据", async () => {
+		const provider = createPostgresSearchProvider({
+			async execute() {
+				return [{ ...row, headingPath: JSON.stringify(row.headingPath), imageUrls: JSON.stringify(row.imageUrls) }];
+			},
+		});
+
+		await expect(provider.lexicalSearch("RAG", 1)).resolves.toEqual([row]);
+	});
 });

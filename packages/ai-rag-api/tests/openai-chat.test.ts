@@ -21,6 +21,7 @@ describe("OpenAI 聊天流适配器", () => {
 		expect(() =>
 			createOpenAiChatStream({
 				databaseUrl: "",
+				syncDatabaseUrl: "",
 				embeddingModel: "",
 				openaiApiKey: "",
 				baseUrl: "",
@@ -42,6 +43,7 @@ describe("OpenAI 聊天流适配器", () => {
 
 		const stream = createOpenAiChatStream({
 			databaseUrl: "",
+			syncDatabaseUrl: "",
 			embeddingModel: "",
 			openaiApiKey: "test-key",
 			baseUrl: "",

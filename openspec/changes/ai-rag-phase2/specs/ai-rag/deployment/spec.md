@@ -58,14 +58,15 @@
 
 ### Requirement: 3. 环境变量接线
 
-应用运行 MUST 使用 Vercel 集成提供的 pooled URL，Drizzle migration MUST 使用非 pooled URL（通常为 POSTGRES*URL*NON_POOLING）；缺少非 pooled URL 时 MUST NOT 执行迁移；既有 NITRO\*\* 私有环境变量与 Cloudflare embedding 所需的 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL` MUST 跨 production、preview 与 development 三环境接线；Nitro API 连接数据库前 MUST 先执行 "vercel env pull .env.local --environment=development"；Vercel Project 使用自定义 pnpm install 时，三环境 MUST 维护 ENABLE_EXPERIMENTAL_COREPACK=1。
+应用检索与聊天 MUST 使用 Vercel 集成提供的 pooled URL，Drizzle migration MUST 使用非 pooled URL（通常为 POSTGRES*URL*NON_POOLING）；持有 session-level PostgreSQL advisory lock 的同步 MUST 使用私有 `NITRO_SYNC_DATABASE_URL` 注入同一既有数据库的 non-pooled URL，缺少它时 MUST NOT 装配同步能力；既有 NITRO\*\* 私有环境变量与 Cloudflare embedding 所需的 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL` MUST 跨 production、preview 与 development 三环境接线；Nitro API 连接数据库前 MUST 先执行 "vercel env pull .env.local --environment=development"；Vercel Project 使用自定义 pnpm install 时，三环境 MUST 维护 ENABLE_EXPERIMENTAL_COREPACK=1。
 
-#### Scenario: pooled 与非 pooled URL 分工
+#### Scenario: pooled、同步与非 pooled URL 分工
 
-- **WHEN** 应用运行
+- **WHEN** 应用检索或聊天
 - **THEN** MUST 使用 Vercel 集成提供的 pooled URL
 - **AND** 执行 Drizzle migration 时 MUST 使用非 pooled URL（通常为 POSTGRES_URL_NON_POOLING）
-- **AND** 缺少非 pooled URL 时 MUST NOT 执行迁移
+- **AND** 同步服务 MUST 通过私有 `NITRO_SYNC_DATABASE_URL` 使用同一既有数据库的 non-pooled URL 持有 advisory lock
+- **AND** 缺少 non-pooled URL 时 MUST NOT 执行 migration 或装配同步服务
 
 #### Scenario: RAG 环境变量三环境接线
 

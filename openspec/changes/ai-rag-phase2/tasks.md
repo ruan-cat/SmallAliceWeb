@@ -90,12 +90,13 @@
   - 完成证据：migration 文件、数据库 schema 核对、HNSW 索引核对、1024 维检索 SQL smoke。
   - 2026-08-20 证据：`pnpm run neon:guard` 通过；development 数据库迁移前 `chunks_count=0`、`documents_count=0`、`embedding_type=vector(1536)`、存在 `chunks_embedding_hnsw_cosine_idx`；已应用 `0002_switch_embedding_to_bge_m3_1024.sql`；迁移后核对为 `chunks_count=0`、`documents_count=0`、`embedding_type=vector(1024)`，HNSW 余弦索引仍存在；`pnpm --filter @ruan-cat-drill-doc/ai-rag-api test` 覆盖 1024 维检索 SQL 与 schema migration smoke。
 
-- [ ] 2.1.0b [code/test] `packages/ai-rag-api/server/providers/**`, `packages/ai-rag-api/server/plugins/rag.ts`, `packages/ai-rag-api/src/runtime-config.ts` - 接入 Cloudflare Workers AI OpenAI-compatible embedding provider，固定 endpoint、model、批量 100、输入顺序和 1024 维有限数值校验。
+- [x] 2.1.0b [code/test] `packages/ai-rag-api/server/providers/**`, `packages/ai-rag-api/server/plugins/rag.ts`, `packages/ai-rag-api/src/runtime-config.ts` - 接入 Cloudflare Workers AI OpenAI-compatible embedding provider，固定 endpoint、model、批量 100、输入顺序和 1024 维有限数值校验。
   - 请求使用 `POST /client/v4/accounts/{account_id}/ai/v1/embeddings`，body 使用 `model` + `input`；不得发送 `dimensions`/`output_dimensionality` 伪造维度能力。
   - 凭据仅允许通过显式 runtime config 注入 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_EMBEDDING_MODEL`；不得 import 时建立连接或输出 token。
   - 完成证据：provider 单元测试、真实单条 Cloudflare smoke（脱敏记录维度/数量/有限性）、运行时装配测试。
+  - 2026-08-24 证据：Development Vercel env 从忽略的 `.env.ai-rag-phase2.smoke` 安全读取；现有 provider 真实调用返回单条 `count=1`、`dimensions=1024`、`finite=true`，批量 5 条均为 `1024` 维有限数值。`pnpm --filter @ruan-cat-drill-doc/ai-rag-api test` 为 18 个文件 / 70 个用例通过，typecheck 通过。
 
-- [ ] 2.1.1 [code/infra/test] `packages/ai-rag-api/**` - 装配真实 PostgreSQL lexical + pgvector provider
+- [x] 2.1.1 [code/infra/test] `packages/ai-rag-api/**` - 装配真实 PostgreSQL lexical + pgvector provider
   - 进入条件：用户明确允许数据库操作；安全获得 Vercel development 环境变量；用户已完成官方 `neon` CLI 安装/认证。
   - 执行门禁：先 `pnpm run neon:guard`；禁止 `neonctl`、包装器或 `npx` 临时替代。
   - 先 `vercel env pull .env.local --environment=development`，只在本地受忽略文件读取变量；禁止输出连接串。
@@ -104,23 +105,30 @@
   - lexical 采用 PostgreSQL FTS + `ts_rank_cd`；未经真实中文/技术术语评估不得称 BM25。
   - pgvector 采用 `<=>` cosine；验证 vector extension 和 HNSW index；HNSW 需与精确检索对比。
   - 完成证据：脱敏 migration/查询记录、provider 集成测试、真实目标数据库 lexical/vector 查询结果。
+  - 2026-08-24 阶段证据：development 只读核对为 `vector(1024)`、HNSW 索引存在，真实 lexical/vector 查询均可执行但因 `documents=0`、`chunks=0` 返回 0 条；事务内 `EXPLAIN` 证明 HNSW 计划可被选用。HNSW 与精确检索的召回对比必须等待 §2.1.2 受控同步写入样本后完成，本项在该比较前保持未勾选。
+  - 2026-08-24 完成证据：真实同步后数据库有 160 个 chunk；同一 Cloudflare 1024 维查询向量下，强制 HNSW 与强制精确扫描均返回 5 条，排序 ID 完全一致。
 
-- [ ] 2.1.2 [code/db/test] `packages/ai-rag-api/**` - 使用 Cloudflare `@cf/baai/bge-m3` 真实 embedding、增量同步、单文档事务、advisory lock、同步记录
+- [x] 2.1.2 [code/db/test] `packages/ai-rag-api/**` - 使用 Cloudflare `@cf/baai/bge-m3` 真实 embedding、增量同步、单文档事务、advisory lock、同步记录
   - 进入条件：真实 database provider + 可用 embedding 凭据。
   - 当前 embedding：Cloudflare Workers AI `@cf/baai/bge-m3` / 1024 / batch 100；Nitro 调用 OpenAI-compatible `/v1/embeddings`，不使用 Cloudflare Worker binding 作为 Vercel Nitro 的隐式依赖。
   - 真实同步前必须完成 1 条维度 smoke 与 5–10 条批量 smoke；所有向量必须是 1024 维有限数值。
+  - 当前 §2.1.1 已完成真实运行时连接、schema、索引和空库查询的只读核对；虽然其 HNSW/精确召回比较仍待数据样本，本项的受控同步前提已经满足。
   - 未变化文件必须跳过重嵌入；变化文件先构建完整新版本，再单文档事务替换；失败保留旧版本。
   - 只有完整扫描成功后才删除缺失来源；扫描失败时禁止删除。
   - PostgreSQL advisory lock 拒绝并发同步，冲突返回 409。
+  - 同步的 session-level advisory lock 必须由私有 `NITRO_SYNC_DATABASE_URL` 注入 non-pooled URL 持有；检索/聊天仍使用 pooled `NITRO_DATABASE_URL`，不得因连接分工改变资源或创建第二个数据库。
   - `knowledge_sync_runs` 补齐/验证扫描、未变化、新增、更新、删除、**写入 chunk 数**、失败文件、状态和起止时间。
   - 完成证据：真实同步运行记录、重复同步不重算、失败回滚/保留旧版本、并发冲突、数据库行验证。
+  - 2026-08-24 阶段证据：真实 Nitro POST 扫描 290 个文件，受 100 条上限约束产生 partial run；Development 数据库现有 15 documents / 160 chunks。单文档同步写入 18 chunk；重复同步 `unchangedFileCount=1`、`writtenChunkCount=0`、embedding 调用为 0；受控 chunk 写入失败后旧 chunk 指纹保持不变。并发 409 尚未取得，保持未完成。
+  - 2026-08-24 完成证据：以 scanner gate 固定首轮持锁窗口时，真实 Development service 的第二轮 dry-run 返回 `ApiHttpError(409, KNOWLEDGE_SYNC_CONFLICT)`；同步 HTTP handler 将该业务错误稳定映射为 HTTP 409。新增回归覆盖，防止测试时序把非并发请求误判为锁失效。
 
-- [ ] 2.1.3 [code/model/test] `packages/ai-rag-api/**` - 生产装配 Hybrid Search + 模型到 `/v1/search` 与 `/v1/chat`
+- [x] 2.1.3 [code/model/test] `packages/ai-rag-api/**` - 生产装配 Hybrid Search + 模型到 `/v1/search` 与 `/v1/chat`
   - 进入条件：2.1.1、2.1.2 的真实 provider 可用，模型配置已授权。
   - chat 检索 Top-K 上下文，Prompt 要求 `[来源N]` 与资料不足声明。
   - 直接返回 AI SDK data-stream `Response`；来源帧包含稳定 source/heading 元数据。
   - 未装配仍必须 503；不得用空库/默认模型/空上下文掩盖配置失败。
   - 完成证据：真实 `/v1/search` 返回、真实流式 `/v1/chat`、来源 DTO、错误状态、未装配 503 回归。
+  - 2026-08-24 证据：Development Nitro `/v1/search` 对真实 160 chunk 数据库返回 HTTP 200、3 条来源 DTO（含 `sourcePath`、`sourceUrl`、`headingAnchor`）；`/v1/chat` 返回 HTTP 200、`x-vercel-ai-data-stream: v1`、来源数据帧与内容帧。JSON 列由当前 PostgreSQL driver 作为字符串返回的映射缺口已修复，未装配路由 503 由 H3 回归覆盖。
 
 - [ ] 2.1.4 [browser/e2e] 文档站 + 生产 Nitro - 生产后端驱动浏览器回归
   - 真实页面发送问题 → 首段流式内容可见 → 停止入口出现 → 点击停止触发 abort → 已接收内容保留 → 状态收敛。

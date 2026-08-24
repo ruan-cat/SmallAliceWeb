@@ -5,6 +5,7 @@ export type RagNitroConfig = {
 	serverDir?: string;
 	runtimeConfig: {
 		databaseUrl: string;
+		syncDatabaseUrl: string;
 		embeddingModel: string;
 		cloudflareAccountId?: string;
 		cloudflareApiToken?: string;
@@ -27,6 +28,7 @@ export const ragNitroConfig = {
 	serverDir: "server",
 	runtimeConfig: {
 		databaseUrl: "",
+		syncDatabaseUrl: "",
 		embeddingModel: "",
 		cloudflareAccountId: "",
 		cloudflareApiToken: "",

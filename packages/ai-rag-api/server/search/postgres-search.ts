@@ -114,10 +114,18 @@ function requireText(value: unknown, field: string) {
 }
 
 function requireTextArray(value: unknown, field: string) {
-	if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+	let parsedValue = value;
+	if (typeof value === "string") {
+		try {
+			parsedValue = JSON.parse(value) as unknown;
+		} catch {
+			throw new PostgresSearchError(`检索行 ${field} 必须是字符串数组。`);
+		}
+	}
+	if (!Array.isArray(parsedValue) || parsedValue.some((item) => typeof item !== "string")) {
 		throw new PostgresSearchError(`检索行 ${field} 必须是字符串数组。`);
 	}
-	return value;
+	return parsedValue;
 }
 
 function requireInteger(value: unknown, field: string) {

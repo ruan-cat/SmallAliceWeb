@@ -23,6 +23,7 @@ const source: HybridSearchItem = {
 function makeConfig(overrides: Partial<RagRuntimeConfig> = {}): RagRuntimeConfig {
 	return {
 		databaseUrl: "postgres://fake",
+		syncDatabaseUrl: "postgres://sync-fake",
 		embeddingModel: "embedding-fake",
 		openaiApiKey: "key-fake",
 		baseUrl: "",

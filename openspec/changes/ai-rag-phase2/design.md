@@ -113,6 +113,7 @@ VitePress 构建期必须使用与入库相同的 AST/标题路径/序号算法�
 - 新增/变化文件先完成新 chunk 与 embedding，再用**单文档事务**替换旧版本；失败时旧版本继续可检索。
 - 只有完整扫描成功后才删除本轮缺失的 `sourcePath`；扫描/读取不完整时禁止据此删除旧数据。
 - 使用 PostgreSQL advisory lock 拒绝并发同步，不使用仅单实例有效的进程内锁。
+- 检索与聊天继续使用 pooled URL；同步的 session-level PostgreSQL advisory lock 必须通过私有 `NITRO_SYNC_DATABASE_URL` 连接非 pooled endpoint，避免 transaction pooling 复用 backend 使锁可重入。
 - `knowledge_sync_runs` 至少记录扫描、未变化、新增、更新、删除、写入 chunk、失败文件、状态与起止时间。当前已知实现 schema 仍缺“写入 chunk 数”字段，真实同步任务必须补齐或显式修正规格，禁止静默忽略。
 - 同步入口只读取 `NITRO_KNOWLEDGE_SOURCE_ROOT` 指向的 `docs/docx`，不得接受客户端提交 Markdown 内容或任意文件路径。
 - 开发侧提供 `rag:sync` 与可选 `rag:watch`；生产侧上游转换完成后调用带 `NITRO_KNOWLEDGE_SYNC_TOKEN` 的 POST，Vercel Cron 使用 `Authorization: Bearer $CRON_SECRET` 的 GET。三种触发必须复用同一同步服务。
@@ -157,7 +158,7 @@ provider MUST 将返回结果按 `data[].embedding` 映射为与输入同序的 
 - Neon project name：`neon-smallalice-ai-rag`
 - 实际业务 database：`neondb`
 
-不得创建第二个同用途 project/database。连接顺序：先 `vercel env pull .env.local --environment=development`，再按实际变量名连接。应用运行用 pooled URL；Drizzle migration 只用 non-pooled URL。没有 non-pooled URL 时停止 migration。
+不得创建第二个同用途 project/database。连接顺序：先 `vercel env pull .env.local --environment=development`，再按实际变量名连接。应用检索/聊天用 pooled URL；Drizzle migration 与持有 PostgreSQL advisory lock 的同步分别使用 non-pooled URL。没有 non-pooled URL 时停止 migration 或同步。
 
 首个 migration 必须先启用 vector：
 

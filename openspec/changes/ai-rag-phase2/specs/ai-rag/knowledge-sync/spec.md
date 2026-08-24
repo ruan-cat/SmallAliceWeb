@@ -117,6 +117,7 @@
 
 - **WHEN** 两个同步请求同时到达
 - **THEN** 系统 MUST 通过 PostgreSQL advisory lock 只允许一个同步执行
+- **AND** 该 session-level lock MUST 由 non-pooled `NITRO_SYNC_DATABASE_URL` 连接持有，不得使用会复用 PostgreSQL backend 的 pooled URL
 - **AND** 被拒绝的请求 SHALL 返回 409 冲突
 
 #### Scenario: 同步入口不接受外部内容

@@ -16,6 +16,7 @@ import { scanKnowledgeSources } from "../services/knowledge-source";
 /** 插件必须校验的六项私有配置字段；任一为空则不挂载运行时。 */
 const REQUIRED_CONFIG_FIELDS = [
 	"databaseUrl",
+	"syncDatabaseUrl",
 	"openaiApiKey",
 	"chatModel",
 	"embeddingModel",
@@ -39,6 +40,7 @@ function resolveKnowledgeSourceRoot(config: ResolvedRagConfig) {
 /** 插件内部使用的已解析运行时配置形状。 */
 type ResolvedRagConfig = {
 	databaseUrl: string;
+	syncDatabaseUrl: string;
 	embeddingModel: string;
 	cloudflareAccountId: string;
 	cloudflareApiToken: string;
@@ -64,6 +66,7 @@ function resolveRuntimeConfig(): ResolvedRagConfig {
 	const raw = useRuntimeConfig() as Record<string, unknown>;
 	return {
 		databaseUrl: String(raw.databaseUrl ?? ""),
+		syncDatabaseUrl: String(raw.syncDatabaseUrl ?? ""),
 		embeddingModel: String(raw.embeddingModel ?? ""),
 		cloudflareAccountId: String(raw.cloudflareAccountId ?? ""),
 		cloudflareApiToken: String(raw.cloudflareApiToken ?? ""),
@@ -86,41 +89,86 @@ function findMissingFields(config: ResolvedRagConfig): string[] {
 	});
 }
 
+type SyncSqlClient = {
+	unsafe: (statement: string, parameters?: readonly unknown[]) => Promise<readonly Record<string, unknown>[]>;
+	begin?: <T>(callback: (transaction: SyncSqlClient) => Promise<T>) => Promise<T>;
+};
+
+type ReservableSyncSqlClient = {
+	reserve: () => Promise<SyncSqlClient & { release: () => void | Promise<void> }>;
+	end: (options?: { timeout?: number }) => Promise<void>;
+};
+
+/** 将 PostgreSQL client 适配为同步服务需要的事务执行器。 */
+export function createSyncExecutor(client: SyncSqlClient): SyncSqlExecutor {
+	const createTransactionExecutor = (transaction: SyncSqlClient): SyncSqlExecutor => ({
+		execute: (statement, parameters) => transaction.unsafe(statement, parameters),
+		transaction: async (nestedCallback) =>
+			nestedCallback({
+				execute: (statement, parameters) => transaction.unsafe(statement, parameters),
+				transaction: async () => {
+					throw new Error("nested sync transaction is not supported");
+				},
+			}),
+	});
+
+	return {
+		execute: (statement, parameters) => client.unsafe(statement, parameters),
+		transaction: async <T>(callback: (transaction: SyncSqlExecutor) => Promise<T>) => {
+			if (typeof client.begin === "function") {
+				return client.begin(async (transaction) => callback(createTransactionExecutor(transaction)));
+			}
+
+			await client.unsafe("BEGIN");
+			try {
+				const result = await callback(createTransactionExecutor(client));
+				await client.unsafe("COMMIT");
+				return result;
+			} catch (error) {
+				try {
+					await client.unsafe("ROLLBACK");
+				} catch {
+					/** 回滚失败不能覆盖原始同步异常。 */
+				}
+				throw error;
+			}
+		},
+	};
+}
+
+/** 为每轮同步创建独立的非池化数据库会话，保证 advisory lock 具备互斥语义。 */
+export function createReservedSyncExecutor(createClient: () => ReservableSyncSqlClient): SyncSqlExecutor {
+	return {
+		execute: async () => {
+			throw new Error("同步执行器必须先保留数据库会话。");
+		},
+		transaction: async () => {
+			throw new Error("同步执行器必须先保留数据库会话。");
+		},
+		reserve: async () => {
+			const client = createClient();
+			const reserved = await client.reserve();
+			const executor = createSyncExecutor(reserved);
+			return {
+				...executor,
+				release: async () => {
+					try {
+						await reserved.release();
+					} finally {
+						await client.end({ timeout: 5 });
+					}
+				},
+			};
+		},
+	};
+}
+
 /** 创建全部 provider factory 并初始化 RAG 运行时上下文。 */
 async function buildRagContext(config: ResolvedRagConfig): Promise<RagRuntimeContext> {
 	const sql = postgres(config.databaseUrl);
-	const createSyncExecutor = (client: typeof sql): SyncSqlExecutor => ({
-		execute: (statement, parameters) =>
-			client.unsafe(statement, [...parameters] as Parameters<typeof client.unsafe>[1]),
-		transaction: async <T>(callback: (transaction: SyncSqlExecutor) => Promise<T>) => {
-			const result = await client.begin(async (transaction) =>
-				callback({
-					execute: (statement, parameters) =>
-						transaction.unsafe(statement, [...parameters] as Parameters<typeof transaction.unsafe>[1]),
-					transaction: async (nestedCallback) =>
-						nestedCallback({
-							execute: (statement, parameters) =>
-								transaction.unsafe(statement, [...parameters] as Parameters<typeof transaction.unsafe>[1]),
-							transaction: async () => {
-								throw new Error("nested sync transaction is not supported");
-							},
-						}),
-				}),
-			);
-			return result as T;
-		},
-	});
-	const syncExecutor = createSyncExecutor(sql);
-	syncExecutor.reserve = async () => {
-		const reserved = await sql.reserve();
-		const executor = createSyncExecutor(reserved);
-		return {
-			...executor,
-			release: async () => {
-				reserved.release();
-			},
-		};
-	};
+	const syncExecutor = createReservedSyncExecutor(
+		() => postgres(config.syncDatabaseUrl) as unknown as ReservableSyncSqlClient,
+	);
 	const embeddingProvider = createCloudflareEmbeddingProvider({
 		accountId: config.cloudflareAccountId,
 		apiToken: config.cloudflareApiToken,

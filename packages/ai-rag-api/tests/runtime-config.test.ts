@@ -6,6 +6,7 @@ describe("RAG API runtime configuration", () => {
 		expect(nitroConfig.compatibilityDate).toBe("2024-09-19");
 		expect(nitroConfig.runtimeConfig).toMatchObject({
 			databaseUrl: "",
+			syncDatabaseUrl: "",
 			embeddingModel: "",
 			cloudflareAccountId: "",
 			cloudflareApiToken: "",

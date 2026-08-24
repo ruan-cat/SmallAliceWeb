@@ -72,5 +72,12 @@
 - **active**：当前正式 embedding 契约为 Cloudflare Workers AI `@cf/baai/bge-m3` 固定 1024 维；Nitro 通过 `POST /client/v4/accounts/{account_id}/ai/v1/embeddings` 的 OpenAI-compatible 接口调用，body 使用 `model` + `input`，不得发送 `dimensions`/`output_dimensionality`。
 - **resolved**：development Neon 只读核对确认 `chunks=0`、`documents=0`、原列为 `vector(1536)` 且 HNSW cosine index 存在；随后执行 0002 并复核为 `vector(1024)` 与同名 HNSW cosine index，未发生数据重嵌入或混写。
 - **resolved**：`NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_EMBEDDING_MODEL=@cf/baai/bge-m3` 与 `NITRO_CLOUDFLARE_API_TOKEN` 已进入 Vercel 项目 `smallalice-docs-ai-nitro-api`；前两项覆盖 Production、Preview、Development，token 覆盖 Production、Preview 的 Sensitive 与 Development 的 Non-sensitive。
-- **active**：Cloudflare 真实 embedding smoke 尚未执行；虽然 Vercel env 已就位，但仍不能宣称真实 provider 已闭环。
-- **next**：先完成 tasks §2.1.0b 的真实 Cloudflare 单条 smoke，再执行 5–10 条批量 smoke 与最多 100 条真实同步；未验证维度和 migration 状态前禁止写入正式向量。
+- **resolved**：2026-08-24 已通过现有 provider 完成真实 Cloudflare embedding smoke：单条 1 个 1024 维有限向量，批量 5 个均为 1024 维有限向量；`tasks.md` §2.1.0b 已勾选。
+- **resolved**：首次 smoke 的 HTTP 401 根因是一次性 PowerShell harness 把 Vercel env 文件的外层双引号传入 token，不是 provider 或 Cloudflare 权限缺陷。读取 `.env*` 时必须解析并去除外层引号，且不得打印值。
+- **next**：§2.1.1 先只读核对既有 development 数据库；随后 2.1.2 才能执行最多 100 条真实同步、重复同步、回滚与并发验证。
+- **active**：2026-08-24 的 development 只读数据库证据已确认 `vector(1024)`、HNSW 和真实 lexical/vector 查询路径；当前空库仅返回 0 条。HNSW 与精确检索的召回比较需要 §2.1.2 受控同步提供样本，2.1.1 因此保持未勾选。
+- **resolved**：pnpm isolated 布局下，临时 `tsx -` 必须从 `packages/ai-rag-api` 启动才能解析该包的直接依赖 `postgres`；从仓库根执行会出现 `ERR_MODULE_NOT_FOUND`，不代表 Neon 连接失败。
+- **resolved**：2.1.1 已在真实 160 chunk 数据集上完成 HNSW 与精确 pgvector 对比，Top 5 排序 ID 一致；不得再以空库 0 行结果代替该证据。
+- **resolved**：`NITRO_DATABASE_URL` 经 pooled endpoint 时多个 reserve client 可复用同一 PostgreSQL backend，session advisory lock 可重入，因此同步使用 `NITRO_SYNC_DATABASE_URL` 和每轮独立 non-pooled client。并发验证必须用 scanner gate 固定首轮已持锁的临界区；此前未固定时序造成假阴性。固定 gate 后第二轮真实 service 返回 `KNOWLEDGE_SYNC_CONFLICT` / 409，回归已覆盖。
+- **active**：agent-browser 无法启动 Chrome（exit 3，未生成 DevToolsActivePort）；本轮没有浏览器验收结论，不能将 API/Nitro 证据扩大为 UI 或生产浏览器通过。
+- **resolved**：真实 pgvector 查询行中的 `heading_path`、`image_urls` 在当前 driver 下是 JSON 字符串而非数组，导致 Hybrid Search 映射 500。`postgres-search` 现仅对合法 JSON 字符串数组解析，非法值仍抛 `PostgresSearchError`；Development `/v1/search` 与 `/v1/chat` 已验证通过。

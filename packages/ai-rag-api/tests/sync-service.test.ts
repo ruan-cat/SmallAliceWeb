@@ -208,6 +208,74 @@ describe("createKnowledgeSyncService", () => {
 		expect(state.sessionCalls?.at(-1)).toContain("pg_advisory_unlock");
 	});
 
+	test("首轮同步持有 advisory lock 时，第二轮在 scanner 前返回 409", async () => {
+		let locked = false;
+		let notifyFirstScanner: (() => void) | undefined;
+		let releaseFirstScanner: (() => void) | undefined;
+		const firstScannerEntered = new Promise<void>((resolveEntered) => {
+			notifyFirstScanner = resolveEntered;
+		});
+		const firstScannerGate = new Promise<void>((resolveGate) => {
+			releaseFirstScanner = resolveGate;
+		});
+		let scannerCalls = 0;
+		const executor: SyncSqlExecutor = {
+			async execute() {
+				throw new Error("同步必须先保留数据库会话。");
+			},
+			async transaction(callback) {
+				return callback(this);
+			},
+			reserve: async () => {
+				let ownsLock = false;
+				const session: SyncSqlExecutor & { release: () => Promise<void> } = {
+					execute: async (statement) => {
+						if (statement.includes("pg_try_advisory_lock")) {
+							if (locked) return [{ acquired: false }];
+							locked = true;
+							ownsLock = true;
+							return [{ acquired: true }];
+						}
+						if (statement.includes("pg_advisory_unlock")) {
+							locked = false;
+							return [{ unlocked: true }];
+						}
+						return [];
+					},
+					transaction: async (callback) => callback(session),
+					release: async () => {
+						if (ownsLock) locked = false;
+					},
+				};
+				return session;
+			},
+		};
+		const service = createKnowledgeSyncService({
+			executor,
+			profileVersion: "p",
+			embeddingModel: "m",
+			scanner: async () => {
+				scannerCalls += 1;
+				if (scannerCalls === 1) {
+					notifyFirstScanner?.();
+					await firstScannerGate;
+				}
+				return [];
+			},
+			chunker: () => [],
+			embedding: { createEmbedding: async () => [] },
+		});
+
+		const firstRun = service.sync({ dryRun: true });
+		await firstScannerEntered;
+		await expect(service.sync({ dryRun: true })).rejects.toMatchObject({
+			status: 409,
+			errorCode: "KNOWLEDGE_SYNC_CONFLICT",
+		});
+		releaseFirstScanner?.();
+		await expect(firstRun).resolves.toMatchObject({ status: "succeeded" });
+	});
+
 	test("embedding provider 按最多 100 个文本分批调用", async () => {
 		const state: FakeState = { documents: [], mutations: [], transactions: 0, locked: true, batchSizes: [] };
 		const chunks = Array.from({ length: 205 }, (_, index) => ({
