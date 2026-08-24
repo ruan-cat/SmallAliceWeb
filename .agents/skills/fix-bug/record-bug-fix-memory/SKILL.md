@@ -238,6 +238,12 @@ metadata:
 - 适用场景：Vercel 容器将 EMF 转 PNG 后，图片内的中文空白、乱码或豆腐块。
 - 关键约束：字符集必须从 `emf-converter → Canvas fillText` 的可读输出提取；以 TTF cmap 测试约束资产，并用 Git SHA、Vercel 容器日志和可见 Chrome 验收闭环；空临时文件不得机械提交。
 
+### 13.8 EMF+ Dual 与 SVG 视觉门禁（2026-08-24）
+
+- 详细案例：`2026-08-24-emf-dual-svg-visual-gates.md`
+- 适用场景：EMF+ Dual、SVG 默认输出或 Agent Browser 验收中出现文字/图形错位、重复、裁剪或“资源正常但画面不对”。
+- 关键约束：先以 GDI+ 和目标图截图判断相对几何；Dual 必须避免双层回放，SVG 的局部位图/裁剪仍需逐样本门禁，MIME 和加载数不能替代视觉验收。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
