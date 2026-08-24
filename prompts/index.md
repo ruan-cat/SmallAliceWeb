@@ -93,7 +93,7 @@ AI 对话组件对于整个 vitepress 项目来说，其交互和唤起逻辑是
 1. 优先用 agent-browser 来完成浏览器层面的自我验收。优先用这个实现低 token 的消耗使用。
 2. 如果确实不行，你才考虑备选的谷歌浏览器 MCP。
 
-### 首先，用 grill-me 技能和 superpower 技能来细化清楚具体的细节
+### 首先，用全局 grill-me 技能和 superpower 技能来细化清楚具体的细节
 
 - 细化细节。
 - 生成 superpower 的 spec 和 plan markdown 文档。
@@ -348,20 +348,10 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
 请你继续完成上一轮云 ChatGPT web 没有完成的任务。
 我要求你彻底的，全面的让 `openspec\changes\ai-rag-phase2` 这个 do-long-task 长任务工件，永久吸收 `docs\superpowers\specs\2026-07-29-ai-rag-phase2-design.md` 和 `docs\superpowers\plans\2026-07-29-ai-rag-phase2-plan.md` 文件，并彻底的，永久删除这两个文件。我要求你务必在 openspec 的 spec 或者是其他的文件完成对上述内容的吸收。以便彻底完成 superpower 任务工件迁移成基于 openspec 的 do-long-task 任务工件。
 
-## 003 <!-- 已完成 --> 安装 grill-me 技能
+## 003 使用全局 grill-me 技能
 
-1. 运行命令。
-2. 及时在 AI 记忆文档内，记录项目局部技能，说明清楚这批次的技能都是 grill-me 的衍生技能。
-
-```bash
-skills add https://github.com/mattpocock/skills `
-  --skill grill-me grilling grill-with-docs domain-modeling wayfinder to-spec `
-  setup-matt-pocock-skills ask-matt `
-  -y `
-  -a claude-code `
-  -a codex `
-  -a cursor `
-```
+1. `grill-me`、`grill-with-docs` 与 `grilling` 统一使用全局 `C:\Users\pc\.agents\skills` 副本。
+2. 禁止将这三个技能重新安装到项目 `.agents/skills/`，项目技能表与 `skills-lock.json` 不再登记它们。
 
 ---
 
