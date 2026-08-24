@@ -89,6 +89,10 @@ const userConfig = setUserConfig(
 userConfig.themeConfig.sidebar = setGenerateSidebar({
 	documentRootPath: "./docs",
 	collapsed: true,
+	/** 文档未维护 frontmatter `order`，关闭预设默认的 YAML 排序。 */
+	sortMenusByFrontmatterOrder: false,
+	/** 按标题中的数字自然排序，避免字典序将 `2` 排在 `19`、`20` 后。 */
+	sortMenusOrderNumericallyFromTitle: true,
 });
 
 export default userConfig;
