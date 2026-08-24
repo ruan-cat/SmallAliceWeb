@@ -9,6 +9,7 @@
 - **resolved**：pooled PostgreSQL session 会使 advisory lock 可重入；同步改用 `NITRO_SYNC_DATABASE_URL` 的独立 non-pooled client，并已有真实 409 证据。
 - **resolved**：`markstream-vue@1.0.8` 的内置 Shiki renderer 即使补齐 optional peers 仍回退安全 `<pre>`；维持单一 markstream 默认渲染，不安装独立 Shiki stream。
 - **resolved**：本地 CLI 直接 import Nitro plugin 会触发 Nitro stub 警告；runtime builder 已迁至 `server/runtime/rag-runtime.ts`，HTTP plugin 与 `rag:sync` / `rag:watch` 共用该模块，CLI 无配置时仅返回 JSON 配置错误。
+- **active**：固定题集真实基线使用当前 partial corpus（20 documents / 231 chunks）时，lexical 10 题全空，vector/hybrid 均为 8/10、平均关键词覆盖率 0.70；hybrid 未获得词法增益。必须在完整 corpus 与 300/500/800 三组独立重嵌入结果上复测后才能完成 §2.2.3。
 
 ## 2. 固定约束
 

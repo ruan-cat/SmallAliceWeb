@@ -13,6 +13,7 @@
 - §2.1.3：Development Nitro 的真实 search/chat 返回来源 DTO 与 data-stream。
 - §2.2.1：`markstream-vue@1.0.8` 的 `codeRenderer="shiki"` 在可见 viewport 挂载测试中仍回退为安全 `<pre>`；不接入 `@shikijs/stream` 或第二渲染链。`ai-vue` 20 tests、typecheck、build 通过。
 - §2.2.2：本地 runtime 的 `rag:sync` / `rag:watch` 与 Nitro plugin 共用同一 builder；真实 CLI run 扫描 290 文件、写入 71 chunks，当前数据库 20 documents / 231 chunks。
+- §2.2.3 基线：10 题真实评估中 lexical 为 0/10，vector/hybrid 均为 8/10、平均关键词覆盖率 0.70；当前为 partial corpus，尚未完成参数对比与调优。
 
 ## 3. 生产证据与阻塞
 
