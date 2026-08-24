@@ -57,4 +57,4 @@
 - [ ] 6.6 [审计] `scripts/build-doc-in-vercel/emf` - 实现或运行可重复的全量 EMF/WMF 清单，按乱码、错位、重复、裁断、占位符和高风险 record 分类；每个类别至少固定一个真实 fixture 与 Windows GDI+ 参照，审计结果写入 change evidence。
 - [ ] 6.7 [视觉验证] 本机 Google Chrome + Agent Browser - 按 `reports/2026-8-24-use-agent-browser/2026-08-24-agent-browser-local-chrome-and-route-incident.md` 先审计本地 SVG POC，再对生产指定三页和覆盖清单抽样逐图截图判读；不得用图片加载统计或全页缩略图替代目标图视口证据。
 - [ ] 6.8 [决策] `openspec/changes/2026-8-23-fix-emf/evidence` - 汇总 SVG 与 PNG 相对 GDI+ 的分类结论、未通过类别和生产默认格式决策；只有 6.5 至 6.7 对默认切换无阻断项时，才新增单独任务修改 `transformers.ts` 以 `.svg` 作为默认落盘格式。
-- [ ] 6.9 [用户授权的默认切换] `scripts/build-doc-in-vercel/transformers.ts` - 按 2026-08-24 用户明确指令，将 EMF/WMF 分支改为调用 `convertEmfToSvg` 并以 `.svg` 落盘；保持 PNG/JPEG/GIF 分支不变。重建本地文档，确认真实 EMF 产物为 SVG，再按 Git Integration 重新发布 Production 并用 Agent Browser 检查生产 SVG 的资源扩展名和目标图布局。
+- [x] 6.9 [用户授权的默认切换] `scripts/build-doc-in-vercel/transformers.ts` - 按 2026-08-24 用户明确指令，将 EMF/WMF 分支改为调用 `convertEmfToSvg` 并以 `.svg` 落盘；保持 PNG/JPEG/GIF 分支不变。重建本地文档，确认真实 EMF 产物为 SVG，再按 Git Integration 重新发布 Production 并用 Agent Browser 检查生产 SVG 的资源扩展名和目标图布局（`main@54e1532`、`dpl_J6jGa8LpiMchKGri6DMd4ECL6UjW` Ready；目标资源 HTTP `200 image/svg+xml`，目标图视口截图已人工判读）。

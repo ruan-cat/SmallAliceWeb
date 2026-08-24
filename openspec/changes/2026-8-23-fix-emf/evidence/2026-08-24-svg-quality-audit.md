@@ -2,7 +2,7 @@
 
 ## 1. 审计状态
 
-本文件记录 `tasks.md` 6.6 的进行中证据，不能替代全量质量通过结论。当前默认生产产物仍为 PNG；SVG 仅是独立 POC，未接入 `transformers.ts`。
+本文件记录 `tasks.md` 6.6 的进行中证据，不能替代全量质量通过结论。2026-08-24 经用户明确授权后，EMF/WMF 默认生产产物已切换为 SVG；PNG/JPEG/GIF 原始图片分支保持不变。该默认切换只证明指定真实 EMF 的生产 SVG 链路，不构成 399 个输入的全量质量通过结论。
 
 ## 2. 全量源基线
 
@@ -44,11 +44,11 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 
 ## 4. 用户点名页面的批次视觉抽样
 
-|               页面               |          目标资源          | DOCX 原始类型 |                                本地截图                                |                   判读                    |
-| :------------------------------: | :------------------------: | :-----------: | :--------------------------------------------------------------------: | :---------------------------------------: |
-|      `0.基本定义/界面.html`      |       `界面-007.png`       |      PNG      |   `C:\Users\pc\AppData\Local\Temp\smallalice-emf-interface-007.png`    | 未见占位、裁断或重复；不属于 EMF 转换范围 |
-| `5.战斗UI/关于高级角色肖像.html` | `关于高级角色肖像-003.png` |      EMF      | `C:\Users\pc\AppData\Local\Temp\smallalice-emf-portrait-003-white.png` | 白底已修复；白底蓝字/细线仍需字体保真回归 |
-|  `21.管理器/关于全局存储.html`   |   `关于全局存储-022.png`   |      PNG      |  `C:\Users\pc\AppData\Local\Temp\smallalice-emf-global-store-022.png`  | 未见占位、裁断或重复；不属于 EMF 转换范围 |
+|               页面               |          目标资源          | DOCX 原始类型 |                                   本地截图                                    |                               判读                                |
+| :------------------------------: | :------------------------: | :-----------: | :---------------------------------------------------------------------------: | :---------------------------------------------------------------: |
+|      `0.基本定义/界面.html`      |       `界面-007.png`       |      PNG      |       `C:\Users\pc\AppData\Local\Temp\smallalice-emf-interface-007.png`       |             未见占位、裁断或重复；不属于 EMF 转换范围             |
+| `5.战斗UI/关于高级角色肖像.html` | `关于高级角色肖像-003.svg` |      EMF      | `C:\Users\pc\AppData\Local\Temp\smallalice-emf-production-svg-dual-fixed.png` | 生产 SVG 已通过目标图视口判读；白底蓝字是原设计，未见旧的双层错位 |
+|  `21.管理器/关于全局存储.html`   |   `关于全局存储-022.png`   |      PNG      |     `C:\Users\pc\AppData\Local\Temp\smallalice-emf-global-store-022.png`      |             未见占位、裁断或重复；不属于 EMF 转换范围             |
 
 页面资源与 DOCX 的映射均按 `document.xml` 的图像引用顺序反查：`界面-007.png → word/media/image7.png`，`关于全局存储-022.png → word/media/image22.png`，`关于高级角色肖像-003.png → word/media/image4.emf`。三张截图均由 Agent Browser 先枚举图片、再滚入目标资源视口后保存并人工判读。
 
@@ -60,11 +60,19 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 
 ## 6. Production Git Integration 复验
 
-- Production deployment：`dpl_6rHWuuruwdDWYhvvmeayhwng4xe8`。
-- Git checkout 证据：Vercel 构建日志记录 `Cloning github.com/ruan-cat/SmallAliceWeb (Branch: main, Commit: d288ded)`。
-- Production URL：`https://drill.ruan-cat.com/docx/插件详细手册/5.战斗UI/关于高级角色肖像.html`。
-- 目标资源：生产 DOM 的第 3 张图为 `/assets/关于高级角色肖像-003.CPfcR1wh.png`，原始尺寸 1024×379；扩展名和响应资源均为 PNG，不是 SVG。
-- 目标图视口截图：`C:\Users\pc\AppData\Local\Temp\smallalice-emf-production-dual-fixed.png`。
-- 判读：框、箭头和文字不再双层错位，关系图恢复与 WPS/GDI+ 基线一致的紧凑单一布局。
+### 6.1 旧 PNG 部署
 
-因此本次生产环境验证的结论是“EMF+ Dual 的 PNG 转换修复已上线”；不是“默认 SVG 图片修复已上线”。`transformers.ts` 仍保持 PNG 产物分支，SVG 继续仅作为 POC。
+- Production deployment：`dpl_6rHWuuruwdDWYhvvmeayhwng4xe8`，checkout `main@d288ded`。
+- 该部署的第 3 张资源为 PNG，截图 `C:\Users\pc\AppData\Local\Temp\smallalice-emf-production-dual-fixed.png` 已确认 EMF+ Dual 旧错位消失。
+
+### 6.2 当前 SVG 默认部署
+
+- Production deployment：`dpl_J6jGa8LpiMchKGri6DMd4ECL6UjW`，状态 Ready，checkout `main@54e153267ce9eaff8850650e656411f354db2e48`；别名包含 `https://drill.ruan-cat.com`。
+- 构建日志：EMF/WMF 转换成功 421 张、失败 0 张。
+- 原样生产 URL：`https://drill.ruan-cat.com/docx/插件详细手册/5.战斗UI/关于高级角色肖像.html`。
+- 浏览器控制：本机 `C:\Program Files\Google\Chrome\Application\chrome.exe`，隔离临时 profile，CDP 端口 9228，由 `agent-browser --cdp 9228` 接管；打开页面后统计 26 张客户端图片，再把目标图滚入视口截图。
+- 目标资源：`/assets/关于高级角色肖像-003.DwzJBk5U.svg`，自然尺寸 1024×379，页面盒尺寸 688×255；HTTP `200`、`Content-Type: image/svg+xml`、220,075 字节，SVG 根元素存在，含 144 个 `<path>` 与 20 个局部 `<image>`，不是整图 PNG 包装。
+- 目标图视口截图：`C:\Users\pc\AppData\Local\Temp\smallalice-emf-production-svg-dual-fixed.png`。
+- 人工判读：文本框、三条箭头和动画序列均为紧凑单一布局，与 WPS/GDI+ 基准的相对位置一致；未见此前 SVG POC 中“全套文本、箭头和框体彼此错开”的错误，也未见 EMF+ Dual 的重复图层。
+
+结论：默认 SVG 的真实 Git Integration 生产链路和该高风险 Dual 关系图通过。该结论不替代任务 6.6 的全量分类与 6.7 的覆盖清单逐图视觉验收。
