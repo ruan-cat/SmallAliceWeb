@@ -824,7 +824,7 @@ pua grill-me 你的方案是不是要换一下？`patches\emf-converter@2.0.2.pa
 
 我认可，这个确实是偏向于本地的测试命令，请你做出改动，但是不要硬依赖 openspec\changes\2026-8-23-fix-emf\evidence\2026-08-24-emf-audit-manifest.json 文件，因为该路径的文件迟早属于被归档的 openspec 文件，一旦归档，硬编码路径会失效。所以你的测试用例要做好文件备份，并做好合适细粒度的 vitest 测试用例开发；
 
-### <!-- TODO: codex 正在做 --> 精益求精，处理像素化噪点
+### <!-- 2026-8-24 已完成； codex 正在做 --> 精益求精，处理像素化噪点
 
 - `drill.ruan-cat.com/docx/插件详细手册/6.地图/关于地图活动镜头.html`
 
