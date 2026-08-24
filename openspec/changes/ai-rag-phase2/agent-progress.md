@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-24；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：13 / 25 已完成。当前主阻塞是 §2.1.4 生产浏览器流式闭环；§2.2.1 已完成并维持安全默认代码块渲染。
+- 进度：14 / 25 已完成。当前主阻塞是 §2.1.4 生产浏览器流式闭环；§2.2.1 与 §2.2.2 已完成。
 - 工作分支：`dev`；`origin/main` 当前为 `2c3d666`；用户既有 `prompts/index.md` 未触碰。
 
 ## 2. 已完成的最近 checkpoint
@@ -12,6 +12,7 @@
 - §2.1.1 / §2.1.2：Development Neon 的 160 chunks、HNSW 对精确检索一致、真实同步/回滚与 advisory-lock 409 已验证。
 - §2.1.3：Development Nitro 的真实 search/chat 返回来源 DTO 与 data-stream。
 - §2.2.1：`markstream-vue@1.0.8` 的 `codeRenderer="shiki"` 在可见 viewport 挂载测试中仍回退为安全 `<pre>`；不接入 `@shikijs/stream` 或第二渲染链。`ai-vue` 20 tests、typecheck、build 通过。
+- §2.2.2：本地 runtime 的 `rag:sync` / `rag:watch` 与 Nitro plugin 共用同一 builder；真实 CLI run 扫描 290 文件、写入 71 chunks，当前数据库 20 documents / 231 chunks。
 
 ## 3. 生产证据与阻塞
 

@@ -144,12 +144,13 @@
   - 失败时保留安全默认渲染，不允许为“功能完整”强行引入第二渲染路径。
   - 2026-08-24 完成证据：实际挂载 `markstream-vue@1.0.8` 的 `codeRenderer="shiki"`，并模拟可见 viewport；即使临时补齐 `shiki@3.23.0` 与 `stream-markdown@0.0.16` peer，代码块仍为 `code-pre-fallback`，没有高亮容器。依赖已回退，新增回归固定安全 fallback；`ai-vue` 4 文件 / 20 用例、typecheck、build 均通过。
 
-- [ ] 2.2.2 [code/infra/test] 同步入口 - `rag:sync`、可选 `rag:watch` 与生产触发
+- [x] 2.2.2 [code/infra/test] 同步入口 - `rag:sync`、可选 `rag:watch` 与生产触发
   - 依赖 2.1.2。
   - CLI、watch、POST 与 Cron 必须复用同一同步服务和同一切分/哈希/删除语义。
   - POST 校验 `NITRO_KNOWLEDGE_SYNC_TOKEN`；Cron GET 接受 `Authorization: Bearer $CRON_SECRET`。
   - 同步频率属于部署配置，不写死业务代码。
   - 完成证据：本地一次同步、监听变更、POST、Cron 鉴权与同步记录。
+  - 2026-08-24 完成证据：`rag:sync` 与 `rag:watch` 从本地 `NITRO_*` 环境构建与 Nitro plugin 同一 `RagRuntimeContext`，不调用 HTTP/token；watch 去抖/关闭回归通过。本地 dry-run 扫描 290 文件 / 6034 chunks / 0 失败；随后真实 CLI run 记录为 partial、扫描 290、写入 71 chunks，Development 数据库为 20 documents / 231 chunks。POST/Cron 继续复用既有 `handleSyncRequest` 鉴权回归；API 21 文件 / 81 用例、typecheck、Vercel bundle 与 strict validation 通过。
 
 - [ ] 2.2.3 [eval/docs] 固定题集真实评估与参数调优
   - 依赖 2.1.1–2.1.3。
