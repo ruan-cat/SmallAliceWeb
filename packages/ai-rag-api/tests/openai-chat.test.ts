@@ -36,6 +36,7 @@ describe("OpenAI 聊天流适配器", () => {
 	test("为每个来源写入并关闭 data-stream writer 后返回原生响应", () => {
 		const append = vi.fn();
 		const close = vi.fn();
+		const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 		const response = new Response('0:"回答"\n');
 		const toDataStreamResponse = vi.fn(() => response);
 		ai.StreamData.mockImplementation(() => ({ append, close }));
@@ -78,7 +79,12 @@ describe("OpenAI 聊天流适配器", () => {
 			data: { id: "source-1", label: "第一篇", sourceHref: "/one.html#one" },
 		});
 		expect(close.mock.invocationCallOrder[0]).toBeLessThan(toDataStreamResponse.mock.invocationCallOrder[0]);
+		const streamOptions = ai.streamText.mock.calls[0]?.[0];
+		expect(streamOptions?.onError).toEqual(expect.any(Function));
+		streamOptions?.onError({ error: new Error("provider rejected stream") });
+		expect(consoleError).toHaveBeenCalledWith("RAG chat stream failed", "provider rejected stream");
 		expect(toDataStreamResponse).toHaveBeenCalledWith({ data: expect.anything() });
 		expect(result).toBe(response);
+		consoleError.mockRestore();
 	});
 });

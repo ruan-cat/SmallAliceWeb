@@ -23,4 +23,5 @@
 - 首次 main Production deployment 已完成 Git checkout/build，但 `/v1/search` 在函数加载阶段触发 Rolldown 跨 chunk CommonJS helper 循环。`rolldownConfig.output.inlineDynamicImports=true` 已使本地函数产物收敛为单个可直接 import 的 entry；待下一条 main Git deployment 验证。
 - 文档站 Project `small-alice-web-odse` 已确认追踪 `main`，并已写入 Production/Preview 的 `VITE_RAG_API_BASE`；客户端 transport 与 Nitro `/v1/**` CORS 变更待下一条 main commit 的双项目 Git deployment 验证。
 - 2026-08-24 的 Production 预检发现：`routeRules.cors=true` 会附加 CORS 响应头，但未匹配的 `OPTIONS /v1/chat` 仍是 404，浏览器 JSON POST 会被阻断。已新增 `server/middleware/rag-cors.ts`，使 `/v1/**` 预检返回 204；新增回归测试、API typecheck 和 Vercel bundle build 均通过，待提交并由 main Git deployment 复验。
+- `main@05e7887` 的双项目 Production 已 Ready：API 的真实 preflight 为 204，聊天返回 200、data-stream 与来源帧；Chrome 文档站也渲染了 5 个真实来源链接，但模型内容阶段返回 `An error occurred.`。因此 §2.1.4 保持未勾选；新增不泄密的 `streamText.onError` runtime log，待下一轮 API Production 从 Vercel 读取上游失败原因。
 - 生产部署与浏览器验证尚未完成；下一步以修复后的 main Git Integration deployment 完成 §2.1.4 的生产后端驱动浏览器回归。

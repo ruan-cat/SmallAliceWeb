@@ -36,6 +36,9 @@ export function createOpenAiChatStream(config: RagNitroConfig["runtimeConfig"]):
 			model: provider(config.chatModel),
 			system: request.system,
 			prompt: request.message,
+			onError({ error }) {
+				console.error("RAG chat stream failed", error instanceof Error ? error.message : String(error));
+			},
 		}).toDataStreamResponse({ data });
 	};
 }
