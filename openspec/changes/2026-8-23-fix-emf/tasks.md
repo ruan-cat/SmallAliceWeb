@@ -44,3 +44,16 @@
 - [x] 5.2 [测试] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 将 mapping-mode 回归断言改为 GDI+ 对照的坐标，并新增图元与文字相对位移门禁；必须先在当前错误实现下失败。
 - [x] 5.3 [修改] `patches/emf-converter@2.0.2.patch` - 仅修正已证明的 mapping-mode 坐标变换，避免对 non-mapping EMF、offDx 和 glyph-index 分支造成行为漂移。
 - [x] 5.4 [验证] `scripts/build-doc-in-vercel` - 完整子包 Vitest、针对三个真实 fixture 的本地 PNG/GDI+ 对照，以及 Vercel 生产可见 Chrome 原始尺寸复测。
+
+## 6. SVG 双输出 POC 与全量质量门禁
+
+> 追加范围以真实 SVG 图元和 GDI+ 对照为验收，不将“能生成 `.svg` 文件”当作质量结论。PNG 是兼容基线，POC 通过前不得替换默认生产格式。
+
+- [x] 6.1 [工件] `openspec/changes/2026-8-23-fix-emf/{proposal.md,design.md,specs/docx-build/emf-image-conversion/spec.md,tasks.md}` - 记录 SVG POC 的混合矢量边界、PNG 兼容约束、文字轮廓策略、高风险类别和后续默认格式切换门禁；回读并运行 `openspec validate "2026-8-23-fix-emf" --strict`（2026-08-24：Change is valid）。
+- [x] 6.2 [测试] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 先新增真实 EMF+、offDx、mapping-mode 与 glyph-index fixture 的 SVG POC 断言：API 不存在时应 RED（2026-08-24：4 个新增用例均以 `convertEmfToSvg is not a function` 失败，既有 25 个测试通过）；通过后必须验证 SVG MIME/根元素/viewBox、可见矢量图元、已映射 glyph，以及拒绝唯一全画布 PNG `<image>`。
+- [x] 6.3 [修改] `patches/emf-converter@2.0.2.patch` - 在不改变既有 PNG API 的前提下，新增 SVG 输出 API、SvgCanvas 主画布工厂和 `getContent()` 导出；DIB 与 deferred image 的临时画布保持 Raster Canvas，必要时作为局部 `<image>` 嵌入，不允许整图 PNG 外壳（2026-08-24：`pnpm patch-commit` 已重新安装生成补丁）。
+- [x] 6.4 [修改] `scripts/build-doc-in-vercel/emf/{canvas-shim.ts,convert.ts}` - 新增 SVG 专用 shim/封装和 SVG Buffer 校验，保留 PNG shim、PNG 签名校验及 `convertEmfToPng` 原契约；对 SVG 文本使用文字轮廓输出，且保留 fontFamilyMap 与 glyphIndexMap。
+- [x] 6.5 [验证] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 完整子包 Vitest 必须同时覆盖 PNG 基线和 SVG POC；逐项核验 17 字 offDx、841×335 frame/首字坐标、glyph `…` 与 EMF+ dual 图元，并记录 RED→GREEN 命令输出（2026-08-24：RED 为 4 个 `convertEmfToSvg is not a function`；GREEN 为 `pnpm --filter @ruan-cat-temp/build-doc-in-vercel test` 29/29 通过）。
+- [ ] 6.6 [审计] `scripts/build-doc-in-vercel/emf` - 实现或运行可重复的全量 EMF/WMF 清单，按乱码、错位、重复、裁断、占位符和高风险 record 分类；每个类别至少固定一个真实 fixture 与 Windows GDI+ 参照，审计结果写入 change evidence。
+- [ ] 6.7 [视觉验证] 本机 Google Chrome + Agent Browser - 按 `reports/2026-8-24-use-agent-browser/2026-08-24-agent-browser-local-chrome-and-route-incident.md` 先审计本地 SVG POC，再对生产指定三页和覆盖清单抽样逐图截图判读；不得用图片加载统计或全页缩略图替代目标图视口证据。
+- [ ] 6.8 [决策] `openspec/changes/2026-8-23-fix-emf/evidence` - 汇总 SVG 与 PNG 相对 GDI+ 的分类结论、未通过类别和生产默认格式决策；只有 6.5 至 6.7 对默认切换无阻断项时，才新增单独任务修改 `transformers.ts` 以 `.svg` 作为默认落盘格式。

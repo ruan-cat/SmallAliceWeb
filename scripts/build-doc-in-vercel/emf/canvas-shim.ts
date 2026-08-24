@@ -13,7 +13,7 @@
  *    Image 会被类型检查拒绝抛 TypeError，且该错误会被 emf-converter 的 deferred image
  *    try/catch 静默吞掉导致位图不绘制——必须直接给 Image 实例挂 close 属性，禁止 Proxy。
  */
-import { Canvas, createCanvas, ImageData, loadImage } from "@napi-rs/canvas";
+import { Canvas, createCanvas, ImageData, loadImage, SvgExportFlag } from "@napi-rs/canvas";
 
 /**
  * 安装标记存放于 globalThis 上的键名。
@@ -37,6 +37,7 @@ export function installCanvasShim(): void {
 		HTMLCanvasElement?: unknown;
 		createImageBitmap?: unknown;
 		ImageData?: unknown;
+		__emfCreateSvgCanvas?: unknown;
 	};
 
 	/** 已安装则直接返回，保证幂等 */
@@ -101,6 +102,12 @@ export function installCanvasShim(): void {
 	 */
 	if (typeof globalTarget.ImageData === "undefined") {
 		globalTarget.ImageData = ImageData;
+	}
+
+	/** SVG 主画布工厂仅供 patched emf-converter 的显式 SVG API 使用。 */
+	if (typeof globalTarget.__emfCreateSvgCanvas === "undefined") {
+		globalTarget.__emfCreateSvgCanvas = (width: number, height: number) =>
+			createCanvas(width, height, SvgExportFlag.ConvertTextToPaths);
 	}
 
 	globalTarget.__emfCanvasShimInstalled__ = true;

@@ -69,3 +69,32 @@ GDI 普通图元与 mapping-mode 文本都必须相对同一个 `rclBounds.left/
 ### 6.3 Glyph index 的源字体映射
 
 `ETO_GLYPH_INDEX` 的 UTF-16 值是源字体 glyph id，不是 Unicode。先按正确的 `LOGFONTW.lfFaceName` 偏移读取 source faceName，再用受版本控制的 glyph id → Unicode 表转换已观察组合；未知 glyph id 保留原值并作为后续资产/映射缺口暴露，不伪造字符。
+
+## 7. SVG 双输出 POC 与全量质量门禁
+
+### 7.1 只新增明确 SVG API，不改变 PNG 默认契约
+
+`emf-converter@2.0.2` 公开入口和当前项目调用链均固定为 PNG。因此 pnpm patch 必须新增独立的 `convertEmfToSvgDataUrl` 与 `convertWmfToSvgDataUrl`，并保留既有 PNG API、默认 Canvas 路径和 PNG 语义不变。项目封装层新增 `convertEmfToSvg`，仅在 POC 显式调用；`transformers.ts` 在 SVG 与 GDI+ 视觉门禁通过前不得切换默认生产落盘格式。
+
+### 7.2 主画布使用 SvgCanvas，临时位图画布继续使用 Raster Canvas
+
+SVG 主画布通过 `createCanvas(width, height, SvgExportFlag.ConvertTextToPaths)` 创建，并以 `SvgCanvas.getContent()` 导出 UTF-8 SVG。`ConvertTextToPaths` 使构建期已确认的字体轮廓固定在输出内，避免终端用户浏览器缺少 NotoSansSC 时再次产生文字回退。
+
+处理 DIB 的 `putImageData()` 与异步 deferred image 路径必须继续创建普通 Raster Canvas，再以 `drawImage()` 嵌入 SVG。这样产物中的路径、形状和文字保持矢量，源文件本来就是位图的内容以局部 `<image>` 存在；禁止用一张全画布 PNG 作为 SVG 的唯一内容。
+
+### 7.3 现有坐标和字形修复是 SVG POC 的前置回归
+
+SVG 后端复用已经验证的 `gmx/gmy/gmw/gmh`、frame 尺寸和 `EMR_EXTTEXTOUTW` 逐字符逻辑。`offDx`/`ETO_PDY`、mapping-mode frame、`ETO_GLYPH_INDEX` 三类 fixture 必须同时生成 PNG 和 SVG，并分别断言 SVG 的结构与由浏览器渲染后的几何结果；不得把 SVG `<text>` 合并为整串从而丢失逐字 advance。
+
+### 7.4 先分类审计，再决定生产默认格式
+
+全量审计输出每张 EMF/WMF 的稳定标识、源格式、SVG/PNG 生成状态、画布尺寸、局部位图数量和视觉缺陷分类。自动化只负责发现无输出、非法 SVG、整图 PNG 外壳、尺寸偏差和已知 fixture 的结构退化；乱码、相对错位、重复和裁断仍须与 Windows GDI+ 参照及可见 Chrome 截图人工判读。
+
+ROP2、复杂 region combine、EMF+ DrawDriverString 与递归嵌套 metafile 都是阻断默认切换的高风险类别。它们必须拥有真实样本和 GDI+ 对照，或在审计报告中被显式隔离为 PNG 回退类别；禁止静默降级。
+
+## 8. 追加迁移计划
+
+1. 先让 SVG 结构回归测试在当前实现上因缺少 API 而失败，再最小化补丁新增 SVG 主画布与导出函数。
+2. 在项目封装中增加 SVG Buffer 校验，验证 MIME、根元素、viewBox 和非全画布 PNG 外壳；不接入 `transformers.ts` 默认输出。
+3. 对真实 EMF+、offDx、mapping 和 glyph-index fixture 运行 SVG 结构检查与可见 Chrome 截图，逐项比较 Windows GDI+ 参照。
+4. 建立全量转换清单与缺陷分类；只有所有阻断类别都有对照结论时，才提交独立任务决定是否将文档站默认图片格式切为 SVG。

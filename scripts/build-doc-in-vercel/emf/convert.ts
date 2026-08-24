@@ -1,6 +1,11 @@
 /** 副作用导入：保证 canvas shim 在 emf-converter 使用前先安装 */
 import "./canvas-shim";
-import { convertEmfToDataUrl, convertWmfToDataUrl } from "emf-converter";
+import {
+	convertEmfToDataUrl,
+	convertEmfToSvgDataUrl,
+	convertWmfToDataUrl,
+	convertWmfToSvgDataUrl,
+} from "emf-converter";
 
 /** EMF/WMF 转换选项 */
 export interface ConvertOptions {
@@ -23,6 +28,9 @@ const EMF_MAGIC = [0x01, 0x00, 0x00, 0x00];
 const WMF_MAGIC = [0xd7, 0xcd, 0xc6, 0x9a];
 /** PNG 文件签名：首字节 0x89 + "PNG" ASCII */
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+
+/** SVG data URL 前缀。 */
+const SVG_DATA_URL_PREFIX = "data:image/svg+xml;base64,";
 
 /**
  * 判断 buffer 前 4 字节是否与给定魔数一致。
@@ -95,4 +103,51 @@ export async function convertEmfToPng(buffer: Buffer, options?: ConvertOptions):
 	}
 
 	return pngBuffer;
+}
+
+/**
+ * 将 EMF/WMF 转换为 SVG Buffer。
+ *
+ * 此 POC 使用 patched emf-converter 的独立 SVG API；仅主画布写入 SVG，DIB 与
+ * deferred image 仍由库使用 Raster Canvas 后以局部 SVG image 图元表达。它不改变
+ * `convertEmfToPng` 的默认 PNG 契约，也不负责判定 SVG 是否已经达到 GDI+ 保真。
+ *
+ * @param buffer - 输入的 EMF/WMF 文件字节
+ * @param options - 尺寸、字体与 glyph-index 转换选项
+ * @returns UTF-8 SVG 格式的 Buffer
+ * @throws 输入魔数无效、上游 SVG API 返回 null 或输出缺少 SVG 根元素/viewBox 时抛出 Error
+ */
+export async function convertEmfToSvg(buffer: Buffer, options?: ConvertOptions): Promise<Buffer> {
+	if (buffer.length < 4) {
+		throw new Error(`SVG 转换失败：输入 buffer 过短（${buffer.length} 字节，至少需要 4 字节魔数）`);
+	}
+
+	const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+	const emfOptions = {
+		maxWidth: options?.maxWidth ?? DEFAULT_MAX_SIZE,
+		maxHeight: options?.maxHeight ?? DEFAULT_MAX_SIZE,
+		fontFamilyMap: options?.fontFamilyMap,
+		glyphIndexMap: options?.glyphIndexMap,
+	};
+
+	let dataUrl: string | null;
+	if (matchesMagic(buffer, EMF_MAGIC)) {
+		dataUrl = await convertEmfToSvgDataUrl(arrayBuffer, emfOptions);
+	} else if (matchesMagic(buffer, WMF_MAGIC)) {
+		dataUrl = await convertWmfToSvgDataUrl(arrayBuffer, emfOptions);
+	} else {
+		throw new Error("SVG 转换失败：无法识别的文件魔数");
+	}
+
+	if (!dataUrl?.startsWith(SVG_DATA_URL_PREFIX)) {
+		throw new Error("SVG 转换失败：emf-converter 未返回 SVG data URL");
+	}
+
+	const svgBuffer = Buffer.from(dataUrl.slice(SVG_DATA_URL_PREFIX.length), "base64");
+	const svg = svgBuffer.toString("utf8");
+	if (!/<svg\b[^>]*\bviewBox=/.test(svg)) {
+		throw new Error("SVG 转换失败：输出缺少带 viewBox 的 SVG 根元素");
+	}
+
+	return svgBuffer;
 }

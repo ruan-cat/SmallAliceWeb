@@ -1,8 +1,120 @@
+diff --git a/dist/index.d.mts b/dist/index.d.mts
+index a5b8822b48f7ee86d3cea5c8f3892ffdfc76fd4d..979a3fdf17d817d45d2eab4ce8976c45be2efdef 100644
+--- a/dist/index.d.mts
++++ b/dist/index.d.mts
+@@ -84,6 +84,10 @@ declare function convertEmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOp
+  * @returns A `data:image/png;base64,…` string, or `null` on failure.
+  */
+ declare function convertWmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
++/** 将 EMF 渲染为由调用方提供 SVG Canvas 输出的 SVG data URL。 */
++declare function convertEmfToSvgDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
++/** 将 WMF 渲染为由调用方提供 SVG Canvas 输出的 SVG data URL。 */
++declare function convertWmfToSvgDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
+ 
+ /**
+  * Canvas creation, styling, string reading, stock objects, and export helpers.
+@@ -96,4 +100,4 @@ declare function convertWmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOp
+  */
+ declare const DEFAULT_DPI_SCALE = 1;
+ 
+-export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertWmfToDataUrl };
++export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertEmfToSvgDataUrl, convertWmfToDataUrl, convertWmfToSvgDataUrl };
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index a5b8822b48f7ee86d3cea5c8f3892ffdfc76fd4d..979a3fdf17d817d45d2eab4ce8976c45be2efdef 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -84,6 +84,10 @@ declare function convertEmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOp
+  * @returns A `data:image/png;base64,…` string, or `null` on failure.
+  */
+ declare function convertWmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
++/** 将 EMF 渲染为由调用方提供 SVG Canvas 输出的 SVG data URL。 */
++declare function convertEmfToSvgDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
++/** 将 WMF 渲染为由调用方提供 SVG Canvas 输出的 SVG data URL。 */
++declare function convertWmfToSvgDataUrl(buffer: ArrayBuffer, options?: EmfConvertOptions, recursionDepth?: number): Promise<string | null>;
+ 
+ /**
+  * Canvas creation, styling, string reading, stock objects, and export helpers.
+@@ -96,4 +100,4 @@ declare function convertWmfToDataUrl(buffer: ArrayBuffer, options?: EmfConvertOp
+  */
+ declare const DEFAULT_DPI_SCALE = 1;
+ 
+-export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertWmfToDataUrl };
++export { DEFAULT_DPI_SCALE, type EmfConvertOptions, convertEmfToDataUrl, convertEmfToSvgDataUrl, convertWmfToDataUrl, convertWmfToSvgDataUrl };
 diff --git a/dist/index.js b/dist/index.js
-index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412b132e756 100644
+index 4e58922988e6277d5bb039c59b8a8d1b2152e596..dfd8505438f335d4cead638fc0b642ed57ad70bd 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -574,6 +574,12 @@ function parseEmfHeader(view) {
+@@ -294,6 +294,44 @@ function createCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI
+     return null;
+   }
+ }
++function createSvgCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI_SCALE, maxCanvasDimension = MAX_CANVAS_DIMENSION) {
++  const effectiveScale = Math.max(1, Math.min(dpiScale, 4));
++  let w = Math.round(width * effectiveScale);
++  let h = Math.round(height * effectiveScale);
++  let scaleX = effectiveScale;
++  let scaleY = effectiveScale;
++  if (maxWidth && w > maxWidth) {
++    const factor = maxWidth / w;
++    w = maxWidth;
++    h = Math.round(h * factor);
++    scaleX *= factor;
++    scaleY *= factor;
++  }
++  if (maxHeight && h > maxHeight) {
++    const factor = maxHeight / h;
++    w = Math.round(w * factor);
++    h = maxHeight;
++    scaleX *= factor;
++    scaleY *= factor;
++  }
++  const dimCap = Math.max(1, Math.floor(maxCanvasDimension));
++  w = Math.max(1, Math.min(w, dimCap));
++  h = Math.max(1, Math.min(h, dimCap));
++  try {
++    const factory = typeof globalThis !== "undefined" ? globalThis.__emfCreateSvgCanvas : void 0;
++    if (typeof factory !== "function") {
++      return null;
++    }
++    const canvas = factory(w, h);
++    const ctx = canvas.getContext("2d");
++    if (!ctx) {
++      return null;
++    }
++    return { canvas, ctx, scaleX, scaleY };
++  } catch (err) {
++    return null;
++  }
++}
+ function createTempCanvas(width, height) {
+   if (width <= 0 || height <= 0) {
+     return null;
+@@ -553,6 +591,24 @@ async function exportCanvasToPngDataUrl(canvas) {
+   }
+   return null;
+ }
++function bytesToBase64(bytes) {
++  let binary = "";
++  for (let offset = 0; offset < bytes.length; offset += 32768) {
++    binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
++  }
++  return btoa(binary);
++}
++async function exportCanvasToSvgDataUrl(canvas) {
++  if (!canvas || typeof canvas.getContent !== "function") {
++    return null;
++  }
++  const content = canvas.getContent();
++  let svg = new TextDecoder().decode(content);
++  if (!/<svg\b[^>]*\bviewBox=/.test(svg)) {
++    svg = svg.replace(/<svg\b([^>]*)>/, `<svg$1 viewBox="0 0 ${canvas.width} ${canvas.height}">`);
++  }
++  return `data:image/svg+xml;base64,${bytesToBase64(new TextEncoder().encode(svg))}`;
++}
+ 
+ // src/emf-header-parser.ts
+ function parseEmfHeader(view) {
+@@ -574,6 +630,12 @@ function parseEmfHeader(view) {
    const frameBottom = view.getInt32(36, true);
    const frameW = frameRight - frameLeft;
    const frameH = frameBottom - frameTop;
@@ -15,7 +127,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
    return {
      bounds: {
        left: boundsLeft,
-@@ -582,10 +588,15 @@ function parseEmfHeader(view) {
+@@ -582,10 +644,15 @@ function parseEmfHeader(view) {
        bottom: boundsBottom
      },
      frameW,
@@ -33,7 +145,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
    const boundsW = header.bounds.right - header.bounds.left;
    const boundsH = header.bounds.bottom - header.bounds.top;
    if (boundsW > 0 && boundsH > 0) {
-@@ -599,6 +610,20 @@ function getRenderableEmfBounds(header) {
+@@ -599,6 +666,20 @@ function getRenderableEmfBounds(header) {
    }
    return null;
  }
@@ -54,7 +166,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
  function parseWmfHeader(view) {
    if (view.byteLength < 22) {
      return null;
-@@ -1399,9 +1424,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1399,9 +1480,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
      const refY = view.getInt32(dataOff + 32, true);
      const nChars = view.getUint32(dataOff + 36, true);
      const offString = view.getUint32(dataOff + 40, true);
@@ -73,7 +185,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
        if (text.length > 0) {
          const fontScale = Math.abs(gmh(rCtx, 1));
          applyFont(ctx, state, fontScale);
-@@ -1416,20 +1449,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1416,20 +1505,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
            alignHoriz = "right";
          }
          ctx.textBaseline = alignBaseline;
@@ -117,7 +229,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
          }
        }
      }
-@@ -2038,7 +2086,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -2038,7 +2142,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -126,7 +238,38 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4305,7 +4353,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4286,11 +4390,30 @@ var GDI_NAMES = {
+   88: "EMR_POLYBEZIERTO16",
+   91: "EMR_POLYPOLYGON16"
+ };
++function isEmfPlusDual(view) {
++  for (let offset = 0; offset + 28 <= view.byteLength; ) {
++    const recordType = view.getUint32(offset, true);
++    const recordSize = view.getUint32(offset + 4, true);
++    if (recordSize < 8 || offset + recordSize > view.byteLength) break;
++    if (recordType === EMR_COMMENT && recordSize >= 28) {
++      const dataOffset = offset + 8;
++      const commentSize = view.getUint32(dataOffset, true);
++      const signature = view.getUint32(dataOffset + 4, true);
++      const plusOffset = dataOffset + 8;
++      if (signature === EMFPLUS_SIGNATURE && commentSize >= 16 && plusOffset + 12 <= offset + recordSize && view.getUint16(plusOffset, true) === EMFPLUS_HEADER) {
++        return (view.getUint16(plusOffset + 2, true) & 1) !== 0;
++      }
++    }
++    offset += recordSize;
++  }
++  return false;
++}
+ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, replayOptions = {}) {
+   emfLog(
+     `replayEmfRecords: bounds=(${bounds.left},${bounds.top})\u2192(${bounds.right},${bounds.bottom}), canvas=${canvasW}\xD7${canvasH}`
+   );
+   const allDeferredImages = [];
++  const emfPlusDual = isEmfPlusDual(view);
+   const emfPlusState = createEmfPlusState();
+   const maxRecords = replayOptions.maxRecords ?? MAX_RECORDS_DEFAULT;
+   const maxRecordsEmfPlus = replayOptions.maxRecordsEmfPlus ?? MAX_RECORDS_EMFPLUS_DEFAULT;
+@@ -4305,7 +4428,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -135,7 +278,18 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4924,7 +4972,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4335,6 +4458,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+     const dataOff = offset + 8;
+     gdiRecordTypes.set(recType, (gdiRecordTypes.get(recType) ?? 0) + 1);
+     if (recType === EMR_COMMENT) {
++      if (emfPlusDual) {
++        offset += recSize;
++        continue;
++      }
+       if (recSize >= 16) {
+         const commentDataSize = view.getUint32(dataOff, true);
+         const sig = view.getUint32(dataOff + 4, true);
+@@ -4924,7 +5051,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -145,7 +299,7 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
-@@ -4943,7 +4992,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4943,7 +5071,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
        return null;
      }
@@ -154,11 +308,160 @@ index 4e58922988e6277d5bb039c59b8a8d1b2152e596..c81905d192640cfa7eaeeb03b59b3412
      if (!renderBounds) {
        emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
        return null;
+@@ -4964,6 +5092,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+       return null;
+     }
+     const { canvas, ctx } = setup;
++    ctx.save();
++    ctx.fillStyle = "#ffffff";
++    ctx.fillRect(0, 0, canvas.width, canvas.height);
++    ctx.restore();
+     emfLog(
+       `convertEmfToDataUrl: canvas created ${canvas.width}\xD7${canvas.height} (dpiScale=${dpiScale})`
+     );
+@@ -5041,6 +5173,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+     }
+     const { canvas, ctx } = setup;
+     ctx.save();
++    ctx.fillStyle = "#ffffff";
++    ctx.fillRect(0, 0, canvas.width, canvas.height);
++    ctx.restore();
++    ctx.save();
+     replayWmfRecords(view, ctx, header, canvas.width, canvas.height, replayOptions);
+     ctx.restore();
+     const result = await exportCanvasToPngDataUrl(canvas);
+@@ -5053,7 +5189,56 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+     return null;
+   }
+ }
++async function convertEmfToSvgDataUrl(buffer, options, recursionDepth = 0) {
++  if (recursionDepth > MAX_METAFILE_RECURSION) return null;
++  const opts = options ?? {};
++  const dpiScale = opts.dpiScale ?? DEFAULT_DPI_SCALE;
++  try {
++    const view = new DataView(buffer);
++    const header = parseEmfHeader(view);
++    if (!header) return null;
++    const renderBounds = getRenderableEmfBounds(header, hasGdiMappingRecords(view));
++    if (!renderBounds) return null;
++    const setup = createSvgCanvas(renderBounds.right - renderBounds.left, renderBounds.bottom - renderBounds.top, opts.maxWidth, opts.maxHeight, dpiScale, opts.maxCanvasDimension);
++    if (!setup) return null;
++    const { canvas, ctx } = setup;
++    const replayOptions = { maxRecords: opts.maxRecords, maxRecordsEmfPlus: opts.maxRecords, fontFamilyMap: opts.fontFamilyMap, glyphIndexMap: opts.glyphIndexMap };
++    ctx.save();
++    const deferredImages = replayEmfRecords(view, ctx, renderBounds, canvas.width, canvas.height, dpiScale, replayOptions);
++    ctx.restore();
++    await processDeferredImages(ctx, deferredImages, recursionDepth);
++    return exportCanvasToSvgDataUrl(canvas);
++  } catch (err) {
++    emfWarn("convertEmfToSvgDataUrl: EXCEPTION:", err instanceof Error ? err.message : err);
++    return null;
++  }
++}
++async function convertWmfToSvgDataUrl(buffer, options, recursionDepth = 0) {
++  if (recursionDepth > MAX_METAFILE_RECURSION) return null;
++  const opts = options ?? {};
++  const dpiScale = opts.dpiScale ?? DEFAULT_DPI_SCALE;
++  try {
++    const view = new DataView(buffer);
++    const header = parseWmfHeader(view);
++    if (!header) return null;
++    const logicalW = header.boundsRight - header.boundsLeft;
++    const logicalH = header.boundsBottom - header.boundsTop;
++    if (logicalW <= 0 || logicalH <= 0) return null;
++    const setup = createSvgCanvas(logicalW, logicalH, opts.maxWidth, opts.maxHeight, dpiScale, opts.maxCanvasDimension);
++    if (!setup) return null;
++    const { canvas, ctx } = setup;
++    ctx.save();
++    replayWmfRecords(view, ctx, header, canvas.width, canvas.height, { maxRecords: opts.maxRecords, fontFamilyMap: opts.fontFamilyMap });
++    ctx.restore();
++    return exportCanvasToSvgDataUrl(canvas);
++  } catch (err) {
++    emfWarn("convertWmfToSvgDataUrl: EXCEPTION:", err instanceof Error ? err.message : err);
++    return null;
++  }
++}
+ 
+ exports.DEFAULT_DPI_SCALE = DEFAULT_DPI_SCALE;
+ exports.convertEmfToDataUrl = convertEmfToDataUrl;
++exports.convertEmfToSvgDataUrl = convertEmfToSvgDataUrl;
+ exports.convertWmfToDataUrl = convertWmfToDataUrl;
++exports.convertWmfToSvgDataUrl = convertWmfToSvgDataUrl;
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53fd21eaa8 100644
+index 6f0899197373c38402da4274db8667cca19079a4..6a01946103703f0c40937ef3c0d97bab2151a0ca 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
-@@ -572,6 +572,12 @@ function parseEmfHeader(view) {
+@@ -292,6 +292,44 @@ function createCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI
+     return null;
+   }
+ }
++function createSvgCanvas(width, height, maxWidth, maxHeight, dpiScale = DEFAULT_DPI_SCALE, maxCanvasDimension = MAX_CANVAS_DIMENSION) {
++  const effectiveScale = Math.max(1, Math.min(dpiScale, 4));
++  let w = Math.round(width * effectiveScale);
++  let h = Math.round(height * effectiveScale);
++  let scaleX = effectiveScale;
++  let scaleY = effectiveScale;
++  if (maxWidth && w > maxWidth) {
++    const factor = maxWidth / w;
++    w = maxWidth;
++    h = Math.round(h * factor);
++    scaleX *= factor;
++    scaleY *= factor;
++  }
++  if (maxHeight && h > maxHeight) {
++    const factor = maxHeight / h;
++    w = Math.round(w * factor);
++    h = maxHeight;
++    scaleX *= factor;
++    scaleY *= factor;
++  }
++  const dimCap = Math.max(1, Math.floor(maxCanvasDimension));
++  w = Math.max(1, Math.min(w, dimCap));
++  h = Math.max(1, Math.min(h, dimCap));
++  try {
++    const factory = typeof globalThis !== "undefined" ? globalThis.__emfCreateSvgCanvas : void 0;
++    if (typeof factory !== "function") {
++      return null;
++    }
++    const canvas = factory(w, h);
++    const ctx = canvas.getContext("2d");
++    if (!ctx) {
++      return null;
++    }
++    return { canvas, ctx, scaleX, scaleY };
++  } catch (err) {
++    return null;
++  }
++}
+ function createTempCanvas(width, height) {
+   if (width <= 0 || height <= 0) {
+     return null;
+@@ -551,6 +589,24 @@ async function exportCanvasToPngDataUrl(canvas) {
+   }
+   return null;
+ }
++function bytesToBase64(bytes) {
++  let binary = "";
++  for (let offset = 0; offset < bytes.length; offset += 32768) {
++    binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768));
++  }
++  return btoa(binary);
++}
++async function exportCanvasToSvgDataUrl(canvas) {
++  if (!canvas || typeof canvas.getContent !== "function") {
++    return null;
++  }
++  const content = canvas.getContent();
++  let svg = new TextDecoder().decode(content);
++  if (!/<svg\b[^>]*\bviewBox=/.test(svg)) {
++    svg = svg.replace(/<svg\b([^>]*)>/, `<svg$1 viewBox="0 0 ${canvas.width} ${canvas.height}">`);
++  }
++  return `data:image/svg+xml;base64,${bytesToBase64(new TextEncoder().encode(svg))}`;
++}
+ 
+ // src/emf-header-parser.ts
+ function parseEmfHeader(view) {
+@@ -572,6 +628,12 @@ function parseEmfHeader(view) {
    const frameBottom = view.getInt32(36, true);
    const frameW = frameRight - frameLeft;
    const frameH = frameBottom - frameTop;
@@ -171,7 +474,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
    return {
      bounds: {
        left: boundsLeft,
-@@ -580,10 +586,15 @@ function parseEmfHeader(view) {
+@@ -580,10 +642,15 @@ function parseEmfHeader(view) {
        bottom: boundsBottom
      },
      frameW,
@@ -189,7 +492,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
    const boundsW = header.bounds.right - header.bounds.left;
    const boundsH = header.bounds.bottom - header.bounds.top;
    if (boundsW > 0 && boundsH > 0) {
-@@ -597,6 +608,20 @@ function getRenderableEmfBounds(header) {
+@@ -597,6 +664,20 @@ function getRenderableEmfBounds(header) {
    }
    return null;
  }
@@ -210,7 +513,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
  function parseWmfHeader(view) {
    if (view.byteLength < 22) {
      return null;
-@@ -1397,9 +1422,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1397,9 +1478,17 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
      const refY = view.getInt32(dataOff + 32, true);
      const nChars = view.getUint32(dataOff + 36, true);
      const offString = view.getUint32(dataOff + 40, true);
@@ -229,7 +532,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
        if (text.length > 0) {
          const fontScale = Math.abs(gmh(rCtx, 1));
          applyFont(ctx, state, fontScale);
-@@ -1414,20 +1447,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
+@@ -1414,20 +1503,35 @@ function handleExtTextOutW(rCtx, offset, dataOff, recSize) {
            alignHoriz = "right";
          }
          ctx.textBaseline = alignBaseline;
@@ -273,7 +576,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
          }
        }
      }
-@@ -2036,7 +2084,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
+@@ -2036,7 +2140,7 @@ function handleEmfObjectRecord(rCtx, recType, dataOff, recSize) {
          const italic = view.getUint8(dataOff + 24);
          const underline = view.getUint8(dataOff + 25);
          const strikeOut = view.getUint8(dataOff + 26);
@@ -282,7 +585,38 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
          rCtx.objectTable.set(ihFont, {
            kind: "font",
            height: Math.abs(height),
-@@ -4303,7 +4351,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+@@ -4284,11 +4388,30 @@ var GDI_NAMES = {
+   88: "EMR_POLYBEZIERTO16",
+   91: "EMR_POLYPOLYGON16"
+ };
++function isEmfPlusDual(view) {
++  for (let offset = 0; offset + 28 <= view.byteLength; ) {
++    const recordType = view.getUint32(offset, true);
++    const recordSize = view.getUint32(offset + 4, true);
++    if (recordSize < 8 || offset + recordSize > view.byteLength) break;
++    if (recordType === EMR_COMMENT && recordSize >= 28) {
++      const dataOffset = offset + 8;
++      const commentSize = view.getUint32(dataOffset, true);
++      const signature = view.getUint32(dataOffset + 4, true);
++      const plusOffset = dataOffset + 8;
++      if (signature === EMFPLUS_SIGNATURE && commentSize >= 16 && plusOffset + 12 <= offset + recordSize && view.getUint16(plusOffset, true) === EMFPLUS_HEADER) {
++        return (view.getUint16(plusOffset + 2, true) & 1) !== 0;
++      }
++    }
++    offset += recordSize;
++  }
++  return false;
++}
+ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, replayOptions = {}) {
+   emfLog(
+     `replayEmfRecords: bounds=(${bounds.left},${bounds.top})\u2192(${bounds.right},${bounds.bottom}), canvas=${canvasW}\xD7${canvasH}`
+   );
+   const allDeferredImages = [];
++  const emfPlusDual = isEmfPlusDual(view);
+   const emfPlusState = createEmfPlusState();
+   const maxRecords = replayOptions.maxRecords ?? MAX_RECORDS_DEFAULT;
+   const maxRecordsEmfPlus = replayOptions.maxRecordsEmfPlus ?? MAX_RECORDS_EMFPLUS_DEFAULT;
+@@ -4303,7 +4426,7 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
      ctx,
      view,
      objectTable: /* @__PURE__ */ new Map(),
@@ -291,7 +625,18 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
      stateStack: [],
      inPath: false,
      windowOrg: { x: bounds.left, y: bounds.top },
-@@ -4922,7 +4970,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4333,6 +4456,10 @@ function replayEmfRecords(view, ctx, bounds, canvasW, canvasH, dpiScale = 1, rep
+     const dataOff = offset + 8;
+     gdiRecordTypes.set(recType, (gdiRecordTypes.get(recType) ?? 0) + 1);
+     if (recType === EMR_COMMENT) {
++      if (emfPlusDual) {
++        offset += recSize;
++        continue;
++      }
+       if (recSize >= 16) {
+         const commentDataSize = view.getUint32(dataOff, true);
+         const sig = view.getUint32(dataOff + 4, true);
+@@ -4922,7 +5049,8 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
    const replayOptions = {
      maxRecords: opts.maxRecords,
      maxRecordsEmfPlus: opts.maxRecords,
@@ -301,7 +646,7 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
    };
    try {
      emfLog("=== convertEmfToDataUrl START ===");
-@@ -4941,7 +4990,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+@@ -4941,7 +5069,7 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
        emfLog("convertEmfToDataUrl: parseEmfHeader returned null \u2014 returning null");
        return null;
      }
@@ -310,3 +655,79 @@ index 6f0899197373c38402da4274db8667cca19079a4..bafdbc4e8ff405c89bd0ca6193ce1f53
      if (!renderBounds) {
        emfLog("convertEmfToDataUrl: getRenderableEmfBounds returned null \u2014 returning null");
        return null;
+@@ -4962,6 +5090,10 @@ async function convertEmfToDataUrl(buffer, options, recursionDepth = 0) {
+       return null;
+     }
+     const { canvas, ctx } = setup;
++    ctx.save();
++    ctx.fillStyle = "#ffffff";
++    ctx.fillRect(0, 0, canvas.width, canvas.height);
++    ctx.restore();
+     emfLog(
+       `convertEmfToDataUrl: canvas created ${canvas.width}\xD7${canvas.height} (dpiScale=${dpiScale})`
+     );
+@@ -5039,6 +5171,10 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+     }
+     const { canvas, ctx } = setup;
+     ctx.save();
++    ctx.fillStyle = "#ffffff";
++    ctx.fillRect(0, 0, canvas.width, canvas.height);
++    ctx.restore();
++    ctx.save();
+     replayWmfRecords(view, ctx, header, canvas.width, canvas.height, replayOptions);
+     ctx.restore();
+     const result = await exportCanvasToPngDataUrl(canvas);
+@@ -5051,5 +5187,52 @@ async function convertWmfToDataUrl(buffer, options, recursionDepth = 0) {
+     return null;
+   }
+ }
++async function convertEmfToSvgDataUrl(buffer, options, recursionDepth = 0) {
++  if (recursionDepth > MAX_METAFILE_RECURSION) return null;
++  const opts = options ?? {};
++  const dpiScale = opts.dpiScale ?? DEFAULT_DPI_SCALE;
++  try {
++    const view = new DataView(buffer);
++    const header = parseEmfHeader(view);
++    if (!header) return null;
++    const renderBounds = getRenderableEmfBounds(header, hasGdiMappingRecords(view));
++    if (!renderBounds) return null;
++    const setup = createSvgCanvas(renderBounds.right - renderBounds.left, renderBounds.bottom - renderBounds.top, opts.maxWidth, opts.maxHeight, dpiScale, opts.maxCanvasDimension);
++    if (!setup) return null;
++    const { canvas, ctx } = setup;
++    const replayOptions = { maxRecords: opts.maxRecords, maxRecordsEmfPlus: opts.maxRecords, fontFamilyMap: opts.fontFamilyMap, glyphIndexMap: opts.glyphIndexMap };
++    ctx.save();
++    const deferredImages = replayEmfRecords(view, ctx, renderBounds, canvas.width, canvas.height, dpiScale, replayOptions);
++    ctx.restore();
++    await processDeferredImages(ctx, deferredImages, recursionDepth);
++    return exportCanvasToSvgDataUrl(canvas);
++  } catch (err) {
++    emfWarn("convertEmfToSvgDataUrl: EXCEPTION:", err instanceof Error ? err.message : err);
++    return null;
++  }
++}
++async function convertWmfToSvgDataUrl(buffer, options, recursionDepth = 0) {
++  if (recursionDepth > MAX_METAFILE_RECURSION) return null;
++  const opts = options ?? {};
++  const dpiScale = opts.dpiScale ?? DEFAULT_DPI_SCALE;
++  try {
++    const view = new DataView(buffer);
++    const header = parseWmfHeader(view);
++    if (!header) return null;
++    const logicalW = header.boundsRight - header.boundsLeft;
++    const logicalH = header.boundsBottom - header.boundsTop;
++    if (logicalW <= 0 || logicalH <= 0) return null;
++    const setup = createSvgCanvas(logicalW, logicalH, opts.maxWidth, opts.maxHeight, dpiScale, opts.maxCanvasDimension);
++    if (!setup) return null;
++    const { canvas, ctx } = setup;
++    ctx.save();
++    replayWmfRecords(view, ctx, header, canvas.width, canvas.height, { maxRecords: opts.maxRecords, fontFamilyMap: opts.fontFamilyMap });
++    ctx.restore();
++    return exportCanvasToSvgDataUrl(canvas);
++  } catch (err) {
++    emfWarn("convertWmfToSvgDataUrl: EXCEPTION:", err instanceof Error ? err.message : err);
++    return null;
++  }
++}
+ 
+-export { DEFAULT_DPI_SCALE, convertEmfToDataUrl, convertWmfToDataUrl };
++export { DEFAULT_DPI_SCALE, convertEmfToDataUrl, convertEmfToSvgDataUrl, convertWmfToDataUrl, convertWmfToSvgDataUrl };

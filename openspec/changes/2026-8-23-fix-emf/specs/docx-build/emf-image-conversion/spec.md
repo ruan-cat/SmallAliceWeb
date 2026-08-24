@@ -58,3 +58,32 @@ EMF 内嵌文本 MUST 通过随包注册的中文字体与字体族映射完成�
 - **WHEN** 字体文件缺失或注册失败
 - **THEN** 构建输出警告并继续处理后续文档
 - **AND** 该失败只影响相关图片文字渲染质量，不构成整次构建失败
+
+### Requirement: SVG 输出 POC 必须保留真实矢量语义与 PNG 兼容路径
+
+转换模块 MAY 为 EMF/WMF 提供独立 SVG 输出 API。SVG POC MUST 保留既有 PNG API 及其默认行为，MUST 使用由真实 SVG 图元组成的根 `<svg>`，MUST NOT 仅用单张全画布 PNG 作为 SVG 内容。源 EMF 自带 DIB、位图或嵌入图片时，转换 MAY 使用局部 SVG `<image>` 表达该原始位图内容。
+
+#### Scenario: SVG POC 生成真实混合矢量输出
+
+- **WHEN** 调用方显式请求 EMF/WMF 的 SVG POC 输出
+- **THEN** 转换返回 MIME 为 `image/svg+xml` 的非空 SVG 数据
+- **AND** SVG 具有根 `<svg>`、有效 viewBox，且至少保留输入图中可表达的路径、文字或裁剪图元
+- **AND** 输出不得退化成唯一一个覆盖完整画布的 PNG `<image>`
+
+#### Scenario: SVG POC 不改变 PNG 默认转换
+
+- **WHEN** 既有调用方继续调用 PNG 转换 API
+- **THEN** 输出仍是通过 PNG 文件签名校验的 PNG Buffer
+- **AND** SVG POC 的 SVGCanvas、SVG 导出器或文字轮廓化设置不得污染 PNG 主画布和 DIB 临时 Raster Canvas
+
+#### Scenario: 真实文本布局 fixture 在 SVG 中不退化
+
+- **WHEN** SVG POC 转换包含 `offDx`、mapping-mode 或 `ETO_GLYPH_INDEX` 的真实 EMF fixture
+- **THEN** `offDx`/`ETO_PDY` 的每字符定位、frame 尺寸和已映射 glyph 文本保持与 PNG 回归约束一致
+- **AND** 浏览器渲染后的 SVG 不得因合并整串文本、重复扣减裁剪原点或把 glyph id 当 Unicode 而出现已知错位或乱码
+
+#### Scenario: 高风险类别不静默宣称 SVG 保真
+
+- **WHEN** 全量审计发现 ROP2、复杂裁剪、EMF+ DrawDriverString 或递归内嵌 metafile
+- **THEN** 审计记录该类别和真实输入标识，并以 Windows GDI+ 对照或明确 PNG 回退结论处置
+- **AND** 不得因为 SVG 文件可以解析或浏览器可以加载，就将该类别标记为质量通过

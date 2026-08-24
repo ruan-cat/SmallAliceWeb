@@ -44,3 +44,23 @@
    **证据**：真实 title fixture RED：首字符 X 差 25、Y 差 46，输出 816×208；Windows GDI+ 原图为 841×335。回退重复扣减并按 frame/device/millimeters 计算 mapping EMF 画布后，子包 25/25 通过，本机 Google Chrome 的五个指定页面视觉正常。
    **状态**：resolved。
    **后续动作**：后续所有 mapping EMF 改动均须保留 frame 尺寸和文字坐标回归门禁，并用本机 Google Chrome 先验收本地再验收生产。
+
+10. **风险**：SVG POC 可重放真实 fixture，但它复用 Canvas 回放语义，不能因 SVG 文件生成成功就宣称修复 GDI+ 保真。
+    **证据**：`tasks.md` 6.2–6.5 的 RED→GREEN；`patches/emf-converter@2.0.2.patch` 的 SVG API；`@napi-rs/canvas` SVGCanvas 对 ROP2/复杂合成的探针结论。
+    **状态**：active。
+    **后续动作**：6.6 必须分类 399 个当前源 EMF，6.7 必须在本机 Chrome 逐图截图并与 GDI+ 参照判读；不通过类别保持 PNG 默认或显式回退。
+
+11. **风险**：2026-08-24 当前会话的新建 Chrome/CDP 控制不可靠，但现存 Agent Browser 会话可截图，不能把控制链故障误判为 VitePress SSR 或图片不可见。
+    **证据**：`agent-browser --headed --executable-path` 同时输出标题/图片数与 daemon EOF；typed `agent_browser_open` 连续 3 个 10 秒等待无输出；其后默认会话成功保存并人工查看 `C:\Users\pc\AppData\Local\Temp\smallalice-emf-agent-browser-diagnostic.png`，图中为客户端渲染页面。
+    **状态**：active。
+    **后续动作**：复用已响应的会话做目标图视口截图与 console 记录；不要再以“SSR 拿不到图片”作为解释，也不得将首屏截图或加载统计当视觉通过。
+
+12. **发现**：高级角色肖像低对比图的真实输入已定位为 DOCX `word/media/image4.emf`，但此类别的浏览器复验不能靠页面标题关闭。
+    **证据**：`evidence/2026-08-24-svg-quality-audit.md`；`portrait-high-contrast.emf`；GDI+ 参照与 Agent Browser 截图路径均记录在证据文件。
+    **状态**：active。
+    **后续动作**：WPS 原图已推翻“低对比”为主因；改为验证 EMF+ Dual 中 GDI 回退层和 EMF+ 主层双回放造成的几何错位，浏览器 daemon 恢复后重做目标图视口截图。
+
+13. **根因假设**：`portrait-high-contrast.emf` 的错位来自 EMF+ Dual 双回放，而不是 COLORREF 或白底蓝字设计。
+    **证据**：原始二进制含 79 个 EMF+ comment、28 个 GDI `EMR_EXTTEXTOUTW`、112 个 GDI UTF-16 字符；当前 Canvas `fillText` 也恰为 112 次。WPS 与 GDI+ 图显示正常紧凑布局，当前 SVG/PNG 却使文本与 EMF+ path 层相对漂移。
+    **状态**：active。
+    **后续动作**：编写 Dual 分派 RED 用例，实验性跳过重复 GDI 图形但保留文本/状态，使用 WPS/GDI+ 对照确认后才固化补丁。
