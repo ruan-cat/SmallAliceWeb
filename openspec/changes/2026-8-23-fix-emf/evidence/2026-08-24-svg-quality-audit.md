@@ -15,6 +15,28 @@
 
 此基线来自对当前 `drill-docx` 的 ZIP `word/media` 条目扫描。`EMR_COMMENT` 只标识必须按 EMF+/高风险路径审计，不能单独作为渲染通过或失败结论。
 
+### 2.1 可重复 record 清单
+
+执行命令：
+
+```powershell
+pnpm exec tsx scripts/build-doc-in-vercel/emf/audit-manifest.ts --input drill-docx --output openspec/changes/2026-8-23-fix-emf/evidence/2026-08-24-emf-audit-manifest.json
+```
+
+清单 `2026-08-24-emf-audit-manifest.json` 对每个媒体记录 DOCX 相对路径、`word/media` 条目、输入 SHA-256、字节数和 risk flag；扫描直接读取 DOCX 的 ZIP 中央目录，不解压或修改原文档，且复用转换链已有的 `~$` Office 锁文件跳过规则。
+
+|         自动审计项          | 计数 |                             处置                              |
+| :-------------------------: | :--: | :-----------------------------------------------------------: |
+|          有效 DOCX          | 195  |                     锁文件不计入输入集合                      |
+|        EMF/WMF 媒体         | 399  |                        EMF 399，WMF 0                         |
+|          EMF+ Dual          | 399  |    不能将“SVG 可解析”视为通过；需与 GDI+ 和浏览器逐图复核     |
+|          复杂裁剪           | 399  |             作为裁断候选，仍需目标图视口人工判读              |
+|         位图 record         | 399  |      允许局部 `<image>`，但禁止退化成唯一全画布 PNG 包装      |
+|      `ETO_GLYPH_INDEX`      |  49  | 作为乱码/占位候选，必须使用已反查的字体 glyph 映射或新增映射  |
+| `ROP2` / `DrawDriverString` |  0   | 当前输入集未检出；不得声称这些未出现类别已经得到 SVG 保真证明 |
+
+自动风险 flag 只建立人工门禁候选：`glyph-index-text` 对应乱码/占位符，`emf-plus-dual` 对应错位/重复，`bitmap` 或 `complex-clip` 对应裁断。它不自动认定某张图已经存在视觉故障。
+
 ## 3. 已定位缺陷：高级角色肖像关系图低对比
 
 ### 3.1 浏览器证据
@@ -57,6 +79,15 @@ Windows GDI+ 参照输出：`C:\Users\pc\AppData\Local\Temp\smallalice-portrait-
 ## 5. 后续门禁
 
 此类别的修复只能在以下证据齐全后标记通过：真实 fixture 的 RED→GREEN 回归、Windows GDI+ 对照、Agent Browser 目标图视口截图和生产容器复验。其余乱码、错位、重复、裁断与占位符类别仍未完成审计。
+
+### 5.1 已固定与待补齐的代表样本
+
+|          类别           |                       真实样本与现有参照                       |                     当前状态                      |
+| :---------------------: | :------------------------------------------------------------: | :-----------------------------------------------: |
+|   错位 / 重复 / 裁断    |    `portrait-high-contrast.emf` 与 Windows GDI+ 关系图参照     | 已证实 Dual 双回放是根因；生产 SVG 已完成一图复验 |
+|      乱码 / 占位符      |    `asset-library-glyph-index.emf`，黑体 glyph id 266 → `…`    | 回归已固定；仍需在 SVG 覆盖清单中做目标图视口复验 |
+|     复杂裁剪 / 位图     | 清单中 399/399 全部命中，候选样本见 `插件类型.docx` image1.emf |      尚未完成 GDI+ 与 Chrome 的代表样本验收       |
+| ROP2 / DrawDriverString |                    当前 399 个输入均未检出                     |  没有可用真实样本，不能将“零检出”宣传为格式保真   |
 
 ## 6. Production Git Integration 复验
 
