@@ -19,4 +19,5 @@
 ## 3. 下一步与边界
 
 - `NITRO_SYNC_DATABASE_URL` 已三环境接线；以 scanner gate 固定临界区后，真实 Development service 的第二轮同步返回 `KNOWLEDGE_SYNC_CONFLICT` / 409，回归测试已覆盖。
-- 生产部署与浏览器验证尚未开始；下一步完成 §2.1.4 的生产后端驱动浏览器回归。
+- Vercel `smallalice-docs-ai-nitro-api` 的 Production Branch 已从 `dev` 改为 `main` 并由登录 Chrome 页面回读；下一条同步到 main 的提交将触发目标 Production build。
+- 生产部署与浏览器验证尚未完成；下一步以该 main Git Integration deployment 完成 §2.1.4 的生产后端驱动浏览器回归。
