@@ -784,8 +784,6 @@ Aborted (core dumped)
 
 ### 继续完成 emf 矢量图问题处理
 
-<!-- TODO: -->
-
 我们现在是全新的对话，我们正在完成 `openspec\changes\2026-8-23-fix-emf` 任务，修复 emf 矢量图转换成图片的显示效果不好的任务。请你先用 memorix 完成历史上下文的获取。
 
 请你在做浏览器视觉验证时，注意 `reports\2026-8-24-use-agent-browser\2026-08-24-agent-browser-local-chrome-and-route-incident.md` 文档的要求：
@@ -812,3 +810,25 @@ Aborted (core dumped)
 仍然有`图片错位`，`乱码`的情况。你的乱码处理方案是不是要实现合适的动态处理和计算方案啊？
 
 pua grill-me 你的方案是不是要换一下？`patches\emf-converter@2.0.2.patch` 是不是要试试用 svg 的方案？而不是强制用基于 canvas 的方案？我总觉得基于 canvas 的方案永远也没办法完成精确计算，能不能直接换成 svg 图片啊？这样浏览器本身也能识别 svg 这种格式的矢量图，效果还好的多。
+
+---
+
+`D:\code\ruan-cat\drill-docx` 目录内有全套的，完整的 docx 文件，你要用你的 docx 阅读能力，直接阅读原本的 emf 的二进制图片，搞清楚什么是正常，什么是异常。
+
+### 制作测试用例
+
+我觉得你应该把 `openspec\changes\2026-8-23-fix-emf\evidence\2026-08-24-emf-audit-manifest.json` 的东西，变成一揽子可以完成校验的测试工具，你应该在合适的地方，写 vitest 测试工具，完成对这些 JSON 化 emf 内容的批量完整测试。
+你评估一下这个行不行？有没有可行性？
+
+---
+
+我认可，这个确实是偏向于本地的测试命令，请你做出改动，但是不要硬依赖 openspec\changes\2026-8-23-fix-emf\evidence\2026-08-24-emf-audit-manifest.json 文件，因为该路径的文件迟早属于被归档的 openspec 文件，一旦归档，硬编码路径会失效。所以你的测试用例要做好文件备份，并做好合适细粒度的 vitest 测试用例开发；
+
+### <!-- TODO: --> 精益求精，处理像素化噪点
+
+- `drill.ruan-cat.com/docx/插件详细手册/6.地图/关于地图活动镜头.html`
+
+![2026-08-24-12-34-51](https://gh-img-store.ruan-cat.com/img/2026-08-24-12-34-51.png)
+
+我注意到转化的很多 svg 图像，边框边缘都有很多淡蓝色的散落的蓝色噪点。这是怎么回事？为什么会出现这样的情况？不管是 emf 矢量图转换成 svg 后，还是 emf 在之前转换成 png 时，都有这样的问题。
+是获取 emf 矢量图时，采样策略出现失真和偏移么？还是内置的 canvas 方案出问题了？和我们的 `patches\emf-converter@2.0.2.patch` 有关系么？
