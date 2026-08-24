@@ -37,6 +37,28 @@ pnpm exec tsx scripts/build-doc-in-vercel/emf/audit-manifest.ts --input drill-do
 
 自动风险 flag 只建立人工门禁候选：`glyph-index-text` 对应乱码/占位符，`emf-plus-dual` 对应错位/重复，`bitmap` 或 `complex-clip` 对应裁断。它不自动认定某张图已经存在视觉故障。
 
+### 2.2 归档独立的本地全量测试门禁
+
+完整清单已复制至 `scripts/build-doc-in-vercel/tests/fixtures/emf-audit-corpus-manifest.json`，Vitest 不读取 `openspec/changes/**/evidence/**`。因此本 change 归档后，测试仍以受版本控制的相对 DOCX 路径、ZIP entry、字节数、SHA-256 与 record 审计结果回读当前本地源语料。
+
+执行命令：
+
+```powershell
+$env:EMF_AUDIT_SOURCE_ROOT = (Resolve-Path "drill-docx").Path
+pnpm --filter @ruan-cat-temp/build-doc-in-vercel test:audit-corpus
+```
+
+|           自动门禁           |        本轮结果        |                              结论                               |
+| :--------------------------: | :--------------------: | :-------------------------------------------------------------: |
+|          清单引用数          |          399           |                 每项已重新从 DOCX ZIP 回读媒体                  |
+|        唯一二进制载荷        |          356           |              按 SHA-256 去重，避免重复转换相同输入              |
+|   字节数、SHA-256、record    |        399/399         |                任一源文档或审计逻辑漂移都会失败                 |
+|         SVG 契约转换         |        356/356         | 根 `<svg>`、`viewBox`、可渲染图元和非唯一位图外壳均通过结构门禁 |
+| 未处理 `EMR` record type 90  |           3            | 已作为受断言的转换器警告输出，仍需纳入后续 GDI+/Chrome 人工复核 |
+| 缺少 `EMF_AUDIT_SOURCE_ROOT` | 命令以非零状态明确失败 |              不允许静默 skip 或把未执行误报为通过               |
+
+该命令只证明来源一致性和可自动验证的 SVG 契约。它不会将全部 399 个风险候选自动标记为视觉通过；`插件类型.docx` 的灰色矩形反例继续阻止关闭 6.6/6.7。
+
 ## 3. 已定位缺陷：高级角色肖像关系图低对比
 
 ### 3.1 浏览器证据

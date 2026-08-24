@@ -94,6 +94,12 @@ SVG 后端复用已经验证的 `gmx/gmy/gmw/gmh`、frame 尺寸和 `EMR_EXTTEXT
 
 ROP2、复杂 region combine、EMF+ DrawDriverString 与递归嵌套 metafile 都是阻断默认切换的高风险类别。它们必须拥有真实样本和 GDI+ 对照，或在审计报告中被显式隔离为 PNG 回退类别；禁止静默降级。
 
+### 7.5 测试基线不依赖可归档的 OpenSpec evidence
+
+全量审计生成的 JSON 既是 change evidence，也是可复跑的测试基线，但两者的生命周期不同。Vitest 必须只从 `scripts/build-doc-in-vercel/tests/fixtures/` 下受版本控制的清单副本读取基线，禁止硬编码 `openspec/changes/**/evidence/**` 路径。基线保存每个媒体的相对 DOCX 路径、ZIP entry 名、长度、SHA-256 与 record 审计；测试通过显式本地源目录重新提取二进制、重新计算哈希和重新运行 record 审计，确保清单不是自证。
+
+全量 SVG 契约测试按 SHA-256 去重转换当前基线中的每个输入，再将结果关联回所有引用条目。它只能断言转换不失败、SVG 根元素/viewBox/矢量语义和非全画布 PNG 外壳，不能从 record 风险或 SVG 结构推导乱码、错位、重复、裁断或占位符已修复。专用本地命令缺少完整 DOCX 源目录时必须失败；常规快速 Vitest 不得静默跳过或假装跑过全量输入。
+
 ## 8. 追加迁移计划
 
 1. 先让 SVG 结构回归测试在当前实现上因缺少 API 而失败，再最小化补丁新增 SVG 主画布与导出函数。
