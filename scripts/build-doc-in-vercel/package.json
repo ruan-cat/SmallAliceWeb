@@ -4,7 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"test": "vitest run"
+		"test": "vitest run --exclude tests/emf-audit-corpus.test.ts",
+		"test:audit-corpus": "vitest run tests/emf-audit-corpus.test.ts"
 	},
 	"devDependencies": {
 		"@napi-rs/canvas": "^1.0.7",
