@@ -100,6 +100,12 @@ ROP2、复杂 region combine、EMF+ DrawDriverString 与递归嵌套 metafile �
 
 全量 SVG 契约测试按 SHA-256 去重转换当前基线中的每个输入，再将结果关联回所有引用条目。它只能断言转换不失败、SVG 根元素/viewBox/矢量语义和非全画布 PNG 外壳，不能从 record 风险或 SVG 结构推导乱码、错位、重复、裁断或占位符已修复。专用本地命令缺少完整 DOCX 源目录时必须失败；常规快速 Vitest 不得静默跳过或假装跑过全量输入。
 
+### 7.6 受限 ROP3 DIB 掩膜不能在 SVG 裁剪边界泄漏为点阵
+
+真实 `关于地图活动镜头` 输入使用成对的 `EMR_STRETCHDIBITS`，`dwRop` 分别为 `SRCAND`（`0x008800C6`）与 `SRCPAINT`（`0x00EE0086`）。当前回放器把两者无条件作为普通 `drawImage` 处理；PNG 基线的目标带恰好干净，但 SVG 将局部 Raster Canvas 导出为 `<image>` 并与 clipPath 组合后，黑白掩膜在框体外泄漏为稀疏蓝色点阵。一次性取消 SVG 最大尺寸的受控实验仍存在 1,760 个异常像素，不能作为修复。
+
+转换器仅在 SVG Canvas 下识别相邻、目标区域相同且 ROP 互补的该受限组合，并跳过这对错误掩膜的 `<image>/<use>` 输出；真实 fixture 的 GDI 回退向量记录已完整表达蓝色框体、边框、文字和连线。不得降低整张 EMF 为单一 PNG，也不得改变 PNG 或不含该组合的 DIB 路径。未实现的其他 ROP3 组合继续记录为高风险，不能伪称本次已获得通用 ROP3 保真。
+
 ## 8. 追加迁移计划
 
 1. 先让 SVG 结构回归测试在当前实现上因缺少 API 而失败，再最小化补丁新增 SVG 主画布与导出函数。

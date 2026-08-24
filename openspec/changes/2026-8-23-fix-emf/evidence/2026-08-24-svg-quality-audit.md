@@ -59,6 +59,16 @@ pnpm --filter @ruan-cat-temp/build-doc-in-vercel test:audit-corpus
 
 该命令只证明来源一致性和可自动验证的 SVG 契约。它不会将全部 399 个风险候选自动标记为视觉通过；`插件类型.docx` 的灰色矩形反例继续阻止关闭 6.6/6.7。
 
+### 2.3 地图活动镜头 ROP3 掩膜点阵回归
+
+- 原始输入：`drill-docx/插件详细手册/6.地图/关于地图活动镜头.docx` 的 `word/media/image2.emf`，SHA-256 `aa1bf64f56d68f4419ca213645f1c57ef2ab24359a1b949d4c6c4a61af9667b5`，369,956 字节，Windows GDI+ bounds 为 1480×349、`EmfPlusDual`。
+- GDI+ 对照：`C:\Users\pc\AppData\Local\Temp\smallalice-map-camera-image2-gdiplus.png` 的蓝色框体、黑色边框、文字和连线均干净，没有框体下方点阵。
+- RED：当前 SVG 为 1024×241，导出 16 个局部 `<image>/<use>`；真实 Chrome 将第 143–144 行、x=369–657 渲染为稀疏点阵。`pnpm --filter @ruan-cat-temp/build-doc-in-vercel test` 中 fixture 断言初始失败，报告 16 个 `<use>`。
+- 根因：输入含 16 对相邻、同目标区域的 `EMR_STRETCHDIBITS`，ROP 为 `SRCPAINT`（`0x00EE0086`）与 `SRCAND`（`0x008800C6`）。SVG Canvas 将其作为局部 PNG `<image>` 和分数 clipPath 输出；直接在真实 Chrome SVG DOM 中移除 16 个 `<use>` 后，点阵带非白像素归零且图形与 GDI+ 对照一致。
+- GREEN：pnpm patch 仅在 SVG Canvas 中跳过相邻、同目标区、ROP 互补的这一受限掩膜组合。测试 fixture 的 SVG 仍有 `fill="#4F88BB"` 向量框体，但 `<image>` 和 `<use>` 均为 0；子包 Vitest 为 36/36 通过。
+- 本地重建：`pnpm run build:doc-in-vercel` 成功处理该 DOCX 的 62 张图片。新产物 `docs/docx/插件详细手册/6.地图/images/关于地图活动镜头/关于地图活动镜头-001.svg` 为 1024×241、`<image>=0`、`<use>=0`；本机 Chrome HTTP 截图 `C:\Users\pc\AppData\Local\Temp\smallalice-map-camera-001-local-http-fixed.png` 目视确认点阵消失。
+- 边界：这是 SVG 专用的受限掩膜对处置，不改变 PNG 或其他 DIB/ROP3 记录；其他 ROP3 组合仍未获得通用保真证明，6.6/6.7 不得因本修复关闭。
+
 ## 3. 已定位缺陷：高级角色肖像关系图低对比
 
 ### 3.1 浏览器证据

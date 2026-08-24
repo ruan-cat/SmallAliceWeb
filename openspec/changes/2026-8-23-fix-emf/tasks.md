@@ -59,6 +59,9 @@
   - [x] 6.6.2 [测试] `scripts/build-doc-in-vercel/tests/emf-audit-corpus.test.ts` - 在显式本地 DOCX 源目录下逐条重新提取媒体，断言相对路径、ZIP entry、字节数、SHA-256 与 record 审计结果匹配基线；缺少目录必须明确失败，不能 skip。
   - [x] 6.6.3 [测试] `scripts/build-doc-in-vercel/tests/emf-audit-corpus.test.ts` - 按 SHA-256 去重转换全量 EMF/WMF，逐项验证 SVG 根元素、viewBox、矢量语义与非全画布 PNG 外壳，并把每个清单引用关联到转换结果；结构通过不得标记视觉类别通过。
   - [x] 6.6.4 [验证] `scripts/build-doc-in-vercel/package.json` - 新增并运行显式本地 `test:audit-corpus` 命令；常规子包 Vitest 保持快速，专用命令输出条目数、去重载荷数、转换结果与仍需 GDI+/Chrome 的风险类别。
+  - [x] 6.6.5 [测试] `scripts/build-doc-in-vercel/tests/emf-converter.test.ts` - 固化 `关于地图活动镜头.docx` 的 `word/media/image2.emf` 真实 ROP3 fixture 与 Windows GDI+ 参照；先断言 PNG/SVG 中框体下方的空白带无稀疏点阵并记录 RED。
+  - [x] 6.6.6 [修改] `patches/emf-converter@2.0.2.patch` - 仅对相邻、同目标区域且互补的 `SRCAND`/`SRCPAINT` `EMR_STRETCHDIBITS` 跳过 SVG 错误掩膜输出；不修改 PNG 或不含该组合的 DIB 路径，也不把整图降级为 PNG。
+  - [x] 6.6.7 [验证] `scripts/build-doc-in-vercel` - 子包 Vitest 同时验证 PNG/SVG 的点阵带消失、GDI+ fixture 几何保持，重跑全量审计并记录未覆盖 ROP3 的风险。
 - [ ] 6.7 [视觉验证] 本机 Google Chrome + Agent Browser - 按 `reports/2026-8-24-use-agent-browser/2026-08-24-agent-browser-local-chrome-and-route-incident.md` 先审计本地 SVG POC，再对生产指定三页和覆盖清单抽样逐图截图判读；不得用图片加载统计或全页缩略图替代目标图视口证据。
 - [ ] 6.8 [决策] `openspec/changes/2026-8-23-fix-emf/evidence` - 汇总 SVG 与 PNG 相对 GDI+ 的分类结论、未通过类别和生产默认格式决策；只有 6.5 至 6.7 对默认切换无阻断项时，才新增单独任务修改 `transformers.ts` 以 `.svg` 作为默认落盘格式。
 - [x] 6.9 [用户授权的默认切换] `scripts/build-doc-in-vercel/transformers.ts` - 按 2026-08-24 用户明确指令，将 EMF/WMF 分支改为调用 `convertEmfToSvg` 并以 `.svg` 落盘；保持 PNG/JPEG/GIF 分支不变。重建本地文档，确认真实 EMF 产物为 SVG，再按 Git Integration 重新发布 Production 并用 Agent Browser 检查生产 SVG 的资源扩展名和目标图布局（`main@54e1532`、`dpl_J6jGa8LpiMchKGri6DMd4ECL6UjW` Ready；目标资源 HTTP `200 image/svg+xml`，目标图视口截图已人工判读）。
