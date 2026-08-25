@@ -10,10 +10,14 @@ export default defineEventHandler(async (event) => {
 		return ragNotConfiguredResponse;
 	}
 
-	const response = await handleChatRequest(await readBody(event), {
-		retrieve: rag.retrieve,
-		stream: rag.stream,
-	});
+	const response = await handleChatRequest(
+		await readBody(event),
+		{
+			retrieve: rag.retrieve,
+			stream: rag.stream,
+		},
+		{ abortSignal: event.req.signal },
+	);
 
 	if (response instanceof Response) return response;
 	setResponseStatus(event, response.status);

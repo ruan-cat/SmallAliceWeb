@@ -28,6 +28,7 @@ export type ChatSourceDto = ChatSource & {
 export type ChatStreamRequest = ChatRequest & {
 	sources: ChatSourceDto[];
 	system: string;
+	abortSignal?: AbortSignal;
 };
 
 export type ChatDependencies = {
@@ -41,7 +42,11 @@ type ChatErrorResponse = {
 };
 
 /** 接收可替换的检索与流式模型边界，并直接交还 AI SDK 的原生流响应。 */
-export async function handleChatRequest(input: unknown, deps: ChatDependencies): Promise<Response | ChatErrorResponse> {
+export async function handleChatRequest(
+	input: unknown,
+	deps: ChatDependencies,
+	options: { abortSignal?: AbortSignal } = {},
+): Promise<Response | ChatErrorResponse> {
 	const parsed = chatRequestSchema.safeParse(input);
 	if (!parsed.success) {
 		return {
@@ -58,7 +63,7 @@ export async function handleChatRequest(input: unknown, deps: ChatDependencies):
 		}));
 		const system = `你是知识库问答助手。根据以下参考资料回答问题。\n如果资料不足，说明「根据现有资料无法回答」。\n\n参考资料：\n${sources.map((source, index) => `[${index + 1}] ${source.content}`).join("\n\n")}`;
 
-		return await deps.stream({ ...parsed.data, sources, system });
+		return await deps.stream({ ...parsed.data, sources, system, abortSignal: options.abortSignal });
 	} catch {
 		return {
 			status: 500,
