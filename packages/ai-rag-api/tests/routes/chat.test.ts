@@ -102,7 +102,9 @@ describe("POST /v1/chat Nitro 路由", () => {
 			{ headers: { "content-type": "text/plain; charset=utf-8", "x-vercel-ai-data-stream": "v1" } },
 		);
 		h3.readBody.mockResolvedValue({ message: "什么是 RAG？" });
+		const request = new Request("http://localhost/v1/chat", { method: "POST" });
 		const response = await chatRoute({
+			req: request,
 			context: {
 				rag: {
 					retrieve: async () => [source],

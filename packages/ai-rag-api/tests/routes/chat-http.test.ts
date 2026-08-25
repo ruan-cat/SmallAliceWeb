@@ -24,7 +24,7 @@ describe("POST /v1/chat 真实 Nitro/H3 HTTP harness", () => {
 		});
 	});
 
-	test("通过内存 middleware 注入 fake provider 时保留真实 data-stream Response 与来源 DTO", async () => {
+	test("通过内存 middleware 注入 fake provider 时保留真实 data-stream Response、来源 DTO 与请求 abort signal", async () => {
 		let streamed: ChatStreamRequest | undefined;
 		const streamResponse = new Response('2:[{"type":"source","id":"chunk-1"}]\n0:"hi"\n', {
 			headers: {
@@ -59,11 +59,13 @@ describe("POST /v1/chat 真实 Nitro/H3 HTTP harness", () => {
 		);
 		app.use("/v1/chat", chatRoute);
 
+		const requestController = new AbortController();
 		const response = await app.fetch(
 			new Request("http://localhost/v1/chat", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify({ message: "What is RAG?", conversationId: "conversation-1" }),
+				signal: requestController.signal,
 			}),
 		);
 
@@ -74,6 +76,7 @@ describe("POST /v1/chat 真实 Nitro/H3 HTTP harness", () => {
 		expect(streamed).toMatchObject({
 			conversationId: "conversation-1",
 			sources: [{ sourceHref: "/docx/guide.html#rag-heading-x" }],
+			abortSignal: requestController.signal,
 		});
 		expect(streamed?.system).toContain("[1] RAG source");
 	});
