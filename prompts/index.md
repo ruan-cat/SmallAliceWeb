@@ -437,7 +437,7 @@ PNG IHDR 大端序：测试首轮 LE 误读假失败
 
 /goal 完成 `docs\superpowers\specs\2026-08-20-ai-chat-completion-attention-design.md` 和 `docs\superpowers\plans\2026-08-20-ai-chat-completion-attention-plan.md` 的任务。
 
-## 006 <!-- TODO: codex 正在做 --> 持续推进二期 AI 项目改造
+## 006 <!-- TODO: 2026-8-24 codex 正在做 --> 持续推进二期 AI 项目改造
 
 <!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。
  已完成openspec的任务工件改造
@@ -487,6 +487,87 @@ CLOUDFLARE_ACCOUNT_ID 和 CLOUDFLARE_API_TOKEN 怎么获取？你不是有办法
 CLOUDFLARE_API_TOKEN 是 `Account-scoped tokens` ，我现在给你：
 
 ### 后继续
+
+继续完成 `openspec\changes\ai-rag-phase2` 任务。
+
+---
+
+配置支持 OpenAI-compatible SSE streaming 的聊天模型 ？我不是之前就给过你可用用的中转站模型了么？我之前给过你可以用的中转站、和中转站模型了，你自己是不是没有从正确的 vercel 项目内获取模型配置啊？是不是 vercel 的环境变量没有对齐啊？是不是文档站点的 vercel 项目和 nitro 接口的 vercel 项目，没有同步 vercel 环境变量啊？你去文档站点的 vercel 项目内找到我之前准备好的 vercel 环境变量。
+找不到你就用 memorix 找到历史的配置，我之前给过你中转站 baseUrl 地址，和模型 model id 了。
+
+---
+
+配置支持 OpenAI-compatible SSE streaming 的生产模型？你的意思是，来自 `https://api.code-tab.com` 提供的 `gpt-5.6-luna` 模型不能用吗？ `https://api.code-tab.com/v1` 这个地址，用 `responses` 模式，不能完成接口请求么？你是不清楚怎么用 api 的形式来调用模型么？你换一个别的方式行不行？
+
+还有，竟然卡在这里，卡了 1 个小时！而且你不停的死循环！你给我造成了多大的浪费！你浪费了我 100 美元！巨大损失！你不会暂停么？你死脑筋么！
+
+---
+
+你现在先给我去改 openspec 的任务工件，明确说清楚：
+
+POST https://api.code-tab.com/v1/responses
+model: "gpt-5.6-luna"、input、stream: true
+处理 Responses API 的 SSE 事件
+不再依赖 /v1/models
+Nitro 的 streamText 需要改成 Responses provider，或直接用 fetch 封装成 AI SDK data stream
+
+你先给我改正 openspec 对应的任务工件，然后你按照项目级别 `record-bug-fix-memory` 技能，完成经验教训说明，告诉我你为什么出现严重的死循环，为什么你在 goal 任务内出现死循环，而且还不会中途暂停，导致我损耗了 100 美元！
+
+---
+
+以下三条互相独立的真实路径均没有收到 Responses SSE 文本增量或终止事件：
+
+- Production Nitro /v1/chat：60 秒无文本事件。
+- 直接请求 api.code-tab.com/v1/responses：45 秒内连 HTTP headers 都未返回，随后 abort。
+- 真实生产浏览器：约 52.5 秒无文本事件，点击停止后结束。
+
+你的意思是，接口通了，但是对于这样的 `Responses SSE` 请求来说，你没办法确定是否已经能否完成一个完整的 SSE 请求，能开始，但是不清楚能不能结束，是么？
+
+- 你的本地是怎么测试的？你用什么手段完成本地测试？
+- 你的测试时间是不是不够，给予 2 分钟的时间来测试一个完整的闭环，行不行？
+- 如果我要求你现在启动本地的 docs 和 nitro 接口，在本地完成接口请求，你这边能完成测试么？还是一定要生产环境才能完成测试？
+
+### 换接口请求模型为 `claude-sonnet-5[1m]` ，并做出其他相应的改动
+
+我们用的 baseUrl，这个中转站平台的接口本来就慢的要死。这样，我要求你做好差异化的配置；
+你听好了，我们之前给你的一个配置是 ChatGPT luna 模型，返回方式是 response 。
+我现在给你全新的模型和接口，完成测试：
+你自己现在做好数据的存储。环境变量的合理设计和备份，我们换一个接口请求：
+
+- baseUrl： https://api.code-tab.com/v1
+- 接口返回协议： Anthropic Messages (/v1/messages)
+- 模型： `claude-sonnet-5[1m]`
+- apikey： 稍后我会单独给你。
+
+请你注意清楚，我们现在有 2 个接口请求方式了，一个是 Openai 的模型，response 协议；另一个是 claude 模型，`Anthropic Messages` 协议；我要求你在 `@ruan-cat-drill-doc/ai-rag-api` 这个子包对应的 vercel 项目内 ， 即 `https://vercel.com/ruancat-projects/smallalice-docs-ai-nitro-api` 项目，删改环境变量，然后完成新的模型测试。
+
+我现在给出这样的方式来继续推进我们的任务：
+
+1. 我们换接口请求模型。我们用新的模型来继续完成任务。因为我清楚目前这款 luna 模型的反馈速度太慢了。
+2. 我们增加测试时间和容忍度时间。你说 `对于交互式聊天产品而言，120 秒无首段基本已经可以判定为不可接受的生产流式体验。` ，但是我跟你说，用户的容忍度足够大，可以忍耐 3 分钟，甚至 5 分钟。所以你的测试时间，我要求你给 2 分钟。你最多测试 7 分钟。
+
+#### 删改环境变量的要求
+
+删改环境变量时，我的要求如下：
+
+1. 删除 NITRO_CHAT_MODEL 我们现在的模型随时更改变化，而且这个名称其实不敏感，没必要存储到环境变量内。我认为要删掉。
+2. 删除 NITRO_BASE_URL 我们未来很可能变化 baseUrl，事实上不同的协议还可能改动这个 baseUrl，供应商也可能会随时换，所以需要你删掉。况且这个也不敏感。
+3. 保留 NITRO_OPENAI_API_KEY 这个真的是敏感的环境变量。我不允许暴露，也不允许修改。继续用，继续在 `smallalice-docs-ai-nitro-api` 云 vercel 项目内存储并使用。
+4. 新增一个 `NITRO_ANTHROPIC_API_KEY` 的环境变量，这个变量存储敏感的环境变量。稍后你请求 `claude-sonnet-5[1m]` 模型时，用的就是这个环境变量。稍后我会单独给你。
+
+其中，你要确保这个新的环境变量 NITRO_ANTHROPIC_API_KEY 要在 vercel 的三个环境内都可以使用，即 dev、preview、和 production 。
+
+#### 新的 LLM 大模型接口请求配置文件的设计
+
+请注意，我们放弃了单一的模型请求方式，所以需要设计合适的接口地址、请求协议、LLM 大模型 model id 的存储方式。这里我要求你在 `packages\ai-rag-api` 内设计合适的方式来使用这些模型配置。这些配置都是非敏感的，公开的。我需要你完成数据结构、存储结构、使用方式的重大设计。确保这些东西可以获取并使用。
+
+你可以参考这个 `D:\store\zcode\.zcode\v2\config.json` 文件来完成合适的设计。注意，这个文件里面有很多的敏感 apikey ，别乱来。你只负责学习存储结构和字段设计方案。
+
+#### 先设计
+
+1. 这是复杂的任务。我要求你先完成改造设计，评估修改范围。
+2. 然后开始修改 `openspec\changes\ai-rag-phase2` 的 openspec 任务工件。
+3. 最后才开始继续完成测试与后续的 openspec 任务。
 
 ## 007 <!-- 已完成 高优先级 QoderWork 正在做 --> 完成独立 nitro 接口服务部署
 
