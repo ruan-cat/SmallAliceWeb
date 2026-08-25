@@ -21,6 +21,8 @@
 - 本轮实现：Nitro chat 改用 Responses provider；H3 `event.req.signal` 通过 `ChatStreamRequest.abortSignal` 传入 `streamText`，使浏览器 `stop()` 具备上游取消链路。
 - 受控 SDK 证据：实际 fetch URL 为 `https://api.code-tab.com/v1/responses`；body 含 `model: gpt-5.6-luna`、`input`、`stream: true`；两个 `response.output_text.delta` 转为 data-stream，来源帧与 `x-vercel-ai-data-stream: v1` 保留。
 - 验证：API 22 文件 / 82 用例通过；typecheck、`build:vercel`、`openspec validate ai-rag-phase2 --strict` 通过。
+- Production 首轮证据：SHA `412e553` 的文档站与 Nitro deployment 均 Ready 且正式 alias 正确；`/v1/chat` 仍返回 error frame，runtime 日志证明 Nitro Production 使用旧模型 `gpt-4o-mini`。
+- 配置修复：已在正确 Nitro 项目的 Production 环境对齐 `NITRO_BASE_URL=https://api.code-tab.com/v1` 与 `NITRO_CHAT_MODEL=gpt-5.6-luna`，保留既有 API key；等待新 Git deployment 生效后复验。
 - 未完成门禁：本地实现已进入本轮授权的提交/推送流程，尚未确认 Production Git Integration Ready；尚无生产浏览器 Network、首段、停止、保留内容、状态收敛和来源跳转截图，§2.1.4 保持未勾选。
 
 ## 4. 下一步

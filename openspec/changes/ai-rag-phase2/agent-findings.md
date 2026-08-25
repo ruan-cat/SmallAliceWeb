@@ -5,6 +5,7 @@
 - **resolved**：先前把 `/v1/chat/completions` 的无 token/error 误判为上游不支持 streaming。当前 `@ai-sdk/openai@1.3.22` 已内置 Responses provider 与 SSE 解析；本轮受控真实 SDK fetch 证明 `provider.responses()` 请求 `/v1/responses` 并处理 `response.output_text.delta`。禁止恢复 Chat Completions 探测或手写重复 parser。
 - **active**：§2.1.4 的本地 Responses/abort 实现已验证并进入本轮授权的提交/部署流程，但尚无生产浏览器 Network、首段、停止、已收内容保留、状态收敛与来源跳转截图；这些外部证据前不得勾选任务。
 - **resolved**：最新 API Git deployment 可能尚未接管自定义域名 alias，且 deployment URL 启用 Vercel Protection。2026-08-25 `vercel inspect` 确认 Production deployment Ready，正式自定义域名 alias 已指向该 deployment；后续验收仍先核对 SHA、Ready 与 alias。
+- **resolved**：首轮 SHA `412e553` 已部署正确 Responses 代码，但 Production runtime 仍解析旧 `NITRO_CHAT_MODEL=gpt-4o-mini`，日志报该模型不受当前账户组支持。已在正确 Nitro 项目对齐 Production `NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL=gpt-5.6-luna`，保留 API key；必须通过新 Git deployment 验证环境变更生效。
 - **resolved**：独立 API 域名的 JSON POST preflight 曾为 404；CORS middleware 后 Production `OPTIONS /v1/chat` 为 204，`Access-Control-Allow-Origin: *`。
 - **resolved**：真实 PostgreSQL 驱动把 JSON 数组列作为字符串返回；仅解析合法 JSON 字符串数组后，Development search/chat 恢复真实 200。
 - **resolved**：pooled PostgreSQL session 会使 advisory lock 可重入；同步改用 `NITRO_SYNC_DATABASE_URL` 的独立 non-pooled client，并已有真实 409 证据。

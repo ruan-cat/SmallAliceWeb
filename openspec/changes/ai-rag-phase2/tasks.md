@@ -139,6 +139,7 @@
   - 完成证据必须包含：生产浏览器 Network 中的实际 `/v1/responses` 流式请求（脱敏）、Responses SSE 文本增量与终止事件、停止后的上游 abort、已接收内容保留、来源跳转截图；本地受控 fetch 流或 HTTP 200 不能代替本任务。
   - 失败控制：工具缺失、外部权限缺失或同一阻塞连续三次出现时，立即停止自动续跑，在 `agent-progress.md` 记录阻塞指纹、已尝试次数与所需外部条件；禁止仅更换 `/chat/completions` 请求后重复同类探测。
   - 2026-08-25 本地实现证据：Nitro chat 已切换为当前 `@ai-sdk/openai@1.3.22` 的 `provider.responses("gpt-5.6-luna")`，并将 H3 `event.req.signal` 贯穿 route、chat contract 与 `streamText.abortSignal`。受控真实 SDK fetch 验证请求为 `POST https://api.code-tab.com/v1/responses`，body 含 `model`、`input`、`stream: true`，`response.output_text.delta` 可转换为既有 AI SDK data-stream 且来源帧保留；API 22 文件 / 82 用例、typecheck、Vercel bundle 与 strict validation 通过。尚未取得 Production Git Integration Ready 与生产浏览器 Network/停止/来源跳转证据，本任务保持未勾选。
+  - 2026-08-25 Production 配置证据：首轮 SHA `412e553` 的文档站与 Nitro Git deployment 均 Ready 且正式 alias 正确；生产 `/v1/chat` 仍在 5 个来源帧后返回 error frame。Vercel runtime 日志明确显示实际模型为旧值 `gpt-4o-mini`，并报该模型不受当前账户组支持。已在正确的 `smallalice-docs-ai-nitro-api` Production 环境将 `NITRO_BASE_URL` 对齐为 `https://api.code-tab.com/v1`、`NITRO_CHAT_MODEL` 对齐为 `gpt-5.6-luna`，保留既有 API key；等待新的 Git Integration deployment 后重验。
 
 ### 2.2 P1：验证、触发与调优
 
