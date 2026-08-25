@@ -131,9 +131,14 @@
   - 2026-08-24 证据：Development Nitro `/v1/search` 对真实 160 chunk 数据库返回 HTTP 200、3 条来源 DTO（含 `sourcePath`、`sourceUrl`、`headingAnchor`）；`/v1/chat` 返回 HTTP 200、`x-vercel-ai-data-stream: v1`、来源数据帧与内容帧。JSON 列由当前 PostgreSQL driver 作为字符串返回的映射缺口已修复，未装配路由 503 由 H3 回归覆盖。
 
 - [ ] 2.1.4 [browser/e2e] 文档站 + 生产 Nitro - 生产后端驱动浏览器回归
+  - 生产模型请求固定为 `POST https://api.code-tab.com/v1/responses`，body 必须包含 `model: "gpt-5.6-luna"`、`input` 与 `stream: true`；不得再以 `/v1/chat/completions` 的失败推断模型不支持 SSE。
+  - 上游必须按 Responses API 的 SSE 事件解析并转发文本增量、完成和错误状态；不得把 `/v1/models` 当作模型可用性或流式能力的前置检查。
+  - Nitro 聊天装配必须使用 Responses provider；若当前 AI SDK provider 无法满足 Responses SSE 合同，则以受控 `fetch` 适配为 AI SDK data stream，并保持既有来源帧和 abort 合同。
   - 真实页面发送问题 → 首段流式内容可见 → 停止入口出现 → 点击停止触发 abort → 已接收内容保留 → 状态收敛。
   - 来源卡片必须跳到真实 VitePress `sourceUrl#headingAnchor`。
-  - 本地受控 fetch 流的历史浏览器证据不能代替本任务。
+  - 完成证据必须包含：生产浏览器 Network 中的实际 `/v1/responses` 流式请求（脱敏）、Responses SSE 文本增量与终止事件、停止后的上游 abort、已接收内容保留、来源跳转截图；本地受控 fetch 流或 HTTP 200 不能代替本任务。
+  - 失败控制：工具缺失、外部权限缺失或同一阻塞连续三次出现时，立即停止自动续跑，在 `agent-progress.md` 记录阻塞指纹、已尝试次数与所需外部条件；禁止仅更换 `/chat/completions` 请求后重复同类探测。
+  - 2026-08-25 本地实现证据：Nitro chat 已切换为当前 `@ai-sdk/openai@1.3.22` 的 `provider.responses("gpt-5.6-luna")`，并将 H3 `event.req.signal` 贯穿 route、chat contract 与 `streamText.abortSignal`。受控真实 SDK fetch 验证请求为 `POST https://api.code-tab.com/v1/responses`，body 含 `model`、`input`、`stream: true`，`response.output_text.delta` 可转换为既有 AI SDK data-stream 且来源帧保留；API 22 文件 / 82 用例、typecheck、Vercel bundle 与 strict validation 通过。尚未取得 Production Git Integration Ready 与生产浏览器 Network/停止/来源跳转证据，本任务保持未勾选。
 
 ### 2.2 P1：验证、触发与调优
 

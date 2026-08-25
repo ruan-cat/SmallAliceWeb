@@ -244,6 +244,12 @@ metadata:
 - 适用场景：EMF+ Dual、SVG 默认输出或 Agent Browser 验收中出现文字/图形错位、重复、裁剪或“资源正常但画面不对”。
 - 关键约束：先以 GDI+ 和目标图截图判断相对几何；Dual 必须避免双层回放，SVG 的局部位图/裁剪仍需逐样本门禁，MIME 和加载数不能替代视觉验收。
 
+### 13.9 AI RAG 生产流式协议误判与 goal 自动续跑事故（2026-08-25）
+
+- 详细案例：`2026-08-25-ai-rag-responses-goal-loop.md`
+- 适用场景：生产模型流式回归因错误使用 Chat Completions 路径而失败，且自动目标续跑反复执行同一阻塞探测。
+- 关键约束：固定验证 Responses API SSE 合同；工具或权限缺失、或同一阻塞连续三次时必须暂停并记录阻塞指纹，不能以重试取代根因确认。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
