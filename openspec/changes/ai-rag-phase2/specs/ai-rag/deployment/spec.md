@@ -177,7 +177,7 @@ Nitro API 的生产域名 MUST 固定为 https://smallalice-docs-ai-nitro-api.ru
 
 Nitro API MUST 在代码内保存类型化聊天 provider 注册表，注册 OpenAI Responses 与 Anthropic Messages 两种公开配置，并固定 `activeProvider: "anthropic"`。注册表 MUST 保存 provider 的 `protocol`、`baseUrl` 与 `model`，MUST NOT 保存 API key；模型、base URL 与 provider 选择 MUST NOT 通过 `NITRO_CHAT_MODEL`、`NITRO_BASE_URL` 或新的非敏感 provider 环境变量注入。当前 Anthropic 配置 MUST 使用 `https://api.code-tab.com/v1` 与 `claude-sonnet-5[1m]`，OpenAI 配置 MUST 保留 `https://api.code-tab.com/v1`、`gpt-5.6-luna` 与 Responses 协议。
 
-在 Vercel 项目 `smallalice-docs-ai-nitro-api` 的 development、preview、production 环境中，`NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL` MUST 删除，原 `NITRO_OPENAI_API_KEY` MUST 原值保留且不得读取/打印/修改；用户提供的 `NITRO_ANTHROPIC_API_KEY` MUST 在三个环境接线。变更前 MUST 完成只记录变量名和环境的盘点，并将必要的敏感值备份保存到受 `.gitignore` 保护的本地文件；仓库、报告、测试快照和终端输出 MUST NOT 包含任何 key 值。
+在 Vercel 项目 `smallalice-docs-ai-nitro-api` 的 development、preview、production 环境中，`NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL` MUST 删除，原 `NITRO_OPENAI_API_KEY` MUST 原值保留且不得读取/打印/修改；用户提供的 `NITRO_ANTHROPIC_API_KEY` MUST 在三个环境接线，并且三个环境均 MUST 使用 Vercel `Non-sensitive` 类型。该类型是用户明确接受的安全降级，不得据此放宽仓库、报告、测试快照和终端输出的密钥保护。变更前 MUST 完成只记录变量名和环境的盘点，并将必要的敏感值备份保存到受 `.gitignore` 保护的本地文件；仓库、报告、测试快照和终端输出 MUST NOT 包含任何 key 值。
 
 #### Scenario: 三环境变量迁移
 
@@ -185,6 +185,7 @@ Nitro API MUST 在代码内保存类型化聊天 provider 注册表，注册 Ope
 - **THEN** development、preview、production MUST 均不存在 `NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL`
 - **AND** `NITRO_OPENAI_API_KEY` MUST 继续存在且值不变
 - **AND** `NITRO_ANTHROPIC_API_KEY` MUST 在三个环境均存在
+- **AND** `NITRO_ANTHROPIC_API_KEY` 在三个环境的类型 MUST 均为 `Non-sensitive`
 
 #### Scenario: 激活 provider 的凭据门禁
 

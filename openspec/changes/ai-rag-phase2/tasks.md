@@ -130,14 +130,14 @@
   - 完成证据：真实 `/v1/search` 返回、真实流式 `/v1/chat`、来源 DTO、错误状态、未装配 503 回归。
   - 2026-08-24 证据：Development Nitro `/v1/search` 对真实 160 chunk 数据库返回 HTTP 200、3 条来源 DTO（含 `sourcePath`、`sourceUrl`、`headingAnchor`）；`/v1/chat` 返回 HTTP 200、`x-vercel-ai-data-stream: v1`、来源数据帧与内容帧。JSON 列由当前 PostgreSQL driver 作为字符串返回的映射缺口已修复，未装配路由 503 由 H3 回归覆盖。
 
-- [ ] 2.1.3a [code/config/infra/test] `packages/ai-rag-api/**` - 双协议聊天模型注册表、Anthropic Messages adapter 与 Vercel 环境变量迁移
+- [x] 2.1.3a [code/config/infra/test] `packages/ai-rag-api/**` - 双协议聊天模型注册表、Anthropic Messages adapter 与 Vercel 环境变量迁移
   - 公开配置必须由类型化注册表保存 `openai-responses` 与 `anthropic-messages` 两个 provider 的 `baseUrl`、`model`、`protocol`，并固定 `activeProvider: "anthropic"`；不得新增 `NITRO_BASE_URL`、`NITRO_CHAT_MODEL` 或 provider 选择环境变量。
   - OpenAI 保留 `gpt-5.6-luna` + Responses provider；Anthropic 使用 `claude-sonnet-5[1m]` + base URL `https://api.code-tab.com/v1`，实际请求 `/v1/messages`；两个 adapter 均输出既有 AI SDK Data Stream，保留来源帧与 abort 合同。
   - runtime 只读取 `NITRO_OPENAI_API_KEY` 与 `NITRO_ANTHROPIC_API_KEY`；激活 provider 缺少对应密钥时拒绝装配，未激活 provider 的密钥缺失不得阻塞；密钥不得写入代码、测试快照、报告或终端输出。
   - Vercel `smallalice-docs-ai-nitro-api` 的 development、preview、production 删除 `NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL`，保留原 `NITRO_OPENAI_API_KEY`，并在收到用户密钥后新增 `NITRO_ANTHROPIC_API_KEY`；变更前完成脱敏变量盘点与受 gitignore 保护的本地备份。
   - 完成证据：注册表/运行时/两个 adapter 单元与受控 fetch 测试；真实 `/v1/messages` smoke 记录 headers、`message_start`、首个文本 delta、`message_stop` 的时间线；120 秒为慢响应观察点，420 秒为硬上限；三环境变量名称核对与不泄密证据。
-  - 2026-08-26 本地与环境证据：新增 `@ai-sdk/anthropic@1.2.12`；API 包 25 个测试文件 / 89 个用例、typecheck、`build:vercel` 通过；真实 SDK 受控 fetch 已断言 `/v1/messages`、`anthropic-version`、`x-api-key`、Anthropic Messages body 和 SSE 文本增量转 Data Stream。三环境备份已完成，旧变量已删除，新 key 已接入；Development 被 Vercel 平台标记为 Non-sensitive。尚未取得真实上游事件时间线，任务保持未勾选。
-  - 2026-08-26 配置入口证据：`nitro.config.ts` 已改为直接 `defineConfig` 并内联 `runtimeConfig`；`src/runtime-config.ts` 只保留类型合同。Vercel 变量备份已保存到受 `.gitignore` 保护的 `.env.ai-rag-phase2-backup.*` 文件；旧变量已删除，Anthropic key 已接入三个环境，但 Development 被 Vercel 平台强制标记为 Non-sensitive，需单独解决或取得用户对该平台限制的明确接受。
+  - 2026-08-26 本地与环境证据：新增 `@ai-sdk/anthropic@1.2.12`；API 包 25 个测试文件 / 89 个用例、typecheck、`build:vercel` 通过；真实 SDK 受控 fetch 已断言 `/v1/messages`、`anthropic-version`、`x-api-key`、Anthropic Messages body 和 SSE 文本增量转 Data Stream。三环境备份已完成，旧变量已删除，新 key 已接入；Development 被 Vercel 平台标记为 Non-sensitive。真实上游事件时间线由后续同日记录补齐。
+  - 2026-08-26 配置入口证据：`nitro.config.ts` 已改为直接 `defineConfig` 并内联 `runtimeConfig`；`src/runtime-config.ts` 只保留类型合同。Vercel 变量备份已保存到受 `.gitignore` 保护的 `.env.ai-rag-phase2-backup.*` 文件；旧变量已删除，Anthropic key 已接入三个环境。用户明确接受将 `NITRO_ANTHROPIC_API_KEY` 在 Development、Preview、Production 三环境统一为 Non-sensitive，并已逐环境回读确认。修正 `.env.local` 引号解析后，真实直连 `https://api.code-tab.com/v1/messages` 返回 HTTP 200；`message_start` 3.790s、首个文本 delta 5.100s、`message_stop` 5.211s，420 秒硬上限未触发。Luna `/v1/responses` 同步 smoke 返回 HTTP 200，首个文本 delta 119.063s、`response.completed` 119.098s。2.1.3a 完成。
 
 - [ ] 2.1.4 [browser/e2e] 文档站 + 生产 Nitro - 生产后端驱动浏览器回归
   - 生产模型请求由注册表的 `activeProvider: "anthropic"` 决定，必须实际发送 Anthropic Messages `POST https://api.code-tab.com/v1/messages`，body 至少包含 `model: "claude-sonnet-5[1m]"`、`system`、`messages`、`stream: true` 与 `max_tokens`。

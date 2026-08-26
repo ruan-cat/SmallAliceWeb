@@ -14,9 +14,11 @@
 - **active**：固定题集真实基线使用当前 partial corpus（20 documents / 231 chunks）时，lexical 10 题全空，vector/hybrid 均为 8/10、平均关键词覆盖率 0.70；hybrid 未获得词法增益。必须在完整 corpus 与 300/500/800 三组独立重嵌入结果上复测后才能完成 §2.2.3。
 - **active**：双协议设计已获用户确认。公开配置进入类型化注册表，激活 provider 为 Anthropic；密钥只来自 `NITRO_OPENAI_API_KEY` 与 `NITRO_ANTHROPIC_API_KEY`。
 - **resolved**：此前缺少 `NITRO_ANTHROPIC_API_KEY` 的阻塞已解除；key 已通过 stdin 写入目标 Vercel 项目，未回显到仓库文件。
-- **active**：用户已提供 Anthropic key；Vercel 变量备份已完成，旧 `NITRO_BASE_URL/NITRO_CHAT_MODEL` 已删除，Anthropic key 已写入 development、preview、production。Production/Preview 是 Sensitive，但 Vercel CLI 明确拒绝 Development 的 `--sensitive`，`--visibility secret` 最终仍显示 Non-sensitive；不能把三环境 Sensitive 要求标记为完成。
-- **active**：真实模型验证采用 120 秒慢响应观察点与 420 秒硬上限，必须同时取得首个文本 delta 与正常终止事件；HTTP 200、headers 或来源帧不足以证明模型可用。
-- **active**：当前 `openspec` CLI 不在 PATH；最近一次 `openspec validate --strict` 早于 Nitro 配置入口重构，必须恢复 CLI 后重新验证当前工件，旧 strict 结果不可外推。
+- **resolved**：用户已明确授权统一安全降级；`NITRO_ANTHROPIC_API_KEY` 已在 Vercel Production、Preview、Development 三环境重接为 Non-sensitive，`vercel env ls` 已逐环境回读确认。其他数据库/平台密钥未降级；该变更不改变真实 Anthropic 上游事件时间线门禁。
+- **resolved**：真实直连验证已完成。Luna Responses 在 119.063s 收到首个文本 delta、119.098s `response.completed`；Anthropic Messages 在 3.790s 收到 `message_start`、5.100s 首个文本 delta、5.211s `message_stop`，请求均 HTTP 200，未触发 420s 硬上限。
+- **resolved**：当前 `openspec` CLI 不在 PATH；已用 `pnpm dlx @fission-ai/openspec@1.10.0 validate ai-rag-phase2 --strict` 对当前工件复核通过。
+- **resolved**：生产 `/v1/chat` 已返回 AI SDK Data Stream 文本帧并以 `finishReason: stop` 收敛；真实上游 Anthropic 事件时间线已通过本地直接请求取得。剩余门禁转入 `2.1.4` 的生产浏览器停止与来源跳转。
+- **resolved**：三环境 `NITRO_ANTHROPIC_API_KEY` 已统一为 Non-sensitive 并逐环境回读；首次 401 由本地 `.env.local` 引号解析错误导致，修正解析后直连请求 HTTP 200 且事件完整，不得将初次 401 解释为上游协议失败。
 
 ## 2. 固定约束
 
