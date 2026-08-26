@@ -124,6 +124,9 @@ export function createAnthropicChatStream(config: AnthropicChatConfig): ChatDepe
 		fetch: createAnthropicObservedFetch(),
 	});
 	return (request) => {
+		const logRequestAbort = () => defaultAnthropicTelemetryLogger({ event: "abort", endpoint: "/v1/messages" });
+		if (request.abortSignal?.aborted) logRequestAbort();
+		else request.abortSignal?.addEventListener("abort", logRequestAbort, { once: true });
 		const data = new StreamData();
 		for (const source of request.sources) {
 			data.append({

@@ -140,4 +140,26 @@ describe("Anthropic Messages 聊天流适配器", () => {
 
 		expect(events.map((event) => event.event)).toContain("abort");
 	});
+
+	test("聊天请求 abort 时记录服务端生命周期事件", () => {
+		const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
+		const append = vi.fn();
+		const close = vi.fn();
+		ai.StreamData.mockImplementation(() => ({ append, close }));
+		ai.streamText.mockReturnValue({ toDataStreamResponse: vi.fn(() => new Response("")) });
+		const provider = { messages: vi.fn(() => ({ provider: "anthropic-model" })) };
+		anthropic.createAnthropic.mockReturnValue(provider);
+		const stream = createAnthropicChatStream({
+			apiKey: "anthropic-test-key",
+			protocol: "anthropic-messages",
+			baseUrl: "https://api.code-tab.com/v1",
+			model: "claude-sonnet-5[1m]",
+		});
+		const controller = new AbortController();
+
+		stream({ message: "abort", system: "system", abortSignal: controller.signal, sources: [] });
+		controller.abort();
+
+		expect(info).toHaveBeenCalledWith(expect.stringContaining('"event":"abort"'));
+	});
 });
