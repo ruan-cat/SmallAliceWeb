@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
 import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
-type StreamMode = "complete" | "abort";
+type StreamMode = "complete" | "abort" | "nested-source";
 type RequestRecord = { body: string; aborted: boolean };
 
 type TestServer = {
@@ -54,6 +54,13 @@ async function createTestServer(mode: StreamMode): Promise<TestServer> {
 			if (mode === "complete") {
 				res.write('2:[{"type":"source","data":{"id":"source-1","label":"指南","sourceHref":"/guide"}}]\n');
 				res.write('0:"第二段"\n');
+				res.end();
+				return;
+			}
+			if (mode === "nested-source") {
+				res.write(
+					'2:[[ {"type":"source","data":{"id":"source-nested","label":"嵌套指南","sourceHref":"/nested"}} ]]\n',
+				);
 				res.end();
 				return;
 			}
@@ -134,6 +141,20 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		expect(chat.messages.value.at(-1)?.sources).toEqual([{ id: "source-1", label: "指南", sourceHref: "/guide" }]);
 		expect(chat.isResponding.value).toBe(false);
 		expect(completed).toHaveBeenCalledTimes(1);
+	});
+
+	test("兼容 AI SDK data frame 额外包裹数组的来源帧", async () => {
+		const server = await createTestServer("nested-source");
+		servers.push(server);
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-nested-source", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-nested", role: "user", content: "嵌套来源" });
+
+		expect(chat.messages.value.at(-1)?.sources).toEqual([
+			{ id: "source-nested", label: "嵌套指南", sourceHref: "/nested" },
+		]);
 	});
 
 	test("调用 stop 时通过 AbortController 中止 HTTP 流并保留已接收内容", async () => {
