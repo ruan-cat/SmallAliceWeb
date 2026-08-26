@@ -100,6 +100,11 @@
 		"vitepress-demo-plugin": "^1.5.1",
 		"vue": "^3.5.28"
 	},
+	"pnpm": {
+		"overrides": {
+			"nuxt-og-image": "5.1.9"
+		}
+	},
 	"author": {
 		"name": "ruan-cat",
 		"email": "1219043956@qq.com",
