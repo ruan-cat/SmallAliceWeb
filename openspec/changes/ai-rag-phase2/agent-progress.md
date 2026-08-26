@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-27；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成；`2.2.4` 本地完整构建已通过，生产部署仍在排队监听。
+- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成；`2.2.4` 本地完整构建与 Vercel 部署证据已通过，浏览器门禁仍待 CDP。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -35,6 +35,7 @@
 - 2026-08-27 生产部署监听：`dpl_EMX9s3AZthx4MveQdgaT8gn8rq7L` 从 Queued → Building → Ready，checkout SHA `4b066da`；Vercel build log 含 Nitro `nodejs22.x`、`.vercel/output` 搬运和 `Deployment completed`。
 - 2026-08-27 兼容性修复：根 `package.json` 增加 `pnpm.overrides.nuxt-og-image=5.1.9`，撤销 `ai-vue-doc` 中临时的 `prerender.ignore`/`ogImage.enabled=false`；`pnpm why` 验证 Nuxt 3 线 h3 为 1.15.11，targeted build 与根级 `pnpm run docs:build` 均退出码 0，9/9 tasks successful。证据见 `evidence/2026-08-27-build.md`。
 - 2026-08-27 最新 Production deployment：docs `dpl_B1V1BPQX9Ks4XY3JvubPenrFV8Uc`（alias `https://drill.ruan-cat.com`）与 Nitro `dpl_Hyo28XnojzmAwGP4CszBPss7KEfY` 均 READY，Vercel 日志显示 checkout `06772c7`、构建完成与 `Deployment completed`；`vercel@59.5.0` 可读取状态。agent-browser headed/auto-connect 仍因本机 Chrome 未暴露 CDP 且启动 exit code 3 失败，故 `2.2.4` 浏览器门禁保持未完成。
+- 2026-08-27 参数评测暂停点：新增 `scripts/run-parameter-evaluation.ts`，使用 PostgreSQL TEMP TABLE 隔离三档参数；本地预检为 300/30/5=6303 chunks、500/50/10=6034、800/100/15=5960。真实运行在 300/30 档处理约 2500/6289 个非空 chunks 后收到 Cloudflare embedding HTTP 400；已确认 14 个空白 chunk 并跳过，正式 `documents/chunks` 表未写入。因用户额度原因暂停，不勾选 `2.2.3`。
 
 ## 4. 下一步
 
