@@ -18,6 +18,7 @@ describe("RAG API runtime configuration", () => {
 		});
 		expect(nitroConfig.rolldownConfig).toMatchObject({ output: { inlineDynamicImports: true } });
 		expect(nitroConfig.routeRules).toMatchObject({ "/v1/**": { cors: true } });
+		expect(nitroConfig.vercel).toMatchObject({ functions: { supportsCancellation: true } });
 	});
 
 	test("does not embed a connection string or credential in the configuration", () => {
