@@ -34,6 +34,7 @@
 - 2026-08-27 真实评测：数据库只读计数为 248 documents / 4034 chunks / 248 sources，模型标识 `@cf/baai/bge-m3`。固定 10 题在现有索引上运行 lexical/vector/hybrid，topK 5/10/15 的 vector 与 hybrid 命中率均为 0.8，关键词覆盖率分别为 0.6333/0.6333/0.7；lexical 为 0。HNSW 与 exact Top-5 一致 8/10，q1/q5 存在排序差异。原始 JSON 与可读报告见 `evidence/2026-08-27-real-evaluation.{json,md}`。
 - 2026-08-27 生产部署监听：`dpl_EMX9s3AZthx4MveQdgaT8gn8rq7L` 从 Queued → Building → Ready，checkout SHA `4b066da`；Vercel build log 含 Nitro `nodejs22.x`、`.vercel/output` 搬运和 `Deployment completed`。
 - 2026-08-27 兼容性修复：根 `package.json` 增加 `pnpm.overrides.nuxt-og-image=5.1.9`，撤销 `ai-vue-doc` 中临时的 `prerender.ignore`/`ogImage.enabled=false`；`pnpm why` 验证 Nuxt 3 线 h3 为 1.15.11，targeted build 与根级 `pnpm run docs:build` 均退出码 0，9/9 tasks successful。证据见 `evidence/2026-08-27-build.md`。
+- 2026-08-27 最新 Production deployment：docs `dpl_B1V1BPQX9Ks4XY3JvubPenrFV8Uc`（alias `https://drill.ruan-cat.com`）与 Nitro `dpl_Hyo28XnojzmAwGP4CszBPss7KEfY` 均 READY，Vercel 日志显示 checkout `06772c7`、构建完成与 `Deployment completed`；`vercel@59.5.0` 可读取状态。agent-browser headed/auto-connect 仍因本机 Chrome 未暴露 CDP 且启动 exit code 3 失败，故 `2.2.4` 浏览器门禁保持未完成。
 
 ## 4. 下一步
 
