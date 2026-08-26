@@ -1,0 +1,1850 @@
+{
+	"embeddingModel": "@cf/baai/bge-m3",
+	"counts": [
+		{
+			"documents": 248,
+			"chunks": 4034,
+			"sources": 248
+		}
+	],
+	"reports": [
+		{
+			"limit": 5,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.6333333333333333
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.6333333333333333
+					}
+				]
+			}
+		},
+		{
+			"limit": 10,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0",
+							"7e33b495da3ebbd02cb2ff288eb43500821f904a31f9244f831014dc092c22e7",
+							"b60a2506c88c2040d9d4edada7688c624a22e682fe73c722f35e6e71f5aa3b7d",
+							"9ea7a9c40307a618f63fdeaca27555c89e34c643e8e68ada06763346a7b886b8",
+							"95c7c1cfb464154ee5c66a006d13bcc2ccad00034e60315a1af5a9536e3eb02b",
+							"5aefdc8af35754d6e9adfe1d2038d204ca4b91a758abbff069ab1381b733e944"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0",
+							"7e33b495da3ebbd02cb2ff288eb43500821f904a31f9244f831014dc092c22e7",
+							"b60a2506c88c2040d9d4edada7688c624a22e682fe73c722f35e6e71f5aa3b7d",
+							"9ea7a9c40307a618f63fdeaca27555c89e34c643e8e68ada06763346a7b886b8",
+							"95c7c1cfb464154ee5c66a006d13bcc2ccad00034e60315a1af5a9536e3eb02b",
+							"5aefdc8af35754d6e9adfe1d2038d204ca4b91a758abbff069ab1381b733e944"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597",
+							"933e1c579e3cea2d4ef2f9a0d072dc2d214717c0ba7b52674653fdb1be084fe6",
+							"945b93df16bade184f90ca80455ecc01164c84da333e6f36fec7350c8a84a2f9",
+							"a75a53b3becfe4b27ee7167673438b177920925617f2be644b1948b79a548bab",
+							"f8a1ac7f7c8cce836b241832868e58ed4583d78b0a26f689ce1d4b2aba6a8fbb",
+							"0d0c57c62ff73013e0f1823214bc8a397b23fca13c1864afb45ba907c47344a5"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597",
+							"933e1c579e3cea2d4ef2f9a0d072dc2d214717c0ba7b52674653fdb1be084fe6",
+							"945b93df16bade184f90ca80455ecc01164c84da333e6f36fec7350c8a84a2f9",
+							"a75a53b3becfe4b27ee7167673438b177920925617f2be644b1948b79a548bab",
+							"f8a1ac7f7c8cce836b241832868e58ed4583d78b0a26f689ce1d4b2aba6a8fbb",
+							"0d0c57c62ff73013e0f1823214bc8a397b23fca13c1864afb45ba907c47344a5"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e",
+							"832e32efd78047740815fb0c4a915b002d622ed62317e9c66e3a7f2408973e1a",
+							"ad29c73a9e786be23b80d22cc9975e5aa923a43178f44e8d0063afd3db3fce98",
+							"0a98d31058415cfe816888d04c9f42ebffba20a9862b69389866cd329d2a6fe2",
+							"6a9add77cca5b311a2e82f4da44ee64ad612fb70d1add92e0fb6199dfa0e0e6c",
+							"d49f77ef07e5bddfca9d9fd96f13dd5e1308a287d32a4104d32f96006eaa4a60"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e",
+							"832e32efd78047740815fb0c4a915b002d622ed62317e9c66e3a7f2408973e1a",
+							"ad29c73a9e786be23b80d22cc9975e5aa923a43178f44e8d0063afd3db3fce98",
+							"0a98d31058415cfe816888d04c9f42ebffba20a9862b69389866cd329d2a6fe2",
+							"6a9add77cca5b311a2e82f4da44ee64ad612fb70d1add92e0fb6199dfa0e0e6c",
+							"d49f77ef07e5bddfca9d9fd96f13dd5e1308a287d32a4104d32f96006eaa4a60"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"02fe3e118689378e85076b79cb712f04d229485bddef5cd39b79c7963d1cf875"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"02fe3e118689378e85076b79cb712f04d229485bddef5cd39b79c7963d1cf875"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"6472d2cf3440b106b0adf3d816ac96e9e62218c095a71884508a31f5b0eb4885",
+							"f4de83f7b793099960d3d69956223bf6d9da98e11c56ed15445a88a015a2321b",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"bb387e20e1d4831ae12187e4b2e493c8a8de3594057357e3f5e0ab2c790bc6ad",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"6472d2cf3440b106b0adf3d816ac96e9e62218c095a71884508a31f5b0eb4885",
+							"f4de83f7b793099960d3d69956223bf6d9da98e11c56ed15445a88a015a2321b",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"bb387e20e1d4831ae12187e4b2e493c8a8de3594057357e3f5e0ab2c790bc6ad",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"390a4811f2eece72f09a3ccc77a4e04143b0db7af5e31891c6631443e1a2923c",
+							"69b15d856a4ba791c07624c07c6d73a611905c537a6ec0212fab0b3549865b66"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"390a4811f2eece72f09a3ccc77a4e04143b0db7af5e31891c6631443e1a2923c",
+							"69b15d856a4ba791c07624c07c6d73a611905c537a6ec0212fab0b3549865b66"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"d2966707da5da6c341e48a0cf52f47fc9746c4f6000114b23b7858ad74b7d8ae",
+							"ff0a56eabbab03ef596a631ae30f892bf7135fa4d29d5271779668bafe098eae",
+							"ff6855477a967c8ce8a590f49a454fd9fba8cc3e706a2c2c470686f71cb20089",
+							"fecba4312c9bc8e58537a0e34f226c917ddf5c07564ac76ca9ae459782f7eac3",
+							"663eb6c9d984957ec5714fceda2459b4ce636bcd5d3bcbd5cb569a3cfaec8cd8"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"d2966707da5da6c341e48a0cf52f47fc9746c4f6000114b23b7858ad74b7d8ae",
+							"ff0a56eabbab03ef596a631ae30f892bf7135fa4d29d5271779668bafe098eae",
+							"ff6855477a967c8ce8a590f49a454fd9fba8cc3e706a2c2c470686f71cb20089",
+							"fecba4312c9bc8e58537a0e34f226c917ddf5c07564ac76ca9ae459782f7eac3",
+							"663eb6c9d984957ec5714fceda2459b4ce636bcd5d3bcbd5cb569a3cfaec8cd8"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"4403e047ac43ce6e33aba7db78cd2e5532bd5ddf09deb61a55d9b85733f63aa0",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"4403e047ac43ce6e33aba7db78cd2e5532bd5ddf09deb61a55d9b85733f63aa0",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"4e549547047707dd09243d39edb70edb0b812dfcf30e92cf51ba06a32a2a0fbe",
+							"33b46834d1fe1ef49a58fa8eedc3704c32fd1bac13a55d1a21cd4d8c65807bd5",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"4e549547047707dd09243d39edb70edb0b812dfcf30e92cf51ba06a32a2a0fbe",
+							"33b46834d1fe1ef49a58fa8eedc3704c32fd1bac13a55d1a21cd4d8c65807bd5",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.6333333333333333
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.6333333333333333
+					}
+				]
+			}
+		},
+		{
+			"limit": 15,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0",
+							"7e33b495da3ebbd02cb2ff288eb43500821f904a31f9244f831014dc092c22e7",
+							"b60a2506c88c2040d9d4edada7688c624a22e682fe73c722f35e6e71f5aa3b7d",
+							"9ea7a9c40307a618f63fdeaca27555c89e34c643e8e68ada06763346a7b886b8",
+							"95c7c1cfb464154ee5c66a006d13bcc2ccad00034e60315a1af5a9536e3eb02b",
+							"5aefdc8af35754d6e9adfe1d2038d204ca4b91a758abbff069ab1381b733e944",
+							"13e722fcf20ddb5d1f5bbdec2779f3b5d225be61bbefaab15b521829b7ba5b9d",
+							"e2b0efe8b947b3245f7c4abcabc634c0e44727e25a0fac9232867c2ce4bc3aed",
+							"b2a090afa8b67ea87a8bf0d369122d59919021946e375ca2d0f0a24327f65b75",
+							"0c0617c0b5c3326f366a30d9be9e3f5b761a722e323b3334381a38f137e74d43",
+							"a52c2fa28c79e0982b3231b64d60352230174c04fe4840730a91c4d4668393cd"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+							"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+							"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+							"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+							"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0",
+							"7e33b495da3ebbd02cb2ff288eb43500821f904a31f9244f831014dc092c22e7",
+							"b60a2506c88c2040d9d4edada7688c624a22e682fe73c722f35e6e71f5aa3b7d",
+							"9ea7a9c40307a618f63fdeaca27555c89e34c643e8e68ada06763346a7b886b8",
+							"95c7c1cfb464154ee5c66a006d13bcc2ccad00034e60315a1af5a9536e3eb02b",
+							"5aefdc8af35754d6e9adfe1d2038d204ca4b91a758abbff069ab1381b733e944",
+							"13e722fcf20ddb5d1f5bbdec2779f3b5d225be61bbefaab15b521829b7ba5b9d",
+							"e2b0efe8b947b3245f7c4abcabc634c0e44727e25a0fac9232867c2ce4bc3aed",
+							"b2a090afa8b67ea87a8bf0d369122d59919021946e375ca2d0f0a24327f65b75",
+							"0c0617c0b5c3326f366a30d9be9e3f5b761a722e323b3334381a38f137e74d43",
+							"a52c2fa28c79e0982b3231b64d60352230174c04fe4840730a91c4d4668393cd"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597",
+							"933e1c579e3cea2d4ef2f9a0d072dc2d214717c0ba7b52674653fdb1be084fe6",
+							"945b93df16bade184f90ca80455ecc01164c84da333e6f36fec7350c8a84a2f9",
+							"a75a53b3becfe4b27ee7167673438b177920925617f2be644b1948b79a548bab",
+							"f8a1ac7f7c8cce836b241832868e58ed4583d78b0a26f689ce1d4b2aba6a8fbb",
+							"0d0c57c62ff73013e0f1823214bc8a397b23fca13c1864afb45ba907c47344a5",
+							"142bca3aa94ee652b199eab9fbfc89cebc7111b7722d8a297ea98e0fc5e876e5",
+							"7439a7eb89cbbfbb65670662824bbadd2dda08bd7619b300ec649066e9aaf174",
+							"74d564fb5da691ede4a9f1884590e45f92f074d14ee0b0eebcd757b361d1f67a",
+							"800f393e05b3f7dbc85e7ee7c0a0c29731f71cf6cf0a8232d8479b0d3085525f",
+							"4b33cd428e96d9d5beef488c6bebc14505a8bd0debd9009929448a43f67306f7"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+							"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+							"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+							"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+							"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597",
+							"933e1c579e3cea2d4ef2f9a0d072dc2d214717c0ba7b52674653fdb1be084fe6",
+							"945b93df16bade184f90ca80455ecc01164c84da333e6f36fec7350c8a84a2f9",
+							"a75a53b3becfe4b27ee7167673438b177920925617f2be644b1948b79a548bab",
+							"f8a1ac7f7c8cce836b241832868e58ed4583d78b0a26f689ce1d4b2aba6a8fbb",
+							"0d0c57c62ff73013e0f1823214bc8a397b23fca13c1864afb45ba907c47344a5",
+							"142bca3aa94ee652b199eab9fbfc89cebc7111b7722d8a297ea98e0fc5e876e5",
+							"7439a7eb89cbbfbb65670662824bbadd2dda08bd7619b300ec649066e9aaf174",
+							"74d564fb5da691ede4a9f1884590e45f92f074d14ee0b0eebcd757b361d1f67a",
+							"800f393e05b3f7dbc85e7ee7c0a0c29731f71cf6cf0a8232d8479b0d3085525f",
+							"4b33cd428e96d9d5beef488c6bebc14505a8bd0debd9009929448a43f67306f7"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e",
+							"832e32efd78047740815fb0c4a915b002d622ed62317e9c66e3a7f2408973e1a",
+							"ad29c73a9e786be23b80d22cc9975e5aa923a43178f44e8d0063afd3db3fce98",
+							"0a98d31058415cfe816888d04c9f42ebffba20a9862b69389866cd329d2a6fe2",
+							"6a9add77cca5b311a2e82f4da44ee64ad612fb70d1add92e0fb6199dfa0e0e6c",
+							"d49f77ef07e5bddfca9d9fd96f13dd5e1308a287d32a4104d32f96006eaa4a60",
+							"97be1486cebd51afba772190f87a7292cc936c4dc191755f06347ea31b2ccd34",
+							"a6e0ce9d764e103d62348ff03df132e322c03f21a38ff3548cff2c9c6c22069b",
+							"c794261b16d58062100221ae300cf20a716124de85bbbe5bfa8217d0bda1f5b7",
+							"2b24c225bd15ae18907e3bfa36bc857cc147ddd0a07cf73a8afadd50eddd1c37",
+							"c2a2d80de85b96fffb3ae13d2a1a1c26e63ad6f2843846b92ab0735d6197064f"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+							"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+							"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+							"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+							"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e",
+							"832e32efd78047740815fb0c4a915b002d622ed62317e9c66e3a7f2408973e1a",
+							"ad29c73a9e786be23b80d22cc9975e5aa923a43178f44e8d0063afd3db3fce98",
+							"0a98d31058415cfe816888d04c9f42ebffba20a9862b69389866cd329d2a6fe2",
+							"6a9add77cca5b311a2e82f4da44ee64ad612fb70d1add92e0fb6199dfa0e0e6c",
+							"d49f77ef07e5bddfca9d9fd96f13dd5e1308a287d32a4104d32f96006eaa4a60",
+							"97be1486cebd51afba772190f87a7292cc936c4dc191755f06347ea31b2ccd34",
+							"a6e0ce9d764e103d62348ff03df132e322c03f21a38ff3548cff2c9c6c22069b",
+							"c794261b16d58062100221ae300cf20a716124de85bbbe5bfa8217d0bda1f5b7",
+							"2b24c225bd15ae18907e3bfa36bc857cc147ddd0a07cf73a8afadd50eddd1c37",
+							"c2a2d80de85b96fffb3ae13d2a1a1c26e63ad6f2843846b92ab0735d6197064f"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"02fe3e118689378e85076b79cb712f04d229485bddef5cd39b79c7963d1cf875",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"86ea28c15ea013890b308edab6609b41ebed5fcd14d16f690cd929a0659cbe7a",
+							"52a964fd6f65bfd2de7a406fc3f024ba5c728cc601f1c47e5aa1396ff3eaefed"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"02fe3e118689378e85076b79cb712f04d229485bddef5cd39b79c7963d1cf875",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"86ea28c15ea013890b308edab6609b41ebed5fcd14d16f690cd929a0659cbe7a",
+							"52a964fd6f65bfd2de7a406fc3f024ba5c728cc601f1c47e5aa1396ff3eaefed"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"6472d2cf3440b106b0adf3d816ac96e9e62218c095a71884508a31f5b0eb4885",
+							"f4de83f7b793099960d3d69956223bf6d9da98e11c56ed15445a88a015a2321b",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"bb387e20e1d4831ae12187e4b2e493c8a8de3594057357e3f5e0ab2c790bc6ad",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"0fd11e41a43684241add5eefe8147d1a2ded317659707f0363aac80c9794b96c",
+							"575dd968fc4def1e307aaf3a73f79f67df766d2143a167d6c8b83b5a499a7293",
+							"5eb46a21343115935963464d894d5e52bf93669a0a280b7fc9cec38ab8006c07",
+							"2f54086abbf8765142726d49cc0a86646986367e08ebdc2b58a64fc880d691f7",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+							"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+							"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"6472d2cf3440b106b0adf3d816ac96e9e62218c095a71884508a31f5b0eb4885",
+							"f4de83f7b793099960d3d69956223bf6d9da98e11c56ed15445a88a015a2321b",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"bb387e20e1d4831ae12187e4b2e493c8a8de3594057357e3f5e0ab2c790bc6ad",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"0fd11e41a43684241add5eefe8147d1a2ded317659707f0363aac80c9794b96c",
+							"575dd968fc4def1e307aaf3a73f79f67df766d2143a167d6c8b83b5a499a7293",
+							"5eb46a21343115935963464d894d5e52bf93669a0a280b7fc9cec38ab8006c07",
+							"2f54086abbf8765142726d49cc0a86646986367e08ebdc2b58a64fc880d691f7",
+							"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"390a4811f2eece72f09a3ccc77a4e04143b0db7af5e31891c6631443e1a2923c",
+							"69b15d856a4ba791c07624c07c6d73a611905c537a6ec0212fab0b3549865b66",
+							"fe94f8ad4b23e1ff94ff1da732f036c037337a154b772a0c54b9d9b78bcf2f3e",
+							"2bbd439c30b3e3ffd643a4abc307c3b0963d68c109bec43e72b140ab29a7a852",
+							"4876a13d82620eed27c19ef379794062af3f8dbc629404bf762968a67002eb1a",
+							"c3b0a8498c0f3d34fcb52aa9c7a4526af91b64297bc86e238d94ff7999ad59d7",
+							"ee63ac5705e3828c98cb0f1b9db3cd9537a88badbd18df16696c4ac1ff5d0b32"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+							"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be",
+							"04a79d8d940e42cc6be67c13559abb5ddb6d99d3372eb647d704e56da34ca70b",
+							"67cbb15bc4396a8f768dfed9f7a8ecb0aa1d2eef576f9c5a3096faa68ada27a3",
+							"c13aef25437831059d9f40c7d5be621c1ae11974e1c65e3710a480fe6497ac09",
+							"390a4811f2eece72f09a3ccc77a4e04143b0db7af5e31891c6631443e1a2923c",
+							"69b15d856a4ba791c07624c07c6d73a611905c537a6ec0212fab0b3549865b66",
+							"fe94f8ad4b23e1ff94ff1da732f036c037337a154b772a0c54b9d9b78bcf2f3e",
+							"2bbd439c30b3e3ffd643a4abc307c3b0963d68c109bec43e72b140ab29a7a852",
+							"4876a13d82620eed27c19ef379794062af3f8dbc629404bf762968a67002eb1a",
+							"c3b0a8498c0f3d34fcb52aa9c7a4526af91b64297bc86e238d94ff7999ad59d7",
+							"ee63ac5705e3828c98cb0f1b9db3cd9537a88badbd18df16696c4ac1ff5d0b32"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"7cd44538fd0ae62c2ad2965e089e48a407bd29bab84f9ec353dda9a43bbbd1b6",
+							"5bf0a57038cce4bc2e21304a7090c66ac38b3a8d4efb4dd34e46faf02cf52bba",
+							"94c89195607daaabc4acf8a3950b20a317da914d9f0fd5c15b651400d19bca9f",
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"61402cff372df5c3f4261aaf4b6ec21b3ec3aa8ff8b5078d86237ae54cbffd95"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+							"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"7cd44538fd0ae62c2ad2965e089e48a407bd29bab84f9ec353dda9a43bbbd1b6",
+							"5bf0a57038cce4bc2e21304a7090c66ac38b3a8d4efb4dd34e46faf02cf52bba",
+							"94c89195607daaabc4acf8a3950b20a317da914d9f0fd5c15b651400d19bca9f",
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"61402cff372df5c3f4261aaf4b6ec21b3ec3aa8ff8b5078d86237ae54cbffd95"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"d2966707da5da6c341e48a0cf52f47fc9746c4f6000114b23b7858ad74b7d8ae",
+							"ff0a56eabbab03ef596a631ae30f892bf7135fa4d29d5271779668bafe098eae",
+							"ff6855477a967c8ce8a590f49a454fd9fba8cc3e706a2c2c470686f71cb20089",
+							"fecba4312c9bc8e58537a0e34f226c917ddf5c07564ac76ca9ae459782f7eac3",
+							"663eb6c9d984957ec5714fceda2459b4ce636bcd5d3bcbd5cb569a3cfaec8cd8",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"8e0dd9f7638b5107d3967f1b1920bd2b94b014229509566dc1771fb27dbe5322",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"7cd44538fd0ae62c2ad2965e089e48a407bd29bab84f9ec353dda9a43bbbd1b6"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+							"d2966707da5da6c341e48a0cf52f47fc9746c4f6000114b23b7858ad74b7d8ae",
+							"ff0a56eabbab03ef596a631ae30f892bf7135fa4d29d5271779668bafe098eae",
+							"ff6855477a967c8ce8a590f49a454fd9fba8cc3e706a2c2c470686f71cb20089",
+							"fecba4312c9bc8e58537a0e34f226c917ddf5c07564ac76ca9ae459782f7eac3",
+							"663eb6c9d984957ec5714fceda2459b4ce636bcd5d3bcbd5cb569a3cfaec8cd8",
+							"c57ee4d34b47c096199e5862ad77e466d0d6f2ab98fac7952029fd47fb5b0bbd",
+							"8e0dd9f7638b5107d3967f1b1920bd2b94b014229509566dc1771fb27dbe5322",
+							"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb",
+							"09240c685858e7b2ceef2f813eeec59b5655be8b8a1ff7255520551da9bbd9c7",
+							"7cd44538fd0ae62c2ad2965e089e48a407bd29bab84f9ec353dda9a43bbbd1b6"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"4403e047ac43ce6e33aba7db78cd2e5532bd5ddf09deb61a55d9b85733f63aa0",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"9bbc63715502d6b9df9540bdcd9e179df553589d00604d9a5d0b37988c3eb9ff",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"52a964fd6f65bfd2de7a406fc3f024ba5c728cc601f1c47e5aa1396ff3eaefed",
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"75465f182dde56cc787ef98cc1ba49d5759bb5aea982b1bfe59db94bcd0a28b3"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+							"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+							"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+							"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"cfc6638651e540a2f23624aed903bf3d89636130a0019d30f3113d799cbc6db0",
+							"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3",
+							"4403e047ac43ce6e33aba7db78cd2e5532bd5ddf09deb61a55d9b85733f63aa0",
+							"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+							"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+							"9bbc63715502d6b9df9540bdcd9e179df553589d00604d9a5d0b37988c3eb9ff",
+							"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+							"52a964fd6f65bfd2de7a406fc3f024ba5c728cc601f1c47e5aa1396ff3eaefed",
+							"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+							"75465f182dde56cc787ef98cc1ba49d5759bb5aea982b1bfe59db94bcd0a28b3"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"4e549547047707dd09243d39edb70edb0b812dfcf30e92cf51ba06a32a2a0fbe",
+							"33b46834d1fe1ef49a58fa8eedc3704c32fd1bac13a55d1a21cd4d8c65807bd5",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"5547589586e17da49508272a6278a8295a2cd2c234f36f3c8749cfb97d3a7f23",
+							"fec3fe39f404d57396133c09089ec602aa041701e73120519a480c87ac5e4c04",
+							"d5202cba09daaec25c0e0a403791fef0a2f0c505736366dddb0313bc974d507e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"57ad01676eed207b98f2223aafa4afd8c50a5372aead722e419f8796dc41181d"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+							"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+							"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+							"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+							"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+							"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+							"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+							"4e549547047707dd09243d39edb70edb0b812dfcf30e92cf51ba06a32a2a0fbe",
+							"33b46834d1fe1ef49a58fa8eedc3704c32fd1bac13a55d1a21cd4d8c65807bd5",
+							"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f",
+							"5547589586e17da49508272a6278a8295a2cd2c234f36f3c8749cfb97d3a7f23",
+							"fec3fe39f404d57396133c09089ec602aa041701e73120519a480c87ac5e4c04",
+							"d5202cba09daaec25c0e0a403791fef0a2f0c505736366dddb0313bc974d507e",
+							"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+							"57ad01676eed207b98f2223aafa4afd8c50a5372aead722e419f8796dc41181d"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.7
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.7
+					}
+				]
+			}
+		}
+	],
+	"exactComparisons": [
+		{
+			"questionId": "q1",
+			"hnswIds": [
+				"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+				"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+				"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+				"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0",
+				"9ea7a9c40307a618f63fdeaca27555c89e34c643e8e68ada06763346a7b886b8"
+			],
+			"exactIds": [
+				"886cffa2f390a245b7ed797f4defbac872ccf55277314df0939ce84fab19edd9",
+				"e40f25c707f91e8eb211eadeae4ba89186b7c57f89419d4960066bb6ba9441e5",
+				"d2a0b47e031464c668e749cf38b7b3b2b36f3a0378516403c045c5d06c06ac56",
+				"f3f7ab05e5336b3021db4c004d087997c447eb4a0bbac4d67e6ad2e5c7c69a2e",
+				"45955d26bb492908041248a7d60d6b9ee6b08ed599f0b6e006202a2d769929b0"
+			],
+			"identical": false
+		},
+		{
+			"questionId": "q2",
+			"hnswIds": [
+				"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+				"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+				"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+				"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+				"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597"
+			],
+			"exactIds": [
+				"d157d0d5c70b2304e0fa29b33ab4d669ed53d8edf5b27f003424f338066d4924",
+				"623ca1430cf508e30b744f479effc20ba0d35af98d1ba438c9225258a6b10567",
+				"0d55a5b50072f2a8d703da966efcce0c0f6c54c6d094770d8386c39e71fe89fc",
+				"2e4a5da2c7b8c161223c064a6b8c031ccddab8015e263f8aa8d2ca83d43aa5fc",
+				"8968d53c71851694433f2c8000669b02c9e43a30e9e71288f0524aa9bb3da597"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q3",
+			"hnswIds": [
+				"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+				"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+				"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+				"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+				"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e"
+			],
+			"exactIds": [
+				"656a048294206c9edd6da24a8490d436caad90b22866f8b760f6ab23a14d7e0b",
+				"2f2cf2a20d7fbb048031d40b8fd85ecce09e410bcd72f5bfe748cf83dd30c0a0",
+				"e6df000e206d89964b1f54cc81723ba56b12ada7407dec1b6b7a47d7eac33374",
+				"eb3ddd310029daf33c935af03f3dbf0f3585f64b8c9b7775aaca9c642f4297a7",
+				"2844ae8da86abd28d349fb0f595051a557276bf04bc1e662bd86261f17aa096e"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q4",
+			"hnswIds": [
+				"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+				"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+				"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+				"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+				"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+			],
+			"exactIds": [
+				"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+				"9316ce143b623e9049cd987ed644a78bf34ce5d36a31d34260b6ef164c4cf772",
+				"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+				"442c12fc08dc8aa73abf76cba4a2792b4778cad842d17fa2c921272cf806d035",
+				"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q5",
+			"hnswIds": [
+				"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+				"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+				"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+				"6472d2cf3440b106b0adf3d816ac96e9e62218c095a71884508a31f5b0eb4885",
+				"bb387e20e1d4831ae12187e4b2e493c8a8de3594057357e3f5e0ab2c790bc6ad"
+			],
+			"exactIds": [
+				"68ae41935be06070b2405699fb38c3d0f2eb7facb152e06feab333e56cf1ba88",
+				"b9929306712d65860ede79a48229f3f2858e24bd486d53ff62e82a46ecc59b49",
+				"32f3ce29b26dd66279bbcb080db2dc79f0cc9057011525a2d11d9a7a9fbd2d0d",
+				"dfb6a9d10dab316a5cd0f50194adef4f165efd2b10d893be4731e1a27748f997",
+				"a51c0539c64947259df8fa9039962a253df68a986cfd043a0e42cec35f7085c3"
+			],
+			"identical": false
+		},
+		{
+			"questionId": "q6",
+			"hnswIds": [
+				"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+				"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+				"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+				"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+				"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be"
+			],
+			"exactIds": [
+				"4781705a561e4c99ee2249cca3a10d11546ae6042ad02b40c69b97949efdb11e",
+				"7e9fa61d9fde2c9378dabf51a150fbca340857f8d589c82efc21e57a7f5ad9a6",
+				"f4b035ce2ed9b810e6acf21d12e129e5d2e3f333ecd9631857f6fb59e1201440",
+				"4d3e00b20aed748809cee184d8cd285b6d591639d74448141f2255e11a8d728f",
+				"b487d21c0ef6971db9689593626383d240b502013c2a0d8c71b981f8c4db06be"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q7",
+			"hnswIds": [
+				"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+				"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+				"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+				"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+				"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb"
+			],
+			"exactIds": [
+				"464757e97d0f64a13a86940f51e39ed8b64e83802271722771ff9f6676fd0664",
+				"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503",
+				"a96e3a88425529792e117882f660e0279eea18a925c7aefc9f7973af45a05c0b",
+				"f263390a96f85509869cdb5bffac1fc12434121cd43d6ab62a5795a8c3e3fa7c",
+				"885594302a7f407444edb0b287da2d05a4729967ccdf8d6f8e28fa81b132a5eb"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q8",
+			"hnswIds": [
+				"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+				"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+				"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+				"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+				"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503"
+			],
+			"exactIds": [
+				"d7dd192095d0b065840a92e9e5efbf30cbd8e41b75b9506188873ffda2acfdd4",
+				"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a",
+				"1e128d68c0c311f2f985ab10422358236c654de4638da2eeb2eff19e5ca5a749",
+				"96f12d8f077e854b3225754b9e825a9fd1561076a3fc9995ea558f1348b24688",
+				"25a1357212c0d695071e6aef4d46cb806581ed7e0896d4e129fd31e486377503"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q9",
+			"hnswIds": [
+				"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+				"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+				"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+				"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+				"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+			],
+			"exactIds": [
+				"884edae35acb05bc0ffa2995039b86dba7b64a0dc09826dbfb96f3a3aee09863",
+				"b1064eabdf0d6a0272b259d0dcb18a2fcfe4e868bb87d2411532c8506a1e4f42",
+				"738a08f0b5c067624d0799547f5a85bb31f853a9f8473a40be1bddb1a9450fb0",
+				"59c3011b759295daf87190f042852acc456e73a7dcba3ed67ebd3e715b40e8ae",
+				"1e60d89dcdf3ad8c9a54d6484bd148885f5fcf4d4d52486cca9b3f93a6f8564f"
+			],
+			"identical": true
+		},
+		{
+			"questionId": "q10",
+			"hnswIds": [
+				"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+				"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+				"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+				"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+				"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a"
+			],
+			"exactIds": [
+				"9954065f0488bf7296189524110370ee9d28dab8cfbef09b162dd5ccc6621018",
+				"f0e991eb02d135f76fa2ffb20ed5e3706e7ecc72d9d998e007bf56dd41a52820",
+				"7248ed17c6095943b700b7be3662dcae89ad8d9bb86200ce5e64762a12f6a02a",
+				"da224d9fc42b50b31a486e42507cdab82f73317150adafa308ded840f94a1aca",
+				"062b7aa4901c96675927ff93c48b93a6fd5b345118fe0c88d3d1d9145cea0b9a"
+			],
+			"identical": true
+		}
+	]
+}
