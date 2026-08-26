@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
 import { collectSourceFrames, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
-type StreamMode = "complete" | "abort" | "nested-source" | "many-sources";
+type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first";
 type RequestRecord = { body: string; aborted: boolean };
 
 type TestServer = {
@@ -50,6 +50,16 @@ async function createTestServer(mode: StreamMode): Promise<TestServer> {
 				"Cache-Control": "no-cache",
 				Connection: "keep-alive",
 			});
+			if (mode === "source-first") {
+				res.write(
+					'2:[{"type":"source","data":{"id":"source-first","label":"先到来源","sourceHref":"/source-first"}}]\n',
+				);
+				res.write('f:{"messageId":"assistant-source-first"}\n');
+				res.write('0:"第一段"\n');
+				res.write('0:"第二段"\n');
+				res.end();
+				return;
+			}
 			res.write('0:"第一段"\n');
 			if (mode === "complete") {
 				res.write('2:[{"type":"source","data":{"id":"source-1","label":"指南","sourceHref":"/guide"}}]\n');
@@ -181,6 +191,21 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 			label: "指南5",
 			sourceHref: "/guide-5",
 		});
+	});
+
+	test("来源帧先于助手消息元数据到达时仍绑定来源", async () => {
+		const server = await createTestServer("source-first");
+		servers.push(server);
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-source-first", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-source-first", role: "user", content: "来源先到" });
+		await nextTick();
+
+		expect(chat.messages.value.at(-1)?.sources).toEqual([
+			{ id: "source-first", label: "先到来源", sourceHref: "/source-first" },
+		]);
 	});
 
 	test("从真实 fetch data stream 捕获多个来源帧", async () => {

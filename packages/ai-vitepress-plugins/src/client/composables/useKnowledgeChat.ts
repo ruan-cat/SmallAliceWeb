@@ -130,7 +130,12 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	const targetAssistantMessageId = computed(() => {
 		const request = activeRequest.value;
 		if (!request) return;
-		if (request.targetAssistantMessageId) return request.targetAssistantMessageId;
+		if (
+			request.targetAssistantMessageId &&
+			chat.messages.value.some((message) => message.id === request.targetAssistantMessageId)
+		) {
+			return request.targetAssistantMessageId;
+		}
 		return chat.messages.value.find(
 			(message) => message.role === "assistant" && !request.knownMessageIds.has(message.id),
 		)?.id;
@@ -138,7 +143,7 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 
 	watch(targetAssistantMessageId, (messageId) => {
 		const request = activeRequest.value;
-		if (!request || request.targetAssistantMessageId || !messageId) return;
+		if (!request || !messageId || request.targetAssistantMessageId === messageId) return;
 		activeRequest.value = { ...request, targetAssistantMessageId: messageId };
 	});
 
@@ -151,14 +156,17 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	});
 
 	const messages = computed<AiChatMessage[]>(() =>
-		chat.messages.value.map((message) => ({
-			id: message.id,
-			role: message.role === "assistant" ? "assistant" : "user",
-			content: message.content,
-			...(sourcesByAssistantMessageId.value[message.id]?.length
-				? { sources: sourcesByAssistantMessageId.value[message.id] }
-				: {}),
-		})),
+		chat.messages.value.map((message) => {
+			const mappedSources = sourcesByAssistantMessageId.value[message.id];
+			const pendingSources = message.id === targetAssistantMessageId.value ? sources.value : undefined;
+			const messageSources = mappedSources?.length ? mappedSources : pendingSources;
+			return {
+				id: message.id,
+				role: message.role === "assistant" ? "assistant" : "user",
+				content: message.content,
+				...(messageSources?.length ? { sources: messageSources } : {}),
+			};
+		}),
 	);
 	const isResponding = computed(() => chat.status.value === "submitted" || chat.status.value === "streaming");
 	const errorMessage = computed(() => {
