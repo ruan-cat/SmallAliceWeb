@@ -139,16 +139,17 @@
   - 2026-08-26 本地与环境证据：新增 `@ai-sdk/anthropic@1.2.12`；API 包 25 个测试文件 / 89 个用例、typecheck、`build:vercel` 通过；真实 SDK 受控 fetch 已断言 `/v1/messages`、`anthropic-version`、`x-api-key`、Anthropic Messages body 和 SSE 文本增量转 Data Stream。三环境备份已完成，旧变量已删除，新 key 已接入；Development 被 Vercel 平台标记为 Non-sensitive。真实上游事件时间线由后续同日记录补齐。
   - 2026-08-26 配置入口证据：`nitro.config.ts` 已改为直接 `defineConfig` 并内联 `runtimeConfig`；`src/runtime-config.ts` 只保留类型合同。Vercel 变量备份已保存到受 `.gitignore` 保护的 `.env.ai-rag-phase2-backup.*` 文件；旧变量已删除，Anthropic key 已接入三个环境。用户明确接受将 `NITRO_ANTHROPIC_API_KEY` 在 Development、Preview、Production 三环境统一为 Non-sensitive，并已逐环境回读确认。修正 `.env.local` 引号解析后，真实直连 `https://api.code-tab.com/v1/messages` 返回 HTTP 200；`message_start` 3.790s、首个文本 delta 5.100s、`message_stop` 5.211s，420 秒硬上限未触发。Luna `/v1/responses` 同步 smoke 返回 HTTP 200，首个文本 delta 119.063s、`response.completed` 119.098s。2.1.3a 完成。
 
-- [ ] 2.1.4 [browser/e2e] 文档站 + 生产 Nitro - 生产后端驱动浏览器回归
+- [x] 2.1.4 [browser/e2e] 文档站 + 生产 Nitro - 生产后端驱动浏览器回归
   - 生产模型请求由注册表的 `activeProvider: "anthropic"` 决定，必须实际发送 Anthropic Messages `POST https://api.code-tab.com/v1/messages`，body 至少包含 `model: "claude-sonnet-5[1m]"`、`system`、`messages`、`stream: true` 与 `max_tokens`。
   - 上游必须按 Anthropic Messages SSE 事件解析并转发文本增量、完成和错误状态；不得以 `/v1/models`、HTTP 200 或仅来源帧推断模型可用。
   - Nitro 聊天装配必须使用 Anthropic adapter；OpenAI Responses adapter 仍须保留并由受控测试覆盖，两个上游协议不得在前端或路由层混用。
   - 真实页面发送问题 → 首段流式内容可见 → 停止入口出现 → 点击停止触发 abort → 已接收内容保留 → 状态收敛。
   - 来源卡片必须跳到真实 VitePress `sourceUrl#headingAnchor`。
-  - 完成证据必须包含：生产浏览器 Network 中的实际 `/v1/messages` 流式请求（脱敏）、Anthropic SSE 文本增量与 `message_stop`、停止后的上游 abort、已接收内容保留、来源跳转截图；本地受控 fetch 流或 HTTP 200 不能代替本任务。
+  - 完成证据必须包含：生产浏览器 Network 的 `/v1/chat` 流式请求、Vercel runtime logs 中实际 `/v1/messages` 流式请求（脱敏）、Anthropic SSE 文本增量与 `message_stop`、停止后的上游 abort、已接收内容保留、来源跳转截图；由于上游请求由 Nitro 服务端发起，浏览器不直接观察 `/v1/messages`，本地受控 fetch 流或 HTTP 200 不能代替本任务。
   - 失败控制：工具缺失、外部权限缺失或同一阻塞连续三次出现时，立即停止自动续跑，在 `agent-progress.md` 记录阻塞指纹、已尝试次数与所需外部条件；不得恢复旧的 Chat Completions 探测路径。
   - 2026-08-25 的 Responses SSE 无事件记录保留为历史证据；它不代表 Anthropic Messages 已失败，也不构成新模型的可用性结论。
-  - 2026-08-26 agent-browser 证据：`https://drill.ruan-cat.com/` 生产页面可打开，AI 对话真实请求发送至 Nitro `/v1/chat` 并返回流式回答；“停止生成”入口出现，点击后状态收敛且已收内容保留。来源以内联 `reference-node` 显示，但点击后 URL 未跳转、DOM 未生成 `.ai-chat__source` 链接，来源跳转门禁失败，任务保持未勾选。
+  - 2026-08-26 修复前 agent-browser 证据：`https://drill.ruan-cat.com/` 生产页面可打开，AI 对话真实请求发送至 Nitro `/v1/chat` 并返回流式回答；“停止生成”入口出现，点击后状态收敛且已收内容保留。来源以内联 `reference-node` 显示，但点击后 URL 未跳转、DOM 未生成 `.ai-chat__source` 链接；该证据已被后续来源帧绑定修复和新 Production 验收 supersede。
+  - 2026-08-26 最终生产证据：Nitro `nitro.config.ts` 的 `vercel.functions.supportsCancellation=true` 已由 `build:vercel` 产物 `.vc-config.json` 回读确认；Production deployment `dpl_7ZY4vduHngqgvmMauKgLmwrsHXfh` READY。Chrome 生产 `/v1/chat` 真实成功流显示来源链接并可跳转到 `.html#rag-heading-*`，停止按钮出现且停止后已接收文本与来源保留。Vercel runtime logs 脱敏记录成功流的 `/v1/messages` `response=200`、`message_start`、多条 `content_block_delta`、`message_stop`；停止流记录 `abort`、`stream_error=AbortError`，对应 `POST /v1/chat 200`。2.1.4 门禁通过。
   - 生产部署监听固定流程：`pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m`，随后 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs`；只有 `status Ready`、Git checkout SHA 匹配且日志显示构建/部署完成，才进入 Google Chrome 验收。
 
 ### 2.2 P1：验证、触发与调优

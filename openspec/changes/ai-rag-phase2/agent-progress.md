@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-26；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：15 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线与真实上游事件时间线已完成，当前进入 `2.1.4` 生产浏览器回归。
+- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -30,6 +30,7 @@
 - 阻塞解释：三环境类型策略已统一，Development 普通变量可安全拉取；首次 401 根因是 `.env.local` 引号解析错误，修正后 Anthropic 直连 PASS。生产浏览器停止与内容保留已通过；当前剩余门禁是来源跳转，以及最新文档站 Git deployment 的正式 Production alias 验证。
 - 本轮修复尝试：新增 `toSources()` 展开嵌套 AI SDK data 帧，并以 HTTP data-stream 回归覆盖，`ai-vitepress-plugins` 测试 31/31、typecheck、build 均通过。Chrome 生产页在修复部署前仍观察到 `reference-node` 存在但 `.ai-chat__source` 为 0；不能将本地 GREEN 外推为生产修复完成。
 - 最新 Git Integration Production deployment `dpl_6beFTJ9U1e3MR2AH4QwqoyaEDyxb` 已由 `main` SHA `e30bb8f731c16dd3462a866c3bf49114b12aac4e` 触发，但当前仍为 `QUEUED` 且无 build log，需 READY 后重新用 Google Chrome 复测。
+- 最终收口：Nitro v3 `vercel.functions.supportsCancellation=true` 已生成并回读 `.vc-config.json`；API Production `dpl_7ZY4vduHngqgvmMauKgLmwrsHXfh` READY。Chrome 生产 `/v1/chat` 来源链接与真实 `sourceUrl#headingAnchor` 跳转通过，停止后文本/来源保留通过。Vercel runtime logs 取得 `/v1/messages` 成功流 `response 200`、`message_start`、`content_block_delta`、`message_stop`，以及停止流 `abort` + `AbortError`；生产上游证据闭环完成。
 
 ## 4. 下一步
 

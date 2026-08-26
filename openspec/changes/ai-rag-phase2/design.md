@@ -304,7 +304,7 @@ Nitro runtime config 只声明 `openaiApiKey` 与 `anthropicApiKey` 两个私有
 
 Git Integration 部署监听固定使用 Vercel CLI：对目标 deployment 执行 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m`，再执行 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs`。只有 CLI 明确返回 `status Ready`、匹配 Git checkout SHA 且日志出现构建与部署完成，才允许进入生产浏览器验收；`QUEUED`/`BUILDING` 只能作为进行中状态。
 
-真实上游验证必须直接请求 `POST https://api.code-tab.com/v1/messages`，并记录 headers、`message_start`、首个文本 delta、`message_stop` 或错误事件的时间线。120 秒是慢响应观察点，不是自动失败点；420 秒是单次请求硬上限，超时后主动 abort。只有 HTTP 响应、有效 Anthropic SSE、首个文本 delta 和正常终止事件全部具备，才能认定接口可用。生产浏览器 Network、停止生成、来源跳转与 Git Integration deployment 仍需独立证据，不能由本地受控 fetch、HTTP 200 或来源帧替代。
+真实上游验证必须直接请求 `POST https://api.code-tab.com/v1/messages`，并记录 headers、`message_start`、首个文本 delta、`message_stop` 或错误事件的时间线。120 秒是慢响应观察点，不是自动失败点；420 秒是单次请求硬上限，超时后主动 abort。只有 HTTP 响应、有效 Anthropic SSE、首个文本 delta 和正常终止事件全部具备，才能认定接口可用。由于 Anthropic 请求由 Nitro 服务端发起，生产证据必须组合浏览器 Network 的 `/v1/chat`、Vercel runtime logs 的 `/v1/messages`、停止生成、来源跳转与 Git Integration deployment；不能要求浏览器直接观察服务端上游，也不能由本地受控 fetch、HTTP 200 或来源帧替代。
 
 ### 3.20 Nitro 配置入口与 runtime 类型边界
 
