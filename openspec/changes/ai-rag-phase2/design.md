@@ -302,6 +302,8 @@ Nitro runtime config 只声明 `openaiApiKey` 与 `anthropicApiKey` 两个私有
 
 环境迁移属于 Nitro API 项目 `smallalice-docs-ai-nitro-api` 的独立门禁：development、preview、production 删除 `NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL`，保留既有 `NITRO_OPENAI_API_KEY` 原值，并在获得授权密钥后新增 `NITRO_ANTHROPIC_API_KEY`。为统一三个环境的维护方式，`NITRO_ANTHROPIC_API_KEY` 在 development、preview、production 均使用 Vercel `Non-sensitive` 类型；这是用户明确接受的安全降级。变更前只将受保护的本地环境快照用于回滚，仓库、报告、测试快照和终端输出只允许记录变量名、目标环境、时间、退出码与脱敏校验结果。
 
+Git Integration 部署监听固定使用 Vercel CLI：对目标 deployment 执行 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m`，再执行 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs`。只有 CLI 明确返回 `status Ready`、匹配 Git checkout SHA 且日志出现构建与部署完成，才允许进入生产浏览器验收；`QUEUED`/`BUILDING` 只能作为进行中状态。
+
 真实上游验证必须直接请求 `POST https://api.code-tab.com/v1/messages`，并记录 headers、`message_start`、首个文本 delta、`message_stop` 或错误事件的时间线。120 秒是慢响应观察点，不是自动失败点；420 秒是单次请求硬上限，超时后主动 abort。只有 HTTP 响应、有效 Anthropic SSE、首个文本 delta 和正常终止事件全部具备，才能认定接口可用。生产浏览器 Network、停止生成、来源跳转与 Git Integration deployment 仍需独立证据，不能由本地受控 fetch、HTTP 200 或来源帧替代。
 
 ### 3.20 Nitro 配置入口与 runtime 类型边界

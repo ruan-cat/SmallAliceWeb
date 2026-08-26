@@ -200,3 +200,10 @@ Nitro API MUST 在代码内保存类型化聊天 provider 注册表，注册 Ope
 - **AND** MUST 记录 headers、`message_start`、首个文本 delta、`message_stop` 或错误事件
 - **AND** 120 秒为慢响应观察点，420 秒为单次请求硬上限
 - **AND** HTTP 200、来源帧或仅 headers 到达均不得单独证明模型请求成功
+
+#### Scenario: Git Integration 部署监听
+
+- **WHEN** `main` 提交触发 Vercel Production deployment
+- **THEN** 验收 MUST 使用 `vercel inspect <deployment-id-or-url> --wait --timeout 3m` 等待状态收敛
+- **AND** 验收 MUST 使用 `vercel inspect <deployment-id-or-url> --logs` 读取 Git checkout SHA、构建完成与部署完成证据
+- **AND** `QUEUED` 或 `BUILDING` 状态 MUST NOT 被记录为 Production Ready

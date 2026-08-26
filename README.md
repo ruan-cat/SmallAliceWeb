@@ -65,6 +65,17 @@
 4. `main` 出现有意义提交即自动触发 `small-alice-web-odse` 的真实 Vercel Production deployment。随后只用 Vercel CLI/MCP 读取 deployment 状态、Git SHA 和构建日志。
 5. Production Ready 后，使用本机 Google Chrome 的 Agent Browser 完成功能和视觉验收；先本地转换/本地页面验收，再复测同一生产 URL。
 
+#### 4.3.1 使用 `vercel inspect` 监听 Git Integration 部署
+
+推送 `main` 后，先用目标 deployment ID 或 URL 等待部署收敛，再读取构建日志；不要只看 Dashboard 的瞬时状态，也不要把 `QUEUED` 或 `BUILDING` 当作完成。
+
+```powershell
+pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m
+pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs
+```
+
+只有 `inspect --wait` 返回 `status Ready`，且 `inspect --logs` 显示 Git checkout SHA、构建完成与部署完成，才进入 Production URL 的 Google Chrome 验收。命令输出不得包含 API key、数据库连接串或其他凭据。
+
 **禁止**以 `pnpm run deploy-vercel` 或本地 `vercel deploy` 替代上述正式发布链路。CLI `vercel link`/`vercel deploy` 仅适用于另一个项目的显式诊断或已授权应急操作，不是文档站的常规发布动作。
 
 ### 4.4 Nitro API 生产域名
