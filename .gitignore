@@ -63,3 +63,5 @@ drill-docx
 
 # 忽略 WorkBuddy 项目数据目录（记忆、日志等本地数据）
 .workbuddy/
+
+.env*
