@@ -18,6 +18,7 @@
 - 本轮复核：`pnpm dlx @fission-ai/openspec@1.10.0 validate ai-rag-phase2 --strict` 通过；API 测试 25/89、typecheck 与 `build:vercel` 均退出码 0。
 - 生产域名只读 smoke：`POST /v1/search` HTTP 200 返回来源 DTO；`POST /v1/chat` HTTP 200、`X-Vercel-Ai-Data-Stream: v1`，收到文本帧与 `finishReason: stop`。该结果不证明上游 Anthropic SSE 事件时间线。
 - 本轮真实模型 smoke：Luna `/v1/responses` HTTP 200，首个文本 delta 119.063s、`response.completed` 119.098s；Anthropic `/v1/messages` HTTP 200，`message_start` 3.790s、首个文本 delta 5.100s、`message_stop` 5.211s，420 秒硬上限未触发。
+- agent-browser 生产证据：`https://drill.ruan-cat.com/` 页面加载成功；真实 `/v1/chat` 返回流式回答，停止按钮出现并可点击，点击后已收内容保留、状态收敛；网络记录包含 API `OPTIONS` 204 与 `POST` 200。来源以内联 `reference-node` 呈现，但点击未产生导航或来源链接，2.1.4 仍未完成。
 
 ## 3. 当前阻塞与边界
 
@@ -26,7 +27,7 @@
 - `openspec` CLI 不在 PATH；已用 `pnpm dlx @fission-ai/openspec@1.10.0` 完成当前工件 strict validate。
 - 旧 `gpt-5.6-luna` Responses SSE 三次无事件记录仅是历史证据，不能推断 Anthropic Messages 可用或不可用。
 - 本轮外部核对：Vercel 项目 `smallalice-docs-ai-nitro-api` 最新 Production deployment `dpl_8YYreC2s6RCTUV4UKb1CCsCxUWs4` 为 READY，checkout SHA 为 `1160f204207dc49ff93c0f194549194eaddd6751`；运行日志显示 `/v1/search` 与 `/v1/chat` 均 HTTP 200。Vercel MCP 不提供环境变量值读取接口。
-- 阻塞解释：三环境类型策略已统一，Development 普通变量可安全拉取；首次 401 根因是 `.env.local` 引号解析错误，修正后 Anthropic 直连 PASS。当前剩余门禁是生产浏览器停止、内容保留与来源跳转。
+- 阻塞解释：三环境类型策略已统一，Development 普通变量可安全拉取；首次 401 根因是 `.env.local` 引号解析错误，修正后 Anthropic 直连 PASS。生产浏览器停止与内容保留已通过；当前剩余门禁是来源跳转，以及最新文档站 Git deployment 的正式 Production alias 验证。
 
 ## 4. 下一步
 

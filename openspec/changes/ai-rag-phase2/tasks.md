@@ -148,6 +148,7 @@
   - 完成证据必须包含：生产浏览器 Network 中的实际 `/v1/messages` 流式请求（脱敏）、Anthropic SSE 文本增量与 `message_stop`、停止后的上游 abort、已接收内容保留、来源跳转截图；本地受控 fetch 流或 HTTP 200 不能代替本任务。
   - 失败控制：工具缺失、外部权限缺失或同一阻塞连续三次出现时，立即停止自动续跑，在 `agent-progress.md` 记录阻塞指纹、已尝试次数与所需外部条件；不得恢复旧的 Chat Completions 探测路径。
   - 2026-08-25 的 Responses SSE 无事件记录保留为历史证据；它不代表 Anthropic Messages 已失败，也不构成新模型的可用性结论。
+  - 2026-08-26 agent-browser 证据：`https://drill.ruan-cat.com/` 生产页面可打开，AI 对话真实请求发送至 Nitro `/v1/chat` 并返回流式回答；“停止生成”入口出现，点击后状态收敛且已收内容保留。来源以内联 `reference-node` 显示，但点击后 URL 未跳转、DOM 未生成 `.ai-chat__source` 链接，来源跳转门禁失败，任务保持未勾选。
 
 ### 2.2 P1：验证、触发与调优
 

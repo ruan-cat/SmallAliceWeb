@@ -19,6 +19,7 @@
 - **resolved**：当前 `openspec` CLI 不在 PATH；已用 `pnpm dlx @fission-ai/openspec@1.10.0 validate ai-rag-phase2 --strict` 对当前工件复核通过。
 - **resolved**：生产 `/v1/chat` 已返回 AI SDK Data Stream 文本帧并以 `finishReason: stop` 收敛；真实上游 Anthropic 事件时间线已通过本地直接请求取得。剩余门禁转入 `2.1.4` 的生产浏览器停止与来源跳转。
 - **resolved**：三环境 `NITRO_ANTHROPIC_API_KEY` 已统一为 Non-sensitive 并逐环境回读；首次 401 由本地 `.env.local` 引号解析错误导致，修正解析后直连请求 HTTP 200 且事件完整，不得将初次 401 解释为上游协议失败。
+- **active**：agent-browser 生产页面已验证 `/v1/chat` 流式回答、停止按钮和停止后内容保留；来源以内联 `reference-node` 呈现，但点击无导航且 DOM 没有 `.ai-chat__source`，来源跳转失败。需修复来源帧到 UI 链接的桥接后再重跑 2.1.4。
 
 ## 2. 固定约束
 
