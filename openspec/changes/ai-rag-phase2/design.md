@@ -294,16 +294,33 @@ README 至少包含功能、技术栈、架构、运行/验证方式、演示截
 
 不得在真实端到端证据缺失时把 PostgreSQL、embedding、模型或生产 RAG 宣传为已完成。
 
+### 3.19 双协议聊天模型配置与流式验证
+
+聊天模型不再由单一的 `baseUrl`、`chatModel` 环境变量描述。`packages/ai-rag-api/src/llm-config.ts` 保存类型化公开注册表，注册 `openai-responses` 与 `anthropic-messages` 两个 provider，并固定 `activeProvider: "anthropic"`。每个 provider 记录 `protocol`、`baseUrl` 与 `model`；当前两个地址均为 `https://api.code-tab.com/v1`，OpenAI 模型为 `gpt-5.6-luna`，Anthropic 模型为 `claude-sonnet-5[1m]`。注册表不得包含 API key 或其他凭据，也不得再引入模型、地址或 provider 选择环境变量。
+
+Nitro runtime config 只声明 `openaiApiKey` 与 `anthropicApiKey` 两个私有密钥。`rag-runtime.ts` 依据激活 provider 读取注册表和对应密钥，再通过显式 model factory 注入 adapter；激活 provider 缺少密钥时拒绝装配，未激活 provider 的密钥缺失不阻塞当前运行。`openai-chat.ts` 继续使用 AI SDK Responses provider；新增 Anthropic adapter 使用与当前 `ai` 版本兼容的 `@ai-sdk/anthropic`，将 Anthropic Messages SSE 规范化为既有 AI SDK Data Stream。两个 adapter 都必须保留来源帧、错误回调和请求 abortSignal，路由与前端不感知上游协议差异。
+
+环境迁移属于 Nitro API 项目 `smallalice-docs-ai-nitro-api` 的独立门禁：development、preview、production 删除 `NITRO_BASE_URL` 与 `NITRO_CHAT_MODEL`，保留既有 `NITRO_OPENAI_API_KEY` 原值，并在获得授权密钥后新增 `NITRO_ANTHROPIC_API_KEY`。变更前只将受保护的本地环境快照用于回滚，仓库、报告、测试快照和终端输出只允许记录变量名、目标环境、时间、退出码与脱敏校验结果。
+
+真实上游验证必须直接请求 `POST https://api.code-tab.com/v1/messages`，并记录 headers、`message_start`、首个文本 delta、`message_stop` 或错误事件的时间线。120 秒是慢响应观察点，不是自动失败点；420 秒是单次请求硬上限，超时后主动 abort。只有 HTTP 响应、有效 Anthropic SSE、首个文本 delta 和正常终止事件全部具备，才能认定接口可用。生产浏览器 Network、停止生成、来源跳转与 Git Integration deployment 仍需独立证据，不能由本地受控 fetch、HTTP 200 或来源帧替代。
+
+### 3.20 Nitro 配置入口与 runtime 类型边界
+
+`packages/ai-rag-api/nitro.config.ts` 是 Nitro v3 的唯一配置入口，直接调用 `defineConfig` 并内联 `serverDir`、`imports`、`compatibilityDate`、`runtimeConfig`、`rolldownConfig` 与 `routeRules`。`packages/ai-rag-api/src/runtime-config.ts` 不再导出可被 spread 的配置对象，只保留 `RagNitroConfig` 类型合同，供 runtime assembly 做编译期约束。这样既符合 Nitro starter 的直观项目结构，也避免 runtime 业务模块 import Nitro 配置对象造成配置入口和运行时装配职责耦合。
+
+Nitro `runtimeConfig` 中的空字符串只是私有字段声明和类型推断占位，实际值由 Nitro/Vercel 的 `NITRO_*` 环境变量覆盖；模型注册表仍独立位于 `src/llm-config.ts`，不把公开模型选择和 Nitro 平台配置混在一起。
+
 ## 4. Risks / Trade-offs
 
-| 风险                   | 处理                                                     |
-| ---------------------- | -------------------------------------------------------- |
-| 检索质量不足           | 用固定评估集比较 chunk/topK/lexical/vector/hybrid/HNSW   |
-| embedding 成本         | 小模型 + batch；未变化文档跳过重嵌入                     |
-| 流式渲染性能           | 使用成熟 Markdown renderer，避免双动画；长内容专项测试   |
-| 向量库反复选型         | Chroma 仅学习；正式统一 Neon/pgvector                    |
-| 作品缺乏亮点           | 突出 Hybrid Search、稳定来源、流式停止、真实工程证据     |
-| 云端状态与本地证据混淆 | 每个外部能力必须有自身真实证据，本地 build/test 不能替代 |
+| 风险                                             | 处理                                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 检索质量不足                                     | 用固定评估集比较 chunk/topK/lexical/vector/hybrid/HNSW                                                                                                  |
+| embedding 成本                                   | 小模型 + batch；未变化文档跳过重嵌入                                                                                                                    |
+| 流式渲染性能                                     | 使用成熟 Markdown renderer，避免双动画；长内容专项测试                                                                                                  |
+| 向量库反复选型                                   | Chroma 仅学习；正式统一 Neon/pgvector                                                                                                                   |
+| 作品缺乏亮点                                     | 突出 Hybrid Search、稳定来源、流式停止、真实工程证据                                                                                                    |
+| 云端状态与本地证据混淆                           | 每个外部能力必须有自身真实证据，本地 build/test 不能替代                                                                                                |
+| Vercel Development 不允许新建 Sensitive 环境变量 | Production/Preview 使用 Sensitive；Development 由 Vercel CLI/API 策略限制，若不能通过平台级 secret 接口修复，必须向用户披露并不得声称三环境敏感性已闭环 |
 
 必须持续保留的事故约束：
 

@@ -114,3 +114,48 @@ Nitro runtime MUST 为 `/v1/search` 查询向量与知识同步暴露同一个�
 - **WHEN** `/v1/search` 创建查询向量，或同步流程创建 chunk 向量
 - **THEN** 两类操作 MUST 使用同一个已配置 Cloudflare 模型与 1024 维校验
 - **AND** provider 失败 MUST 作为真实错误暴露，MUST NOT 产生空结果或 accepted 假成功
+
+### Requirement: 8. 双协议聊天模型注册表
+
+聊天运行时 MUST 从 `packages/ai-rag-api` 内的类型化公开注册表读取 provider 的 `protocol`、`baseUrl` 与 `model`，并固定一个 `activeProvider`；注册表 MUST 同时描述 OpenAI Responses 与 Anthropic Messages 两种协议，MUST NOT 从环境变量读取模型、base URL 或 provider 选择。当前激活 provider MUST 为 Anthropic，模型 MUST 为 `claude-sonnet-5[1m]`，地址 MUST 为 `https://api.code-tab.com/v1`。OpenAI provider MUST 保留 `gpt-5.6-luna` 与 Responses 协议作为可切换配置。
+
+#### Scenario: 激活 Anthropic provider
+
+- **WHEN** runtime 初始化聊天模型
+- **THEN** 系统 MUST 选择注册表中的 `activeProvider: "anthropic"`
+- **AND** MUST 使用 `POST https://api.code-tab.com/v1/messages`
+- **AND** 请求 MUST 包含 Anthropic Messages 所需的 `model`、`system`、`messages`、`stream: true` 与 `max_tokens`
+
+#### Scenario: 下游流格式保持稳定
+
+- **WHEN** OpenAI Responses 或 Anthropic Messages 任一 adapter 产生上游流
+- **THEN** 系统 MUST 将其规范化为现有 AI SDK Data Stream Response
+- **AND** MUST 保留来源数据帧、客户端 abortSignal 与错误状态
+- **AND** 路由和前端 MUST NOT 依赖某一上游 SSE 事件名称
+
+#### Scenario: 仅校验激活 provider 密钥
+
+- **WHEN** runtime 检查聊天模型凭据
+- **THEN** 激活 provider 对应的 `NITRO_ANTHROPIC_API_KEY` 缺失 MUST 阻止模型装配
+- **AND** 未激活的 `NITRO_OPENAI_API_KEY` 缺失不得阻塞 Anthropic provider 装配
+- **AND** 两个 API key MUST NOT 出现在注册表、浏览器响应、日志、报告或测试快照
+
+### Requirement: 9. Anthropic Messages 流式验证
+
+真实验证 MUST 直接请求 `POST https://api.code-tab.com/v1/messages` 并记录 HTTP headers、`message_start`、首个文本 delta、`message_stop` 或错误事件的时间线。120 秒 MUST 作为慢响应观察点，420 秒 MUST 作为单次请求硬上限；只有出现有效 SSE、首个文本 delta 与正常终止事件时，才能认定上游模型请求可用。
+
+#### Scenario: 120 秒内首段响应
+
+- **WHEN** Anthropic 请求在 120 秒内产生首个文本 delta
+- **THEN** 验证记录 MUST 标记首段耗时并继续读取到终止事件
+
+#### Scenario: 慢响应但在硬上限内完成
+
+- **WHEN** 请求超过 120 秒才产生首段但在 420 秒内产生 `message_stop`
+- **THEN** 验证 MUST 标记为“慢但完成”，不得伪报为首段及时
+
+#### Scenario: 超过 420 秒仍未完成
+
+- **WHEN** 请求在 420 秒内未出现正常终止事件
+- **THEN** 测试 MUST 主动 abort 并记录未完成原因
+- **AND** 结果 MUST NOT 被标记为 LLM 请求成功
