@@ -46,7 +46,14 @@ export default defineNuxtConfig({
 		},
 	},
 
+	ogImage: {
+		enabled: false,
+	},
+
 	nitro: {
+		prerender: {
+			ignore: ["/api/_content/"],
+		},
 		...(process.platform === "win32"
 			? {
 					externals: {
