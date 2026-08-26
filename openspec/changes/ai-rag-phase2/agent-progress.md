@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-27；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成。
+- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成；`2.2.4` 本地完整构建已通过，生产部署仍在排队监听。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -33,6 +33,7 @@
 - 最终收口：Nitro v3 `vercel.functions.supportsCancellation=true` 已生成并回读 `.vc-config.json`；API Production `dpl_7ZY4vduHngqgvmMauKgLmwrsHXfh` READY。Chrome 生产 `/v1/chat` 来源链接与真实 `sourceUrl#headingAnchor` 跳转通过，停止后文本/来源保留通过。Vercel runtime logs 取得 `/v1/messages` 成功流 `response 200`、`message_start`、`content_block_delta`、`message_stop`，以及停止流 `abort` + `AbortError`；生产上游证据闭环完成。
 - 2026-08-27 真实评测：数据库只读计数为 248 documents / 4034 chunks / 248 sources，模型标识 `@cf/baai/bge-m3`。固定 10 题在现有索引上运行 lexical/vector/hybrid，topK 5/10/15 的 vector 与 hybrid 命中率均为 0.8，关键词覆盖率分别为 0.6333/0.6333/0.7；lexical 为 0。HNSW 与 exact Top-5 一致 8/10，q1/q5 存在排序差异。原始 JSON 与可读报告见 `evidence/2026-08-27-real-evaluation.{json,md}`。
 - 2026-08-27 生产部署监听：`dpl_EMX9s3AZthx4MveQdgaT8gn8rq7L` 从 Queued → Building → Ready，checkout SHA `4b066da`；Vercel build log 含 Nitro `nodejs22.x`、`.vercel/output` 搬运和 `Deployment completed`。
+- 2026-08-27 兼容性修复：根 `package.json` 增加 `pnpm.overrides.nuxt-og-image=5.1.9`，撤销 `ai-vue-doc` 中临时的 `prerender.ignore`/`ogImage.enabled=false`；`pnpm why` 验证 Nuxt 3 线 h3 为 1.15.11，targeted build 与根级 `pnpm run docs:build` 均退出码 0，9/9 tasks successful。证据见 `evidence/2026-08-27-build.md`。
 
 ## 4. 下一步
 
