@@ -1,3 +1,4 @@
+import { getActiveRagLlmConfig, type RagLlmProviderConfig } from "../../src/llm-config";
 import type { RagNitroConfig } from "../../src/runtime-config";
 import type { ChatDependencies, ChatSource } from "../contracts/chat";
 import { hybridSearch, type HybridSearchItem } from "../search/hybrid-search";
@@ -38,7 +39,10 @@ type RagSyncFactoryInput = {
 export type RagRuntimeProviderFactories = {
 	createDatabase: (input: { databaseUrl: string }) => RagDatabaseProvider | Promise<RagDatabaseProvider>;
 	createEmbedding: (input: { model: string }) => RagEmbeddingProvider | Promise<RagEmbeddingProvider>;
-	createModel: (input: { apiKey: string; model: string }) => RagModelProvider | Promise<RagModelProvider>;
+	createModel: (input: {
+		apiKey: string;
+		provider: RagLlmProviderConfig & { id: "openai" | "anthropic" };
+	}) => RagModelProvider | Promise<RagModelProvider>;
 	createSync: (input: RagSyncFactoryInput) => RagSyncProvider | Promise<RagSyncProvider>;
 };
 
@@ -93,7 +97,9 @@ function requiredConfigMissing(config: RagRuntimeConfig): RagRuntimeRequirement[
 	const missing: RagRuntimeRequirement[] = [];
 	if (!config.databaseUrl.trim()) missing.push("database");
 	if (!config.embeddingModel.trim()) missing.push("embedding");
-	if (!config.openaiApiKey.trim() || !config.chatModel.trim()) missing.push("model");
+	const activeProvider = getActiveRagLlmConfig();
+	const activeApiKey = config[`${activeProvider.id}ApiKey`];
+	if (!activeApiKey?.trim()) missing.push("model");
 	return missing;
 }
 
@@ -151,7 +157,10 @@ export async function createRagRuntimeContext(
 	);
 	const model = assertProviderFunction(
 		await initializeProvider("createModel", () =>
-			factories.createModel({ apiKey: config.openaiApiKey, model: config.chatModel }),
+			factories.createModel({
+				apiKey: config[`${getActiveRagLlmConfig().id}ApiKey`],
+				provider: getActiveRagLlmConfig(),
+			}),
 		),
 		"createModel",
 		["stream"],

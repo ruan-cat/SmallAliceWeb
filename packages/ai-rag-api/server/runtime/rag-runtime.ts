@@ -1,17 +1,17 @@
 import { resolve } from "node:path";
 import postgres from "postgres";
+import { resolveActiveRagLlmConfig } from "../../src/llm-config";
 import { createCloudflareEmbeddingProvider } from "../providers/cloudflare-embedding";
 import { createPostgresSearchProvider } from "../search/postgres-search";
 import { createKnowledgeSyncService, type SyncSqlExecutor } from "../services/knowledge-sync";
 import { scanKnowledgeSources } from "../services/knowledge-source";
+import { createAnthropicChatStream } from "../services/anthropic-chat";
 import { createOpenAiChatStream } from "../services/openai-chat";
 import { createRagRuntimeContext, type RagRuntimeContext, type RagRuntimeProviderFactories } from "./rag-assembly";
 
 const requiredConfigFields = [
 	"databaseUrl",
 	"syncDatabaseUrl",
-	"openaiApiKey",
-	"chatModel",
 	"embeddingModel",
 	"cloudflareAccountId",
 	"cloudflareApiToken",
@@ -27,8 +27,7 @@ export type ResolvedRagConfig = {
 	cloudflareAccountId: string;
 	cloudflareApiToken: string;
 	openaiApiKey: string;
-	baseUrl: string;
-	chatModel: string;
+	anthropicApiKey: string;
 	knowledgeSyncToken: string;
 	cronSecret: string;
 	knowledgeSourceRoot: string;
@@ -55,8 +54,7 @@ export function resolveRagRuntimeConfig(raw: Record<string, unknown>): ResolvedR
 		cloudflareAccountId: String(raw.cloudflareAccountId ?? ""),
 		cloudflareApiToken: String(raw.cloudflareApiToken ?? ""),
 		openaiApiKey: String(raw.openaiApiKey ?? ""),
-		baseUrl: String(raw.baseUrl ?? ""),
-		chatModel: String(raw.chatModel ?? ""),
+		anthropicApiKey: String(raw.anthropicApiKey ?? ""),
 		knowledgeSyncToken: String(raw.knowledgeSyncToken ?? ""),
 		cronSecret: String(raw.cronSecret ?? ""),
 		knowledgeSourceRoot: String(raw.knowledgeSourceRoot ?? ""),
@@ -125,6 +123,7 @@ export async function createRagRuntime(
 ): Promise<RagRuntimeContext & { close: () => Promise<void> }> {
 	const missing = requiredConfigFields.filter((field) => !config[field].trim());
 	if (missing.length) throw new Error(`RAG 运行时配置不完整，缺失字段: ${missing.join(", ")}`);
+	resolveActiveRagLlmConfig(config);
 	const repositoryRoot = resolve(config.repositoryRoot || process.cwd());
 	const sourceRoot = resolve(config.knowledgeSourceRoot || resolve(repositoryRoot, "docs", "docx"));
 	if (sourceRoot !== resolve(repositoryRoot, "docs", "docx"))
@@ -143,7 +142,12 @@ export async function createRagRuntime(
 		createEmbedding: () => ({
 			createEmbedding: (query) => embedding.createEmbedding(query).then((value) => [...value]),
 		}),
-		createModel: () => ({ stream: createOpenAiChatStream(config) }),
+		createModel: ({ apiKey, provider }) => ({
+			stream:
+				provider.id === "anthropic"
+					? createAnthropicChatStream({ ...provider, apiKey })
+					: createOpenAiChatStream({ ...provider, apiKey }),
+		}),
 		createSync: () =>
 			createKnowledgeSyncService({
 				executor: createReservedSyncExecutor(

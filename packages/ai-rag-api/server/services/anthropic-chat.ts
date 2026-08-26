@@ -1,23 +1,17 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { StreamData, streamText } from "ai";
 import type { RagLlmProviderConfig } from "../../src/llm-config";
 import type { ChatDependencies } from "../contracts/chat";
 
-/** 规范化 OpenAI 兼容服务地址，确保 SDK 使用带 `/v1` 的 API 根路径。 */
-export function normalizeOpenAIBaseUrl(baseUrl: string): string {
-	const normalized = baseUrl.trim().replace(/\/+$/, "");
-	if (!normalized) return "";
-	return normalized.endsWith("/v1") ? normalized : `${normalized}/v1`;
-}
+type AnthropicChatConfig = RagLlmProviderConfig & {
+	apiKey: string;
+};
 
-/** 以 Nitro 私有运行时配置创建聊天流适配器，不读取裸环境变量。 */
-export function createOpenAiChatStream(config: RagLlmProviderConfig & { apiKey: string }): ChatDependencies["stream"] {
+/** 以 Anthropic Messages provider 创建规范化的 AI SDK 聊天流。 */
+export function createAnthropicChatStream(config: AnthropicChatConfig): ChatDependencies["stream"] {
 	if (!config.apiKey || !config.baseUrl || !config.model) throw new Error("RAG chat provider is not configured");
 
-	const provider = createOpenAI({
-		apiKey: config.apiKey,
-		baseURL: normalizeOpenAIBaseUrl(config.baseUrl),
-	});
+	const provider = createAnthropic({ apiKey: config.apiKey, baseURL: config.baseUrl });
 	return (request) => {
 		const data = new StreamData();
 		for (const source of request.sources) {
@@ -33,7 +27,7 @@ export function createOpenAiChatStream(config: RagLlmProviderConfig & { apiKey: 
 		data.close();
 
 		return streamText({
-			model: provider.responses(config.model),
+			model: provider.messages(config.model),
 			system: request.system,
 			prompt: request.message,
 			abortSignal: request.abortSignal,
