@@ -4,6 +4,8 @@ import nitroConfig from "../nitro.config";
 describe("RAG API runtime configuration", () => {
 	test("uses Nitro v3 configuration with private RAG settings", () => {
 		expect(nitroConfig.compatibilityDate).toBe("2024-09-19");
+		expect(nitroConfig.serverDir).toBe("server");
+		expect(nitroConfig.imports).toBe(false);
 		expect(nitroConfig.runtimeConfig).toMatchObject({
 			databaseUrl: "",
 			syncDatabaseUrl: "",
@@ -11,7 +13,7 @@ describe("RAG API runtime configuration", () => {
 			cloudflareAccountId: "",
 			cloudflareApiToken: "",
 			openaiApiKey: "",
-			chatModel: "",
+			anthropicApiKey: "",
 			public: { apiBase: "/v1" },
 		});
 		expect(nitroConfig.rolldownConfig).toMatchObject({ output: { inlineDynamicImports: true } });

@@ -26,8 +26,7 @@ function makeConfig(overrides: Partial<RagRuntimeConfig> = {}): RagRuntimeConfig
 		syncDatabaseUrl: "postgres://sync-fake",
 		embeddingModel: "embedding-fake",
 		openaiApiKey: "key-fake",
-		baseUrl: "",
-		chatModel: "chat-fake",
+		anthropicApiKey: "anthropic-key-fake",
 		knowledgeSyncToken: "sync-fake",
 		cronSecret: "cron-fake",
 		public: { apiBase: "/v1" },
@@ -83,7 +82,7 @@ describe("RAG runtime assembly", () => {
 					return { createEmbedding: async () => [0.1, 0.2] };
 				},
 				createModel: async (input) => {
-					calls.push("model:" + input.model);
+					calls.push("model:" + input.provider.id + ":" + input.provider.model + ":" + input.apiKey);
 					return {
 						stream: () =>
 							new Response('0:"answer"\n', {
@@ -101,7 +100,12 @@ describe("RAG runtime assembly", () => {
 			}),
 		);
 
-		expect(calls).toEqual(["database:postgres://fake", "embedding:embedding-fake", "model:chat-fake", "sync"]);
+		expect(calls).toEqual([
+			"database:postgres://fake",
+			"embedding:embedding-fake",
+			"model:anthropic:claude-sonnet-5[1m]:anthropic-key-fake",
+			"sync",
+		]);
 		expect(context.config).toEqual({ apiBase: "/v1", syncToken: "sync-fake", cronSecret: "cron-fake" });
 		expect(() => ((context.config as unknown as { apiBase: string }).apiBase = "/other")).toThrow();
 		expect(await context.search("RAG", { limit: 1, k: 60 })).toHaveLength(1);
@@ -221,7 +225,7 @@ describe("RAG runtime assembly", () => {
 	test.each([
 		["database", { databaseUrl: "" }],
 		["embedding", { embeddingModel: "" }],
-		["model", { chatModel: "" }],
+		["model", { anthropicApiKey: "" }],
 	] as const)("缺少 %s 配置时不创建半成品 context，路由继续返回 503", async (requirement, override) => {
 		let factoryCalls = 0;
 		const factories = makeFactories({

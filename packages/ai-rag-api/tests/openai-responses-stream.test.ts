@@ -25,15 +25,10 @@ const responsesSse = [
 
 function createConfig() {
 	return {
-		databaseUrl: "",
-		syncDatabaseUrl: "",
-		embeddingModel: "",
-		openaiApiKey: "test-key",
-		baseUrl: "https://api.code-tab.com",
-		chatModel: "gpt-5.6-luna",
-		knowledgeSyncToken: "",
-		cronSecret: "",
-		public: { apiBase: "/v1" },
+		apiKey: "test-key",
+		protocol: "openai-responses" as const,
+		baseUrl: "https://api.code-tab.com/v1",
+		model: "gpt-5.6-luna",
 	};
 }
 

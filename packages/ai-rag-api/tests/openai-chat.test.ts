@@ -24,15 +24,10 @@ describe("OpenAI 聊天流适配器", () => {
 	test("缺少 Nitro 私有配置时拒绝创建适配器且不请求模型", () => {
 		expect(() =>
 			createOpenAiChatStream({
-				databaseUrl: "",
-				syncDatabaseUrl: "",
-				embeddingModel: "",
-				openaiApiKey: "",
-				baseUrl: "",
-				chatModel: "",
-				knowledgeSyncToken: "",
-				cronSecret: "",
-				public: { apiBase: "/v1" },
+				apiKey: "",
+				protocol: "openai-responses",
+				baseUrl: "https://api.code-tab.com/v1",
+				model: "gpt-test",
 			}),
 		).toThrow("RAG chat provider is not configured");
 	});
@@ -52,15 +47,10 @@ describe("OpenAI 聊天流适配器", () => {
 		ai.streamText.mockReturnValue({ toDataStreamResponse });
 
 		const stream = createOpenAiChatStream({
-			databaseUrl: "",
-			syncDatabaseUrl: "",
-			embeddingModel: "",
-			openaiApiKey: "test-key",
-			baseUrl: "",
-			chatModel: "gpt-test",
-			knowledgeSyncToken: "",
-			cronSecret: "",
-			public: { apiBase: "/v1" },
+			apiKey: "test-key",
+			protocol: "openai-responses",
+			baseUrl: "https://api.code-tab.com/v1",
+			model: "gpt-test",
 		});
 		const abortController = new AbortController();
 		const result = stream({
