@@ -34,4 +34,9 @@ export default defineConfig({
 			cors: true,
 		},
 	},
+	vercel: {
+		functions: {
+			supportsCancellation: true,
+		},
+	},
 });
