@@ -70,8 +70,9 @@
 推送 `main` 后，先用目标 deployment ID 或 URL 等待部署收敛，再读取构建日志；不要只看 Dashboard 的瞬时状态，也不要把 `QUEUED` 或 `BUILDING` 当作完成。
 
 ```powershell
-pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m
-pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs
+vercel --version
+vercel inspect <deployment-id-or-url> --wait --timeout 3m
+vercel inspect <deployment-id-or-url> --logs
 ```
 
 只有 `inspect --wait` 返回 `status Ready`，且 `inspect --logs` 显示 Git checkout SHA、构建完成与部署完成，才进入 Production URL 的 Google Chrome 验收。命令输出不得包含 API key、数据库连接串或其他凭据。

@@ -150,7 +150,7 @@
   - 2026-08-25 的 Responses SSE 无事件记录保留为历史证据；它不代表 Anthropic Messages 已失败，也不构成新模型的可用性结论。
   - 2026-08-26 修复前 agent-browser 证据：`https://drill.ruan-cat.com/` 生产页面可打开，AI 对话真实请求发送至 Nitro `/v1/chat` 并返回流式回答；“停止生成”入口出现，点击后状态收敛且已收内容保留。来源以内联 `reference-node` 显示，但点击后 URL 未跳转、DOM 未生成 `.ai-chat__source` 链接；该证据已被后续来源帧绑定修复和新 Production 验收 supersede。
   - 2026-08-26 最终生产证据：Nitro `nitro.config.ts` 的 `vercel.functions.supportsCancellation=true` 已由 `build:vercel` 产物 `.vc-config.json` 回读确认；Production deployment `dpl_7ZY4vduHngqgvmMauKgLmwrsHXfh` READY。Chrome 生产 `/v1/chat` 真实成功流显示来源链接并可跳转到 `.html#rag-heading-*`，停止按钮出现且停止后已接收文本与来源保留。Vercel runtime logs 脱敏记录成功流的 `/v1/messages` `response=200`、`message_start`、多条 `content_block_delta`、`message_stop`；停止流记录 `abort`、`stream_error=AbortError`，对应 `POST /v1/chat 200`。2.1.4 门禁通过。
-  - 生产部署监听固定流程：`pnpm dlx vercel@latest inspect <deployment-id-or-url> --wait --timeout 3m`，随后 `pnpm dlx vercel@latest inspect <deployment-id-or-url> --logs`；只有 `status Ready`、Git checkout SHA 匹配且日志显示构建/部署完成，才进入 Google Chrome 验收。
+  - 生产部署监听固定流程：先执行本机全局 CLI `vercel --version` 确认版本，再执行 `vercel inspect <deployment-id-or-url> --wait --timeout 3m`，随后 `vercel inspect <deployment-id-or-url> --logs`；禁止为验收临时执行 `pnpm dlx vercel@latest` 下载 latest，避免引入新的 CLI 依赖漂移。只有 `status Ready`、Git checkout SHA 匹配且日志显示构建/部署完成，才进入 Google Chrome 验收。
 
 ### 2.2 P1：验证、触发与调优
 
