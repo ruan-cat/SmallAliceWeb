@@ -41,3 +41,11 @@
 
 1. 继续 `2.2.3`：为 300/30/5、500/50/10、800/100/15 建立独立重切分/重嵌入的可复核对照，不能用仅改变 topK 的结果替代。
 2. 完成 `2.2.4`：fresh docs build、Git 集成部署回归，并在最新 Production alias 上用 Google Chrome 复测 search/chat、来源跳转与停止保留。
+
+## 5. 暂停与恢复
+
+- 暂停原因：用户因 Cloudflare embedding 额度暂时不足，主动暂停真实参数评测；本次暂停不代表 `2.2.3` 或 `2.2.4` 完成。
+- 恢复入口：先读取本节、`tasks.md` 和 `scripts/run-parameter-evaluation.ts`，确认额度后再继续；不要重做已通过的本地完整构建和 Vercel READY 核验。
+- 评测恢复前置：先为 Cloudflare HTTP 400 增加/取得脱敏错误体或确认单批输入大小限制，再决定批次大小；继续使用 PostgreSQL TEMP TABLE，禁止写入正式 `documents`/`chunks`。
+- 部署工具纪律：使用本机全局 `vercel --version`（当前已验证 `58.7.1`）和 `vercel inspect`；禁止为状态监听执行 `pnpm dlx vercel@latest`。
+- 当前未提交用户文件：`prompts/01.prompts.md`，不得暂存、回退或覆盖。
