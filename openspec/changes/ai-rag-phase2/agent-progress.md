@@ -2,8 +2,8 @@
 
 ## 1. 当前 checkpoint
 
-- 日期：2026-08-26；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成。
+- 日期：2026-08-27；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
+- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -31,8 +31,10 @@
 - 本轮修复尝试：新增 `toSources()` 展开嵌套 AI SDK data 帧，并以 HTTP data-stream 回归覆盖，`ai-vitepress-plugins` 测试 31/31、typecheck、build 均通过。Chrome 生产页在修复部署前仍观察到 `reference-node` 存在但 `.ai-chat__source` 为 0；不能将本地 GREEN 外推为生产修复完成。
 - 最新 Git Integration Production deployment `dpl_6beFTJ9U1e3MR2AH4QwqoyaEDyxb` 已由 `main` SHA `e30bb8f731c16dd3462a866c3bf49114b12aac4e` 触发，但当前仍为 `QUEUED` 且无 build log，需 READY 后重新用 Google Chrome 复测。
 - 最终收口：Nitro v3 `vercel.functions.supportsCancellation=true` 已生成并回读 `.vc-config.json`；API Production `dpl_7ZY4vduHngqgvmMauKgLmwrsHXfh` READY。Chrome 生产 `/v1/chat` 来源链接与真实 `sourceUrl#headingAnchor` 跳转通过，停止后文本/来源保留通过。Vercel runtime logs 取得 `/v1/messages` 成功流 `response 200`、`message_start`、`content_block_delta`、`message_stop`，以及停止流 `abort` + `AbortError`；生产上游证据闭环完成。
+- 2026-08-27 真实评测：数据库只读计数为 248 documents / 4034 chunks / 248 sources，模型标识 `@cf/baai/bge-m3`。固定 10 题在现有索引上运行 lexical/vector/hybrid，topK 5/10/15 的 vector 与 hybrid 命中率均为 0.8，关键词覆盖率分别为 0.6333/0.6333/0.7；lexical 为 0。HNSW 与 exact Top-5 一致 8/10，q1/q5 存在排序差异。原始 JSON 与可读报告见 `evidence/2026-08-27-real-evaluation.{json,md}`。
+- 2026-08-27 生产部署监听：`dpl_EMX9s3AZthx4MveQdgaT8gn8rq7L` 从 Queued → Building → Ready，checkout SHA `4b066da`；Vercel build log 含 Nitro `nodejs22.x`、`.vercel/output` 搬运和 `Deployment completed`。
 
 ## 4. 下一步
 
-1. 执行 `2.1.4`：在真实生产文档站完成 Anthropic 流式问答、停止生成、已收内容保留与来源跳转验收。
-2. 触发并核验 Nitro Git deployment 与 checkout SHA，再完成生产 API 与可见浏览器验收。
+1. 继续 `2.2.3`：为 300/30/5、500/50/10、800/100/15 建立独立重切分/重嵌入的可复核对照，不能用仅改变 topK 的结果替代。
+2. 完成 `2.2.4`：fresh docs build、Git 集成部署回归，并在最新 Production alias 上用 Google Chrome 复测 search/chat、来源跳转与停止保留。
