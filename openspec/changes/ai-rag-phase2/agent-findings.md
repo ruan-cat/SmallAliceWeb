@@ -20,6 +20,8 @@
 - **resolved**：生产 `/v1/chat` 已返回 AI SDK Data Stream 文本帧并以 `finishReason: stop` 收敛；真实上游 Anthropic 事件时间线已通过本地直接请求取得。剩余门禁转入 `2.1.4` 的生产浏览器停止与来源跳转。
 - **resolved**：三环境 `NITRO_ANTHROPIC_API_KEY` 已统一为 Non-sensitive 并逐环境回读；首次 401 由本地 `.env.local` 引号解析错误导致，修正解析后直连请求 HTTP 200 且事件完整，不得将初次 401 解释为上游协议失败。
 - **active**：agent-browser 生产页面已验证 `/v1/chat` 流式回答、停止按钮和停止后内容保留；来源以内联 `reference-node` 呈现，但点击无导航且 DOM 没有 `.ai-chat__source`，来源跳转失败。需修复来源帧到 UI 链接的桥接后再重跑 2.1.4。
+- **active**：Google Chrome 扩展已连接并复现同一来源问题：`.reference-node` 数量为 1、`.ai-chat__source` 数量为 0，点击后 URL 仍为 `https://drill.ruan-cat.com/`。本地 HTTP 回归 31/31 通过，只证明嵌套帧兼容逻辑，尚未证明真实浏览器消息状态桥接修复。
+- **active**：Production Git deployment `dpl_6beFTJ9U1e3MR2AH4QwqoyaEDyxb` 对应 main SHA `e30bb8f731c16dd3462a866c3bf49114b12aac4e`，状态长时间为 `QUEUED` 且无 build log；未 READY 前禁止把 Production alias 或浏览器修复状态标记为完成。
 
 ## 2. 固定约束
 

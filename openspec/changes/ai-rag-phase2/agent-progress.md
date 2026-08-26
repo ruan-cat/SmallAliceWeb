@@ -28,6 +28,8 @@
 - 旧 `gpt-5.6-luna` Responses SSE 三次无事件记录仅是历史证据，不能推断 Anthropic Messages 可用或不可用。
 - 本轮外部核对：Vercel 项目 `smallalice-docs-ai-nitro-api` 最新 Production deployment `dpl_8YYreC2s6RCTUV4UKb1CCsCxUWs4` 为 READY，checkout SHA 为 `1160f204207dc49ff93c0f194549194eaddd6751`；运行日志显示 `/v1/search` 与 `/v1/chat` 均 HTTP 200。Vercel MCP 不提供环境变量值读取接口。
 - 阻塞解释：三环境类型策略已统一，Development 普通变量可安全拉取；首次 401 根因是 `.env.local` 引号解析错误，修正后 Anthropic 直连 PASS。生产浏览器停止与内容保留已通过；当前剩余门禁是来源跳转，以及最新文档站 Git deployment 的正式 Production alias 验证。
+- 本轮修复尝试：新增 `toSources()` 展开嵌套 AI SDK data 帧，并以 HTTP data-stream 回归覆盖，`ai-vitepress-plugins` 测试 31/31、typecheck、build 均通过。Chrome 生产页在修复部署前仍观察到 `reference-node` 存在但 `.ai-chat__source` 为 0；不能将本地 GREEN 外推为生产修复完成。
+- 最新 Git Integration Production deployment `dpl_6beFTJ9U1e3MR2AH4QwqoyaEDyxb` 已由 `main` SHA `e30bb8f731c16dd3462a866c3bf49114b12aac4e` 触发，但当前仍为 `QUEUED` 且无 build log，需 READY 后重新用 Google Chrome 复测。
 
 ## 4. 下一步
 
