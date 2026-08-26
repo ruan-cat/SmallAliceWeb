@@ -67,7 +67,6 @@ describe("POST /v1/chat 合同", () => {
 			},
 		);
 
-		expect(result).toBe(dataStreamResponse);
 		expect(result).toBeInstanceOf(Response);
 		if (!(result instanceof Response) || !streamed) throw new Error("成功分支应返回流响应并调用模型边界");
 		expect(result.headers.get("content-type")).toBe("text/plain; charset=utf-8");
@@ -77,6 +76,7 @@ describe("POST /v1/chat 合同", () => {
 			sourceHref: "/docx/guide.html#rag-heading-x",
 		});
 		expect(streamed.system).toContain("[1] RAG 使用检索结果作为回答上下文。");
+		expect(await result.text()).toBe('0:"回答"\n');
 	});
 });
 
@@ -113,7 +113,6 @@ describe("POST /v1/chat Nitro 路由", () => {
 			},
 		} as never);
 
-		expect(response).toBe(streamResponse);
 		if (!(response instanceof Response)) throw new Error("成功路由应返回原生流响应");
 		expect(response.headers.get("x-vercel-ai-data-stream")).toBe("v1");
 		expect(await response.text()).toBe('0:"完整回答"\n');

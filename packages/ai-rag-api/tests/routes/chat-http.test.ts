@@ -80,4 +80,39 @@ describe("POST /v1/chat 真实 Nitro/H3 HTTP harness", () => {
 		});
 		expect(streamed?.system).toContain("[1] RAG source");
 	});
+
+	test("下游取消 data stream 时中止上游聊天 signal", async () => {
+		let upstreamSignal: AbortSignal | undefined;
+		const pendingStream = new ReadableStream<Uint8Array>({});
+		const app = createApp();
+		app.use(
+			"/v1/chat",
+			defineEventHandler((event) => {
+				event.context.rag = {
+					retrieve: async () => [],
+					stream: (request: ChatStreamRequest) => {
+						upstreamSignal = request.abortSignal;
+						return new Response(pendingStream, {
+							headers: { "content-type": "text/plain; charset=utf-8" },
+						});
+					},
+				};
+			}),
+		);
+		app.use("/v1/chat", chatRoute);
+
+		const response = await app.fetch(
+			new Request("http://localhost/v1/chat", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ message: "取消测试" }),
+			}),
+		);
+		const reader = response.body?.getReader();
+		if (!reader) throw new Error("测试流未返回 body");
+
+		await reader.cancel();
+
+		expect(upstreamSignal?.aborted).toBe(true);
+	});
 });
