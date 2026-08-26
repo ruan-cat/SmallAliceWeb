@@ -437,7 +437,7 @@ PNG IHDR 大端序：测试首轮 LE 误读假失败
 
 /goal 完成 `docs\superpowers\specs\2026-08-20-ai-chat-completion-attention-design.md` 和 `docs\superpowers\plans\2026-08-20-ai-chat-completion-attention-plan.md` 的任务。
 
-## 006 <!-- TODO: 2026-8-24 codex 正在做 --> 持续推进二期 AI 项目改造
+## 006 <!-- 任务接力到其他的章节 openspec\changes\ai-rag-phase2 2026-8-24 codex 正在做 --> 持续推进二期 AI 项目改造
 
 <!-- 完成openspec改造后继续才 先用 do-long-task 设计一个合适的主驱动提示词。
  已完成openspec的任务工件改造
@@ -527,7 +527,7 @@ Nitro 的 streamText 需要改成 Responses provider，或直接用 fetch 封装
 - 你的测试时间是不是不够，给予 2 分钟的时间来测试一个完整的闭环，行不行？
 - 如果我要求你现在启动本地的 docs 和 nitro 接口，在本地完成接口请求，你这边能完成测试么？还是一定要生产环境才能完成测试？
 
-### 换接口请求模型为 `claude-sonnet-5[1m]` ，并做出其他相应的改动
+### <!-- 已完成 换成codex订阅来做 正在做 --> 换接口请求模型为 `claude-sonnet-5[1m]` ，并做出其他相应的改动
 
 我们用的 baseUrl，这个中转站平台的接口本来就慢的要死。这样，我要求你做好差异化的配置；
 你听好了，我们之前给你的一个配置是 ChatGPT luna 模型，返回方式是 response 。
