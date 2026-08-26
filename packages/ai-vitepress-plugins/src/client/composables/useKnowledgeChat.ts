@@ -52,6 +52,13 @@ function toSource(frame: unknown): AiChatSource | undefined {
 	};
 }
 
+/** 展开 AI SDK data 帧可能产生的嵌套数组，统一提取来源。 */
+function toSources(frame: unknown): AiChatSource[] {
+	if (Array.isArray(frame)) return frame.flatMap(toSources);
+	const source = toSource(frame);
+	return source ? [source] : [];
+}
+
 /** 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。 */
 export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const chat = useChat({
@@ -69,12 +76,7 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	const activeRequest = ref<ActiveRequest>();
 	let nextRequestId = 0;
 	const sourcesByAssistantMessageId = ref<Record<string, AiChatSource[]>>({});
-	const sources = computed(() =>
-		(chat.data.value ?? []).flatMap((frame) => {
-			const source = toSource(frame);
-			return source ? [source] : [];
-		}),
-	);
+	const sources = computed(() => (chat.data.value ?? []).flatMap(toSources));
 	const targetAssistantMessageId = computed(() => {
 		const request = activeRequest.value;
 		if (!request) return;
