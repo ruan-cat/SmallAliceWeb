@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 const ai = vi.hoisted(() => ({
 	streamText: vi.fn(),
@@ -11,7 +11,11 @@ const anthropic = vi.hoisted(() => ({
 vi.mock("ai", () => ai);
 vi.mock("@ai-sdk/anthropic", () => anthropic);
 
-import { createAnthropicChatStream } from "../server/services/anthropic-chat";
+import { createAnthropicChatStream, createAnthropicObservedFetch } from "../server/services/anthropic-chat";
+
+afterEach(() => {
+	vi.unstubAllGlobals();
+});
 
 describe("Anthropic Messages 聊天流适配器", () => {
 	test("使用 provider base URL 和模型创建 Messages 流，并保留来源帧", () => {
@@ -53,10 +57,13 @@ describe("Anthropic Messages 聊天流适配器", () => {
 			],
 		});
 
-		expect(anthropic.createAnthropic).toHaveBeenCalledWith({
-			apiKey: "anthropic-test-key",
-			baseURL: "https://api.code-tab.com/v1",
-		});
+		expect(anthropic.createAnthropic).toHaveBeenCalledWith(
+			expect.objectContaining({
+				apiKey: "anthropic-test-key",
+				baseURL: "https://api.code-tab.com/v1",
+				fetch: expect.any(Function),
+			}),
+		);
 		expect(messages).toHaveBeenCalledWith("claude-sonnet-5[1m]");
 		expect(append).toHaveBeenCalledWith({
 			type: "source",
@@ -82,5 +89,55 @@ describe("Anthropic Messages 聊天流适配器", () => {
 				model: "claude-sonnet-5[1m]",
 			}),
 		).toThrow("RAG chat provider is not configured");
+	});
+
+	test("观察上游 Messages SSE 生命周期且不记录响应正文", async () => {
+		const events: Array<Record<string, unknown>> = [];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(
+						[
+							"event: message_start",
+							'data: {"type":"message_start"}',
+							"",
+							"event: content_block_delta",
+							'data: {"type":"content_block_delta","delta":{"text":"secret"}}',
+							"",
+							"event: message_stop",
+							'data: {"type":"message_stop"}',
+							"",
+						].join("\n"),
+					),
+			),
+		);
+		const observedFetch = createAnthropicObservedFetch((event) => events.push(event));
+		const response = await observedFetch("https://api.code-tab.com/v1/messages");
+
+		expect(await response.text()).toContain("secret");
+		expect(events.map((event) => event.event)).toEqual([
+			"request_start",
+			"response",
+			"message_start",
+			"content_block_delta",
+			"message_stop",
+		]);
+		expect(events.every((event) => !Object.hasOwn(event, "body"))).toBe(true);
+	});
+
+	test("请求中止时记录 abort 生命周期事件", async () => {
+		const events: Array<Record<string, unknown>> = [];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => new Response("event: message_start\ndata: {}\n")),
+		);
+		const controller = new AbortController();
+		const observedFetch = createAnthropicObservedFetch((event) => events.push(event));
+
+		await observedFetch("https://api.code-tab.com/v1/messages", { signal: controller.signal });
+		controller.abort();
+
+		expect(events.map((event) => event.event)).toContain("abort");
 	});
 });
