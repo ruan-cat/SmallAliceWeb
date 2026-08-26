@@ -1,9 +1,9 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
-import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
+import { collectSourceFrames, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
-type StreamMode = "complete" | "abort" | "nested-source";
+type StreamMode = "complete" | "abort" | "nested-source" | "many-sources";
 type RequestRecord = { body: string; aborted: boolean };
 
 type TestServer = {
@@ -61,6 +61,15 @@ async function createTestServer(mode: StreamMode): Promise<TestServer> {
 				res.write(
 					'2:[[ {"type":"source","data":{"id":"source-nested","label":"嵌套指南","sourceHref":"/nested"}} ]]\n',
 				);
+				res.end();
+				return;
+			}
+			if (mode === "many-sources") {
+				for (const index of [1, 2, 3, 4, 5]) {
+					res.write(
+						`2:[{"type":"source","data":{"id":"source-${index}","label":"指南${index}","sourceHref":"/guide-${index}"}}]\n`,
+					);
+				}
 				res.end();
 				return;
 			}
@@ -155,6 +164,40 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		expect(chat.messages.value.at(-1)?.sources).toEqual([
 			{ id: "source-nested", label: "嵌套指南", sourceHref: "/nested" },
 		]);
+	});
+
+	test("保留多个独立来源帧并绑定到同一助手消息", async () => {
+		const server = await createTestServer("many-sources");
+		servers.push(server);
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-many-sources", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-many", role: "user", content: "多来源" });
+
+		expect(chat.messages.value.at(-1)?.sources).toHaveLength(5);
+		expect(chat.messages.value.at(-1)?.sources?.at(-1)).toEqual({
+			id: "source-5",
+			label: "指南5",
+			sourceHref: "/guide-5",
+		});
+	});
+
+	test("从真实 fetch data stream 捕获多个来源帧", async () => {
+		const stream = new Response(
+			[1, 2, 3]
+				.map(
+					(index) =>
+						`2:[{"type":"source","data":{"id":"source-${index}","label":"指南${index}","sourceHref":"/guide-${index}"}}]\n`,
+				)
+				.join("") + '0:"回答"\n',
+		).body;
+		const captured: unknown[] = [];
+
+		await collectSourceFrames(stream!, (sources) => captured.push(...sources));
+
+		expect(captured).toHaveLength(3);
+		expect(captured.at(-1)).toEqual({ id: "source-3", label: "指南3", sourceHref: "/guide-3" });
 	});
 
 	test("调用 stop 时通过 AbortController 中止 HTTP 流并保留已接收内容", async () => {
