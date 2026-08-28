@@ -180,7 +180,7 @@
   - Windows 构建使用约 8 GiB Node heap 且串行；不得因两分钟级短时无输出并行重启。
   - 部署回归需用户授权且 2.1 已真实装配。
   - 完成证据：fresh build 退出码 0、部署 URL、生产 search/chat、来源跳转和真实浏览器证据。
-  - 2026-08-28 完成证据：main SHA `485655d` 对应 Vercel deployment `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` READY 并切换 `drill.ruan-cat.com`；Chrome/CDP 生产 search HTTP 200、chat 流式回答、停止保留与来源锚点跳转均通过，截图和日志见 `evidence/2026-08-28-production-browser.md`。
+  - 2026-08-28 完成证据：main SHA `a62f896` 对应 Vercel deployment `dpl_2svy5ahawCbShRYtsrswuKU7xzH5` READY 并切换 `drill.ruan-cat.com`；Chrome/CDP 生产 search HTTP 200、chat 流式回答、停止保留与来源锚点跳转均通过，截图和日志见 `evidence/2026-08-28-production-browser.md`。
 
 ### 2.3 P2：作品展示
 

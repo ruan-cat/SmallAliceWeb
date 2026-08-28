@@ -65,4 +65,4 @@
 - `git push origin main` 后，先用全局 `vercel ls small-alice-web-odse --prod --json` 找到 `meta.githubCommitSha` 等于当前 main HEAD 的 deployment，再用 `vercel inspect <deployment-url> --json` 或 `vercel inspect <deployment-url> --wait --json` 监听状态。
 - `QUEUED`/`BUILDING` 期间只记录状态和时间，不打开旧 alias 做验收；只有同 SHA deployment 变为 `READY` 且 alias 已更新，才进入 agent-browser Chrome/CDP 测试。
 - agent-browser Windows 启动必须带 `--args "--no-sandbox"`；浏览器验证顺序固定为页面加载 → `/v1/search` → `/v1/chat` 流式响应 → 停止后内容保留 → 来源链接跳转。每一步都要保存输出或截图证据。
-- 本次恢复点已闭环：main SHA `485655d` 对应 deployment `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` 已 READY，Chrome/CDP 生产验收已完成。
+- 本次恢复点已闭环：main SHA `a62f896` 对应 deployment `dpl_2svy5ahawCbShRYtsrswuKU7xzH5` 已 READY，Chrome/CDP 生产验收已完成。

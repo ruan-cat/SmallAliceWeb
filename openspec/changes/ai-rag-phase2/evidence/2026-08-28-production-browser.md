@@ -11,7 +11,7 @@ vercel inspect https://small-alice-web-odse-h1xxnddmd-ruancat-projects.vercel.ap
 ```
 
 - main HEAD：`485655d2cb20fdb95be791647d91d685e4f65b27`
-- Deployment：`dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH`
+- Deployment：`dpl_2svy5ahawCbShRYtsrswuKU7xzH5`
 - 状态：`READY`
 - alias：`https://drill.ruan-cat.com`
 - 构建：`pnpm install`、`pnpm run build`、Node `22.x`、输出 `docs/.vitepress/dist`
@@ -25,4 +25,4 @@ vercel inspect https://small-alice-web-odse-h1xxnddmd-ruancat-projects.vercel.ap
 - 点击停止后，已接收回答内容与参考资料导航仍保留。
 - 页面内执行 `fetch` 到 `https://smallalice-docs-ai-nitro-api.ruan-cat.com/v1/search`，返回 HTTP 200，`success=true`。
 - 点击参考资料链接后，URL 跳转到真实文档页并包含 `#rag-heading-moqEjZWsXbSGx18MYgHyokPn-U7Wl3gbbNf6gZJfpVI` 稳定锚点。
-- 截图：`2026-08-28-production-chat.png`。
+- 截图：`2026-08-28-production-chat.png`、`2026-08-28-production-chat-final.png`。
