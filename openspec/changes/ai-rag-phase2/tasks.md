@@ -169,11 +169,12 @@
   - 完成证据：本地一次同步、监听变更、POST、Cron 鉴权与同步记录。
   - 2026-08-24 完成证据：`rag:sync` 与 `rag:watch` 从本地 `NITRO_*` 环境构建与 Nitro plugin 同一 `RagRuntimeContext`，不调用 HTTP/token；watch 去抖/关闭回归通过。本地 dry-run 扫描 290 文件 / 6034 chunks / 0 失败；随后真实 CLI run 记录为 partial、扫描 290、写入 71 chunks，Development 数据库为 20 documents / 231 chunks。POST/Cron 继续复用既有 `handleSyncRequest` 鉴权回归；API 21 文件 / 81 用例、typecheck、Vercel bundle 与 strict validation 通过。
 
-- [ ] 2.2.3 [eval/docs] 固定题集真实评估与参数调优
+- [x] 2.2.3 [eval/docs] 固定题集真实评估与参数调优
   - 依赖 2.1.1–2.1.3。
   - lexical/vector/hybrid 对同一固定题集运行；记录命中率、关键词覆盖率、排名与检索 ID。
   - 比较 300/30/5、500/50/10、800/100/15 等参数集；HNSW 与精确向量检索对比；记录 Cloudflare BGE-M3 1024 维模型标识。
   - 评估结果必须落成可复核文档，不得只保留终端口头结论。
+  - 2026-08-28 完成证据：三档独立 TEMP TABLE 重切分/重嵌入均无 HTTP 400/413；`@cf/baai/bge-m3` 1024 维固定题集 lexical/vector/hybrid 与 HNSW/exact Top-5 对照已写入 `evidence/2026-08-28-real-parameter-evaluation.md` 及 JSON。
 
 - [ ] 2.2.4 [build/deploy/e2e] 完整 docs build 与 Git 集成部署回归
   - Windows 构建使用约 8 GiB Node heap 且串行；不得因两分钟级短时无输出并行重启。
@@ -210,9 +211,9 @@
   - 标准：能从文档检索相关内容并回答，具有可复核 demo/运行证据。
   - 当前：结构化 Chunk 已完成；历史 Chroma demo 无证据；真实闭环待 2.1。
 
-- [ ] M2 Hybrid Search
+- [x] M2 Hybrid Search
   - 标准：lexical + vector + hybrid 可真实比较，输出评估结果。
-  - 当前：离线合同/RRF/评估器已完成；真实索引评估待 2.2.3。
+  - 当前：离线合同/RRF/评估器与真实三档索引评估均已完成，包含 HNSW/exact 对照。
 
 - [ ] M3 完整问答系统
   - 标准：知识源同步 → 检索 → 流式回答 → 来源展示形成真实链路。

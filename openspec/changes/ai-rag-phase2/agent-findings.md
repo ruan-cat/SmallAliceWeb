@@ -22,6 +22,10 @@
 - **active**：agent-browser 生产页面已验证 `/v1/chat` 流式回答、停止按钮和停止后内容保留；来源以内联 `reference-node` 呈现，但点击无导航且 DOM 没有 `.ai-chat__source`，来源跳转失败。需修复来源帧到 UI 链接的桥接后再重跑 2.1.4。
 - **active**：Google Chrome 扩展已连接并复现同一来源问题：`.reference-node` 数量为 1、`.ai-chat__source` 数量为 0，点击后 URL 仍为 `https://drill.ruan-cat.com/`。本地 HTTP 回归 31/31 通过，只证明嵌套帧兼容逻辑，尚未证明真实浏览器消息状态桥接修复。
 - **active**：Production Git deployment `dpl_6beFTJ9U1e3MR2AH4QwqoyaEDyxb` 对应 main SHA `e30bb8f731c16dd3462a866c3bf49114b12aac4e`，状态长时间为 `QUEUED` 且无 build log；未 READY 前禁止把 Production alias 或浏览器修复状态标记为完成。
+- **active**：2026-08-28 `agent_browser_open` headed/headless 两次均无响应并在约 60 秒后终止；这是本机浏览器自动化启动门禁失败，不是生产页面通过或失败的功能结论。后续仍需使用可用的 headed Chrome/CDP 重新取得来源跳转、停止保留与网络证据。
+- **active**：2026-08-28 单条 `bge-m3` 中文 embedding 诊断返回 1024 维成功；Cloudflare 额度并非完全耗尽。50 chunks/12 题对照中 qwen3 vector Hit@5=9/12、bge-m3=8/12，但 hybrid 无提升，样本不足以触发全量迁移。后续应扩大代表性题集，并继续保留正式表隔离。
+- **active**：批量评测原先固定 100 条请求，可能触发接口 400。现已改为默认 25 条串行批次，并对 400/413 自动二分；该策略通过 96 个 API 测试与 typecheck，但真实全量评测尚未证明不再触发错误。
+- **resolved**：2026-08-28 三档全量参数评测均完成且无 400/413；已在 TEMP TABLE 建 HNSW 并完成 exact Top-5 对照，一致率为 8/10、9/10、9/10，`2.2.3` 验收证据齐全。
 
 ## 2. 固定约束
 

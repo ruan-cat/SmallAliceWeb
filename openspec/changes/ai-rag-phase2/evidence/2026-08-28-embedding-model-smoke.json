@@ -1,0 +1,1406 @@
+{
+	"schemaVersion": 1,
+	"embeddingModels": ["@cf/baai/bge-m3", "@cf/qwen/qwen3-embedding-0.6b"],
+	"sourceRoot": "docs/docx",
+	"documentCount": 290,
+	"availableChunkCount": 6020,
+	"questions": [
+		{
+			"id": "q1",
+			"question": "什么是 RAG？",
+			"expected_keywords": ["检索", "增强", "生成"],
+			"category": "概念理解"
+		},
+		{
+			"id": "q2",
+			"question": "Vue3 和 React 的区别是什么？",
+			"expected_keywords": ["Vue", "React", "组件"],
+			"category": "技术对比"
+		},
+		{
+			"id": "q3",
+			"question": "如何优化 TypeScript 编译速度？",
+			"expected_keywords": ["tsc", "编译", "优化"],
+			"category": "实践问题"
+		},
+		{
+			"id": "q4",
+			"question": "RMMV 插件的作用域是什么？",
+			"expected_keywords": ["作用域", "插件"],
+			"category": "基本定义"
+		},
+		{
+			"id": "q5",
+			"question": "RMMV 中的动画帧如何理解？",
+			"expected_keywords": ["动画", "帧"],
+			"category": "基本定义"
+		},
+		{
+			"id": "q6",
+			"question": "RMMV 工程数据如何转移？",
+			"expected_keywords": ["工程", "数据", "转移"],
+			"category": "常见问题"
+		},
+		{
+			"id": "q7",
+			"question": "插件使用条款和商用说明有哪些要求？",
+			"expected_keywords": ["使用", "商用", "说明"],
+			"category": "使用条款"
+		},
+		{
+			"id": "q8",
+			"question": "如何查看插件信息？",
+			"expected_keywords": ["插件", "信息", "查看器"],
+			"category": "工具使用"
+		},
+		{
+			"id": "q9",
+			"question": "RMMV 插件性能应该如何评估？",
+			"expected_keywords": ["插件", "性能", "测试"],
+			"category": "性能优化"
+		},
+		{
+			"id": "q10",
+			"question": "升级到 v3.80 前需要注意什么？",
+			"expected_keywords": ["v3.80", "升级", "注意"],
+			"category": "版本升级"
+		},
+		{
+			"id": "q11",
+			"question": "如何在 Vue3 项目中配置 TypeScript？",
+			"expected_keywords": ["Vue", "TypeScript", "配置"],
+			"category": "中英混合"
+		},
+		{
+			"id": "q12",
+			"question": "RAG 的 retrieval 阶段如何提升召回率？",
+			"expected_keywords": ["RAG", "retrieval", "召回率"],
+			"category": "中英混合"
+		}
+	],
+	"reports": [
+		{
+			"model": "@cf/baai/bge-m3",
+			"sampleSize": 50,
+			"chunkIds": [
+				"docs/docx/rmmv软件版本（必看）.md#0",
+				"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+				"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+				"docs/docx/插件详细手册/1.系统/关于参数条.md#20",
+				"docs/docx/插件详细手册/1.系统/关于输入设备核心（入门篇）.md#66",
+				"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+				"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+				"docs/docx/插件详细手册/10.互动/关于允许操作移动.md#32",
+				"docs/docx/插件详细手册/12.动画/关于魔法效果与并行动画.md#21",
+				"docs/docx/插件详细手册/13.UI/关于高级BOSS生命固定框.md#16",
+				"docs/docx/插件详细手册/13.UI/大家族-漂浮文字.md#62",
+				"docs/docx/插件详细手册/14.鼠标/解谜设计-逻辑图形.md#10",
+				"docs/docx/插件详细手册/15.对话框/关于对话框优化核心.md#27",
+				"docs/docx/插件详细手册/15.对话框/关于选择项窗口.md#23",
+				"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2",
+				"docs/docx/插件详细手册/16.图片/关于鼠标拖拽图片.md#39",
+				"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#29",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-天窗层）.md#23",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#59",
+				"docs/docx/插件详细手册/18.面板/关于世界地图.md#5",
+				"docs/docx/插件详细手册/18.面板/关于全自定义信息面板.md#50",
+				"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0",
+				"docs/docx/插件详细手册/21.管理器/数据存储的载体.md#7",
+				"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+				"docs/docx/插件详细手册/23.窗口字符/关于窗口字符.md#20",
+				"docs/docx/插件详细手册/23.窗口字符/关于窗口字符的Emoji表.md#10",
+				"docs/docx/插件详细手册/23.窗口字符/关于行高控制器.md#12",
+				"docs/docx/插件详细手册/23.窗口字符/（指向）窗口字符的从零开始设计.md#23",
+				"docs/docx/插件详细手册/26.图块/图块设计-阶梯素材画法.md#1",
+				"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0",
+				"docs/docx/插件详细手册/32.数学模型/关于弹道.md#13",
+				"docs/docx/插件详细手册/5.战斗UI/关于高级角色肖像.md#18",
+				"docs/docx/插件详细手册/6.地图/地图设计-横版2D模仿.md#18",
+				"docs/docx/插件详细手册/7.行走图/关于动作效果.md#33",
+				"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+				"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+				"docs/docx/插件详细手册/8.物体/大家族-开关.md#16",
+				"docs/docx/插件详细手册/8.物体/大家族-开关.md#137",
+				"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#17",
+				"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+				"docs/docx/插件详细手册/8.物体/触发的本质.md#95",
+				"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#8",
+				"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#53",
+				"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#30",
+				"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#41",
+				"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#26",
+				"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+				"docs/docx/插件详细手册/插件效果图速览v3.82.md#25"
+			],
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 12,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#26",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#26",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2",
+							"docs/docx/插件详细手册/12.动画/关于魔法效果与并行动画.md#21",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-天窗层）.md#23"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符.md#20",
+							"docs/docx/插件详细手册/13.UI/大家族-漂浮文字.md#62",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#59"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符.md#20",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/13.UI/大家族-漂浮文字.md#62"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/12.动画/关于魔法效果与并行动画.md#21",
+							"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2"
+						],
+						"matchedKeywords": ["动画"],
+						"missingKeywords": ["帧"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#41",
+							"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0"
+						],
+						"matchedKeywords": ["工程", "数据"],
+						"missingKeywords": ["转移"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["工程"],
+						"missingKeywords": ["数据", "转移"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["性能", "测试"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0",
+							"docs/docx/插件详细手册/13.UI/关于高级BOSS生命固定框.md#16",
+							"docs/docx/插件详细手册/26.图块/图块设计-阶梯素材画法.md#1"
+						],
+						"matchedKeywords": ["注意"],
+						"missingKeywords": ["v3.80", "升级"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "TypeScript", "配置"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/23.窗口字符/（指向）窗口字符的从零开始设计.md#23"
+						],
+						"matchedKeywords": ["配置"],
+						"missingKeywords": ["Vue", "TypeScript"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["配置"],
+						"missingKeywords": ["Vue", "TypeScript"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["RAG", "retrieval", "召回率"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/8.物体/触发的本质.md#95",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["RAG", "retrieval", "召回率"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["RAG", "retrieval", "召回率"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 12,
+						"questionHitCount": 5,
+						"questionHitRate": 0.4166666666666667,
+						"meanExpectedKeywordCoverage": 0.2638888888888889
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 12,
+						"questionHitCount": 8,
+						"questionHitRate": 0.6666666666666666,
+						"meanExpectedKeywordCoverage": 0.2777777777777778
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 12,
+						"questionHitCount": 7,
+						"questionHitRate": 0.5833333333333334,
+						"meanExpectedKeywordCoverage": 0.3194444444444445
+					}
+				]
+			}
+		},
+		{
+			"model": "@cf/qwen/qwen3-embedding-0.6b",
+			"sampleSize": 50,
+			"chunkIds": [
+				"docs/docx/rmmv软件版本（必看）.md#0",
+				"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+				"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+				"docs/docx/插件详细手册/1.系统/关于参数条.md#20",
+				"docs/docx/插件详细手册/1.系统/关于输入设备核心（入门篇）.md#66",
+				"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+				"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+				"docs/docx/插件详细手册/10.互动/关于允许操作移动.md#32",
+				"docs/docx/插件详细手册/12.动画/关于魔法效果与并行动画.md#21",
+				"docs/docx/插件详细手册/13.UI/关于高级BOSS生命固定框.md#16",
+				"docs/docx/插件详细手册/13.UI/大家族-漂浮文字.md#62",
+				"docs/docx/插件详细手册/14.鼠标/解谜设计-逻辑图形.md#10",
+				"docs/docx/插件详细手册/15.对话框/关于对话框优化核心.md#27",
+				"docs/docx/插件详细手册/15.对话框/关于选择项窗口.md#23",
+				"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2",
+				"docs/docx/插件详细手册/16.图片/关于鼠标拖拽图片.md#39",
+				"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#29",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-天窗层）.md#23",
+				"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#59",
+				"docs/docx/插件详细手册/18.面板/关于世界地图.md#5",
+				"docs/docx/插件详细手册/18.面板/关于全自定义信息面板.md#50",
+				"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0",
+				"docs/docx/插件详细手册/21.管理器/数据存储的载体.md#7",
+				"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+				"docs/docx/插件详细手册/23.窗口字符/关于窗口字符.md#20",
+				"docs/docx/插件详细手册/23.窗口字符/关于窗口字符的Emoji表.md#10",
+				"docs/docx/插件详细手册/23.窗口字符/关于行高控制器.md#12",
+				"docs/docx/插件详细手册/23.窗口字符/（指向）窗口字符的从零开始设计.md#23",
+				"docs/docx/插件详细手册/26.图块/图块设计-阶梯素材画法.md#1",
+				"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0",
+				"docs/docx/插件详细手册/32.数学模型/关于弹道.md#13",
+				"docs/docx/插件详细手册/5.战斗UI/关于高级角色肖像.md#18",
+				"docs/docx/插件详细手册/6.地图/地图设计-横版2D模仿.md#18",
+				"docs/docx/插件详细手册/7.行走图/关于动作效果.md#33",
+				"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+				"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+				"docs/docx/插件详细手册/8.物体/大家族-开关.md#16",
+				"docs/docx/插件详细手册/8.物体/大家族-开关.md#137",
+				"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#17",
+				"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+				"docs/docx/插件详细手册/8.物体/触发的本质.md#95",
+				"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#8",
+				"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#53",
+				"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#30",
+				"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#41",
+				"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#26",
+				"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+				"docs/docx/插件详细手册/插件效果图速览v3.82.md#25"
+			],
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 12,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#30",
+							"docs/docx/rmmv软件版本（必看）.md#0"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/16.图片/关于动画转场核心.md#2"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#59",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/8.物体/触发的本质.md#95",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#26"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#59",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["作用域"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#1",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/5.战斗UI/关于高级角色肖像.md#18"
+						],
+						"matchedKeywords": ["动画"],
+						"missingKeywords": ["帧"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.5
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/18.面板/（指向）关于全局存储.md#0"
+						],
+						"matchedKeywords": ["工程"],
+						"missingKeywords": ["数据", "转移"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["工程"],
+						"missingKeywords": ["数据", "转移"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["使用"],
+						"missingKeywords": ["商用", "说明"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/17.主菜单/关于指针与边框.md#2",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/18.面板/关于全自定义信息面板.md#50"
+						],
+						"matchedKeywords": ["插件", "信息"],
+						"missingKeywords": ["查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["信息", "查看器"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#25",
+							"docs/docx/插件详细手册/31.公共事件/关于公共事件与并行.md#0"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["性能", "测试"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/18.面板/关于世界地图.md#5",
+							"docs/docx/插件详细手册/13.UI/关于高级BOSS生命固定框.md#16",
+							"docs/docx/插件详细手册/8.物体/大家族-开关.md#16"
+						],
+						"matchedKeywords": ["注意"],
+						"missingKeywords": ["v3.80", "升级"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "TypeScript", "配置"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/13.UI/关于高级BOSS生命固定框.md#16",
+							"docs/docx/插件详细手册/22.游戏窗体/关于动态快照次元斩.md#9",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44"
+						],
+						"matchedKeywords": ["配置"],
+						"missingKeywords": ["Vue", "TypeScript"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q11",
+						"category": "中英混合",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#74",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": ["配置"],
+						"missingKeywords": ["Vue", "TypeScript"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "lexical",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#34",
+							"docs/docx/插件详细手册/1.系统/关于参数条.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["RAG", "retrieval", "召回率"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#17",
+							"docs/docx/插件详细手册/16.图片/关于鼠标拖拽图片.md#39",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#1"
+						],
+						"matchedKeywords": ["RAG"],
+						"missingKeywords": ["retrieval", "召回率"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q12",
+						"category": "中英混合",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.基本定义/显示与透明度.md#6",
+							"docs/docx/rmmv软件版本（必看）.md#0",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#44",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#1",
+							"docs/docx/插件详细手册/1.系统/大家族-滤镜效果.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["RAG", "retrieval", "召回率"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 12,
+						"questionHitCount": 5,
+						"questionHitRate": 0.4166666666666667,
+						"meanExpectedKeywordCoverage": 0.2638888888888889
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 12,
+						"questionHitCount": 9,
+						"questionHitRate": 0.75,
+						"meanExpectedKeywordCoverage": 0.3055555555555556
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 12,
+						"questionHitCount": 7,
+						"questionHitRate": 0.5833333333333334,
+						"meanExpectedKeywordCoverage": 0.3194444444444445
+					}
+				]
+			}
+		}
+	],
+	"isolation": "本脚本仅在内存中比较 50 个 chunks，不写入 Neon 正式 documents/chunks 表。"
+}

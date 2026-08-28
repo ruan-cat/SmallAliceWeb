@@ -1,0 +1,2233 @@
+{
+	"embeddingModel": "@cf/baai/bge-m3",
+	"sourceRoot": "docs/docx",
+	"profiles": [
+		{
+			"profile": {
+				"name": "300/30/5",
+				"targetTokens": 300,
+				"overlapTokens": 30,
+				"topK": 5
+			},
+			"documentCount": 290,
+			"chunkCount": 6303,
+			"blankChunkCount": 14,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.md#12",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#58",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#25"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.md#12",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#58",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#25"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#45",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#44",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#45",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#44",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/萌新索引（必看）.md#33",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#90"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/萌新索引（必看）.md#33",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#90"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#10",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#28",
+							"docs/docx/萌新索引（必看）.md#40",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#27",
+							"docs/docx/萌新索引（必看）.md#39"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#10",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#28",
+							"docs/docx/萌新索引（必看）.md#40",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#27",
+							"docs/docx/萌新索引（必看）.md#39"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#10",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#41",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#10",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#41",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/萌新索引（必看）.md#33",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/关于插件优化.md#26"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["性能", "测试"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/萌新索引（必看）.md#33",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/关于插件优化.md#26"
+						],
+						"matchedKeywords": ["插件"],
+						"missingKeywords": ["性能", "测试"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#92",
+							"docs/docx/注意_v3.82升级说明.md#11",
+							"docs/docx/注意_v3.82升级说明.md#6",
+							"docs/docx/注意_v3.82升级说明.md#9",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#92",
+							"docs/docx/注意_v3.82升级说明.md#11",
+							"docs/docx/注意_v3.82升级说明.md#6",
+							"docs/docx/注意_v3.82升级说明.md#9",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 7,
+						"questionHitRate": 0.7,
+						"meanExpectedKeywordCoverage": 0.6
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 7,
+						"questionHitRate": 0.7,
+						"meanExpectedKeywordCoverage": 0.6
+					}
+				]
+			},
+			"exactComparisons": [
+				{
+					"questionId": "q1",
+					"hnswIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.md#12",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+						"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#25",
+						"docs/docx/萌新索引（必看）.md#37"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的罕见问题.md#12",
+						"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#58",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+						"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#25"
+					],
+					"identical": false
+				},
+				{
+					"questionId": "q2",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/17.主菜单/动画转场设计-眩晕圆环动画.md#22"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+						"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+					],
+					"identical": false
+				},
+				{
+					"questionId": "q3",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#45",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#44",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#45",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#44",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q4",
+					"hnswIds": [
+						"docs/docx/萌新索引（必看）.md#33",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#90"
+					],
+					"exactIds": [
+						"docs/docx/萌新索引（必看）.md#33",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#90"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q5",
+					"hnswIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q6",
+					"hnswIds": [
+						"docs/docx/rmmv软件版本（必看）.md#10",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#28",
+						"docs/docx/萌新索引（必看）.md#40",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#27",
+						"docs/docx/萌新索引（必看）.md#39"
+					],
+					"exactIds": [
+						"docs/docx/rmmv软件版本（必看）.md#10",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#28",
+						"docs/docx/萌新索引（必看）.md#40",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#27",
+						"docs/docx/萌新索引（必看）.md#39"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q7",
+					"hnswIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q8",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#10",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#41",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#10",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#41",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q9",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/萌新索引（必看）.md#33",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/关于插件优化.md#26"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/萌新索引（必看）.md#33",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#21",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/关于插件优化.md#26"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q10",
+					"hnswIds": [
+						"docs/docx/注意_v3.82升级说明.md#92",
+						"docs/docx/注意_v3.82升级说明.md#11",
+						"docs/docx/注意_v3.82升级说明.md#6",
+						"docs/docx/注意_v3.82升级说明.md#9",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9"
+					],
+					"exactIds": [
+						"docs/docx/注意_v3.82升级说明.md#92",
+						"docs/docx/注意_v3.82升级说明.md#11",
+						"docs/docx/注意_v3.82升级说明.md#6",
+						"docs/docx/注意_v3.82升级说明.md#9",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9"
+					],
+					"identical": true
+				}
+			]
+		},
+		{
+			"profile": {
+				"name": "500/50/10",
+				"targetTokens": 500,
+				"overlapTokens": 50,
+				"topK": 10
+			},
+			"documentCount": 290,
+			"chunkCount": 6034,
+			"blankChunkCount": 14,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#57",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#25",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#2",
+							"docs/docx/萌新索引（必看）.md#14",
+							"docs/docx/插件详细手册/推荐使用小工具-插件信息查看器.md#0",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#22",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#48"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#57",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#25",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#2",
+							"docs/docx/萌新索引（必看）.md#14",
+							"docs/docx/插件详细手册/推荐使用小工具-插件信息查看器.md#0",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#22",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#48"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/17.主菜单/动画转场设计-眩晕圆环动画.md#22",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-科技气泡.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-镶金告示板.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/17.主菜单/动画转场设计-眩晕圆环动画.md#22",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-科技气泡.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-镶金告示板.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#33",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于事件漂浮文字.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#31",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#64"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#33",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于事件漂浮文字.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#31",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#64"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+							"docs/docx/萌新索引（必看）.md#32",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#87",
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+							"docs/docx/萌新索引（必看）.md#32",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#87",
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#7",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#37",
+							"docs/docx/插件详细手册/1.系统/关于参数数字.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#88",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#47"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#7",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#37",
+							"docs/docx/插件详细手册/1.系统/关于参数数字.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#88",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#47"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#9",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#23",
+							"docs/docx/萌新索引（必看）.md#35",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#22",
+							"docs/docx/萌新索引（必看）.md#34",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32",
+							"docs/docx/rmmv软件版本（必看）.md#8",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#80",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#84",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#68"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#9",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#23",
+							"docs/docx/萌新索引（必看）.md#35",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#22",
+							"docs/docx/萌新索引（必看）.md#34",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32",
+							"docs/docx/rmmv软件版本（必看）.md#8",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#80",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#84",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#68"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#14",
+							"docs/docx/萌新索引（必看）.md#26",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰）.md#25"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#14",
+							"docs/docx/萌新索引（必看）.md#26",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰）.md#25"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#1",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#1",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#103",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+							"docs/docx/萌新索引（必看）.md#13",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#0"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#103",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+							"docs/docx/萌新索引（必看）.md#13",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#0"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#75",
+							"docs/docx/注意_v3.82升级说明.md#4",
+							"docs/docx/注意_v3.82升级说明.md#7",
+							"docs/docx/注意_v3.82升级说明.md#9",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#0",
+							"docs/docx/插件详细手册/21.管理器/数据更新与旧存档.md#1",
+							"docs/docx/关于插件优化.md#22",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#14",
+							"docs/docx/注意_v3.82升级说明.md#79"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#75",
+							"docs/docx/注意_v3.82升级说明.md#4",
+							"docs/docx/注意_v3.82升级说明.md#7",
+							"docs/docx/注意_v3.82升级说明.md#9",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#0",
+							"docs/docx/插件详细手册/21.管理器/数据更新与旧存档.md#1",
+							"docs/docx/关于插件优化.md#22",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#14",
+							"docs/docx/注意_v3.82升级说明.md#79"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 7,
+						"questionHitRate": 0.7,
+						"meanExpectedKeywordCoverage": 0.6666666666666667
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 7,
+						"questionHitRate": 0.7,
+						"meanExpectedKeywordCoverage": 0.6666666666666667
+					}
+				]
+			},
+			"exactComparisons": [
+				{
+					"questionId": "q1",
+					"hnswIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+						"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+						"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#2",
+						"docs/docx/萌新索引（必看）.md#14"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#57",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+						"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+						"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+						"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#25"
+					],
+					"identical": false
+				},
+				{
+					"questionId": "q2",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+						"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#54",
+						"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q3",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#33",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#33",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q4",
+					"hnswIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+						"docs/docx/萌新索引（必看）.md#32"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+						"docs/docx/萌新索引（必看）.md#32"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q5",
+					"hnswIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q6",
+					"hnswIds": [
+						"docs/docx/rmmv软件版本（必看）.md#9",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#23",
+						"docs/docx/萌新索引（必看）.md#35",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#22",
+						"docs/docx/萌新索引（必看）.md#34"
+					],
+					"exactIds": [
+						"docs/docx/rmmv软件版本（必看）.md#9",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#23",
+						"docs/docx/萌新索引（必看）.md#35",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#22",
+						"docs/docx/萌新索引（必看）.md#34"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q7",
+					"hnswIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#14",
+						"docs/docx/萌新索引（必看）.md#26"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#14",
+						"docs/docx/萌新索引（必看）.md#26"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q8",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q9",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#103"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#103"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q10",
+					"hnswIds": [
+						"docs/docx/注意_v3.82升级说明.md#75",
+						"docs/docx/注意_v3.82升级说明.md#4",
+						"docs/docx/注意_v3.82升级说明.md#7",
+						"docs/docx/注意_v3.82升级说明.md#9",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8"
+					],
+					"exactIds": [
+						"docs/docx/注意_v3.82升级说明.md#75",
+						"docs/docx/注意_v3.82升级说明.md#4",
+						"docs/docx/注意_v3.82升级说明.md#7",
+						"docs/docx/注意_v3.82升级说明.md#9",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8"
+					],
+					"identical": true
+				}
+			]
+		},
+		{
+			"profile": {
+				"name": "800/100/15",
+				"targetTokens": 800,
+				"overlapTokens": 100,
+				"topK": 15
+			},
+			"documentCount": 290,
+			"chunkCount": 5960,
+			"blankChunkCount": 14,
+			"report": {
+				"schemaVersion": 1,
+				"questionCount": 10,
+				"results": [
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+							"docs/docx/萌新索引（必看）.md#13",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#56",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#25",
+							"docs/docx/插件详细手册/推荐使用小工具-插件信息查看器.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#47",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#22",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#59",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#3",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#15",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#15"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q1",
+						"category": "概念理解",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+							"docs/docx/萌新索引（必看）.md#13",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#56",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#24",
+							"docs/docx/插件详细手册/4.技能/攻击者与被攻击者.md#8",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#25",
+							"docs/docx/插件详细手册/推荐使用小工具-插件信息查看器.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#47",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#22",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#59",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#3",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#15",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#15"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["检索", "增强", "生成"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#53",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/17.主菜单/动画转场设计-眩晕圆环动画.md#22",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-鼠标迷宫.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-科技气泡.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-镶金告示板.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-光滑图块.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-华容道.md#3",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-消除砖块.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q2",
+						"category": "技术对比",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#53",
+							"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+							"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+							"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/17.主菜单/动画转场设计-眩晕圆环动画.md#22",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-鼠标迷宫.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-科技气泡.md#3",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-镶金告示板.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-光滑图块.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-推搬箱子.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-纯迷宫.md#3",
+							"docs/docx/插件详细手册/8.物体/解谜设计-顺序记忆.md#3",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-华容道.md#3",
+							"docs/docx/插件详细手册/14.鼠标/解谜设计-消除砖块.md#3"
+						],
+						"matchedKeywords": [],
+						"missingKeywords": ["Vue", "React", "组件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["tsc", "编译", "优化"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于事件漂浮文字.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#32",
+							"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#101",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#40",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#63",
+							"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#51",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#37"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q3",
+						"category": "实践问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+							"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#3",
+							"docs/docx/插件详细手册/7.行走图/关于事件漂浮文字.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#30",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#32",
+							"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#101",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#40",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#63",
+							"docs/docx/插件详细手册/99.插件开发教程/d.进阶控制 - 在任意界面中放一个GIF/在任意界面中放一个GIF.md#51",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#37"
+						],
+						"matchedKeywords": ["优化"],
+						"missingKeywords": ["tsc", "编译"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.3333333333333333
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["作用域", "插件"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+							"docs/docx/萌新索引（必看）.md#27",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#85",
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#9",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#7",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#7",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q4",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+							"docs/docx/萌新索引（必看）.md#27",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#85",
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#29",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#9",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#7",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#7",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101"
+						],
+						"matchedKeywords": ["作用域", "插件"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["动画", "帧"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#7",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#37",
+							"docs/docx/插件详细手册/1.系统/关于参数数字.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#86",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#47",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#26",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q5",
+						"category": "基本定义",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#29",
+							"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#7",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#37",
+							"docs/docx/插件详细手册/1.系统/关于参数数字.md#17",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#86",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#47",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+							"docs/docx/萌新索引（必看）.md#29",
+							"docs/docx/插件详细手册/7.行走图/动画序列设计-小爱丽丝伐木.md#26",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32"
+						],
+						"matchedKeywords": ["动画", "帧"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["工程", "数据", "转移"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#8",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+							"docs/docx/萌新索引（必看）.md#32",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#19",
+							"docs/docx/萌新索引（必看）.md#31",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32",
+							"docs/docx/rmmv软件版本（必看）.md#7",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#80",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#82",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#68",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#94",
+							"docs/docx/rmmv软件版本（必看）.md#10",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.md#1",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.md#9",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#19"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q6",
+						"category": "常见问题",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/rmmv软件版本（必看）.md#8",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+							"docs/docx/萌新索引（必看）.md#32",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#19",
+							"docs/docx/萌新索引（必看）.md#31",
+							"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#32",
+							"docs/docx/rmmv软件版本（必看）.md#7",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#80",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#82",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#68",
+							"docs/docx/插件详细手册/7.行走图/关于行走图GIF动画序列.md#94",
+							"docs/docx/rmmv软件版本（必看）.md#10",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.md#1",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv工程数据转移方法.md#9",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#19"
+						],
+						"matchedKeywords": ["工程", "数据", "转移"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["使用", "商用", "说明"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰）.md#25",
+							"docs/docx/插件详细手册/5.战斗UI/关于高级角色肖像.md#4",
+							"docs/docx/插件详细手册/13.UI/关于缓冲时间条与数字.md#3",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#31",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#15",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q7",
+						"category": "使用条款",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#7",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#12",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰）.md#25",
+							"docs/docx/插件详细手册/5.战斗UI/关于高级角色肖像.md#4",
+							"docs/docx/插件详细手册/13.UI/关于缓冲时间条与数字.md#3",
+							"docs/docx/插件详细手册/0.基本定义/界面.md#31",
+							"docs/docx/插件详细手册/关于使用条款与商用说明.md#15",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9"
+						],
+						"matchedKeywords": ["使用", "商用", "说明"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "信息", "查看器"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#1",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#17",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-天窗层）.md#10",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-地图界面）.md#10",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#14",
+							"docs/docx/插件详细手册/1.系统/关于变量数组核心.md#8"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q8",
+						"category": "工具使用",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+							"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+							"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#1",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#1",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/插件详细手册/18.面板/关于长画布贴图核心.md#4",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#17",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-天窗层）.md#10",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-地图界面）.md#10",
+							"docs/docx/插件详细手册/17.主菜单/多层组合装饰（界面装饰-菜单界面）.md#14",
+							"docs/docx/插件详细手册/1.系统/关于变量数组核心.md#8"
+						],
+						"matchedKeywords": ["插件", "信息", "查看器"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["插件", "性能", "测试"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+							"docs/docx/萌新索引（必看）.md#27",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#9",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件注释参数集合.md#0",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#7",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#7",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#7",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#85"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q9",
+						"category": "性能优化",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+							"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+							"docs/docx/萌新索引（必看）.md#27",
+							"docs/docx/萌新索引（必看）.md#1",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#5",
+							"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#51",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#0",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#9",
+							"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件注释参数集合.md#0",
+							"docs/docx/插件详细手册/插件效果图速览v3.80.md#7",
+							"docs/docx/插件详细手册/插件效果图速览v3.82.md#7",
+							"docs/docx/插件详细手册/0.性能测试报告/关于插件性能.md#4",
+							"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#7",
+							"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#85"
+						],
+						"matchedKeywords": ["插件", "性能", "测试"],
+						"missingKeywords": [],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 1
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "lexical",
+						"retrievedIds": [],
+						"matchedKeywords": [],
+						"missingKeywords": ["v3.80", "升级", "注意"],
+						"hasExpectedKeyword": false,
+						"expectedKeywordCoverage": 0
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "vector",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#66",
+							"docs/docx/注意_v3.82升级说明.md#3",
+							"docs/docx/注意_v3.82升级说明.md#5",
+							"docs/docx/注意_v3.82升级说明.md#7",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#0",
+							"docs/docx/插件详细手册/21.管理器/数据更新与旧存档.md#1",
+							"docs/docx/关于插件优化.md#23",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#14",
+							"docs/docx/注意_v3.82升级说明.md#70",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#12",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/注意_v3.82升级说明.md#76"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					},
+					{
+						"questionId": "q10",
+						"category": "版本升级",
+						"strategy": "hybrid",
+						"retrievedIds": [
+							"docs/docx/注意_v3.82升级说明.md#66",
+							"docs/docx/注意_v3.82升级说明.md#3",
+							"docs/docx/注意_v3.82升级说明.md#5",
+							"docs/docx/注意_v3.82升级说明.md#7",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#0",
+							"docs/docx/插件详细手册/21.管理器/数据更新与旧存档.md#1",
+							"docs/docx/关于插件优化.md#23",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#14",
+							"docs/docx/注意_v3.82升级说明.md#70",
+							"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#12",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#10",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#11",
+							"docs/docx/插件详细手册/15.对话框/对话框设计-蓝皮纸.md#9",
+							"docs/docx/注意_v3.82升级说明.md#76"
+						],
+						"matchedKeywords": ["升级", "注意"],
+						"missingKeywords": ["v3.80"],
+						"hasExpectedKeyword": true,
+						"expectedKeywordCoverage": 0.6666666666666666
+					}
+				],
+				"summaries": [
+					{
+						"strategy": "lexical",
+						"questionCount": 10,
+						"questionHitCount": 0,
+						"questionHitRate": 0,
+						"meanExpectedKeywordCoverage": 0
+					},
+					{
+						"strategy": "vector",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.7
+					},
+					{
+						"strategy": "hybrid",
+						"questionCount": 10,
+						"questionHitCount": 8,
+						"questionHitRate": 0.8,
+						"meanExpectedKeywordCoverage": 0.7
+					}
+				]
+			},
+			"exactComparisons": [
+				{
+					"questionId": "q1",
+					"hnswIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+						"docs/docx/萌新索引（必看）.md#13",
+						"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#56",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47",
+						"docs/docx/插件详细手册/0.基本定义/界面.md#24"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符表.md#17",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+						"docs/docx/萌新索引（必看）.md#13",
+						"docs/docx/插件详细手册/99.插件开发教程/b.小试身手 - 建立插件指令/建立插件指令.md#56",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#47"
+					],
+					"identical": false
+				},
+				{
+					"questionId": "q2",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#53",
+						"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#53",
+						"docs/docx/插件详细手册/13.UI/关于临时对象与模板.md#23",
+						"docs/docx/插件详细手册/9.物体触发/关于事件接近触发.md#6",
+						"docs/docx/插件详细手册/9.物体触发/关于玩家接近触发.md#6",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q3",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于逐个绘制的播放速度.md#5",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/插件出错时解决方案.md#5",
+						"docs/docx/插件详细手册/26.图块/图块设计-垂直角与圆角.md#4",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/插件基本函数查询表.md#5",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#25"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q4",
+					"hnswIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+						"docs/docx/萌新索引（必看）.md#27",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+						"docs/docx/萌新索引（必看）.md#27",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#0",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#17",
+						"docs/docx/萌新索引（必看）.md#29"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q5",
+					"hnswIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/21.管理器/游戏运行原理.md#0",
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#20",
+						"docs/docx/插件详细手册/7.行走图/关于多帧行走图.md#5",
+						"docs/docx/插件详细手册/17.主菜单/多层组合装饰（个体装饰）.md#9",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#29"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q6",
+					"hnswIds": [
+						"docs/docx/rmmv软件版本（必看）.md#8",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+						"docs/docx/萌新索引（必看）.md#32",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#19",
+						"docs/docx/萌新索引（必看）.md#31"
+					],
+					"exactIds": [
+						"docs/docx/rmmv软件版本（必看）.md#8",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#20",
+						"docs/docx/萌新索引（必看）.md#32",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#19",
+						"docs/docx/萌新索引（必看）.md#31"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q7",
+					"hnswIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#4",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#0",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#6",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-复制事件的批量管理.md#3",
+						"docs/docx/插件详细手册/关于使用条款与商用说明.md#7"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q8",
+					"hnswIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#9",
+						"docs/docx/插件详细手册/1.系统/关于输入设备核心（高级篇）.md#39",
+						"docs/docx/插件详细手册/99.插件开发教程/a.初步尝试 - 修改存档上限/修改存档上限.md#10",
+						"docs/docx/插件详细手册/9.物体触发/物体设计-简易弹丸制作.md#23",
+						"docs/docx/插件详细手册/插件效果图速览v3.80.md#1"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q9",
+					"hnswIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+						"docs/docx/萌新索引（必看）.md#27",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101"
+					],
+					"exactIds": [
+						"docs/docx/插件详细手册/99.插件开发教程/工具箱/给脚本开发者的建议.md#17",
+						"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#15",
+						"docs/docx/萌新索引（必看）.md#27",
+						"docs/docx/萌新索引（必看）.md#1",
+						"docs/docx/插件详细手册/99.插件开发教程/c.快速提升 - 在地图界面中放一个贴图/在地图界面中放一个贴图.md#101"
+					],
+					"identical": true
+				},
+				{
+					"questionId": "q10",
+					"hnswIds": [
+						"docs/docx/注意_v3.82升级说明.md#66",
+						"docs/docx/注意_v3.82升级说明.md#3",
+						"docs/docx/注意_v3.82升级说明.md#5",
+						"docs/docx/注意_v3.82升级说明.md#7",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8"
+					],
+					"exactIds": [
+						"docs/docx/注意_v3.82升级说明.md#66",
+						"docs/docx/注意_v3.82升级说明.md#3",
+						"docs/docx/注意_v3.82升级说明.md#5",
+						"docs/docx/注意_v3.82升级说明.md#7",
+						"docs/docx/插件详细手册/23.窗口字符/关于窗口字符底层全更新说明(v3.70).md#8"
+					],
+					"identical": true
+				}
+			]
+		}
+	],
+	"isolation": "PostgreSQL TEMP TABLE; formal documents/chunks tables are not written"
+}

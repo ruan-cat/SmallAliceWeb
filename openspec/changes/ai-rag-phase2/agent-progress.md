@@ -2,8 +2,8 @@
 
 ## 1. 当前 checkpoint
 
-- 日期：2026-08-27；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：16 / 26 已完成；`2.1.3a` 双协议代码、三环境 Non-sensitive 接线、真实上游事件时间线与 `2.1.4` 生产浏览器回归已完成；`2.2.3` 已取得真实索引基线，但独立重切分参数对照仍未完成；`2.2.4` 本地完整构建与 Vercel 部署证据已通过，浏览器门禁仍待 CDP。
+- 日期：2026-08-28；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
+- 进度：17 / 26 已完成；`2.2.3` 三档独立重切分/重嵌入、lexical/vector/hybrid、HNSW/exact 对照已完成并勾选；`2.2.4` 本地完整构建与 Vercel 部署证据已通过，浏览器门禁仍待 CDP。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -49,3 +49,14 @@
 - 评测恢复前置：先为 Cloudflare HTTP 400 增加/取得脱敏错误体或确认单批输入大小限制，再决定批次大小；继续使用 PostgreSQL TEMP TABLE，禁止写入正式 `documents`/`chunks`。
 - 部署工具纪律：使用本机全局 `vercel --version`（当前已验证 `58.7.1`）和 `vercel inspect`；禁止为状态监听执行 `pnpm dlx vercel@latest`。
 - 当前未提交用户文件：`prompts/01.prompts.md`，不得暂存、回退或覆盖。
+
+## 6. 2026-08-28 继续执行 checkpoint
+
+- 重新绑定 Memorix 会话 `sess-mtcu3pli-cmhk4j`，恢复卡确认当前唯一未完成执行项仍为 `2.2.3` 与 `2.2.4`。
+- `vercel inspect https://drill.ruan-cat.com --json` 新鲜回读：docs Production deployment `dpl_BnWrgimowR8U7oYKP9aNPsZiAy7T` 为 `READY`，alias 含 `drill.ruan-cat.com`，构建命令为 `pnpm run build`、Node `22.x`、输出目录 `docs/.vitepress/dist`。
+- 两次 `agent_browser_open`（headed 与 headless）均在约 60 秒内无响应，已终止；本轮没有新增真实浏览器证据，故不得勾选 `2.2.4`。
+- 新鲜工件校验：`pnpm dlx @fission-ai/openspec@1.10.0 validate ai-rag-phase2 --strict` 通过，输出 `Change 'ai-rag-phase2' is valid`。
+- 2026-08-28 embedding 诊断：`bge-m3` 单条中文请求返回 `ok=true`、1024 维；此前 400 不是账户完全不可用的证据。
+- 2026-08-28 小样本对照：固定 50 chunks/12 题，bge-m3 与 qwen3 均成功；qwen3 vector Hit@5 为 9/12、bge-m3 为 8/12，hybrid 指标相同。证据见 `evidence/2026-08-28-embedding-{diagnosis,model-smoke}.{md,json}`；该结果作为模型候选参考，不触发全量迁移。
+- 2026-08-28 批量传参改进：新增 `createAdaptiveEmbeddings`，评测默认 25 条串行批次；遇 HTTP 400/413 且批次大于 1 时自动二分，单条错误原样抛出并保留脱敏码/message。自适应分批测试与后续三档全量评测均通过。
+- 2026-08-28 三档真实评测与 HNSW/exact 对照完成：300/30/5、500/50/10、800/100/15 分别处理 6289、6034、5946 个非空 chunks，均无 400/413；HNSW/exact Top-5 一致率为 8/10、9/10、9/10，`2.2.3` 已按证据勾选完成。证据见 `evidence/2026-08-28-real-parameter-evaluation.md` 与 JSON。
