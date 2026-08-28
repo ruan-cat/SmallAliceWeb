@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-28；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：17 / 26 已完成；`2.2.3` 三档独立重切分/重嵌入、lexical/vector/hybrid、HNSW/exact 对照已完成并勾选；`2.2.4` 本地完整构建与 Vercel 部署证据已通过，浏览器门禁仍待 CDP。
+- 进度：18 / 26 已完成；`2.2.3` 与 `2.2.4` 均已完成并勾选，最新 main SHA `485655d` 的 Vercel Production 与 Chrome/CDP 验收均有证据。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 
@@ -48,7 +48,6 @@
 - 恢复入口：先读取本节、`tasks.md` 和 `scripts/run-parameter-evaluation.ts`，确认额度后再继续；不要重做已通过的本地完整构建和 Vercel READY 核验。
 - 评测恢复前置：先为 Cloudflare HTTP 400 增加/取得脱敏错误体或确认单批输入大小限制，再决定批次大小；继续使用 PostgreSQL TEMP TABLE，禁止写入正式 `documents`/`chunks`。
 - 部署工具纪律：使用本机全局 `vercel --version`（当前已验证 `58.7.1`）和 `vercel inspect`；禁止为状态监听执行 `pnpm dlx vercel@latest`。
-- 当前未提交用户文件：`prompts/01.prompts.md`，不得暂存、回退或覆盖。
 
 ## 6. 2026-08-28 继续执行 checkpoint
 
@@ -66,4 +65,4 @@
 - `git push origin main` 后，先用全局 `vercel ls small-alice-web-odse --prod --json` 找到 `meta.githubCommitSha` 等于当前 main HEAD 的 deployment，再用 `vercel inspect <deployment-url> --json` 或 `vercel inspect <deployment-url> --wait --json` 监听状态。
 - `QUEUED`/`BUILDING` 期间只记录状态和时间，不打开旧 alias 做验收；只有同 SHA deployment 变为 `READY` 且 alias 已更新，才进入 agent-browser Chrome/CDP 测试。
 - agent-browser Windows 启动必须带 `--args "--no-sandbox"`；浏览器验证顺序固定为页面加载 → `/v1/search` → `/v1/chat` 流式响应 → 停止后内容保留 → 来源链接跳转。每一步都要保存输出或截图证据。
-- 本次恢复点：新 SHA `3203ae2` 对应 deployment `dpl_94EcoerCGwW9So8k2gSYLeoAG99T` 当前 `QUEUED`，尚未达到浏览器验收条件。
+- 本次恢复点已闭环：main SHA `485655d` 对应 deployment `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` 已 READY，Chrome/CDP 生产验收已完成。

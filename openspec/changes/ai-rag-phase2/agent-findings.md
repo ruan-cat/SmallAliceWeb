@@ -26,7 +26,8 @@
 - **active**：2026-08-28 单条 `bge-m3` 中文 embedding 诊断返回 1024 维成功；Cloudflare 额度并非完全耗尽。50 chunks/12 题对照中 qwen3 vector Hit@5=9/12、bge-m3=8/12，但 hybrid 无提升，样本不足以触发全量迁移。后续应扩大代表性题集，并继续保留正式表隔离。
 - **active**：批量评测原先固定 100 条请求，可能触发接口 400。现已改为默认 25 条串行批次，并对 400/413 自动二分；该策略通过 96 个 API 测试与 typecheck，但真实全量评测尚未证明不再触发错误。
 - **resolved**：2026-08-28 三档全量参数评测均完成且无 400/413；已在 TEMP TABLE 建 HNSW 并完成 exact Top-5 对照，一致率为 8/10、9/10、9/10，`2.2.3` 验收证据齐全。
-- **active**：生产部署必须以全局 `vercel ls --prod --json` 按 SHA 定位 deployment，再用 `vercel inspect <deployment-url> --wait --json` 监听至 READY；`QUEUED`/`BUILDING` 期间禁止用旧 alias 做浏览器验收。本次 `3203ae2` 的 deployment `dpl_94EcoerCGwW9So8k2gSYLeoAG99T` 仍在 QUEUED。
+- **resolved**：生产部署已按全局 `vercel ls --prod --json` 按 main SHA 定位，并由 `vercel inspect --wait --json` 监听至 READY；`485655d` 对应 `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` 已完成 Chrome/CDP 生产验收。
+- **resolved**：2026-08-28 新 Production 浏览器证据通过：页面加载、`/v1/search` HTTP 200、`/v1/chat` 流式回答、停止后内容/来源保留、来源锚点跳转均通过；截图与细节见 `evidence/2026-08-28-production-browser.md`。
 
 ## 2. 固定约束
 

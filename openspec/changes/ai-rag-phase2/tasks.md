@@ -176,10 +176,11 @@
   - 评估结果必须落成可复核文档，不得只保留终端口头结论。
   - 2026-08-28 完成证据：三档独立 TEMP TABLE 重切分/重嵌入均无 HTTP 400/413；`@cf/baai/bge-m3` 1024 维固定题集 lexical/vector/hybrid 与 HNSW/exact Top-5 对照已写入 `evidence/2026-08-28-real-parameter-evaluation.md` 及 JSON。
 
-- [ ] 2.2.4 [build/deploy/e2e] 完整 docs build 与 Git 集成部署回归
+- [x] 2.2.4 [build/deploy/e2e] 完整 docs build 与 Git 集成部署回归
   - Windows 构建使用约 8 GiB Node heap 且串行；不得因两分钟级短时无输出并行重启。
   - 部署回归需用户授权且 2.1 已真实装配。
   - 完成证据：fresh build 退出码 0、部署 URL、生产 search/chat、来源跳转和真实浏览器证据。
+  - 2026-08-28 完成证据：main SHA `485655d` 对应 Vercel deployment `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` READY 并切换 `drill.ruan-cat.com`；Chrome/CDP 生产 search HTTP 200、chat 流式回答、停止保留与来源锚点跳转均通过，截图和日志见 `evidence/2026-08-28-production-browser.md`。
 
 ### 2.3 P2：作品展示
 
@@ -215,9 +216,9 @@
   - 标准：lexical + vector + hybrid 可真实比较，输出评估结果。
   - 当前：离线合同/RRF/评估器与真实三档索引评估均已完成，包含 HNSW/exact 对照。
 
-- [ ] M3 完整问答系统
+- [x] M3 完整问答系统
   - 标准：知识源同步 → 检索 → 流式回答 → 来源展示形成真实链路。
-  - 当前：API/UI/部署基础已存在；真实 provider/模型/生产回归待 2.1。
+  - 当前：知识同步、检索、流式问答、来源展示与生产浏览器回归均有证据。
 
 - [ ] M4 简历作品集
   - 标准：完整 README + 可访问的作品演示材料（技术博客可选）。
