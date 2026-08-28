@@ -52,4 +52,23 @@ describe("createCloudflareEmbeddingProvider", () => {
 			await expect(provider.createEmbedding("无效")).rejects.toBeInstanceOf(CloudflareEmbeddingError);
 		}
 	});
+
+	test("保留脱敏的 Cloudflare 错误码与消息用于诊断", async () => {
+		const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+			new Response(
+				JSON.stringify({
+					success: false,
+					errors: [{ code: 3036, message: "You have used up your daily free allocation" }],
+				}),
+				{ status: 429 },
+			),
+		);
+		const provider = createCloudflareEmbeddingProvider({ accountId: "a", apiToken: "t", fetch: fetchMock });
+
+		await expect(provider.createEmbedding("诊断")).rejects.toMatchObject({
+			status: 429,
+			providerCode: 3036,
+			providerMessage: "You have used up your daily free allocation",
+		});
+	});
 });
