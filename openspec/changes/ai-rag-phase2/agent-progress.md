@@ -60,3 +60,10 @@
 - 2026-08-28 小样本对照：固定 50 chunks/12 题，bge-m3 与 qwen3 均成功；qwen3 vector Hit@5 为 9/12、bge-m3 为 8/12，hybrid 指标相同。证据见 `evidence/2026-08-28-embedding-{diagnosis,model-smoke}.{md,json}`；该结果作为模型候选参考，不触发全量迁移。
 - 2026-08-28 批量传参改进：新增 `createAdaptiveEmbeddings`，评测默认 25 条串行批次；遇 HTTP 400/413 且批次大于 1 时自动二分，单条错误原样抛出并保留脱敏码/message。自适应分批测试与后续三档全量评测均通过。
 - 2026-08-28 三档真实评测与 HNSW/exact 对照完成：300/30/5、500/50/10、800/100/15 分别处理 6289、6034、5946 个非空 chunks，均无 400/413；HNSW/exact Top-5 一致率为 8/10、9/10、9/10，`2.2.3` 已按证据勾选完成。证据见 `evidence/2026-08-28-real-parameter-evaluation.md` 与 JSON。
+
+## 7. 生产部署监听 SOP（必须执行到底）
+
+- `git push origin main` 后，先用全局 `vercel ls small-alice-web-odse --prod --json` 找到 `meta.githubCommitSha` 等于当前 main HEAD 的 deployment，再用 `vercel inspect <deployment-url> --json` 或 `vercel inspect <deployment-url> --wait --json` 监听状态。
+- `QUEUED`/`BUILDING` 期间只记录状态和时间，不打开旧 alias 做验收；只有同 SHA deployment 变为 `READY` 且 alias 已更新，才进入 agent-browser Chrome/CDP 测试。
+- agent-browser Windows 启动必须带 `--args "--no-sandbox"`；浏览器验证顺序固定为页面加载 → `/v1/search` → `/v1/chat` 流式响应 → 停止后内容保留 → 来源链接跳转。每一步都要保存输出或截图证据。
+- 本次恢复点：新 SHA `3203ae2` 对应 deployment `dpl_94EcoerCGwW9So8k2gSYLeoAG99T` 当前 `QUEUED`，尚未达到浏览器验收条件。
