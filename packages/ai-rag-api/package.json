@@ -13,6 +13,8 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"knowledge:prepare:dry-run": "tsx scripts/knowledge-prepare-dry-run.ts --dry-run",
+		"embedding:diagnose": "tsx scripts/diagnose-cloudflare-embedding.ts",
+		"embedding:model-smoke": "tsx scripts/run-embedding-model-smoke.ts",
 		"rag:sync": "tsx scripts/rag-sync.ts",
 		"rag:watch": "tsx scripts/rag-watch.ts",
 		"preview": "nitro preview",

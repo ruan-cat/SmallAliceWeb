@@ -16,9 +16,16 @@ export type CloudflareEmbeddingConfig = {
 };
 
 export class CloudflareEmbeddingError extends Error {
-	constructor(message: string) {
+	readonly status?: number;
+	readonly providerCode?: number;
+	readonly providerMessage?: string;
+
+	constructor(message: string, details: { status?: number; providerCode?: number; providerMessage?: string } = {}) {
 		super(message);
 		this.name = "CloudflareEmbeddingError";
+		this.status = details.status;
+		this.providerCode = details.providerCode;
+		this.providerMessage = details.providerMessage;
 	}
 }
 
@@ -70,7 +77,15 @@ async function createEmbeddings(
 		body: JSON.stringify({ model, input: contents }),
 	});
 	if (!response.ok) {
-		throw new CloudflareEmbeddingError(`Cloudflare embedding 请求失败（HTTP ${response.status}）。`);
+		const error = await readProviderError(response);
+		const suffix =
+			error.providerCode || error.providerMessage
+				? ` ${error.providerCode ? `code=${error.providerCode}` : ""}${error.providerMessage ? ` message=${error.providerMessage}` : ""}`
+				: "";
+		throw new CloudflareEmbeddingError(`Cloudflare embedding 请求失败（HTTP ${response.status}）。${suffix}`, {
+			status: response.status,
+			...error,
+		});
 	}
 
 	let payload: EmbeddingResponse;
@@ -82,6 +97,26 @@ async function createEmbeddings(
 
 	const data = orderEmbeddingData(payload.data, contents.length);
 	return data.map((item, index) => validateEmbedding(item.embedding, index));
+}
+
+async function readProviderError(response: Response) {
+	try {
+		const payload = (await response.json()) as { errors?: Array<{ code?: unknown; message?: unknown }> };
+		const first = payload.errors?.[0];
+		return {
+			providerCode: typeof first?.code === "number" ? first.code : undefined,
+			providerMessage: typeof first?.message === "string" ? sanitizeProviderMessage(first.message) : undefined,
+		};
+	} catch {
+		return {};
+	}
+}
+
+function sanitizeProviderMessage(message: string) {
+	return message
+		.replace(/[\u0000-\u001f\u007f]/g, " ")
+		.trim()
+		.slice(0, 240);
 }
 
 function orderEmbeddingData(data: EmbeddingResponse["data"], expected: number) {

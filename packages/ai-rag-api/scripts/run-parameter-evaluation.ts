@@ -5,8 +5,10 @@ import { prepareKnowledgeBase } from "../server/services/prepare-knowledge";
 import { createCloudflareEmbeddingProvider } from "../server/providers/cloudflare-embedding";
 import { runRetrievalEvaluation, parseEvalQuestions } from "../server/evaluation/evaluator";
 import { createPostgresSearchProvider } from "../server/search/postgres-search";
+import { createAdaptiveEmbeddings, DEFAULT_EMBEDDING_BATCH_SIZE } from "./adaptive-embedding-batch";
 
 const evaluationTable = "rag_parameter_evaluation_chunks";
+const evaluationIndex = "rag_parameter_evaluation_chunks_hnsw";
 const profiles = [
 	{ name: "300/30/5", targetTokens: 300, overlapTokens: 30, topK: 5 },
 	{ name: "500/50/10", targetTokens: 500, overlapTokens: 50, topK: 10 },
@@ -55,9 +57,17 @@ try {
 	for (const { profile, knowledge } of prepared) {
 		await connection.unsafe(`TRUNCATE ${evaluationTable}`);
 		const chunks = knowledge.chunks.filter((chunk) => chunk.content.trim());
-		for (let offset = 0; offset < chunks.length; offset += 100) {
-			const batch = chunks.slice(offset, offset + 100);
-			const vectors = await embedding.createEmbeddings(batch.map((chunk) => chunk.content));
+		for (let offset = 0; offset < chunks.length; offset += DEFAULT_EMBEDDING_BATCH_SIZE) {
+			const batch = chunks.slice(offset, offset + DEFAULT_EMBEDDING_BATCH_SIZE);
+			const vectors = await createAdaptiveEmbeddings(
+				embedding,
+				batch.map((chunk) => chunk.content),
+				{
+					batchSize: DEFAULT_EMBEDDING_BATCH_SIZE,
+					onSplit: ({ size, status }) =>
+						process.stdout.write(`profile=${profile.name} split_batch=${size} status=${status ?? "unknown"}\n`),
+				},
+			);
 			const parameters: unknown[] = [];
 			const values = batch.map((chunk, index) => {
 				const vector = vectors[index];
@@ -84,6 +94,10 @@ try {
 				`profile=${profile.name} embedded=${Math.min(offset + batch.length, chunks.length)}/${chunks.length}\n`,
 			);
 		}
+		await connection.unsafe(`DROP INDEX IF EXISTS ${evaluationIndex}`);
+		await connection.unsafe(
+			`CREATE INDEX ${evaluationIndex} ON ${evaluationTable} USING hnsw (embedding vector_cosine_ops)`,
+		);
 
 		const search = createPostgresSearchProvider({
 			execute: (statement, parameters) =>
@@ -100,12 +114,40 @@ try {
 			},
 			{ limit: profile.topK, k: 60 },
 		);
+		const exactComparisons = [];
+		for (const question of questions) {
+			const queryEmbedding = await embedding.createEmbedding(question.question);
+			const vectorLiteral = `[${queryEmbedding.join(",")}]`;
+			await connection.unsafe("SET enable_seqscan = off");
+			const hnswRows = await connection.unsafe(
+				`SELECT id FROM ${evaluationTable} ORDER BY embedding <=> CAST($1 AS vector), id ASC LIMIT 5`,
+				[vectorLiteral],
+			);
+			await connection.unsafe("RESET enable_seqscan");
+			await connection.unsafe("SET enable_indexscan = off");
+			await connection.unsafe("SET enable_bitmapscan = off");
+			const exactRows = await connection.unsafe(
+				`SELECT id FROM ${evaluationTable} ORDER BY embedding <=> CAST($1 AS vector), id ASC LIMIT 5`,
+				[vectorLiteral],
+			);
+			await connection.unsafe("RESET enable_indexscan");
+			await connection.unsafe("RESET enable_bitmapscan");
+			const hnswIds = hnswRows.map((row) => row.id as string);
+			const exactIds = exactRows.map((row) => row.id as string);
+			exactComparisons.push({
+				questionId: question.id,
+				hnswIds,
+				exactIds,
+				identical: JSON.stringify(hnswIds) === JSON.stringify(exactIds),
+			});
+		}
 		reports.push({
 			profile,
 			documentCount: knowledge.documentCount,
 			chunkCount: knowledge.chunkCount,
 			blankChunkCount: knowledge.chunkCount - chunks.length,
 			report,
+			exactComparisons,
 		});
 	}
 
