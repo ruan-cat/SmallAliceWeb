@@ -20,16 +20,57 @@
 
 数据库连接前，先从 Vercel 拉取当前环境变量；连接串和其他凭据不得提交到仓库。所有 Neon CLI 操作统一使用 `neon`，其安装与认证由用户完成。
 
-## 3. 二期 AI RAG Chat 技术选型
+## 3. 二期 AI RAG 知识库作品
 
-- 聊天 UI 唯一采用 `vue-element-plus-x`，直接使用 `Bubble`、`BubbleList` 和 `Sender`；不得重复实现同职责的消息气泡、输入框或停止按钮。
-- 流式 Markdown 唯一采用 `markstream-vue`，负责不完整 AI 输出、表格、代码块和安全 HTML 策略；不得手写 Markdown parser。
-- `@shikijs/stream` 只用于生成中的代码块高亮。必须在完成 `markstream-vue` 集成并锁定版本后，以真实 API spike 和测试确认，当前不能声称已经集成。
-- 业务使用方通过 `useKnowledgeChat` 中的 `@ai-sdk/vue` 管理 transport、会话状态与 abort；该依赖不得进入通用展示包 `ai-vue`。
-- AI Elements Vue 是 Tailwind/shadcn 栈的替代方案，当前 Element Plus X 栈不得混用。
-- `ai-vue` 仅负责 DTO 到第三方 props 的薄适配、`sourceHref` 和 mock 文档演示，不耦合 Nitro、检索或模型服务。
+### 3.1 能力概览
 
-`ai-vue` 已接入 `vue-element-plus-x@1.3.98` 的 `BubbleList`、其内部 `Bubble` 渲染和 `Sender`，并接入 `markstream-vue@1.0.8` 渲染助手消息。`@ai-sdk/vue` 与 `@shikijs/stream` 仍未安装或接入。本地文档不表示 Neon、Vercel、数据库或模型服务已经完成云端验收。
+本仓库已经完成一个面向 `docs/docx` 文档的 RAG 知识库闭环：文档变化可增量同步为结构化 chunk，使用 Cloudflare Workers AI 生成 1024 维向量，写入 Neon PostgreSQL 的 pgvector/全文检索索引，再由 Nitro API 提供 Hybrid Search 和流式问答。
+
+- **动态知识同步**：扫描 `docs/docx`，按稳定标题锚点和内容哈希生成 chunk；支持一次同步、监听变更和受鉴权的生产同步入口。
+- **结构化检索**：每个结果保留 `sourcePath`、标题路径、`headingAnchor`、`sourceUrl`、图片地址等来源元数据。
+- **Hybrid Search**：词法检索、向量检索和 RRF 融合共用同一结果合同；三档真实重切分/重嵌入评测已完成，并包含 HNSW 与精确 Top-5 对照。
+- **流式问答与溯源**：`/v1/chat` 使用 Anthropic Messages 流式适配，前端显示回答、停止生成和可点击的来源链接；来源跳转到真实文档的稳定 `#rag-heading-*` 锚点。
+
+### 3.2 架构
+
+```text
+docs/docx
+  -> 结构化扫描、分块、哈希和稳定锚点
+  -> Cloudflare Workers AI @cf/baai/bge-m3（1024 维 embedding）
+  -> Neon PostgreSQL（FTS + pgvector + HNSW）
+  -> Nitro API（/v1/search、/v1/chat、/v1/knowledge/sync）
+  -> VitePress + Element Plus X Chat + @ai-sdk/vue
+  -> 流式回答、停止生成、来源锚点跳转
+```
+
+### 3.3 技术栈
+
+|       层级       |                                        实现                                        |
+| :--------------: | :--------------------------------------------------------------------------------: |
+|     知识处理     |                Markdown 扫描、结构化 chunk、内容哈希、稳定标题锚点                 |
+|    向量与检索    | Cloudflare Workers AI `@cf/baai/bge-m3`、Neon PostgreSQL、pgvector、HNSW、FTS、RRF |
+|      服务端      |               Nitro v3、Drizzle ORM、Zod、AI SDK、Anthropic Messages               |
+|     对话界面     |          VitePress、`vue-element-plus-x`、`markstream-vue`、`@ai-sdk/vue`          |
+| 部署与运行时验证 |            Vercel Git Integration、Vercel CLI、Chrome/CDP Agent Browser            |
+
+### 3.4 已验证的生产链路
+
+- `POST https://smallalice-docs-ai-nitro-api.ruan-cat.com/v1/search` 已在真实浏览器上下文返回 HTTP 200 和来源 DTO。
+- `POST /v1/chat` 已验证流式回答、停止生成后内容和来源保留，以及来源跳转。
+- `drill.ruan-cat.com` 的 Git Integration Production deployment 已通过 Vercel CLI 按 main SHA 监听到 READY，再使用 Chrome/CDP 验收。
+- 真实参数评测覆盖 `300/30/5`、`500/50/10`、`800/100/15`：`800/100/15` 在固定题集上的 vector/hybrid 命中率为 8/10、关键词覆盖率为 0.70；HNSW/exact Top-5 一致率分别为 8/10、9/10、9/10。
+
+生产浏览器验收截图：
+
+![二期 AI RAG 生产对话与来源跳转](./openspec/changes/ai-rag-phase2/evidence/2026-08-28-production-chat-final.png)
+
+完整评测、部署和浏览器证据见 [OpenSpec change](./openspec/changes/ai-rag-phase2/) 与 [生产浏览器记录](./openspec/changes/ai-rag-phase2/evidence/2026-08-28-production-browser.md)。
+
+### 3.5 已知边界
+
+- 当前对话浮层的视觉层级和信息密度需要后续单独进行 UI 重构；这不影响已验证的检索、流式、停止和来源跳转能力。
+- 早期学习计划曾出现 Chroma 本地练习，但它从未进入正式实现，也不属于当前二期交付；正式向量主线唯一是 Neon + pgvector。
+- 作品说明以 README 和可复核生产证据为交付物；不再要求录制或外部上传演示视频。
 
 ## vercel 项目名称
 
