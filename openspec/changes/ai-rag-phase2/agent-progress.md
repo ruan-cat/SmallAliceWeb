@@ -3,7 +3,7 @@
 ## 1. 当前 checkpoint
 
 - 日期：2026-08-28；Change：`ai-rag-phase2`；唯一任务源：`tasks.md`。
-- 进度：18 / 26 已完成；`2.2.3` 与 `2.2.4` 均已完成并勾选，最新 main SHA `485655d` 的 Vercel Production 与 Chrome/CDP 验收均有证据。
+- 进度：23 / 23 已完成；正式 RAG、参数评测、生产部署/Chrome-CDP、README 与 M1-M4 均已完成；视频和早期 Chroma 学习草案已从当前交付范围移除。
 - 设计已获用户确认：类型化 provider 注册表、`activeProvider: "anthropic"`、OpenAI Responses + Anthropic Messages 双 adapter。
 - 工作分支：`dev`；保留用户既有 `prompts/index.md` 改动，不纳入本轮范围。
 

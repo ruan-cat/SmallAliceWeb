@@ -28,6 +28,9 @@
 - **resolved**：2026-08-28 三档全量参数评测均完成且无 400/413；已在 TEMP TABLE 建 HNSW 并完成 exact Top-5 对照，一致率为 8/10、9/10、9/10，`2.2.3` 验收证据齐全。
 - **resolved**：生产部署已按全局 `vercel ls --prod --json` 按 main SHA 定位，并由 `vercel inspect --wait --json` 监听至 READY；`485655d` 对应 `dpl_5xAkUYwZYae94cFCAoVRbL7bjwbH` 已完成 Chrome/CDP 生产验收。
 - **resolved**：2026-08-28 新 Production 浏览器证据通过：页面加载、`/v1/search` HTTP 200、`/v1/chat` 流式回答、停止后内容/来源保留、来源锚点跳转均通过；截图与细节见 `evidence/2026-08-28-production-browser.md`。
+- **resolved**：用户已于 2026-08-28 明确取消 `2.3.2` 的演示视频录制和外部上传；该任务已从唯一任务源移除，M4 仅保留 README 与可复核生产证据要求。
+- **resolved**：根目录 README 已于 2026-08-28 补齐正式 RAG 作品说明、架构、技术栈、验证方式、已知边界和生产截图，`2.3.1` 与 M4 已具备证据。
+- **resolved**：用户不认可早期计划中的 Chroma 学习实验；已从当前 tasks.md 移除 3.1/3.2，历史 `history/` 仅保留审计，正式向量主线继续为 Neon + pgvector。
 
 ## 2. 固定约束
 

@@ -17,13 +17,13 @@
 - 统一使用 TypeScript 主线：Vue3 + Element Plus X + `@ai-sdk/vue` + `markstream-vue` + 独立 Nitro v3 + zod + drizzle + Neon/pgvector。
 - 实现 PostgreSQL 词法全文检索 + pgvector 向量检索 + 标准 RRF 的 Hybrid Search，并以固定评估集驱动调优。
 - 回答必须提供可追溯来源，来源链接直达现有 VitePress 文档的稳定标题锚点。
-- 形成可展示的简历作品：功能 README、真实验证结果、可演示的端到端链路与 30–60 秒演示材料。
+- 形成可展示的简历作品：功能 README、真实验证结果、可演示的端到端链路与生产验收截图。
 - 让长任务可跨 checkpoint 恢复：当前任务只从 `tasks.md` 读取，风险/失败从 `agent-findings.md` 读取，进度从 `agent-progress.md` 读取。
 
 ### Non-Goals
 
 - 不引入 Python/FastAPI 或 Java/Spring/RabbitMQ 后端。
-- 不在正式二期同时维护多个向量数据库；Chroma 仅作为历史学习实验，正式主线为 Neon + pgvector。
+- 不在正式二期同时维护多个向量数据库；早期计划中的 Chroma 本地练习不属于当前 change，正式主线唯一为 Neon + pgvector。
 - 不在二期引入 OCR、图片理解、视觉检索或多模态回答；Markdown 图片只保存 URL 元数据。
 - 不在第一阶段引入 MCP 工具网关。
 - 不在通用 `ai-vue` 展示包内耦合 `@ai-sdk/vue` transport 或 Nitro 请求。
@@ -257,25 +257,25 @@ GET  /v1/knowledge/sync-runs
 
 ### 3.16 学习路径与里程碑
 
-| 阶段     | 内容                                                          |
-| -------- | ------------------------------------------------------------- |
-| RAG 基础 | Chunk、Chroma add/query/delete、首个 embedding、最小 RAG demo |
-| 检索质量 | PostgreSQL FTS、向量检索、RRF、可选 ReRank、固定评估集        |
-| 工程落地 | Neon/drizzle/pgvector、Nitro、同步、流式问答、来源、zod       |
-| 展示优化 | 参数调优、成本/批量、README、技术说明、演示视频               |
+| 阶段     | 内容                                                    |
+| -------- | ------------------------------------------------------- |
+| RAG 基础 | Chunk、首个 embedding、最小 RAG demo                    |
+| 检索质量 | PostgreSQL FTS、向量检索、RRF、可选 ReRank、固定评估集  |
+| 工程落地 | Neon/drizzle/pgvector、Nitro、同步、流式问答、来源、zod |
+| 展示优化 | 参数调优、成本/批量、README、技术说明                   |
 
 里程碑：
 
-- M1：能从真实/学习语料检索并回答，拥有可复核 demo 证据。
+- M1：能从真实语料检索并回答，拥有可复核生产证据。
 - M2：lexical + vector + hybrid 可比较，产出评估结果表。
 - M3：知识同步 → 检索 → 流式回答 → 来源展示形成真实闭环。
-- M4：README / 技术文章或演示视频形成可展示作品。
+- M4：README 与生产证据形成可展示作品。
 
 学习理解验收：能解释 Chunk 策略、Embedding 维度选择、词法/向量互补、ReRank 的两阶段意义。
 
 ### 3.17 参考资料与禁止干扰项
 
-学习参考：Vercel AI SDK RAG Guide、LangChain.js PGVectorStore、Neon LangChain、Chroma Getting Started、`ai-sdk-rag-starter`、`agents-from-scratch-ts`、`zhilv-yuntu`。参考项目只用于理解，不自动成为依赖或架构要求。
+学习参考：Vercel AI SDK RAG Guide、LangChain.js PGVectorStore、Neon LangChain、`ai-sdk-rag-starter`、`agents-from-scratch-ts`、`zhilv-yuntu`。参考项目只用于理解，不自动成为依赖或架构要求。
 
 禁止把 AgentX（Java/Spring）、Dify 平台复杂度、自研 Agent 平台等干扰项引入二期主线。
 
@@ -283,7 +283,7 @@ GET  /v1/knowledge/sync-runs
 
 技术展示必须能够说明：知识源如何同步、Chunk 如何保持结构、embedding 如何落库、lexical/vector 如何融合、来源如何确定性跳转、流式 UI 如何停止与收敛、部署/数据库边界如何安全处理。
 
-README 至少包含功能、技术栈、架构、运行/验证方式、演示截图与仍受外部门禁限制的事项。演示视频目标 30–60 秒。
+README 至少包含功能、技术栈、架构、运行/验证方式、演示截图与仍受外部门禁限制的事项。
 
 可复用的简历项目描述基线：
 
@@ -319,7 +319,7 @@ Nitro `runtimeConfig` 中的空字符串只是私有字段声明和类型推断�
 | 检索质量不足                              | 用固定评估集比较 chunk/topK/lexical/vector/hybrid/HNSW                                                                                          |
 | embedding 成本                            | 小模型 + batch；未变化文档跳过重嵌入                                                                                                            |
 | 流式渲染性能                              | 使用成熟 Markdown renderer，避免双动画；长内容专项测试                                                                                          |
-| 向量库反复选型                            | Chroma 仅学习；正式统一 Neon/pgvector                                                                                                           |
+| 向量库反复选型                            | 正式统一 Neon/pgvector，不维护第二向量数据库                                                                                                    |
 | 作品缺乏亮点                              | 突出 Hybrid Search、稳定来源、流式停止、真实工程证据                                                                                            |
 | 云端状态与本地证据混淆                    | 每个外部能力必须有自身真实证据，本地 build/test 不能替代                                                                                        |
 | Vercel Sensitive 类型限制与环境维护复杂度 | 用户明确接受 `NITRO_ANTHROPIC_API_KEY` 在 Production/Preview/Development 三环境统一使用 Non-sensitive；仍禁止写入仓库、报告、测试快照或终端输出 |
