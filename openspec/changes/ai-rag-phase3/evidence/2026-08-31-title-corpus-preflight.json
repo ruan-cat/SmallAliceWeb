@@ -1,0 +1,46 @@
+{
+	"schemaVersion": 1,
+	"capturedAt": "2026-09-01",
+	"status": "ready",
+	"sourcePath": "docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md",
+	"expected": {
+		"headingPathPrefix": ["小爱丽丝设定介绍", "小爱丽丝"],
+		"profileVersion": "markdown-structure-v2",
+		"embeddingModel": "@cf/baai/bge-m3"
+	},
+	"observed": {
+		"database": "neondb",
+		"schema": "public",
+		"vectorType": "vector(1024)",
+		"documentCount": 290,
+		"chunkCountTotal": 6213,
+		"embeddingCountTotal": 6213,
+		"documentFound": true,
+		"chunkCount": 76,
+		"headingPathFound": 76,
+		"embeddingCount": 76,
+		"profileVersion": "markdown-structure-v2",
+		"preprocessingVersion": "markdown-structure-v2",
+		"embeddingModel": "@cf/baai/bge-m3",
+		"emptySearchTextCount": 0,
+		"schemaMigration": "0000-0004",
+		"syncStatus": {
+			"latestStatus": "succeeded",
+			"latestRunId": "95293930-5630-4058-b669-6687c1007750",
+			"latestRunStartedAt": "2026-08-31T09:05:55.420Z",
+			"latestRunFinishedAt": "2026-08-31T09:08:23.801Z",
+			"latestScannedFileCount": 290,
+			"latestWrittenChunkCount": 437,
+			"latestFailedFiles": []
+		}
+	},
+	"checks": {
+		"neonGuard": "passed",
+		"runtimeDatabaseUrlPresent": true,
+		"nonPooledSyncUrlPresent": true,
+		"vercelProject": "smallalice-docs-ai-nitro-api",
+		"migrationHistory": "0000-0004",
+		"explicitNeonAuthorization": true
+	},
+	"reason": "Vercel Nitro 项目与 .env.local 均提供三个数据库变量，四个连接变量指向同一 neondb；此前将未加载到当前 PowerShell 进程误判为项目变量缺失。迁移历史已对齐 0000-0004，Neon 只读核对确认 290 documents、6213 chunks、6213 embeddings、全部 markdown-structure-v2/BGE-M3/search_text 非空；目标 sourcePath 有 76 chunks 且 76 个 headingPath 命中“小爱丽丝”。最近一次完整同步 succeeded 且 failedFiles 为空，可进入 retrieval/title query 门禁。"
+}

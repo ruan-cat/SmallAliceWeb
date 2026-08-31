@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"capturedAt": "2026-09-01",
+	"query": "小爱丽丝是谁啊？",
+	"targetSourcePath": "docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md",
+	"search": {
+		"method": "POST",
+		"endpoint": "https://smallalice-docs-ai-nitro-api.ruan-cat.com/v1/search",
+		"httpStatus": 200,
+		"apiSuccess": true,
+		"returnedItemCount": 10,
+		"targetSourcePathCount": 10,
+		"targetHeadingPathCount": 10,
+		"targetHeadingPathPrefix": ["小爱丽丝设定介绍", "小爱丽丝"],
+		"hardNegativeSourcePathCount": 0
+	},
+	"chat": {
+		"method": "POST",
+		"endpoint": "https://smallalice-docs-ai-nitro-api.ruan-cat.com/v1/chat",
+		"transport": "text/event-stream",
+		"client": "curl -N --max-time 45",
+		"curlExit": 28,
+		"receivedBytes": 2022,
+		"sourceFrameReceived": true,
+		"sourceHrefReceived": true,
+		"targetSourceHrefEncodedReceived": true,
+		"headingAnchorReceived": true,
+		"streamCompleted": false,
+		"completionNote": "在 45 秒客户端上限内已收到 source frame 与 rag-heading 锚点；curl 因 SSE 未在上限内关闭而退出 28，不以客户端超时推断服务端失败。"
+	},
+	"assessment": "同步完成后，生产 search Top-10 全部指向目标 sourcePath，且全部命中“小爱丽丝”标题路径；chat 已收到指向同一页面和标题锚点的来源帧。"
+}

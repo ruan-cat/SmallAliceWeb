@@ -1,0 +1,133 @@
+{
+	"schemaVersion": 1,
+	"capturedAt": "2026-08-31T15:53:15.446Z",
+	"query": "小爱丽丝是谁啊？",
+	"sourceRoot": "docs/docx",
+	"goldCount": 3,
+	"profiles": [
+		{
+			"profile": "400/80",
+			"documentCount": 290,
+			"chunkCount": 6438,
+			"nonBlankChunkCount": 6424,
+			"averageChunkTokens": 17.32,
+			"maxChunkTokens": 928,
+			"allParentDuplicateRate": 0.3471,
+			"finalParentDuplicateRate": 0.6,
+			"p95LocalLexicalMs": 34.76,
+			"top5TargetHit": false,
+			"top5Ids": [
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#2",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的常见问题.md#10",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的常见问题.md#8",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的常见问题.md#9"
+			],
+			"metrics": {
+				"candidate": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				},
+				"final": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				}
+			}
+		},
+		{
+			"profile": "500/50",
+			"documentCount": 290,
+			"chunkCount": 6213,
+			"nonBlankChunkCount": 6199,
+			"averageChunkTokens": 17.7,
+			"maxChunkTokens": 928,
+			"allParentDuplicateRate": 0.3234,
+			"finalParentDuplicateRate": 0,
+			"p95LocalLexicalMs": 19.29,
+			"top5TargetHit": false,
+			"top5Ids": [
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的常见问题.md#8",
+				"docs/docx/插件详细手册/1.系统/大家族-方块粉碎.md#19",
+				"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#30",
+				"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#35"
+			],
+			"metrics": {
+				"candidate": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				},
+				"final": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				}
+			}
+		},
+		{
+			"profile": "800/100",
+			"documentCount": 290,
+			"chunkCount": 5963,
+			"nonBlankChunkCount": 5949,
+			"averageChunkTokens": 18.34,
+			"maxChunkTokens": 928,
+			"allParentDuplicateRate": 0.295,
+			"finalParentDuplicateRate": 0.2,
+			"p95LocalLexicalMs": 28.63,
+			"top5TargetHit": false,
+			"top5Ids": [
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#0",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/基本问题索引.md#1",
+				"docs/docx/插件详细手册/0.问题解答集合（FAQ）/Rmmv中的常见问题.md#8",
+				"docs/docx/插件详细手册/1.系统/大家族-方块粉碎.md#17",
+				"docs/docx/插件详细手册/1.系统/大家族-GIF动画序列.md#30"
+			],
+			"metrics": {
+				"candidate": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				},
+				"final": {
+					"recallAt5": 0,
+					"recallAt10": 0,
+					"precisionAt5": 0,
+					"precisionAt10": 0,
+					"mrrAt5": 0,
+					"mrrAt10": 0,
+					"ndcgAt5": 0,
+					"ndcgAt10": 0
+				}
+			}
+		}
+	],
+	"isolation": "本地内存 chunk/profile + 确定性 lexical scorer；未调用 Cloudflare embedding、Neon 或 Promptfoo。该报告是结构基线，不是生产排序结论。"
+}

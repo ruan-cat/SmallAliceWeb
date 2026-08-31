@@ -1,0 +1,97 @@
+{
+	"schemaVersion": 1,
+	"capturedAt": "2026-09-01",
+	"status": "completed",
+	"query": "小爱丽丝是谁啊？",
+	"goldSetVersion": "2026-09-01",
+	"database": "neondb",
+	"embeddingModel": "@cf/baai/bge-m3",
+	"embeddingDimensions": 1024,
+	"candidateLimit": 20,
+	"finalLimit": 10,
+	"rrfK": 60,
+	"targetSourcePath": "docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md",
+	"hardNegativePolicy": "任何 hard negative 命中均不计为通过",
+	"strategies": {
+		"postgresFts": {
+			"candidateCount": 0,
+			"finalCount": 0,
+			"targetSourcePathCount": 0,
+			"targetHeadingPathCount": 0,
+			"hardNegativeHits": 0,
+			"recallAt10": 0,
+			"precisionAt10": 0,
+			"mrrAt10": 0,
+			"ndcgAt10": 0,
+			"top10": []
+		},
+		"pgTrgm": {
+			"candidateCount": 2,
+			"finalCount": 2,
+			"targetSourcePathCount": 1,
+			"targetHeadingPathCount": 0,
+			"hardNegativeHits": 0,
+			"recallAt10": 0,
+			"precisionAt10": 0,
+			"mrrAt10": 0,
+			"ndcgAt10": 0,
+			"top10": [
+				"docs/docx/插件详细手册/10.互动/关于跳跃能力.md#5",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#0"
+			]
+		},
+		"pgvectorCosine": {
+			"candidateCount": 20,
+			"finalCount": 10,
+			"targetSourcePathCount": 20,
+			"targetHeadingPathCount": 10,
+			"hardNegativeHits": 0,
+			"recallAt10": 0.6666666666666666,
+			"precisionAt10": 0.2,
+			"mrrAt10": 0.16666666666666666,
+			"ndcgAt10": 0.39455386920009305,
+			"top10": [
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#56",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#0",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#51",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#44",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#50",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#24",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#53",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#31",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#32",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#33"
+			]
+		},
+		"rrfNoop": {
+			"candidateCount": 10,
+			"finalCount": 10,
+			"targetSourcePathCount": 10,
+			"targetHeadingPathCount": 5,
+			"hardNegativeHits": 0,
+			"recallAt10": 0.6666666666666666,
+			"precisionAt10": 0.2,
+			"mrrAt10": 0.16666666666666666,
+			"ndcgAt10": 0.39455386920009305,
+			"top10": [
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#56",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#0",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#51",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#44",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#50",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#24",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#53",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#31",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#32",
+				"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#33"
+			]
+		}
+	},
+	"acceptance": {
+		"targetChapterInVectorTop10": true,
+		"targetChapterInRrfNoopTop10": true,
+		"targetSourceInPgTrgmTop10": true,
+		"hardNegativesExcludedFromFinalResults": true,
+		"note": "PostgreSQL FTS 对该中文问句无候选；pg_trgm 返回目标文档根设定块但未命中小爱丽丝子章节；vector 与 RRF/Noop 将目标章节带入 Top-10。"
+	}
+}

@@ -1,0 +1,77 @@
+{
+	"schemaVersion": 1,
+	"status": "completed",
+	"capturedAt": "2026-09-01",
+	"goldSetVersion": "2026-09-01",
+	"query": "小爱丽丝是谁啊？",
+	"corpusProfile": "markdown-structure-v2",
+	"candidateLimit": 10,
+	"finalLimit": 5,
+	"rrfK": 60,
+	"noopBaseline": {
+		"status": "available",
+		"productionDefault": true,
+		"finalRecallAt10": 0.6666666666666666,
+		"finalPrecisionAt10": 0.2,
+		"finalMrrAt10": 0.16666666666666666,
+		"finalNdcgAt10": 0.39455386920009305,
+		"finalIds": [
+			"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#56",
+			"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#0",
+			"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#51",
+			"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#44",
+			"docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md#50"
+		]
+	},
+	"llmReranker": {
+		"status": "completed-with-failures",
+		"provider": "anthropic-messages",
+		"model": "claude-sonnet-5[1m]",
+		"endpointHost": "api.code-tab.com",
+		"authPresent": true,
+		"trialCount": 3,
+		"appliedCount": 0,
+		"failedCount": 3,
+		"failureRate": 1,
+		"fallbackCount": 3,
+		"failureReasons": ["timeout"],
+		"timeoutMs": 30000,
+		"p95Ms": 30018,
+		"tokenCount": null,
+		"costUsd": null,
+		"costStatus": "timeout before usage/billing data was returned",
+		"trials": [
+			{
+				"trial": 1,
+				"status": "failed",
+				"failureReason": "timeout",
+				"latencyMs": 30006,
+				"fallback": "noop"
+			},
+			{
+				"trial": 2,
+				"status": "failed",
+				"failureReason": "timeout",
+				"latencyMs": 30005,
+				"fallback": "noop"
+			},
+			{
+				"trial": 3,
+				"status": "failed",
+				"failureReason": "timeout",
+				"latencyMs": 30018,
+				"fallback": "noop"
+			}
+		]
+	},
+	"contractEvidence": {
+		"rerankerTests": "packages/ai-rag-api/tests/reranker.test.ts: 5/5 passed",
+		"runtimeAssemblyTests": "packages/ai-rag-api/tests/runtime-assembly.test.ts: 10/10 passed",
+		"syncAndEvaluationTests": "sync-service/evaluator: 17/17 passed",
+		"defaultMode": "disabled/noop"
+	},
+	"decision": {
+		"keepProductionRerankerDisabled": true,
+		"reason": "3/3 provider calls timed out and all fell back to Noop; no applied ranking, usage, or billable cost evidence exists."
+	}
+}

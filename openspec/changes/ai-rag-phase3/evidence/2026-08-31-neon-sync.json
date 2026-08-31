@@ -1,0 +1,54 @@
+{
+	"schemaVersion": 1,
+	"capturedAt": "2026-09-01",
+	"project": "smallalice-docs-ai-nitro-api",
+	"database": "neondb",
+	"connection": {
+		"runtimeUrlPresent": true,
+		"syncUrlPresent": true,
+		"migrationUrlPresent": true,
+		"syncConnection": "NITRO_SYNC_DATABASE_URL",
+		"migrationConnection": "POSTGRES_URL_NON_POOLING"
+	},
+	"migration": {
+		"status": "succeeded",
+		"history": "0000-0004",
+		"vectorType": "vector(1024)",
+		"extensions": ["pg_trgm", "vector"],
+		"indexes": [
+			"chunks_embedding_hnsw_cosine_idx",
+			"chunks_parent_id_idx",
+			"chunks_search_text_trgm_idx"
+		],
+		"reconciliationNote": "0002 的实际 vector(1024)/BGE-M3 状态已存在但迁移账缺少记录；在状态前置条件满足后补齐 0002-0004 记录，随后 drizzle-kit migrate code 0。"
+	},
+	"sync": {
+		"runId": "95293930-5630-4058-b669-6687c1007750",
+		"status": "succeeded",
+		"scannedFileCount": 290,
+		"unchangedFileCount": 287,
+		"createdFileCount": 2,
+		"updatedFileCount": 1,
+		"deletedFileCount": 0,
+		"writtenChunkCount": 437,
+		"failedFiles": [],
+		"startedAt": "2026-08-31T09:05:55.420Z",
+		"finishedAt": "2026-08-31T09:08:23.801Z",
+		"embeddingModel": "@cf/baai/bge-m3",
+		"profileVersion": "markdown-structure-v2",
+		"preprocessingVersion": "markdown-structure-v2",
+		"adaptiveBatching": "Cloudflare 400/413 context errors recursively split while preserving order"
+	},
+	"postSyncCorpus": {
+		"documents": 290,
+		"chunks": 6213,
+		"embeddings": 6213,
+		"nonemptySearchText": 6213,
+		"v2Chunks": 6213,
+		"bgeDocuments": 290,
+		"targetSourcePath": "docs/docx/插件详细手册/99.小爱丽丝设定/小爱丽丝设定介绍.md",
+		"targetChunkCount": 76,
+		"targetHeadingPathCount": 76,
+		"targetEmbeddingCount": 76
+	}
+}

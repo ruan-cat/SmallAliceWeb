@@ -1,0 +1,64 @@
+AI RAG phase3 local verification — 2026-08-31
+
+Environment:
+- Node v22.23.1
+- Vitest v2.1.9
+- TypeScript v5.9.3
+- Commands used direct package binaries because interrupted pnpm workspace relinking removed .bin shims.
+
+Command: node node_modules/vitest/vitest.mjs run (cwd packages/ai-rag-core)
+Exit code: 0
+Result: 5 test files passed, 23 tests passed.
+
+Command: node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json (cwd packages/ai-rag-core)
+Exit code: 0
+Result: no diagnostics.
+
+Command: node <tsdown>/dist/run.mjs (cwd packages/ai-rag-core)
+Exit code: 0
+Result: tsdown build complete; dist/index.mjs and dist/index.d.mts generated.
+
+Command: node node_modules/vitest/vitest.mjs run (cwd packages/ai-rag-api)
+Exit code: 0
+Result: 31 test files passed, 133 tests passed.
+
+Command: node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json (cwd packages/ai-rag-api)
+Exit code: 0
+Result: no diagnostics.
+
+Command: node node_modules/nitro/dist/cli/index.mjs build (cwd packages/ai-rag-api, before matching Windows native binding)
+Exit code: 1
+Result: failed in Nitro rolldown builder with TypeError: ctx.inner is not a function.
+
+Command: NITRO_BUILDER=rollup node node_modules/nitro/dist/cli/index.mjs build (cwd packages/ai-rag-api, before matching Windows native binding)
+Exit code: 1
+Result: failed before build with TypeError: Class extends value undefined is not a constructor or null.
+
+Environment repair:
+- Restored `@rolldown/binding-win32-x64-msvc@1.2.1` for the installed `rolldown@1.2.1` package; no repository manifest or runtime code changed.
+
+Command: node --input-type=module <minimal rolldown plugin smoke>
+Exit code: 0
+Result: plugin hook smoke passed after matching native binding was restored.
+
+Command: node node_modules/nitro/dist/cli/index.mjs build (cwd packages/ai-rag-api, after matching native binding)
+Exit code: 0
+Result: Nitro rolldown build complete; `.output/server/index.mjs` generated (1.09 MB, 230 kB gzip).
+
+Gate: PASSED. Core/API tests, typechecks, core build and final Nitro API build are green; Neon migration/sync is recorded separately in `2026-08-31-neon-sync.json`.
+
+Post-gate correction:
+- `server/runtime/rag-runtime.ts` profile identity changed from `markdown-structure-v1` to `markdown-structure-v2` so migration/sync cannot skip documents with newly required `search_text`/preprocessing metadata.
+- Fresh sync/runtime tests: 3 files passed, 23 tests passed.
+- Fresh API typecheck: exit code 0.
+- Fresh Nitro build after correction: exit code 0.
+
+Post-sync verification — 2026-09-01:
+- `node node_modules/vitest/vitest.mjs run` (cwd packages/ai-rag-core): exit 0, 5 files/23 tests passed.
+- `node node_modules/vitest/vitest.mjs run` (cwd packages/ai-rag-api): exit 0, 31 files/135 tests passed.
+- API/core `node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json`: exit 0 for both packages.
+- `node node_modules/nitro/dist/cli/index.mjs build` (cwd packages/ai-rag-api): exit 0, 1.09 MB/230 kB gzip.
+- `pnpm run neon:guard`: exit 0, no `neonctl` in executable project entries.
+- `node node_modules/drizzle-kit/bin.cjs migrate` with `POSTGRES_URL_NON_POOLING`: exit 0, migrations applied successfully after 0002-0004 ledger reconciliation.
+- `node --env-file=../../.env.local node_modules/tsx/dist/cli.mjs scripts/rag-sync.ts`: final exit 0, succeeded run with 290 scanned files and 0 failed files; 400/413 batches recursively split.
+- Production `/v1/search` title query: HTTP 200, 10/10 results target sourcePath; production `/v1/chat` curl capture received source frame and `rag-heading` anchor.
