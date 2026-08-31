@@ -1,7 +1,6 @@
 {
 	"name": "@ruan-cat-drill-doc/ai-rag-core",
 	"version": "0.0.0",
-	"private": true,
 	"type": "module",
 	"types": "./dist/index.d.mts",
 	"exports": {
