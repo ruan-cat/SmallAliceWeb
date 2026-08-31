@@ -17,10 +17,10 @@
 
 迁移采用 Git blob 复用，而不是摘要重写。下列 OpenSpec 历史文件直接引用原文件的同一个 blob SHA，因此迁移前后的历史快照内容完全一致：
 
-| 原路径（迁移后删除） | 原 blob SHA | OpenSpec 历史快照 |
-| --- | --- | --- |
+| 原路径（迁移后删除）                                        | 原 blob SHA                                | OpenSpec 历史快照                                        |
+| ----------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
 | `docs/superpowers/specs/2026-07-29-ai-rag-phase2-design.md` | `4514e5c1abe6659d6c6d6a78a4d7c9c36834b8d8` | `history/2026-07-29-ai-rag-phase2-design.superpowers.md` |
-| `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md` | `58471a612223ff40e8197b129fbd08c4f1d6a00f` | `history/2026-07-29-ai-rag-phase2-plan.superpowers.md` |
+| `docs/superpowers/plans/2026-07-29-ai-rag-phase2-plan.md`   | `58471a612223ff40e8197b129fbd08c4f1d6a00f` | `history/2026-07-29-ai-rag-phase2-plan.superpowers.md`   |
 
 历史快照顶部仍可能出现“旧文件保留”等迁移前措辞；那是快照本身的一部分。**关于迁移后的文件位置与权威性，以本清单和当前核心 OpenSpec 工件为准。**
 
