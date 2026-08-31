@@ -1,0 +1,57 @@
+description: "SmallAliceWeb AI RAG phase3 检索与重排对照"
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: "file://scripts/promptfoo-provider.ts"
+    label: "lexical-500-50-noop"
+    config:
+      mode: "lexical"
+      chunkProfile: "500/50"
+      reranker: "noop"
+      candidateLimit: 20
+      finalLimit: 5
+      rrfK: 60
+  - id: "file://scripts/promptfoo-provider.ts"
+    label: "vector-500-50-noop"
+    config:
+      mode: "vector"
+      chunkProfile: "500/50"
+      reranker: "noop"
+      candidateLimit: 20
+      finalLimit: 5
+      rrfK: 60
+  - id: "file://scripts/promptfoo-provider.ts"
+    label: "hybrid-500-50-noop"
+    config:
+      mode: "hybrid"
+      chunkProfile: "500/50"
+      reranker: "noop"
+      candidateLimit: 20
+      finalLimit: 5
+      rrfK: 60
+  - id: "file://scripts/promptfoo-provider.ts"
+    label: "hybrid-400-80-llm-reranker"
+    config:
+      mode: "hybrid"
+      chunkProfile: "400/80"
+      reranker: "llm"
+      candidateLimit: 20
+      finalLimit: 5
+      rrfK: 60
+  - id: "file://scripts/promptfoo-provider.ts"
+    label: "hybrid-800-100-llm-reranker"
+    config:
+      mode: "hybrid"
+      chunkProfile: "800/100"
+      reranker: "llm"
+      candidateLimit: 20
+      finalLimit: 5
+      rrfK: 60
+
+tests: "file://data/rag-gold-set.jsonl"
+
+evaluateOptions:
+  maxConcurrency: 1
+  outputPath: "openspec/changes/ai-rag-phase3/evidence/2026-08-31-promptfoo-results.json"
