@@ -250,6 +250,12 @@ metadata:
 - 适用场景：生产模型流式回归因错误使用 Chat Completions 路径而失败，且自动目标续跑反复执行同一阻塞探测。
 - 关键约束：固定验证 Responses API SSE 合同；工具或权限缺失、或同一阻塞连续三次时必须暂停并记录阻塞指纹，不能以重试取代根因确认。
 
+### 13.10 Vercel 项目绑定误判与生产浏览器验收缺口（2026-09-01）
+
+- 详细案例：`2026-09-01-vercel-project-binding-production-browser-closure.md`
+- 适用场景：多 Vercel 项目 monorepo 中，数据库环境变量被误判为缺失，或只完成本地/Preview/API 验证而未完成 Git-triggered Production 与真实浏览器验收。
+- 关键约束：先核对 `.vercel/project.json` 和目标项目，再执行 `vercel env ls`；以同一 Git SHA 的 Production Ready 日志和有头 Agent Browser 的页面/API/来源/停止证据组成闭环，禁止把部分流式状态包装成完整回答成功。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
