@@ -2,6 +2,10 @@
 
 **Multiple Packages Updated** - 2026-08-31
 
+## v3.7.3
+
+[compare changes](https://github.com/ruan-cat/SmallAliceWeb/compare/@ruan-cat-drill-doc/ai-rag-core@0.1.0...v3.7.3)
+
 ## @ruan-cat-drill-doc/ai-rag-core@0.1.0 (2026-08-31)
 
 [compare changes](https://github.com/ruan-cat/SmallAliceWeb/compare/b3f0d67...@ruan-cat-drill-doc/ai-rag-core@0.1.0)
