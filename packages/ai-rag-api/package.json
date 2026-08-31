@@ -15,6 +15,8 @@
 		"knowledge:prepare:dry-run": "tsx scripts/knowledge-prepare-dry-run.ts --dry-run",
 		"embedding:diagnose": "tsx scripts/diagnose-cloudflare-embedding.ts",
 		"embedding:model-smoke": "tsx scripts/run-embedding-model-smoke.ts",
+		"rag:evaluate": "tsx scripts/run-rag-evaluation.ts",
+		"rag:evaluate:promptfoo": "promptfoo eval -c promptfoo.yaml",
 		"rag:sync": "tsx scripts/rag-sync.ts",
 		"rag:watch": "tsx scripts/rag-watch.ts",
 		"preview": "nitro preview",
@@ -35,6 +37,7 @@
 		"@ruan-cat/utils": "^4.26.0",
 		"@types/node": "22.19.11",
 		"drizzle-kit": "^0.31.4",
+		"promptfoo": "0.122.2",
 		"typescript": "5.9.3",
 		"vitest": "2.1.9"
 	}
