@@ -31,7 +31,7 @@
 
 ### Requirement: 2. 结构化 chunk 契约
 
-系统 MUST 为每个输出 chunk 持久化 `sourcePath`、`headingPath`、`headingIndex`、`headingAnchor`、`chunkIndex`、`imageUrls`、`chunkKind` 与 `contentHash` 字段；有标题时 `headingAnchor` MUST 为 `rag-heading-` 前缀加 SHA-256 base64url 摘要，摘要输入 MUST 由 `sourcePath`、完整 `headingPath`、`headingIndex` 以 `"\u0000"` 分隔拼接计算；无标题根块 SHALL 使用 `rag-document-<sourcePath-digest>` 且 `headingIndex` 为 `-1`；同一源文件内的 `chunkIndex` MUST 从 `0` 开始连续递增；表格未超上限时 SHALL 保持原子性，超长表格 MUST 按连续行组拆分，每个行组 SHALL 重复表头、当前标题路径与图片 URL；图片 URL SHALL NOT 进入 chunk 文本与 embedding 输入。
+系统 MUST 为每个输出 chunk 持久化 `sourcePath`、`headingPath`、`headingIndex`、`headingAnchor`、`chunkIndex`、`imageUrls`、`chunkKind` 与 `contentHash` 字段；父子 chunk 关系启用时，子 chunk MUST 具有稳定的 `parentId`，且父块与子块 SHALL 可通过同一来源和标题路径追溯。embedding 输入 MUST 包含可复现的标题层级上下文，但 MUST NOT 包含图片 URL。连续 prose chunk SHALL 按配置保留跨块 overlap；表格、FAQ 问答对和代码块 SHALL 按结构边界处理，不得产生无法解释的断裂。既有锚点、表格行范围、chunkIndex 连续性和图片元数据合同 MUST 保持不变。
 
 #### Scenario: 有标题 chunk 生成确定性锚点
 
@@ -60,21 +60,55 @@
 - **THEN** 这些 URL SHALL 被持久化到 `imageUrls`
 - **AND** chunk 文本内容与 embedding 输入 SHALL NOT 包含图片 URL
 
+#### Scenario: 标题上下文进入 embedding 输入
+
+- **WHEN** chunk 归属于一个或多个 H1/H2/H3 标题
+- **THEN** embedding 输入 MUST 包含完整标题路径与正文
+- **AND** 对同一正文和标题路径重复生成时输入 SHALL 保持确定性
+- **AND** 图片 URL MUST NOT 出现在 embedding 输入
+
+#### Scenario: 跨块 overlap 可观察且不破坏身份
+
+- **WHEN** prose 被拆分为相邻 chunk 且 overlap 配置大于 0
+- **THEN** 相邻 chunk SHALL 在句子边界保留配置范围内的重叠文本
+- **AND** 每个 chunk 的 `chunkIndex` SHALL 仍从 0 开始连续递增
+- **AND** overlap 配置版本 MUST 参与 profile 身份
+
+#### Scenario: 父子 chunk 可追溯
+
+- **WHEN** 启用父子 chunk 策略
+- **THEN** 每个子 chunk MUST 指向稳定 `parentId`
+- **AND** 检索命中子 chunk 后 SHALL 能定位其父块或允许扩展的相邻上下文
+- **AND** 父子关系变更 MUST 触发对应文档的增量重建
+
+#### Scenario: 结构化内容保持完整
+
+- **WHEN** 处理表格、FAQ 问答对或代码块
+- **THEN** 表格 chunk SHALL 保留表头与连续行范围
+- **AND** FAQ 的问题与答案 SHALL 不得被拆成互不关联的孤立 chunk
+- **AND** 代码块 SHALL 不得从语法结构中间截断
+
 ### Requirement: 3. 增量对账与幂等
 
-同步 MUST 按 `sourcePath` 与内容哈希幂等执行；源文件未变化且 `profileVersion`、embedding 模型版本未变化时 MUST 跳过该文件；文件新增或变化时 MUST 先完成新 chunk 与 embedding 的生成，再以单文档事务替换旧版本；单个文件重建失败时旧版本 MUST 继续保持可检索；仅当扫描完整成功时系统 SHALL 删除本轮未出现的 `sourcePath` 及其 chunk；扫描不完整或读取失败时 MUST NOT 据此删除旧数据。
+同步 MUST 按 `sourcePath` 与内容哈希幂等执行；源文件未变化且 `profileVersion`、embedding 模型版本与 embedding 预处理版本未变化时 MUST 跳过该文件；文件新增或变化时 MUST 先完成新 chunk 与 embedding 的生成，再以单文档事务替换旧版本；单个文件重建失败时旧版本 MUST 继续保持可检索；仅当扫描完整成功时系统 SHALL 删除本轮未出现的 `sourcePath` 及其 chunk；扫描不完整或读取失败时 MUST NOT 据此删除旧数据。
 
 #### Scenario: 未变化文件跳过处理
 
-- **WHEN** 某文件的内容哈希、`profileVersion` 与 embedding 模型版本均未变化
+- **WHEN** 某文件的内容哈希、chunk profile、embedding 预处理版本与 embedding 模型版本均未变化
 - **THEN** 系统 MUST 跳过该文件的切分与 embedding 生成
 - **AND** 该文件 SHALL 计入同步记录的未变化数
 
+#### Scenario: profile 或模型变化触发重建
+
+- **WHEN** overlap、父子策略、embedding 预处理或 embedding 模型发生变化
+- **THEN** 系统 MUST 重新生成该文件的 chunk 与 embedding
+- **AND** 新旧版本 SHALL NOT 混写为同一 profile/model 身份
+
 #### Scenario: 单文档事务替换旧版本
 
-- **WHEN** 某文件内容发生变化
+- **WHEN** 某文件内容或 profile/model 身份发生变化
 - **THEN** 系统 MUST 先完成新 chunk 与 embedding 的全部生成
-- **AND** 再以单文档事务原子替换该文件的旧版本
+- **AND** 再以单文档事务原子替换旧版本
 - **AND** 若重建失败，旧版本 chunk SHALL 继续保持可检索
 
 #### Scenario: 删除仅发生在完整扫描之后
@@ -129,13 +163,19 @@
 
 ### Requirement: 6. embedding 生成与维度契约
 
-同步服务 MUST 对文档 chunk 与用户查询使用显式注入的 Cloudflare Workers AI `@cf/baai/bge-m3` embedding provider；每个批次 MUST 保持输入顺序，最多接受 100 条文本，并且在任何文档事务写入前校验每个返回向量正好是 1024 个有限数值。embedding 模型标识 MUST 参与幂等身份；模型或维度变化 MUST 触发 migration 与全量重嵌入，MUST NOT 在同一个 `chunks.embedding` 列中混用新旧向量。
+同步服务 MUST 对文档 chunk 与用户查询使用显式注入的 Cloudflare Workers AI embedding provider；phase3 生产基线为 `@cf/baai/bge-m3` 的 1024 维 dense embedding。每个批次 MUST 保持输入顺序，最多接受 100 条文本，并且在任何文档事务写入前校验每个返回向量正好是 1024 个有限数值。embedding 模型标识与预处理版本 MUST 参与幂等身份；模型或维度变化 MUST 触发 migration 与全量重嵌入，MUST NOT 在同一个 `chunks.embedding` 列中混用新旧向量。当前合同不承诺 BGE-M3 sparse、ColBERT 或 BM25 能力。
 
 #### Scenario: 批量 embedding 保持顺序与上限
 
 - **WHEN** 同步任务向 embedding provider 发送 chunk 内容
 - **THEN** 每个请求 SHALL 最多包含 100 条文本
 - **AND** 返回向量 SHALL 映射到相同的输入顺序
+
+#### Scenario: embedding 输入包含上下文但不含图片 URL
+
+- **WHEN** 为带标题路径的 chunk 生成 embedding
+- **THEN** provider 输入 MUST 包含确定性的标题上下文与正文
+- **AND** 图片 URL SHALL NOT 进入 provider 输入
 
 #### Scenario: 无效 Cloudflare embedding 在写入前被拒绝
 

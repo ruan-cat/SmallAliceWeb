@@ -15,11 +15,7 @@
 		"history": "0000-0004",
 		"vectorType": "vector(1024)",
 		"extensions": ["pg_trgm", "vector"],
-		"indexes": [
-			"chunks_embedding_hnsw_cosine_idx",
-			"chunks_parent_id_idx",
-			"chunks_search_text_trgm_idx"
-		],
+		"indexes": ["chunks_embedding_hnsw_cosine_idx", "chunks_parent_id_idx", "chunks_search_text_trgm_idx"],
 		"reconciliationNote": "0002 的实际 vector(1024)/BGE-M3 状态已存在但迁移账缺少记录；在状态前置条件满足后补齐 0002-0004 记录，随后 drizzle-kit migrate code 0。"
 	},
 	"sync": {
