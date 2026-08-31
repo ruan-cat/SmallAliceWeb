@@ -1,8 +1,19 @@
-import { createSourceUrl, resolveSourceHref } from "@ruan-cat-drill-doc/ai-rag-core";
+import {
+	createSourceUrl,
+	resolveSourceHref,
+} from "@ruan-cat-drill-doc/ai-rag-core";
 import { assertKnowledgeSyncAuth, type KnowledgeSyncCredentials } from "./auth";
 import { ApiHttpError, getStatusCode, toErrorResponse } from "./errors";
-export { searchRequestSchema, syncRequestSchema, syncRunsQuerySchema } from "./schemas";
-import { searchRequestSchema, syncRequestSchema, syncRunsQuerySchema } from "./schemas";
+export {
+	searchRequestSchema,
+	syncRequestSchema,
+	syncRunsQuerySchema,
+} from "./schemas";
+import {
+	searchRequestSchema,
+	syncRequestSchema,
+	syncRunsQuerySchema,
+} from "./schemas";
 
 type SearchItem = {
 	id: string;
@@ -14,22 +25,50 @@ type SearchItem = {
 	headingAnchor: string;
 	chunkIndex: number;
 	imageUrls: string[];
+	parentId?: string;
+	strategy?: string;
 };
 
 type HandlerResult<T> = { status: number; body: T };
 
 type ApiSuccess<T> = { success: true; code: 200; message: "ok"; data: T };
 
-const success = <T>(data: T): ApiSuccess<T> => ({ success: true, code: 200, message: "ok", data });
+const success = <T>(data: T): ApiSuccess<T> => ({
+	success: true,
+	code: 200,
+	message: "ok",
+	data,
+});
 
 /** 将检索结果映射为前端可直接展示和跳转的来源 DTO。 */
 export async function handleSearchRequest(
 	input: unknown,
-	deps: { search: (query: string, options: { limit: number; k: number }) => Promise<SearchItem[]> },
-): Promise<HandlerResult<ApiSuccess<{ items: Array<SearchItem & { sourceUrl: string; sourceHref: string }> }>>> {
+	deps: {
+		search: (
+			query: string,
+			options: {
+				limit: number;
+				k: number;
+				candidateLimit: number;
+				finalLimit: number;
+			},
+		) => Promise<SearchItem[]>;
+	},
+): Promise<
+	HandlerResult<
+		ApiSuccess<{
+			items: Array<SearchItem & { sourceUrl: string; sourceHref: string }>;
+		}>
+	>
+> {
 	try {
 		const request = searchRequestSchema.parse(input);
-		const items = await deps.search(request.query, { limit: request.limit, k: request.k });
+		const items = await deps.search(request.query, {
+			limit: request.finalLimit,
+			candidateLimit: request.candidateLimit,
+			finalLimit: request.finalLimit,
+			k: request.k,
+		});
 		return {
 			status: 200,
 			body: success({
@@ -41,7 +80,10 @@ export async function handleSearchRequest(
 			}),
 		};
 	} catch (error) {
-		return { status: getStatusCode(error), body: toErrorResponse(error, "搜索失败") as never };
+		return {
+			status: getStatusCode(error),
+			body: toErrorResponse(error, "搜索失败") as never,
+		};
 	}
 }
 
@@ -57,7 +99,10 @@ export async function handleSyncRequest(
 		const body = syncRequestSchema.parse(input);
 		return { status: 200, body: success(await deps.sync(body)) };
 	} catch (error) {
-		return { status: getStatusCode(error), body: toErrorResponse(error, "同步失败") };
+		return {
+			status: getStatusCode(error),
+			body: toErrorResponse(error, "同步失败"),
+		};
 	}
 }
 
@@ -68,9 +113,15 @@ export async function handleSyncRunsRequest(
 ) {
 	try {
 		const query = syncRunsQuerySchema.parse(input);
-		return { status: 200, body: success({ items: await deps.listRuns({ limit: query.limit }) }) };
+		return {
+			status: 200,
+			body: success({ items: await deps.listRuns({ limit: query.limit }) }),
+		};
 	} catch (error) {
-		return { status: getStatusCode(error), body: toErrorResponse(error, "同步记录查询失败") };
+		return {
+			status: getStatusCode(error),
+			body: toErrorResponse(error, "同步记录查询失败"),
+		};
 	}
 }
 

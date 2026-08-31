@@ -7,6 +7,14 @@ export type RagNitroConfig = {
 		databaseUrl: string;
 		syncDatabaseUrl: string;
 		embeddingModel: string;
+		rerankerMode?: "disabled" | "noop" | "llm";
+		rerankerProvider?: string;
+		rerankerModel?: string;
+		rerankerVersion?: string;
+		rerankerCandidateLimit?: number;
+		rerankerMaxInputTokens?: number;
+		rerankerTimeoutMs?: number;
+		rerankerMaxCostUsd?: number;
 		cloudflareAccountId?: string;
 		cloudflareApiToken?: string;
 		openaiApiKey: string;

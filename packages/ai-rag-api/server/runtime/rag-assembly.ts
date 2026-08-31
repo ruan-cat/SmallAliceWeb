@@ -1,6 +1,11 @@
-import { getActiveRagLlmConfig, type RagLlmProviderConfig } from "../../src/llm-config";
+import {
+	getActiveRagLlmConfig,
+	type RagLlmProviderConfig,
+} from "../../src/llm-config";
 import type { RagNitroConfig } from "../../src/runtime-config";
 import type { ChatDependencies, ChatSource } from "../contracts/chat";
+import { createNoopReranker } from "../reranker/noop-reranker";
+import type { RerankerProvider } from "../reranker/types";
 import { hybridSearch, type HybridSearchItem } from "../search/hybrid-search";
 
 /** 允许 runtime assembly 接收已解析的 Nitro 私有配置，不读取裸环境变量。 */
@@ -11,7 +16,10 @@ export type RagRuntimeConfig = Readonly<RagNitroConfig["runtimeConfig"]> & {
 /** 数据库检索 provider；连接由调用方通过 factory 创建并注入。 */
 export type RagDatabaseProvider = {
 	lexicalSearch: (query: string, limit: number) => Promise<HybridSearchItem[]>;
-	vectorSearch: (embedding: readonly number[], limit: number) => Promise<HybridSearchItem[]>;
+	vectorSearch: (
+		embedding: readonly number[],
+		limit: number,
+	) => Promise<HybridSearchItem[]>;
 };
 
 /** embedding provider；模型连接由调用方通过 factory 创建并注入。 */
@@ -37,13 +45,22 @@ type RagSyncFactoryInput = {
 
 /** 所有外部 provider 都必须通过显式 factory 注入。 */
 export type RagRuntimeProviderFactories = {
-	createDatabase: (input: { databaseUrl: string }) => RagDatabaseProvider | Promise<RagDatabaseProvider>;
-	createEmbedding: (input: { model: string }) => RagEmbeddingProvider | Promise<RagEmbeddingProvider>;
+	createDatabase: (input: {
+		databaseUrl: string;
+	}) => RagDatabaseProvider | Promise<RagDatabaseProvider>;
+	createEmbedding: (input: {
+		model: string;
+	}) => RagEmbeddingProvider | Promise<RagEmbeddingProvider>;
 	createModel: (input: {
 		apiKey: string;
 		provider: RagLlmProviderConfig & { id: "openai" | "anthropic" };
 	}) => RagModelProvider | Promise<RagModelProvider>;
-	createSync: (input: RagSyncFactoryInput) => RagSyncProvider | Promise<RagSyncProvider>;
+	createSync: (
+		input: RagSyncFactoryInput,
+	) => RagSyncProvider | Promise<RagSyncProvider>;
+	createReranker?: (input: {
+		config: RagRuntimeConfig;
+	}) => RerankerProvider | Promise<RerankerProvider>;
 };
 
 /** 同步路由需要的公开配置视图，不暴露数据库 URL、API key 或模型名。 */
@@ -55,8 +72,19 @@ export type RagRuntimeConfigView = Readonly<{
 
 /** 可挂载到 event.context.rag 的完整能力集合。 */
 export type RagRuntimeContext = Readonly<{
-	retrieve: (message: string, options: { limit: number }) => Promise<ChatSource[]>;
-	search: (query: string, options: { limit: number; k: number }) => Promise<HybridSearchItem[]>;
+	retrieve: (
+		message: string,
+		options: { limit: number },
+	) => Promise<ChatSource[]>;
+	search: (
+		query: string,
+		options: {
+			limit: number;
+			k: number;
+			candidateLimit?: number;
+			finalLimit?: number;
+		},
+	) => Promise<HybridSearchItem[]>;
 	stream: ChatDependencies["stream"];
 	sync: RagSyncProvider["sync"];
 	syncRuns: RagSyncProvider["syncRuns"];
@@ -93,7 +121,9 @@ export class RagRuntimeProviderError extends Error {
 	readonly cause: unknown;
 }
 
-function requiredConfigMissing(config: RagRuntimeConfig): RagRuntimeRequirement[] {
+function requiredConfigMissing(
+	config: RagRuntimeConfig,
+): RagRuntimeRequirement[] {
 	const missing: RagRuntimeRequirement[] = [];
 	if (!config.databaseUrl.trim()) missing.push("database");
 	if (!config.embeddingModel.trim()) missing.push("embedding");
@@ -109,11 +139,17 @@ function assertProviderFunction<T extends object>(
 	methods: readonly (keyof T)[],
 ): T {
 	if (!provider || typeof provider !== "object") {
-		throw new RagRuntimeProviderError(providerName, new TypeError("factory 未返回 provider 对象"));
+		throw new RagRuntimeProviderError(
+			providerName,
+			new TypeError("factory 未返回 provider 对象"),
+		);
 	}
 	for (const method of methods) {
 		if (typeof provider[method] !== "function") {
-			throw new RagRuntimeProviderError(providerName, new TypeError("provider 缺少 " + String(method) + " 方法"));
+			throw new RagRuntimeProviderError(
+				providerName,
+				new TypeError("provider 缺少 " + String(method) + " 方法"),
+			);
 		}
 	}
 	return provider;
@@ -146,12 +182,16 @@ export async function createRagRuntimeContext(
 	if (missing.length > 0) throw new RagRuntimeNotConfiguredError(missing);
 
 	const database = assertProviderFunction(
-		await initializeProvider("createDatabase", () => factories.createDatabase({ databaseUrl: config.databaseUrl })),
+		await initializeProvider("createDatabase", () =>
+			factories.createDatabase({ databaseUrl: config.databaseUrl }),
+		),
 		"createDatabase",
 		["lexicalSearch", "vectorSearch"],
 	);
 	const embedding = assertProviderFunction(
-		await initializeProvider("createEmbedding", () => factories.createEmbedding({ model: config.embeddingModel })),
+		await initializeProvider("createEmbedding", () =>
+			factories.createEmbedding({ model: config.embeddingModel }),
+		),
 		"createEmbedding",
 		["createEmbedding"],
 	);
@@ -166,25 +206,45 @@ export async function createRagRuntimeContext(
 		["stream"],
 	);
 	const sync = assertProviderFunction(
-		await initializeProvider("createSync", () => factories.createSync({ database, config })),
+		await initializeProvider("createSync", () =>
+			factories.createSync({ database, config }),
+		),
 		"createSync",
 		["sync", "syncRuns"],
 	);
+	const reranker = await initializeReranker(config, factories.createReranker);
 
-	const search = (query: string, options: { limit: number; k: number }) =>
-		hybridSearch(
+	const search = async (
+		query: string,
+		options: {
+			limit: number;
+			k: number;
+			candidateLimit?: number;
+			finalLimit?: number;
+		},
+	) => {
+		const finalLimit = options.finalLimit ?? options.limit;
+		const candidateLimit =
+			options.candidateLimit ?? Math.max(finalLimit, options.limit);
+		const candidates = await hybridSearch(
 			query,
 			{
-				createEmbedding: (searchQuery) => embedding.createEmbedding(searchQuery),
-				lexicalSearch: (searchQuery, limit) => database.lexicalSearch(searchQuery, limit),
+				createEmbedding: (searchQuery) =>
+					embedding.createEmbedding(searchQuery),
+				lexicalSearch: (searchQuery, limit) =>
+					database.lexicalSearch(searchQuery, limit),
 				vectorSearch: (vector, limit) => database.vectorSearch(vector, limit),
 			},
-			options,
+			{ candidateLimit, finalLimit: candidateLimit, k: options.k },
 		);
+		const reranked = await reranker.rerank({ query, candidates });
+		return reranked.items.slice(0, finalLimit);
+	};
 
 	return {
 		search,
-		retrieve: (message, options) => search(message, { limit: options.limit, k: 60 }),
+		retrieve: (message, options) =>
+			search(message, { limit: options.limit, k: 60 }),
 		stream: (request) => model.stream(request),
 		sync: (input) => sync.sync(input),
 		syncRuns: (options) => sync.syncRuns(options),
@@ -194,4 +254,31 @@ export async function createRagRuntimeContext(
 			cronSecret: config.cronSecret || undefined,
 		}),
 	};
+}
+
+async function initializeReranker(
+	config: RagRuntimeConfig,
+	factory: RagRuntimeProviderFactories["createReranker"],
+): Promise<RerankerProvider> {
+	const mode = config.rerankerMode ?? "disabled";
+	const completeConfig =
+		mode === "llm" &&
+		Boolean(config.rerankerProvider?.trim()) &&
+		Boolean(config.rerankerModel?.trim()) &&
+		Boolean(config.rerankerVersion?.trim()) &&
+		Number.isInteger(config.rerankerCandidateLimit) &&
+		(config.rerankerCandidateLimit ?? 0) > 0 &&
+		Number.isInteger(config.rerankerMaxInputTokens) &&
+		(config.rerankerMaxInputTokens ?? 0) > 0 &&
+		Number.isInteger(config.rerankerTimeoutMs) &&
+		(config.rerankerTimeoutMs ?? 0) > 0 &&
+		config.rerankerMaxCostUsd !== undefined &&
+		config.rerankerMaxCostUsd >= 0;
+	if (!completeConfig || !factory)
+		return createNoopReranker(mode === "llm" ? "incomplete-config" : mode);
+	return assertProviderFunction(
+		await initializeProvider("createReranker", () => factory({ config })),
+		"createReranker",
+		["rerank"],
+	);
 }

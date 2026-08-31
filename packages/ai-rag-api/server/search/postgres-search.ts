@@ -15,12 +15,19 @@ type PostgresSearchRow = {
 };
 
 export interface PostgresSearchExecutor {
-	execute: (statement: string, parameters: readonly unknown[]) => Promise<readonly PostgresSearchRow[]>;
+	execute: (
+		statement: string,
+		parameters: readonly unknown[],
+	) => Promise<readonly PostgresSearchRow[]>;
 }
 
 export interface PostgresSearchProvider {
 	lexicalSearch: (query: string, limit: number) => Promise<HybridSearchItem[]>;
-	vectorSearch: (embedding: readonly number[], limit: number) => Promise<HybridSearchItem[]>;
+	pgTrgmSearch: (query: string, limit: number) => Promise<HybridSearchItem[]>;
+	vectorSearch: (
+		embedding: readonly number[],
+		limit: number,
+	) => Promise<HybridSearchItem[]>;
 }
 
 /** 表示调用方输入或数据库检索行不满足既定检索合同。 */
@@ -44,11 +51,18 @@ const selectChunkColumns = `
 `;
 
 export const lexicalSearchStatement = `${selectChunkColumns}
-    ts_rank_cd(to_tsvector('simple', content), websearch_to_tsquery('simple', $1)) AS score
-  FROM chunks
-  WHERE to_tsvector('simple', content) @@ websearch_to_tsquery('simple', $1)
-  ORDER BY score DESC, id ASC
-  LIMIT $2`;
+	    ts_rank_cd(to_tsvector('simple', search_text), websearch_to_tsquery('simple', $1)) AS score
+	  FROM chunks
+	  WHERE to_tsvector('simple', search_text) @@ websearch_to_tsquery('simple', $1)
+	  ORDER BY score DESC, id ASC
+	  LIMIT $2`;
+
+export const pgTrgmSearchStatement = `${selectChunkColumns}
+	    word_similarity($1, search_text) AS score
+	  FROM chunks
+	  WHERE $1 <% search_text
+	  ORDER BY score DESC, id ASC
+	  LIMIT $2`;
 
 export const vectorSearchStatement = `${selectChunkColumns}
     1 - (embedding <=> CAST($1 AS vector)) AS score
@@ -57,17 +71,36 @@ export const vectorSearchStatement = `${selectChunkColumns}
   LIMIT $2`;
 
 /** 创建只依赖显式 executor 的 PostgreSQL 检索 provider；本函数不创建连接。 */
-export function createPostgresSearchProvider(executor: PostgresSearchExecutor): PostgresSearchProvider {
+export function createPostgresSearchProvider(
+	executor: PostgresSearchExecutor,
+): PostgresSearchProvider {
 	return {
 		async lexicalSearch(query, limit) {
 			assertQuery(query);
 			assertLimit(limit);
-			return mapRows(await executor.execute(lexicalSearchStatement, [query, limit]));
+			return mapRows(
+				await executor.execute(lexicalSearchStatement, [query, limit]),
+				"postgres-fts",
+			);
+		},
+		async pgTrgmSearch(query, limit) {
+			assertQuery(query);
+			assertLimit(limit);
+			return mapRows(
+				await executor.execute(pgTrgmSearchStatement, [query, limit]),
+				"pg_trgm",
+			);
 		},
 		async vectorSearch(embedding, limit) {
 			assertEmbedding(embedding);
 			assertLimit(limit);
-			return mapRows(await executor.execute(vectorSearchStatement, [toVectorLiteral(embedding), limit]));
+			return mapRows(
+				await executor.execute(vectorSearchStatement, [
+					toVectorLiteral(embedding),
+					limit,
+				]),
+				"pgvector-cosine",
+			);
 		},
 	};
 }
@@ -82,7 +115,8 @@ function assertQuery(query: string) {
 }
 
 function assertLimit(limit: number) {
-	if (!Number.isInteger(limit) || limit < 1) throw new PostgresSearchError("检索 limit 必须是正整数。");
+	if (!Number.isInteger(limit) || limit < 1)
+		throw new PostgresSearchError("检索 limit 必须是正整数。");
 }
 
 function assertEmbedding(embedding: readonly number[]) {
@@ -94,7 +128,10 @@ function assertEmbedding(embedding: readonly number[]) {
 	}
 }
 
-function mapRows(rows: readonly PostgresSearchRow[]): HybridSearchItem[] {
+function mapRows(
+	rows: readonly PostgresSearchRow[],
+	strategy: string,
+): HybridSearchItem[] {
 	return rows.map((row) => ({
 		id: requireText(row.id, "id"),
 		content: requireText(row.content, "content"),
@@ -105,11 +142,13 @@ function mapRows(rows: readonly PostgresSearchRow[]): HybridSearchItem[] {
 		chunkIndex: requireInteger(row.chunkIndex, "chunkIndex"),
 		imageUrls: requireTextArray(row.imageUrls, "imageUrls"),
 		score: requireFiniteNumber(row.score, "score"),
+		strategy,
 	}));
 }
 
 function requireText(value: unknown, field: string) {
-	if (typeof value !== "string") throw new PostgresSearchError(`检索行 ${field} 必须是字符串。`);
+	if (typeof value !== "string")
+		throw new PostgresSearchError(`检索行 ${field} 必须是字符串。`);
 	return value;
 }
 
@@ -122,7 +161,10 @@ function requireTextArray(value: unknown, field: string) {
 			throw new PostgresSearchError(`检索行 ${field} 必须是字符串数组。`);
 		}
 	}
-	if (!Array.isArray(parsedValue) || parsedValue.some((item) => typeof item !== "string")) {
+	if (
+		!Array.isArray(parsedValue) ||
+		parsedValue.some((item) => typeof item !== "string")
+	) {
 		throw new PostgresSearchError(`检索行 ${field} 必须是字符串数组。`);
 	}
 	return parsedValue;
