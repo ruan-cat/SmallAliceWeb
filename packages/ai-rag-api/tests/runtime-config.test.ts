@@ -10,15 +10,23 @@ describe("RAG API runtime configuration", () => {
 			databaseUrl: "",
 			syncDatabaseUrl: "",
 			embeddingModel: "",
+			rerankerMode: "disabled",
+			rerankerCandidateLimit: 20,
+			rerankerMaxInputTokens: 2000,
+			rerankerTimeoutMs: 800,
 			cloudflareAccountId: "",
 			cloudflareApiToken: "",
 			openaiApiKey: "",
 			anthropicApiKey: "",
 			public: { apiBase: "/v1" },
 		});
-		expect(nitroConfig.rolldownConfig).toMatchObject({ output: { inlineDynamicImports: true } });
+		expect(nitroConfig.rolldownConfig).toMatchObject({
+			output: { inlineDynamicImports: true },
+		});
 		expect(nitroConfig.routeRules).toMatchObject({ "/v1/**": { cors: true } });
-		expect(nitroConfig.vercel).toMatchObject({ functions: { supportsCancellation: true } });
+		expect(nitroConfig.vercel).toMatchObject({
+			functions: { supportsCancellation: true },
+		});
 	});
 
 	test("does not embed a connection string or credential in the configuration", () => {

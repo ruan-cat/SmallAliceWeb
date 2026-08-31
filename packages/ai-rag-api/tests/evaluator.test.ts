@@ -1,7 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, test } from "vitest";
-import { parseEvalQuestions, runRetrievalEvaluation, type EvalQuestion } from "../server/evaluation/evaluator";
+import {
+	parseEvalQuestions,
+	runRetrievalEvaluation,
+	type EvalQuestion,
+} from "../server/evaluation/evaluator";
 import type { HybridSearchItem } from "../server/search/hybrid-search";
+import type { CorpusPreflightResult } from "../server/evaluation/corpus-preflight";
 
 function item(id: string, content: string): HybridSearchItem {
 	return {
@@ -139,17 +144,32 @@ describe("RAG 离线评估器", () => {
 	test("拒绝破坏基线可解释性的无效题集", () => {
 		expect(() =>
 			parseEvalQuestions([
-				{ id: "q1", question: "问题", category: "分类", expected_keywords: ["关键词"] },
-				{ id: "q1", question: "问题 2", category: "分类", expected_keywords: ["关键词"] },
+				{
+					id: "q1",
+					question: "问题",
+					category: "分类",
+					expected_keywords: ["关键词"],
+				},
+				{
+					id: "q1",
+					question: "问题 2",
+					category: "分类",
+					expected_keywords: ["关键词"],
+				},
 			]),
 		).toThrow("重复");
-		expect(() => parseEvalQuestions([{ id: "q1", question: "问题", category: "分类", expected_keywords: [] }])).toThrow(
-			"至少一个关键词",
-		);
+		expect(() =>
+			parseEvalQuestions([
+				{ id: "q1", question: "问题", category: "分类", expected_keywords: [] },
+			]),
+		).toThrow("至少一个关键词");
 	});
 
 	test("固定评估题集可被解析，并维持 10 题离线基线", async () => {
-		const source = await readFile(new URL("../data/eval-questions.json", import.meta.url), "utf8");
+		const source = await readFile(
+			new URL("../data/eval-questions.json", import.meta.url),
+			"utf8",
+		);
 		const fixedQuestions = parseEvalQuestions(JSON.parse(source));
 
 		expect(fixedQuestions).toHaveLength(10);
@@ -165,5 +185,106 @@ describe("RAG 离线评估器", () => {
 			"q9",
 			"q10",
 		]);
+	});
+
+	test("输出 candidate/final ID 与 gold 指标，并隔离 corpus 非 ready 题", async () => {
+		const titleQuestion: EvalQuestion = {
+			id: "q-title",
+			question: "小爱丽丝是谁？",
+			expected_keywords: ["小爱丽丝"],
+			category: "标题型实体",
+			gold: [{ chunkId: "target", grade: 3 }],
+		};
+		const staleQuestion: EvalQuestion = {
+			...titleQuestion,
+			id: "q-stale",
+			question: "语料尚未同步的题",
+		};
+		const preflight = async (
+			question: EvalQuestion,
+		): Promise<CorpusPreflightResult> => ({
+			sourcePath: "docs/docx/guide.md",
+			status: question.id === "q-title" ? "ready" : "corpus-stale",
+			eligibleForMetrics: question.id === "q-title",
+			chunkCount: question.id === "q-title" ? 2 : 0,
+			embeddingCount: question.id === "q-title" ? 2 : 0,
+			headingPathMatched: question.id === "q-title",
+			chunkIdsMatched: question.id === "q-title",
+			reason: question.id === "q-title" ? undefined : "同步状态不可证明",
+		});
+		const report = await runRetrievalEvaluation(
+			[titleQuestion, staleQuestion],
+			{
+				createEmbedding: async () => [1],
+				lexicalSearch: async () => [
+					item("target", "小爱丽丝"),
+					item("noise", "小爱丽丝"),
+				],
+				vectorSearch: async () => [
+					item("noise", "小爱丽丝"),
+					item("target", "小爱丽丝"),
+				],
+			},
+			{
+				limit: 1,
+				candidateLimit: 2,
+				finalLimit: 1,
+				configVersion: "phase3-test",
+				corpusPreflight: preflight,
+			},
+		);
+
+		const titleResult = report.results.find(
+			(result) =>
+				result.questionId === "q-title" && result.strategy === "lexical",
+		);
+		const staleResult = report.results.find(
+			(result) =>
+				result.questionId === "q-stale" && result.strategy === "lexical",
+		);
+		expect(report.configVersion).toBe("phase3-test");
+		expect(titleResult).toMatchObject({
+			candidateIds: ["target", "noise"],
+			finalIds: ["target"],
+			retrievedIds: ["target"],
+			goldMetrics: {
+				candidate: { recallAtK: { 5: 1 } },
+				final: { recallAtK: { 5: 1 } },
+			},
+		});
+		expect(staleResult).toMatchObject({
+			candidateIds: ["target", "noise"],
+			finalIds: ["target"],
+			goldMetrics: null,
+			isolationReason: "corpus-stale",
+		});
+	});
+
+	test("将数据库 hash chunk id 映射为 gold-set 的 sourcePath/chunkIndex 标识", async () => {
+		const report = await runRetrievalEvaluation(
+			[
+				{
+					id: "q-hash-id",
+					question: "标题题",
+					expected_keywords: ["标题"],
+					category: "标题型实体",
+					gold: [{ chunkId: "docs/docx/title.md#23", grade: 3 }],
+				},
+			],
+			{
+				createEmbedding: async () => [1],
+				lexicalSearch: async () => [
+					{
+						...item("hash-target", "标题"),
+						sourcePath: "docs/docx/title.md",
+						chunkIndex: 23,
+					},
+				],
+				vectorSearch: async () => [],
+			},
+			{ limit: 1, candidateLimit: 1, finalLimit: 1 },
+		);
+
+		expect(report.results[0]?.goldMetrics?.final.recallAtK[5]).toBe(1);
 	});
 });

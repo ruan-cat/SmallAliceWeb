@@ -1,9 +1,17 @@
 import { readFile } from "node:fs/promises";
 import { createApp, defineEventHandler } from "nitro/h3";
 import { describe, expect, test } from "vitest";
-import type { RagRuntimeConfig, RagRuntimeContext, RagRuntimeProviderFactories } from "../server/runtime/rag-assembly";
-import { createRagRuntimeContext, RagRuntimeNotConfiguredError } from "../server/runtime/rag-assembly";
+import type {
+	RagRuntimeConfig,
+	RagRuntimeContext,
+	RagRuntimeProviderFactories,
+} from "../server/runtime/rag-assembly";
+import {
+	createRagRuntimeContext,
+	RagRuntimeNotConfiguredError,
+} from "../server/runtime/rag-assembly";
 import type { HybridSearchItem } from "../server/search/hybrid-search";
+import type { RerankerProvider } from "../server/reranker/types";
 import chatRoute from "../server/routes/v1/chat.post";
 import searchRoute from "../server/routes/v1/search.post";
 import syncPostRoute from "../server/routes/v1/knowledge/sync.post";
@@ -20,11 +28,21 @@ const source: HybridSearchItem = {
 	imageUrls: [],
 };
 
-function makeConfig(overrides: Partial<RagRuntimeConfig> = {}): RagRuntimeConfig {
+function makeConfig(
+	overrides: Partial<RagRuntimeConfig> = {},
+): RagRuntimeConfig {
 	return {
 		databaseUrl: "postgres://fake",
 		syncDatabaseUrl: "postgres://sync-fake",
 		embeddingModel: "embedding-fake",
+		rerankerMode: "disabled",
+		rerankerProvider: "",
+		rerankerModel: "",
+		rerankerVersion: "",
+		rerankerCandidateLimit: 20,
+		rerankerMaxInputTokens: 2000,
+		rerankerTimeoutMs: 800,
+		rerankerMaxCostUsd: 0,
 		openaiApiKey: "key-fake",
 		anthropicApiKey: "anthropic-key-fake",
 		knowledgeSyncToken: "sync-fake",
@@ -34,7 +52,9 @@ function makeConfig(overrides: Partial<RagRuntimeConfig> = {}): RagRuntimeConfig
 	};
 }
 
-function makeFactories(overrides: Partial<RagRuntimeProviderFactories> = {}): RagRuntimeProviderFactories {
+function makeFactories(
+	overrides: Partial<RagRuntimeProviderFactories> = {},
+): RagRuntimeProviderFactories {
 	return {
 		createDatabase: async () => ({
 			lexicalSearch: async () => [source],
@@ -58,7 +78,11 @@ function makeFactories(overrides: Partial<RagRuntimeProviderFactories> = {}): Ra
 	};
 }
 
-async function installContext(app: ReturnType<typeof createApp>, path: string, context: RagRuntimeContext) {
+async function installContext(
+	app: ReturnType<typeof createApp>,
+	path: string,
+	context: RagRuntimeContext,
+) {
 	app.use(
 		path,
 		defineEventHandler((event) => {
@@ -75,14 +99,24 @@ describe("RAG runtime assembly", () => {
 			makeFactories({
 				createDatabase: async (input) => {
 					calls.push("database:" + input.databaseUrl);
-					return { lexicalSearch: async () => [source], vectorSearch: async () => [source] };
+					return {
+						lexicalSearch: async () => [source],
+						vectorSearch: async () => [source],
+					};
 				},
 				createEmbedding: async (input) => {
 					calls.push("embedding:" + input.model);
 					return { createEmbedding: async () => [0.1, 0.2] };
 				},
 				createModel: async (input) => {
-					calls.push("model:" + input.provider.id + ":" + input.provider.model + ":" + input.apiKey);
+					calls.push(
+						"model:" +
+							input.provider.id +
+							":" +
+							input.provider.model +
+							":" +
+							input.apiKey,
+					);
 					return {
 						stream: () =>
 							new Response('0:"answer"\n', {
@@ -106,8 +140,15 @@ describe("RAG runtime assembly", () => {
 			"model:anthropic:claude-sonnet-5[1m]:anthropic-key-fake",
 			"sync",
 		]);
-		expect(context.config).toEqual({ apiBase: "/v1", syncToken: "sync-fake", cronSecret: "cron-fake" });
-		expect(() => ((context.config as unknown as { apiBase: string }).apiBase = "/other")).toThrow();
+		expect(context.config).toEqual({
+			apiBase: "/v1",
+			syncToken: "sync-fake",
+			cronSecret: "cron-fake",
+		});
+		expect(
+			() =>
+				((context.config as unknown as { apiBase: string }).apiBase = "/other"),
+		).toThrow();
 		expect(await context.search("RAG", { limit: 1, k: 60 })).toHaveLength(1);
 		expect(await context.retrieve("RAG", { limit: 1 })).toHaveLength(1);
 		expect(await context.sync({ dryRun: true })).toEqual({ ok: true });
@@ -172,13 +213,25 @@ describe("RAG runtime assembly", () => {
 
 		expect(await context.search("RAG", { limit: 1, k: 60 })).toHaveLength(1);
 		expect(await context.retrieve("RAG", { limit: 1 })).toHaveLength(1);
-		expect(await (await context.stream({ message: "RAG", sources: [], system: "" })).text()).toBe('0:"this-answer"\n');
-		expect(await context.sync({ dryRun: true })).toEqual({ provider: "sync-this", dryRun: true });
-		expect(await context.syncRuns({ limit: 1 })).toEqual([{ provider: "sync-this" }]);
+		expect(
+			await (
+				await context.stream({ message: "RAG", sources: [], system: "" })
+			).text(),
+		).toBe('0:"this-answer"\n');
+		expect(await context.sync({ dryRun: true })).toEqual({
+			provider: "sync-this",
+			dryRun: true,
+		});
+		expect(await context.syncRuns({ limit: 1 })).toEqual([
+			{ provider: "sync-this" },
+		]);
 	});
 
 	test("chat、search、sync 路由可以消费真实 Nitro/H3 harness 注入的 assembly context", async () => {
-		const context = await createRagRuntimeContext(makeConfig(), makeFactories());
+		const context = await createRagRuntimeContext(
+			makeConfig(),
+			makeFactories(),
+		);
 
 		const chatApp = createApp();
 		await installContext(chatApp, "/v1/chat", context);
@@ -191,7 +244,9 @@ describe("RAG runtime assembly", () => {
 			}),
 		);
 		expect(chatResponse.status).toBe(200);
-		expect(chatResponse.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+		expect(chatResponse.headers.get("content-type")).toBe(
+			"text/plain; charset=utf-8",
+		);
 		expect(chatResponse.headers.get("x-vercel-ai-data-stream")).toBe("v1");
 		expect(await chatResponse.text()).toBe('0:"answer"\n');
 
@@ -214,55 +269,84 @@ describe("RAG runtime assembly", () => {
 		const syncResponse = await syncApp.fetch(
 			new Request("http://localhost/v1/knowledge/sync", {
 				method: "POST",
-				headers: { authorization: "Bearer sync-fake", "content-type": "application/json" },
+				headers: {
+					authorization: "Bearer sync-fake",
+					"content-type": "application/json",
+				},
 				body: JSON.stringify({ dryRun: true }),
 			}),
 		);
 		expect(syncResponse.status).toBe(200);
-		expect((await syncResponse.json()).data).toEqual({ accepted: true, dryRun: true });
+		expect((await syncResponse.json()).data).toEqual({
+			accepted: true,
+			dryRun: true,
+		});
 	});
 
 	test.each([
 		["database", { databaseUrl: "" }],
 		["embedding", { embeddingModel: "" }],
 		["model", { anthropicApiKey: "" }],
-	] as const)("缺少 %s 配置时不创建半成品 context，路由继续返回 503", async (requirement, override) => {
-		let factoryCalls = 0;
-		const factories = makeFactories({
-			createDatabase: async () => {
-				factoryCalls += 1;
-				return { lexicalSearch: async () => [], vectorSearch: async () => [] };
-			},
-		});
-		await expect(createRagRuntimeContext(makeConfig(override), factories)).rejects.toMatchObject({
-			code: "RAG_NOT_CONFIGURED",
-			status: 503,
-			missing: [requirement],
-		});
-		expect(factoryCalls).toBe(0);
+	] as const)(
+		"缺少 %s 配置时不创建半成品 context，路由继续返回 503",
+		async (requirement, override) => {
+			let factoryCalls = 0;
+			const factories = makeFactories({
+				createDatabase: async () => {
+					factoryCalls += 1;
+					return {
+						lexicalSearch: async () => [],
+						vectorSearch: async () => [],
+					};
+				},
+			});
+			await expect(
+				createRagRuntimeContext(makeConfig(override), factories),
+			).rejects.toMatchObject({
+				code: "RAG_NOT_CONFIGURED",
+				status: 503,
+				missing: [requirement],
+			});
+			expect(factoryCalls).toBe(0);
 
-		const app = createApp();
-		app.use(
-			"/v1/search",
-			defineEventHandler(async (event) => {
-				try {
-					event.context.rag = await createRagRuntimeContext(makeConfig(override), factories);
-				} catch (error) {
-					if (!(error instanceof RagRuntimeNotConfiguredError)) throw error;
-				}
-			}),
-		);
-		app.use("/v1/search", searchRoute);
-		const response = await app.fetch(new Request("http://localhost/v1/search", { method: "POST" }));
-		expect(response.status).toBe(503);
-		expect(await response.json()).toMatchObject({ code: 503, message: "RAG_NOT_CONFIGURED" });
-	});
+			const app = createApp();
+			app.use(
+				"/v1/search",
+				defineEventHandler(async (event) => {
+					try {
+						event.context.rag = await createRagRuntimeContext(
+							makeConfig(override),
+							factories,
+						);
+					} catch (error) {
+						if (!(error instanceof RagRuntimeNotConfiguredError)) throw error;
+					}
+				}),
+			);
+			app.use("/v1/search", searchRoute);
+			const response = await app.fetch(
+				new Request("http://localhost/v1/search", { method: "POST" }),
+			);
+			expect(response.status).toBe(503);
+			expect(await response.json()).toMatchObject({
+				code: 503,
+				message: "RAG_NOT_CONFIGURED",
+			});
+		},
+	);
 
 	test("provider factory 错误被显式包装，且不会通过路由返回 200 假成功", async () => {
 		const failure = new Error("fake provider failure");
 		await expect(
-			createRagRuntimeContext(makeConfig(), makeFactories({ createEmbedding: async () => Promise.reject(failure) })),
-		).rejects.toMatchObject({ provider: "createEmbedding", code: "RAG_PROVIDER_INIT_FAILED", status: 500 });
+			createRagRuntimeContext(
+				makeConfig(),
+				makeFactories({ createEmbedding: async () => Promise.reject(failure) }),
+			),
+		).rejects.toMatchObject({
+			provider: "createEmbedding",
+			code: "RAG_PROVIDER_INIT_FAILED",
+			status: 500,
+		});
 
 		const app = createApp();
 		app.use(
@@ -270,21 +354,37 @@ describe("RAG runtime assembly", () => {
 			defineEventHandler(async (event) => {
 				event.context.rag = await createRagRuntimeContext(
 					makeConfig(),
-					makeFactories({ createEmbedding: async () => Promise.reject(failure) }),
+					makeFactories({
+						createEmbedding: async () => Promise.reject(failure),
+					}),
 				);
 			}),
 		);
 		app.use("/v1/search", searchRoute);
-		const response = await app.fetch(new Request("http://localhost/v1/search", { method: "POST" }));
+		const response = await app.fetch(
+			new Request("http://localhost/v1/search", { method: "POST" }),
+		);
 		expect(response.status).toBe(500);
-		expect(await response.json()).toMatchObject({ status: 500, unhandled: true });
+		expect(await response.json()).toMatchObject({
+			status: 500,
+			unhandled: true,
+		});
 	});
 
 	test("工厂源码和路由不读取裸 process.env，外部环境变量不能替代显式配置", async () => {
-		const assemblySource = await readFile(new URL("../server/runtime/rag-assembly.ts", import.meta.url), "utf8");
+		const assemblySource = await readFile(
+			new URL("../server/runtime/rag-assembly.ts", import.meta.url),
+			"utf8",
+		);
 		const routeSources = await Promise.all([
-			readFile(new URL("../server/routes/v1/chat.post.ts", import.meta.url), "utf8"),
-			readFile(new URL("../server/routes/v1/search.post.ts", import.meta.url), "utf8"),
+			readFile(
+				new URL("../server/routes/v1/chat.post.ts", import.meta.url),
+				"utf8",
+			),
+			readFile(
+				new URL("../server/routes/v1/search.post.ts", import.meta.url),
+				"utf8",
+			),
 		]);
 		expect(assemblySource).not.toContain("process.env");
 		expect(routeSources.join("\\n")).not.toContain("process.env");
@@ -292,12 +392,91 @@ describe("RAG runtime assembly", () => {
 		const original = process.env.DATABASE_URL;
 		process.env.DATABASE_URL = "postgres://should-not-be-read";
 		try {
-			await expect(createRagRuntimeContext(makeConfig({ databaseUrl: "" }), makeFactories())).rejects.toBeInstanceOf(
-				RagRuntimeNotConfiguredError,
-			);
+			await expect(
+				createRagRuntimeContext(
+					makeConfig({ databaseUrl: "" }),
+					makeFactories(),
+				),
+			).rejects.toBeInstanceOf(RagRuntimeNotConfiguredError);
 		} finally {
 			if (original === undefined) delete process.env.DATABASE_URL;
 			else process.env.DATABASE_URL = original;
 		}
+	});
+
+	test("默认 disabled 或预算不完整时使用 Noop，不创建真实 reranker", async () => {
+		let factoryCalls = 0;
+		const factories = makeFactories({
+			createReranker: async () => {
+				factoryCalls += 1;
+				return {
+					rerank: async ({ candidates }) => ({
+						items: [...candidates],
+						status: "applied",
+						provider: "fake",
+						latencyMs: 0,
+					}),
+				} as RerankerProvider;
+			},
+		});
+		const disabled = await createRagRuntimeContext(makeConfig(), factories);
+		await disabled.search("RAG", { limit: 1, k: 60 });
+		expect(factoryCalls).toBe(0);
+
+		const incomplete = await createRagRuntimeContext(
+			makeConfig({
+				rerankerMode: "llm",
+				rerankerProvider: "",
+				rerankerModel: "model",
+				rerankerVersion: "v1",
+			}),
+			factories,
+		);
+		await incomplete.search("RAG", { limit: 1, k: 60 });
+		expect(factoryCalls).toBe(0);
+	});
+
+	test("完整显式 LLM reranker 配置才注入 pipeline，并在最终 limit 前执行", async () => {
+		let factoryCalls = 0;
+		let rerankCalls = 0;
+		const reranker = {
+			rerank: async ({
+				candidates,
+			}: Parameters<RerankerProvider["rerank"]>[0]) => {
+				rerankCalls += 1;
+				return {
+					items: [...candidates].reverse(),
+					status: "applied" as const,
+					provider: "fake",
+					model: "model",
+					version: "v1",
+					latencyMs: 1,
+				};
+			},
+		};
+		const context = await createRagRuntimeContext(
+			makeConfig({
+				rerankerMode: "llm",
+				rerankerProvider: "fake",
+				rerankerModel: "model",
+				rerankerVersion: "v1",
+			}),
+			makeFactories({
+				createReranker: async () => {
+					factoryCalls += 1;
+					return reranker;
+				},
+			}),
+		);
+		await expect(
+			context.search("RAG", {
+				limit: 1,
+				candidateLimit: 2,
+				finalLimit: 1,
+				k: 60,
+			}),
+		).resolves.toHaveLength(1);
+		expect(factoryCalls).toBe(1);
+		expect(rerankCalls).toBe(1);
 	});
 });

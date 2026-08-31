@@ -9,28 +9,81 @@ import {
 	syncRunsQuerySchema,
 } from "../server/contracts/handlers";
 import { assertKnowledgeSyncAuth } from "../server/contracts/auth";
-import { ApiHttpError, getStatusCode, toErrorResponse } from "../server/contracts/errors";
+import {
+	ApiHttpError,
+	getStatusCode,
+	toErrorResponse,
+} from "../server/contracts/errors";
 
 describe("ai-rag-api HTTP contracts", () => {
 	test("schemas validate search and sync input", () => {
-		expect(searchRequestSchema.parse({ query: "RAG" })).toMatchObject({ query: "RAG", limit: 10, k: 60 });
+		expect(searchRequestSchema.parse({ query: "RAG" })).toMatchObject({
+			query: "RAG",
+			limit: 10,
+			k: 60,
+		});
+		expect(
+			searchRequestSchema.parse({ query: "RAG", limit: "5" }),
+		).toMatchObject({
+			limit: 5,
+			candidateLimit: 5,
+			finalLimit: 5,
+		});
+		expect(
+			searchRequestSchema.parse({
+				query: "RAG",
+				candidateLimit: "20",
+				finalLimit: "5",
+			}),
+		).toMatchObject({
+			candidateLimit: 20,
+			finalLimit: 5,
+		});
+		expect(() =>
+			searchRequestSchema.parse({
+				query: "RAG",
+				candidateLimit: 5,
+				finalLimit: 20,
+			}),
+		).toThrow(z.ZodError);
+		expect(() =>
+			searchRequestSchema.parse({ query: "RAG", candidateLimit: 101 }),
+		).toThrow(z.ZodError);
 		expect(syncRequestSchema.parse({})).toEqual({ dryRun: false });
-		expect(syncRunsQuerySchema.parse({ limit: "3" })).toMatchObject({ limit: 3 });
+		expect(syncRunsQuerySchema.parse({ limit: "3" })).toMatchObject({
+			limit: 3,
+		});
 		expect(() => searchRequestSchema.parse({ query: " " })).toThrow(z.ZodError);
 	});
 
 	test("auth distinguishes missing and invalid controlled credentials", () => {
-		expect(() => assertKnowledgeSyncAuth("POST", {}, { syncToken: "sync", cronSecret: "cron" })).toThrowError(
-			new ApiHttpError(401, "UNAUTHORIZED", "缺少同步凭据"),
-		);
 		expect(() =>
-			assertKnowledgeSyncAuth("POST", { authorization: "Bearer wrong" }, { syncToken: "sync", cronSecret: "cron" }),
+			assertKnowledgeSyncAuth(
+				"POST",
+				{},
+				{ syncToken: "sync", cronSecret: "cron" },
+			),
+		).toThrowError(new ApiHttpError(401, "UNAUTHORIZED", "缺少同步凭据"));
+		expect(() =>
+			assertKnowledgeSyncAuth(
+				"POST",
+				{ authorization: "Bearer wrong" },
+				{ syncToken: "sync", cronSecret: "cron" },
+			),
 		).toThrowError(new ApiHttpError(403, "FORBIDDEN", "同步凭据无效"));
 		expect(
-			assertKnowledgeSyncAuth("GET", { Authorization: "Bearer cron" }, { syncToken: "sync", cronSecret: "cron" }),
+			assertKnowledgeSyncAuth(
+				"GET",
+				{ Authorization: "Bearer cron" },
+				{ syncToken: "sync", cronSecret: "cron" },
+			),
 		).toMatchObject({ kind: "cron" });
 		expect(
-			assertKnowledgeSyncAuth("POST", { authorization: "Bearer sync" }, { syncToken: "sync", cronSecret: "cron" }),
+			assertKnowledgeSyncAuth(
+				"POST",
+				{ authorization: "Bearer sync" },
+				{ syncToken: "sync", cronSecret: "cron" },
+			),
 		).toMatchObject({ kind: "sync-token" });
 	});
 
@@ -80,16 +133,29 @@ describe("ai-rag-api HTTP contracts", () => {
 				throw new ApiHttpError(409, "SYNC_IN_PROGRESS", "同步正在进行");
 			},
 		};
-		const denied = await handleSyncRequest({}, { method: "POST", headers: {} }, deps, {
-			syncToken: "sync",
-			cronSecret: "cron",
-		});
+		const denied = await handleSyncRequest(
+			{},
+			{ method: "POST", headers: {} },
+			deps,
+			{
+				syncToken: "sync",
+				cronSecret: "cron",
+			},
+		);
 		expect(denied).toMatchObject({ status: 401, body: { code: 401 } });
-		const conflict = await handleSyncRequest({}, { method: "POST", headers: { authorization: "Bearer sync" } }, deps, {
-			syncToken: "sync",
-			cronSecret: "cron",
+		const conflict = await handleSyncRequest(
+			{},
+			{ method: "POST", headers: { authorization: "Bearer sync" } },
+			deps,
+			{
+				syncToken: "sync",
+				cronSecret: "cron",
+			},
+		);
+		expect(conflict).toMatchObject({
+			status: 409,
+			body: { code: 409, success: false },
 		});
-		expect(conflict).toMatchObject({ status: 409, body: { code: 409, success: false } });
 	});
 
 	test("sync-runs handler parses query and returns injected records", async () => {
@@ -99,7 +165,12 @@ describe("ai-rag-api HTTP contracts", () => {
 		);
 		expect(result).toEqual({
 			status: 200,
-			body: { success: true, code: 200, message: "ok", data: { items: [{ id: "run-1", limit: 1 }] } },
+			body: {
+				success: true,
+				code: 200,
+				message: "ok",
+				data: { items: [{ id: "run-1", limit: 1 }] },
+			},
 		});
 	});
 });

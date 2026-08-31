@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { hybridSearch, type HybridSearchItem } from "../server/search/hybrid-search";
+import {
+	hybridSearch,
+	type HybridSearchItem,
+} from "../server/search/hybrid-search";
 
 const item = (id: string, content: string): HybridSearchItem => ({
 	id,
@@ -34,8 +37,16 @@ describe("hybridSearch", () => {
 			{ limit: 3 },
 		);
 
-		expect(calls).toEqual(["embedding:RAG", "lexical:RAG:3", "vector:0.1,0.2:3"]);
-		expect(results.map((result) => result.id)).toEqual(["shared", "lexical-only", "vector-only"]);
+		expect(calls).toEqual([
+			"embedding:RAG",
+			"lexical:RAG:3",
+			"vector:0.1,0.2:3",
+		]);
+		expect(results.map((result) => result.id)).toEqual([
+			"shared",
+			"lexical-only",
+			"vector-only",
+		]);
 		expect(results[1]).toMatchObject({ content: "词法", score: 1 / 61 });
 	});
 
@@ -51,5 +62,59 @@ describe("hybridSearch", () => {
 				{ limit: 0 },
 			),
 		).rejects.toThrow("limit");
+	});
+
+	test("分离 candidateLimit/finalLimit，并在 RRF 后按 parentId 去重", async () => {
+		const calls: string[] = [];
+		const parentA = { ...item("a-1", "a1"), parentId: "parent-a" };
+		const parentA2 = { ...item("a-2", "a2"), parentId: "parent-a" };
+		const result = await hybridSearch(
+			"标题型查询",
+			{
+				createEmbedding: async () => [1],
+				lexicalSearch: async (_query, limit) => {
+					calls.push(`lexical:${limit}`);
+					return [parentA, parentA2, item("lexical-only", "词法")];
+				},
+				vectorSearch: async (_embedding, limit) => {
+					calls.push(`vector:${limit}`);
+					return [parentA2, item("vector-only", "向量")];
+				},
+			},
+			{ candidateLimit: 20, finalLimit: 2, k: 60 },
+		);
+
+		expect(calls).toEqual(["lexical:20", "vector:20"]);
+		expect(result).toHaveLength(2);
+		expect(result.map((entry) => entry.parentId ?? entry.id)).toEqual([
+			"parent-a",
+			"vector-only",
+		]);
+	});
+
+	test("拒绝 candidate/final 组合与非正 RRF k", async () => {
+		const providers = {
+			createEmbedding: async () => [],
+			lexicalSearch: async () => [],
+			vectorSearch: async () => [],
+		};
+		await expect(
+			hybridSearch("q", providers, { candidateLimit: 1, finalLimit: 2 }),
+		).rejects.toThrow("candidateLimit");
+		await expect(
+			hybridSearch("q", providers, { candidateLimit: 2, finalLimit: 1, k: 0 }),
+		).rejects.toThrow("k");
+	});
+
+	test("provider 失败时向调用方传播失败，不生成空成功结果", async () => {
+		await expect(
+			hybridSearch("q", {
+				createEmbedding: async () => [],
+				lexicalSearch: async () => {
+					throw new Error("lexical unavailable");
+				},
+				vectorSearch: async () => [],
+			}),
+		).rejects.toThrow("lexical unavailable");
 	});
 });
