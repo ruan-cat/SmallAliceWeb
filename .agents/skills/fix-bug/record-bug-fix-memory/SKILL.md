@@ -256,6 +256,12 @@ metadata:
 - 适用场景：多 Vercel 项目 monorepo 中，数据库环境变量被误判为缺失，或只完成本地/Preview/API 验证而未完成 Git-triggered Production 与真实浏览器验收。
 - 关键约束：先核对 `.vercel/project.json` 和目标项目，再执行 `vercel env ls`；以同一 Git SHA 的 Production Ready 日志和有头 Agent Browser 的页面/API/来源/停止证据组成闭环，禁止把部分流式状态包装成完整回答成功。
 
+### 13.11 冗余 main-sync worktree 遗留事故与纠偏（2026-09-02）
+
+- 详细案例：`2026-09-02-redundant-main-sync-worktree.md`
+- 适用场景：agent 创建「临时」git worktree/分支/目录等设施后未清理，或后续会话把一次性绕路 workaround 当作既定流程复用。
+- 关键约束：agent 自建临时资源必须同会话清理；发布 main 一律 `git push origin dev:main`（先确认 fast-forward），禁止重建 main 同步 worktree；写入 memorix 时区分「最优解」与「历史遗留」。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
