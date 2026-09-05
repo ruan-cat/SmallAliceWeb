@@ -257,3 +257,11 @@ Error: File /vercel/path0/packages/ai-vue-doc/sharp does not exist.
 
 13. **引入跨平台行为分支必须取得目标平台证据**：`traceInclude` 修复的是"警告"（良性），却引入了"硬错误"（致命）——修噪音前先评估目标平台风险收益比。
 14. **Vercel 生产验证不能靠本地 win32 推断**：凡按 `process.platform` 分叉的构建配置，两个分支都需要在对应平台上至少跑通一次。
+
+### 续章补遗：回退后的生产验证结果（同日）
+
+- 回退 traceInclude 后推送 `a8170d0` → Vercel 部署 `dpl_VipqeTAyam6fti6hJ27L54YrZ7KC` **READY**（全流水线含 ai-rag-api#build 与 ai-vue-doc#build 通过）。
+- 文档站生产冒烟：部署 URL 首页 200 + `<title>小爱丽丝官网`。
+- ai-rag-api 生产接口（`smallalice-docs-ai-nitro-api.ruan-cat.com`，生产部署自 main 分支 `752fa45c`，**早于今日全部改动**）：`POST /v1/search` 200 + 标准 ApiResponse + 真实 RAG 结果；`POST /v1/chat` SSE 流式正常（来源帧 + 检索链路完整）。
+- `GET /v1/knowledge/sync-runs` 500（标准 ApiResponse 结构，handler 正常执行，DB 查询层失败）——当前线上 API 构建于今日改动之前，**定性为既有问题**，与今日依赖治理无关，建议单独排查 Neon 查询。
+- 结论：h3 治理未破坏 ai-rag-api（构建级 + 运行时机制级双重证据）；真实破坏源是 traceInclude（已回退 + 技能修正 10.15.1）。注意：API 生产部署跟随 main 分支，今日 dev 改动要进入 API 生产需 dev→main 合并（待用户决策）。
