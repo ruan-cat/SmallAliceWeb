@@ -7,7 +7,7 @@
 		"dev": "nuxt dev",
 		"predev": "nuxt prepare",
 		"prebuild": "nuxt prepare",
-		"build": "nuxt build",
+		"build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 nuxt build",
 		"typecheck": "nuxt typecheck",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare"
@@ -27,6 +27,8 @@
 		"vue": "^3.5.30"
 	},
 	"devDependencies": {
-		"@iconify-json/lucide": "^1.2.98"
+		"@iconify-json/lucide": "^1.2.98",
+		"cross-env": "^10.1.0",
+		"sharp": "0.33.5"
 	}
 }
