@@ -1008,3 +1008,516 @@ export function mountAiChat(
 | `packages/ai-vue/src/styles/index.scss` | 当前样式（CSS 变量驱动） |
 | `packages/ai-vue/src/composables/useMockAiChat.ts` | Mock 对话 composable |
 | `packages/ai-vitepress-plugins/src/client/composables/useKnowledgeChat.ts` | RAG 聊天 composable（需保持兼容） |
+
+---
+
+## 十、P1.5 Teek 主题色传递链路方案 [新增]
+
+> 本阶段是对 P1 品牌化主题系统的补充，解决 Teek 主题色 → ai-vitepress-plugins → ai-vue 的完整传递问题。
+> 建议在 P1 之后、P2 之前实施，因为 P2 的 Shadow DOM 隔离需要先解决主题色传递。
+
+### 10.1 Teek 主题色变量调研结果
+
+通过分析 `vitepress-theme-teek@1.6.2` 的源码，确认 Teek 主题提供以下关键颜色变量：
+
+| Teek 变量 | 引用关系 | 用途 |
+|-----------|----------|------|
+| `--tk-theme-color` | `var(--vp-c-brand-1)` | Teek 主主题色，直接引用 VitePress brand-1 |
+| `--tk-color-primary` | Teek 自定义 | Element Plus 兼容主色 |
+| `--tk-color-primary-light-3/5/7/8/9` | Teek 派生 | Element Plus 兼容色阶（light-9 最浅） |
+| `--tk-el-color-primary` | `var(--tk-color-primary)` | Element Plus primary 色别名 |
+| `--tk-bg-color` | Teek 自定义 | Teek 背景色 |
+| `--tk-text-color` | Teek 自定义 | Teek 文字色 |
+| `--tk-fill-color-dark` | Teek 自定义 | 骨架屏填充色 |
+
+**动态主题色切换机制**：Teek 通过 `html[theme-color="tk-primary"]` 等属性选择器实现主题色切换，每个 theme-color 值对应一组不同的 `--tk-color-primary` 色板。
+
+### 10.2 方案一：CSS 变量桥接增强（ai-vitepress-plugins 层）
+
+在 `packages/ai-vitepress-plugins/src/client/style.css` 中增强桥接，优先使用 Teek 变量：
+
+```css
+/* === Teek 主题色桥接（优先于 VitePress 变量） === */
+
+/* 主色调：Teek > VitePress > 固定 fallback */
+.ai-chat-vitepress-shell {
+  /* 主色：优先取 Teek 主题色，降级到 VitePress brand-1 */
+  --ai-chat-primary-color: var(--tk-theme-color, var(--vp-c-brand-1, #3b82f6));
+  --ai-chat-primary-hover-color: var(--tk-color-primary-light-3, var(--vp-c-brand-2, #60a5fa));
+  --ai-chat-primary-soft-color: var(--tk-color-primary-light-9, var(--vp-c-brand-soft, rgb(59 130 246 / 12%)));
+  --ai-chat-primary-contrast-color: var(--vp-c-white, #ffffff);
+
+  /* 背景层：优先取 Teek 背景色 */
+  --ai-chat-surface-color: var(--tk-bg-color, var(--vp-c-bg-elv, var(--vp-c-bg, #ffffff)));
+  --ai-chat-surface-muted-color: var(--vp-c-bg-soft, var(--vp-c-bg-alt, #f6f6f7));
+  --ai-chat-surface-elevated-color: var(--vp-c-bg, #ffffff);
+
+  /* 文字层：优先取 Teek 文字色 */
+  --ai-chat-text-color: var(--tk-text-color, var(--vp-c-text-1, #213547));
+  --ai-chat-text-muted-color: var(--vp-c-text-2, #676e7b);
+
+  /* 边框层 */
+  --ai-chat-border-color: var(--vp-c-divider, rgb(60 60 67 / 12%));
+  --ai-chat-border-strong-color: var(--vp-c-divider, rgb(60 60 67 / 29%));
+
+  /* 状态色 */
+  --ai-chat-focus-color: var(--tk-color-primary-light-9, var(--vp-c-brand-soft, rgb(59 130 246 / 32%)));
+  --ai-chat-success-color: var(--vp-c-green-1, #16a34a);
+  --ai-chat-danger-color: var(--vp-c-danger-1, #b91c1c);
+}
+
+/* === Teek 动态主题色切换支持 === */
+/* 当 Teek 切换主题色时，html 元素会获得 theme-color 属性 */
+/* 我们需要确保 AI 聊天组件在这些属性变化时自动跟随 */
+
+/* 暗色模式覆盖 */
+html.dark .ai-chat-vitepress-shell {
+  --ai-chat-surface-color: var(--tk-bg-color, var(--vp-c-bg-elv, #1a1a1a));
+  --ai-chat-surface-muted-color: var(--vp-c-bg-soft, #252525);
+  --ai-chat-surface-elevated-color: var(--vp-c-bg, #1a1a1a);
+  --ai-chat-text-color: var(--tk-text-color, var(--vp-c-text-1, #ffffff));
+  --ai-chat-text-muted-color: var(--vp-c-text-2, #a0a0a0);
+}
+```
+
+### 10.3 方案二：运行时主题色获取 composable（ai-vue 层）
+
+新增 `useThemeColor` composable，在运行时获取当前生效的主题色：
+
+```typescript
+// packages/ai-vue/src/composables/useThemeColor.ts
+import { onBeforeUnmount, onMounted, ref, type Ref } from "vue";
+
+export interface ThemeColorState {
+  /** 当前主色调，如 #3b82f6 */
+  primary: Ref<string>;
+  /** 当前是否为暗色模式 */
+  isDark: Ref<boolean>;
+  /** 是否已初始化（SSR 安全） */
+  isReady: Ref<boolean>;
+}
+
+/**
+ * 运行时获取 Teek/VitePress 主题色。
+ *
+ * 通过 getComputedStyle 读取 CSS 变量的实际计算值，
+ * 并通过 MutationObserver 监听 html 元素的 class 和 attribute 变化，
+ * 实现主题色切换时自动更新。
+ *
+ * SSR 安全：在服务端渲染时返回默认值，不访问 document。
+ */
+export function useThemeColor(): ThemeColorState {
+  const primary = ref("#3b82f6");
+  const isDark = ref(false);
+  const isReady = ref(false);
+
+  let observer: MutationObserver | null = null;
+
+  /** 从 DOM 读取当前主题色 */
+  function readThemeColor() {
+    if (typeof document === "undefined") return;
+
+    const root = document.documentElement;
+    const computed = getComputedStyle(root);
+
+    // 优先读取 Teek 主题色，降级到 VitePress brand-1
+    const tkColor = computed.getPropertyValue("--tk-theme-color").trim();
+    const vpColor = computed.getPropertyValue("--vp-c-brand-1").trim();
+
+    if (tkColor) {
+      primary.value = tkColor;
+    } else if (vpColor) {
+      primary.value = vpColor;
+    }
+
+    // 检测暗色模式
+    isDark.value = root.classList.contains("dark");
+    isReady.value = true;
+  }
+
+  onMounted(() => {
+    readThemeColor();
+
+    // 监听 html 元素的 class 和 attribute 变化
+    // Teek 切换主题色时会修改 html 的 theme-color 属性
+    // VitePress 切换暗色模式时会切换 html 的 dark class
+    observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === "attributes" &&
+          (mutation.attributeName === "class" ||
+            mutation.attributeName === "theme-color" ||
+            mutation.attributeName === "data-theme")
+        ) {
+          readThemeColor();
+          break;
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "theme-color", "data-theme"],
+    });
+  });
+
+  onBeforeUnmount(() => {
+    observer?.disconnect();
+    observer = null;
+  });
+
+  return { primary, isDark, isReady };
+}
+```
+
+### 10.4 方案三：useBrandTheme 与 useThemeColor 的协同
+
+修改 P1 阶段的 `useBrandTheme`，优先使用运行时获取的 Teek 主题色：
+
+```typescript
+// packages/ai-vue/src/composables/useBrandTheme.ts（修改版）
+import { computed, type Ref } from "vue";
+import { useThemeColor } from "./useThemeColor";
+
+export interface UseBrandThemeOptions {
+  /** 手动传入的品牌色，作为运行时获取失败时的降级 */
+  primaryBrandColor?: string;
+  /** 自定义色阶覆盖 */
+  colorSchemeOverrides?: Partial<UserProvidedColorScheme>;
+}
+
+export function useBrandTheme(options: UseBrandThemeOptions = {}) {
+  // 尝试从运行时获取 Teek 主题色
+  const { primary: runtimePrimary, isDark, isReady } = useThemeColor();
+
+  // 种子色优先级：运行时 Teek 主题色 > 手动传入 > 默认值
+  const seedColor = computed(() => {
+    if (isReady.value && runtimePrimary.value) {
+      return runtimePrimary.value;
+    }
+    return options.primaryBrandColor ?? "#3b82f6";
+  });
+
+  // 从种子色派生完整色板（P1 阶段的色板派生逻辑）
+  const colorScheme = computed(() => {
+    const base = deriveColorScheme(seedColor.value);
+    return { ...base, ...options.colorSchemeOverrides };
+  });
+
+  // 生成 CSS 变量对象
+  const cssVars = computed(() => ({
+    "--ai-chat-primary": colorScheme.value.strong,
+    "--ai-chat-primary-hover": colorScheme.value.stronger,
+    "--ai-chat-primary-soft": colorScheme.value.lighter,
+    "--ai-chat-surface": isDark.value
+      ? colorScheme.value.medium
+      : colorScheme.value.lightSubtle,
+    // ... 其他变量
+  }));
+
+  return { seedColor, colorScheme, cssVars, isDark, isReady };
+}
+```
+
+### 10.5 实施任务清单
+
+| # | 任务 | 文件 | 优先级 |
+|---|------|------|--------|
+| 1 | 增强 style.css 桥接 Teek 变量 | `ai-vitepress-plugins/src/client/style.css` | P0 |
+| 2 | 新增暗色模式覆盖 | `ai-vitepress-plugins/src/client/style.css` | P0 |
+| 3 | 新增 useThemeColor composable | `ai-vue/src/composables/useThemeColor.ts` | P0 |
+| 4 | 修改 useBrandTheme 协同 useThemeColor | `ai-vue/src/composables/useBrandTheme.ts` | P1 |
+| 5 | 更新 theme-style.test.ts 覆盖 Teek 变量 | `ai-vitepress-plugins/src/tests/theme-style.test.ts` | P1 |
+| 6 | 新增 useThemeColor 单元测试 | `ai-vue/src/tests/use-theme-color.test.ts` | P1 |
+| 7 | 修改 AiChat.vue 接入 useBrandTheme | `ai-vue/src/components/ai-chat/AiChat.vue` | P2 |
+
+---
+
+## 十一、Agent-Browser 视觉验证流程 [新增]
+
+> 本章节提供基于 Windows 系统 + agent-browser CLI 的可复现视觉验证流程，
+> 供其他 AI agent 完成自主视觉验证。
+
+### 11.1 环境准备
+
+#### 11.1.1 安装 agent-browser
+
+```bash
+# 在 Windows PowerShell 中执行
+npm install -g agent-browser
+agent-browser install
+agent-browser install --with-deps
+```
+
+#### 11.1.2 启动本地文档站
+
+```bash
+# 在 SmallAliceWeb 仓库根目录
+pnpm install
+pnpm run docs:dev
+# 文档站启动在 http://localhost:5173
+```
+
+#### 11.1.3 确认验证目标
+
+验证目标清单：
+
+| # | 验证场景 | 预期结果 |
+|---|----------|----------|
+| V1 | 默认主题色（indigo）下 AI 聊天组件主色调 | 与导航栏主色调视觉一致 |
+| V2 | 切换 Teek 主题色后 AI 聊天组件主色调 | 跟随切换为新主题色 |
+| V3 | 暗色模式下 AI 聊天组件配色 | 背景变暗、文字变亮、边框适配 |
+| V4 | AI 聊天组件悬浮按钮颜色 | 与主题色一致 |
+| V5 | AI 聊天组件来源链接颜色 | 使用主题色 |
+
+### 11.2 视觉验证流程
+
+#### 步骤 1：打开文档站并截图基线
+
+```bash
+# 打开文档站
+agent-browser open http://localhost:5173
+
+# 等待页面加载完成
+agent-browser wait --load networkidle
+
+# 截图作为基线
+agent-browser screenshot --full baseline-default-light.png
+```
+
+#### 步骤 2：验证默认主题色（V1）
+
+```bash
+# 获取页面交互元素快照
+agent-browser snapshot -i
+
+# 查找 AI 聊天悬浮按钮（通常在右下角）
+# 假设快照显示按钮 ref 为 @e1
+
+# 点击打开 AI 聊天面板
+agent-browser click @e1
+
+# 等待面板展开动画完成
+agent-browser wait --time 1000
+
+# 截图 AI 聊天面板
+agent-browser screenshot ai-chat-panel-default.png
+
+# 通过 JavaScript 获取当前主题色值
+agent-browser eval "
+  const root = document.documentElement;
+  const tk = getComputedStyle(root).getPropertyValue('--tk-theme-color').trim();
+  const vp = getComputedStyle(root).getPropertyValue('--vp-c-brand-1').trim();
+  const aiChat = getComputedStyle(document.querySelector('.ai-chat')).getPropertyValue('--ai-chat-primary-color').trim();
+  JSON.stringify({ tkThemeColor: tk, vpBrand1: vp, aiChatPrimary: aiChat });
+"
+
+# 预期输出：三个值应该一致或 aiChatPrimary 应引用 tk/vp 的值
+# 记录输出到验证报告
+```
+
+#### 步骤 3：验证 Teek 主题色切换（V2）
+
+```bash
+# 查找 Teek 主题色切换器（通常在导航栏设置中）
+agent-browser snapshot -i
+
+# 假设主题色切换按钮 ref 为 @e2
+# 点击打开主题色选择面板
+agent-browser click @e2
+
+# 等待面板展开
+agent-browser wait --time 500
+
+# 重新快照找到主题色选项
+agent-browser snapshot -i
+
+# 假设绿色主题选项 ref 为 @e3
+agent-browser click @e3
+
+# 等待主题色切换完成
+agent-browser wait --time 1000
+
+# 截图切换后的 AI 聊天面板
+agent-browser screenshot ai-chat-panel-green-theme.png
+
+# 再次获取主题色值，验证是否已切换
+agent-browser eval "
+  const root = document.documentElement;
+  const tk = getComputedStyle(root).getPropertyValue('--tk-theme-color').trim();
+  const aiChat = getComputedStyle(document.querySelector('.ai-chat')).getPropertyValue('--ai-chat-primary-color').trim();
+  JSON.stringify({ tkThemeColor: tk, aiChatPrimary: aiChat, themeAttr: root.getAttribute('theme-color') });
+"
+
+# 预期：tkThemeColor 和 aiChatPrimary 应变为绿色系值
+```
+
+#### 步骤 4：验证暗色模式（V3）
+
+```bash
+# 查找暗色模式切换按钮（通常在导航栏）
+agent-browser snapshot -i
+
+# 假设暗色模式切换按钮 ref 为 @e4
+agent-browser click @e4
+
+# 等待暗色模式切换完成
+agent-browser wait --time 1000
+
+# 截图暗色模式下的 AI 聊天面板
+agent-browser screenshot ai-chat-panel-dark-mode.png
+
+# 获取暗色模式下的颜色值
+agent-browser eval "
+  const root = document.documentElement;
+  const isDark = root.classList.contains('dark');
+  const surface = getComputedStyle(document.querySelector('.ai-chat')).getPropertyValue('--ai-chat-surface-color').trim();
+  const text = getComputedStyle(document.querySelector('.ai-chat')).getPropertyValue('--ai-chat-text-color').trim();
+  JSON.stringify({ isDark, surfaceColor: surface, textColor: text });
+"
+
+# 预期：isDark 为 true，surfaceColor 为深色，textColor 为浅色
+```
+
+#### 步骤 5：验证悬浮按钮颜色（V4）
+
+```bash
+# 关闭聊天面板，回到只有悬浮按钮的状态
+agent-browser click @e1
+agent-browser wait --time 500
+
+# 截图悬浮按钮
+agent-browser screenshot ai-chat-floating-button.png
+
+# 获取悬浮按钮的颜色
+agent-browser eval "
+  const btn = document.querySelector('.ai-chat-floating-button__trigger');
+  const bg = getComputedStyle(btn).backgroundColor;
+  const color = getComputedStyle(btn).color;
+  JSON.stringify({ backgroundColor: bg, color: color });
+"
+
+# 预期：backgroundColor 应为主题色
+```
+
+#### 步骤 6：关闭浏览器
+
+```bash
+agent-browser close
+```
+
+### 11.3 验证报告模板
+
+每次视觉验证后，填写以下报告：
+
+```markdown
+## 视觉验证报告
+
+- **日期**：YYYY-MM-DD
+- **验证人**：AI Agent / 人类
+- **文档站版本**：commit hash
+- **agent-browser 版本**：x.x.x
+
+### 验证结果
+
+| # | 场景 | 状态 | 截图 | 备注 |
+|---|------|------|------|------|
+| V1 | 默认主题色 | ✅/❌ | ai-chat-panel-default.png | tkThemeColor=xxx, aiChatPrimary=xxx |
+| V2 | 主题色切换 | ✅/❌ | ai-chat-panel-green-theme.png | 切换后 tkThemeColor=xxx |
+| V3 | 暗色模式 | ✅/❌ | ai-chat-panel-dark-mode.png | isDark=true, surfaceColor=xxx |
+| V4 | 悬浮按钮 | ✅/❌ | ai-chat-floating-button.png | backgroundColor=xxx |
+| V5 | 来源链接 | ✅/❌ | — | color=xxx |
+
+### 失败分析（如有）
+
+对于每个 ❌ 项，记录：
+1. 预期值 vs 实际值
+2. 可能的根因
+3. 修复建议
+```
+
+### 11.4 自动化验证脚本
+
+将上述流程封装为可重复执行的脚本：
+
+```bash
+#!/bin/bash
+# scripts/verify-ai-chat-theme.sh
+# 在 Windows Git Bash 或 WSL 中执行
+
+set -e
+
+BASE_URL="${1:-http://localhost:5173}"
+OUTPUT_DIR="${2:-./verify-screenshots}"
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "=== AI 聊天主题色视觉验证 ==="
+echo "目标: $BASE_URL"
+echo "输出: $OUTPUT_DIR"
+
+# 步骤1：打开页面
+agent-browser open "$BASE_URL"
+agent-browser wait --load networkidle
+agent-browser screenshot --full "$OUTPUT_DIR/baseline.png"
+
+# 步骤2：验证默认主题色
+agent-browser snapshot -i > "$OUTPUT_DIR/snapshot-1.txt"
+# AI 按钮通常包含 "AI 对话" 文本
+AI_BTN_REF=$(grep -oP '@e\d+' "$OUTPUT_DIR/snapshot-1.txt" | head -1)
+
+if [ -z "$AI_BTN_REF" ]; then
+  echo "❌ 未找到 AI 聊天按钮"
+  agent-browser close
+  exit 1
+fi
+
+echo "找到 AI 聊天按钮: $AI_BTN_REF"
+agent-browser click "$AI_BTN_REF"
+agent-browser wait --time 1000
+agent-browser screenshot "$OUTPUT_DIR/ai-chat-default.png"
+
+# 获取颜色值
+agent-browser eval "
+  const r = document.documentElement;
+  const c = getComputedStyle(r);
+  const ai = document.querySelector('.ai-chat');
+  const aiC = ai ? getComputedStyle(ai) : null;
+  JSON.stringify({
+    tkThemeColor: c.getPropertyValue('--tk-theme-color').trim(),
+    vpBrand1: c.getPropertyValue('--vp-c-brand-1').trim(),
+    aiChatPrimary: aiC ? aiC.getPropertyValue('--ai-chat-primary-color').trim() : 'N/A',
+    isDark: r.classList.contains('dark')
+  });
+" > "$OUTPUT_DIR/colors-default.json"
+
+echo "默认主题色颜色值已保存到 colors-default.json"
+
+# 步骤3：验证暗色模式
+agent-browser snapshot -i > "$OUTPUT_DIR/snapshot-2.txt"
+DARK_BTN_REF=$(grep -i "dark\|暗\|夜" "$OUTPUT_DIR/snapshot-2.txt" | grep -oP '@e\d+' | head -1)
+
+if [ -n "$DARK_BTN_REF" ]; then
+  agent-browser click "$DARK_BTN_REF"
+  agent-browser wait --time 1000
+  agent-browser screenshot "$OUTPUT_DIR/ai-chat-dark.png"
+  echo "暗色模式截图已保存"
+else
+  echo "⚠️ 未找到暗色模式切换按钮，跳过暗色验证"
+fi
+
+# 清理
+agent-browser close
+
+echo "=== 验证完成 ==="
+echo "截图和颜色数据保存在: $OUTPUT_DIR"
+echo "请人工检查截图，确认 AI 聊天组件颜色与文档站主题色一致"
+```
+
+### 11.5 注意事项
+
+1. **Windows 路径**：在 Windows PowerShell 中执行时，路径使用反斜杠 `\` 或正斜杠 `/` 均可，但建议统一使用正斜杠
+2. **端口冲突**：如果 5173 端口被占用，VitePress 会自动切换到 5174 等，需确认实际端口
+3. **SSR 注意**：VitePress 的 SSR 模式下 `agent-browser eval` 可能无法获取到客户端注入的 CSS 变量，需确保在客户端渲染完成后执行
+4. **截图对比**：建议使用工具（如 `pixelmatch`）对比基线截图和验证截图，实现自动化视觉回归
+5. **CI 集成**：可将 `verify-ai-chat-theme.sh` 集成到 CI 流程，在每次 PR 时自动执行视觉验证

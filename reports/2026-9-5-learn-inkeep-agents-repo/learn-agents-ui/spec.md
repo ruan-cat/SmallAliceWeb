@@ -218,3 +218,98 @@ ai-vue 当前是一个**最小可用**的聊天组件，仅满足"能对话、�
 | 自定义渲染器（Custom Component） | 使用者注册的渲染函数，用于在消息流中渲染特定类型的富组件（如工单卡片） |
 | 函数式嵌入 | 通过 JavaScript 函数（如 `mountAiChat(target, config)`）将组件挂载到 DOM，无需框架环境 |
 | 事件链（Event Chain） | 用户在聊天过程中的完整行为事件序列，用于埋点分析 |
+| Teek 主题 | `vitepress-theme-teek`，SmallAliceWeb 文档站使用的 VitePress 主题，通过 `@ruan-cat/vitepress-preset-config` 引入 |
+| 主题色传递链路 | Teek 主题色 → VitePress CSS 变量 → ai-vitepress-plugins 桥接 → ai-vue 消费的完整颜色传递路径 |
+| CSS 变量桥接 | 在中间层将上游 CSS 变量（如 `--vp-c-brand-1`）映射为下游 CSS 变量（如 `--ai-chat-primary-color`）的机制 |
+
+---
+
+## 七、Teek 主题色传递链路需求 [新增]
+
+### 7.1 背景与现状
+
+SmallAliceWeb 文档站的颜色体系并非单一来源，而是由三层主题叠加构成：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  第1层：VitePress 默认主题变量                            │
+│  --vp-c-brand-1/2/3/soft, --vp-c-bg, --vp-c-text-1 等   │
+│  定义在 docs/.vitepress/theme/style.css                  │
+│  当前映射：--vp-c-brand-1 → --vp-c-indigo-1              │
+└──────────────────────────┬──────────────────────────────┘
+                           │ extends
+┌──────────────────────────▼──────────────────────────────┐
+│  第2层：Teek 主题变量（vitepress-theme-teek）             │
+│  --tk-theme-color, --tk-color-primary,                   │
+│  --tk-el-color-primary-light-3/5/7/8/9,                  │
+│  --tk-bg-color, --tk-text-color 等                       │
+│  Teek 的 --tk-theme-color 直接引用 --vp-c-brand-1        │
+│  支持 html[theme-color=tk-primary] 动态主题色切换         │
+└──────────────────────────┬──────────────────────────────┘
+                           │ 桥接 style.css
+┌──────────────────────────▼──────────────────────────────┐
+│  第3层：ai-vitepress-plugins 桥接层                      │
+│  --ai-chat-primary-color → var(--vp-c-brand-1)           │
+│  --ai-chat-surface-color → var(--vp-c-bg-elv)            │
+│  --ai-chat-text-color → var(--vp-c-text-1)               │
+│  ... 共 15 个桥接变量                                    │
+└──────────────────────────┬──────────────────────────────┘
+                           │ 消费
+┌──────────────────────────▼──────────────────────────────┐
+│  第4层：ai-vue 组件库                                    │
+│  .ai-chat { --ai-chat-primary: var(--ai-chat-primary-    │
+│  color, #3b82f6); }                                      │
+│  当前使用固定深色面板作为 fallback                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+**当前问题**：
+
+1. **桥接不完整**：ai-vitepress-plugins 的 `style.css` 只桥接了 VitePress 的 `--vp-c-*` 变量，**没有桥接 Teek 主题的 `--tk-*` 变量**。当 Teek 主题切换主题色（通过 `html[theme-color=tk-primary]` 属性选择器）时，AI 聊天组件无法感知。
+
+2. **fallback 不适配**：ai-vue 的 `index.scss` 使用固定深色面板色（`#111318`、`#171a21` 等）作为 fallback，这些 fallback 在浅色主题下会显示为不协调的深色块。
+
+3. **缺少运行时感知**：当前桥接是纯 CSS 变量映射，无法在 JavaScript 运行时获取当前主题色值，限制了品牌色派生（P1 阶段的 `useBrandTheme`）无法获取真实的 Teek 主题色作为种子。
+
+4. **暗色模式不同步**：Teek 主题有自己的暗色模式切换逻辑（`.dark` class + `--tk-*` 变量覆盖），ai-vue 组件没有同步机制。
+
+### 7.2 目标：完整的主题色传递链路
+
+#### 目标 7.2.1：Teek 主题色变量桥接
+
+- [ ] ai-vitepress-plugins 的 `style.css` 新增 Teek 主题变量桥接，将 `--tk-theme-color`、`--tk-color-primary` 等变量映射为 `--ai-chat-*` 变量
+- [ ] 桥接优先级为：Teek 变量 > VitePress 变量 > 固定 fallback（Teek 优先，因为 Teek 是最终用户可见的主题层）
+- [ ] 支持 Teek 的 `html[theme-color=tk-primary]` 动态主题色切换，确保 AI 聊天组件跟随切换
+
+#### 目标 7.2.2：运行时主题色获取
+
+- [ ] 提供 `useThemeColor()` composable，在运行时通过 `getComputedStyle(document.documentElement)` 获取当前生效的 `--tk-theme-color` / `--vp-c-brand-1` 值
+- [ ] 该 composable 返回响应式 ref，当 Teek 主题色切换时自动更新
+- [ ] 为 P1 阶段的 `useBrandTheme` 提供真实的主题色种子，而非要求使用者手动传入 `primaryBrandColor`
+
+#### 目标 7.2.3：暗色模式同步
+
+- [ ] ai-vue 组件库感知 Teek/VitePress 的暗色模式切换（监听 `html.dark` class 变化）
+- [ ] 暗色模式下自动切换 ai-vue 的 surface/text/border 色阶，无需使用者手动配置
+- [ ] 与 P2 阶段的 Shadow DOM 方案兼容（Shadow DOM 内部也能感知外部暗色模式）
+
+#### 目标 7.2.4：品牌色派生与主题色获取的协同
+
+- [ ] `useBrandTheme` composable 优先使用运行时获取的 Teek 主题色作为种子
+- [ ] 当运行时获取失败（如 SSR 环境或非 VitePress 嵌入场景）时，降级为使用者传入的 `primaryBrandColor`
+- [ ] 当两者都不可用时，降级为默认品牌色 `#3b82f6`
+
+### 7.3 验收标准
+
+- [ ] 在 Teek 主题色为默认 indigo 时，AI 聊天组件的主色调与文档站导航栏主色调视觉一致
+- [ ] 通过 Teek 的主题色切换功能（如切换为 green/purple）后，AI 聊天组件的主色调跟随切换
+- [ ] 在暗色模式下，AI 聊天组件的背景色、文字色、边框色自动适配为暗色色阶
+- [ ] `useThemeColor()` 返回的颜色值与 `getComputedStyle` 获取的值一致
+- [ ] 在非 VitePress 环境（如纯 Vue 应用）中，`useBrandTheme` 降级为手动传入的品牌色，不报错
+
+### 7.4 约束
+
+1. **不修改 Teek 主题源码**：所有桥接在 ai-vitepress-plugins 和 ai-vue 层完成，不修改 `vitepress-theme-teek` 包
+2. **CSS 变量优先**：颜色传递以 CSS 自定义属性为主要机制，JavaScript 运行时获取仅用于派生场景
+3. **SSR 安全**：`useThemeColor()` 在服务端渲染时返回默认值，不访问 `document`
+4. **性能无感知**：主题色监听使用 `MutationObserver` 而非轮询，对页面性能无影响
