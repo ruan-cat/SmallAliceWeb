@@ -313,3 +313,105 @@ SmallAliceWeb 文档站的颜色体系并非单一来源，而是由三层主题
 2. **CSS 变量优先**：颜色传递以 CSS 自定义属性为主要机制，JavaScript 运行时获取仅用于派生场景
 3. **SSR 安全**：`useThemeColor()` 在服务端渲染时返回默认值，不访问 `document`
 4. **性能无感知**：主题色监听使用 `MutationObserver` 而非轮询，对页面性能无影响
+
+---
+
+## 八、DataComponent 结构化卡片渲染需求 [新增]
+
+### 8.1 背景与现状
+
+当前 `AiChat.vue` 的消息渲染能力非常基础：
+
+- **纯文本 + Markdown**：助手消息通过 `markstream-vue` 渲染为流式 Markdown
+- **来源链接**：助手消息底部展示 RAG 检索来源的链接列表
+- **无结构化卡片**：当 Agent 返回搜索结果、工单信息、订单状态等结构化数据时，只能序列化为纯文本嵌入 Markdown，无法以卡片形式展示
+
+inkeep/agents 的 `DataComponent` 模式展示了更优的方案：Agent 返回结构化数据（JSON），前端根据数据类型注册对应的渲染器，渲染为带标题、摘要、操作按钮的富卡片。例如搜索结果卡片包含标题、摘要、来源链接、相关度评分；工单卡片包含工单号、状态、优先级、处理人。
+
+### 8.2 现有依赖的富 UI 能力盘点 [关键]
+
+**结论：不需要重复造轮子。** SmallAliceWeb 当前依赖的 `vue-element-plus-x` 已经提供了完整的富聊天 UI 组件库，足以支撑 DataComponent 结构化卡片渲染。
+
+#### 8.2.1 vue-element-plus-x 已提供的组件
+
+| 组件 | 用途 | 可用于 DataComponent 的场景 |
+|------|------|----------------------------|
+| **BubbleList** | 消息列表（虚拟滚动、自动跟随） | 消息容器，通过 `itemType` + `#item` slot 分发渲染 |
+| **Bubble** | 单条消息气泡 | 卡片的外层容器（头像、placement、variant） |
+| **FilesCard** | 文件卡片（16 种文件类型） | 文档搜索结果卡片、附件展示 |
+| **Prompts** | 提示卡片（分组、图标、描述） | 示例问题、推荐操作 |
+| **Welcome** | 欢迎卡片 | 空状态引导 |
+| **ThoughtChain** | 思维链展示 | Agent 推理过程展示 |
+| **Conversations** | 会话列表 | 多轮对话历史 |
+| **XSender** | 输入框（提及、触发器） | 增强输入体验 |
+
+#### 8.2.2 BubbleList 的自定义渲染机制
+
+`BubbleList` 提供了完整的 slot 系统用于自定义渲染：
+
+```typescript
+// BubbleList 的 slot 定义（来自类型声明）
+slots: {
+  // 完全自定义整条消息（最高优先级，可按 itemType 分发）
+  item?(ctx: { item: T; index: number; itemType?: string }): any;
+  // 自定义消息内容区域（保留气泡外壳）
+  content?(ctx: { item: T }): any;
+  // 自定义消息头部
+  header?(ctx: { item: T }): any;
+  // 自定义消息尾部（来源链接放这里）
+  footer?(ctx: { item: T }): any;
+  // 自定义头像
+  avatar?(ctx: {}): any;
+  // 自定义加载状态
+  loading?(ctx: { item: T }): any;
+}
+```
+
+**`itemType` 机制**是关键：每条消息可以携带 `itemType` 字段（如 `"search-result"`、`"ticket-card"`），`BubbleList` 的 `#item` slot 可以根据 `itemType` 值分发到不同的渲染组件。这正是 inkeep/agents `ComponentsConfig` 的 Vue 版等价物。
+
+#### 8.2.3 markstream-vue 的自定义渲染能力
+
+`markstream-vue` 提供了 `placeholder` slot，可以在 Markdown 渲染过程中对特定节点（如 `image`、`html_inline`）进行自定义渲染。这适用于在 Markdown 流中插入富组件，但不如 `BubbleList` 的 `itemType` 机制直观。
+
+### 8.3 目标
+
+#### 目标 8.3.1：结构化消息类型定义
+
+- [ ] 扩展 `AiChatMessage` 类型，新增 `itemType` 字段标识消息的数据类型
+- [ ] 定义内置的结构化消息类型：`search-result`（搜索结果卡片）、`source-list`（来源列表卡片）
+- [ ] 支持使用者自定义 `itemType` 和对应的渲染组件
+
+#### 目标 8.3.2：基于 BubbleList slot 的卡片渲染
+
+- [ ] 利用 `BubbleList` 的 `#item` slot + `itemType` 机制实现按类型分发渲染
+- [ ] 内置 `search-result` 卡片：标题、摘要、来源链接、相关度评分
+- [ ] 内置 `source-list` 卡片：来源列表（替代当前的纯链接 nav）
+- [ ] 未注册的 `itemType` 回退到默认的 Markdown 渲染
+
+#### 目标 8.3.3：自定义渲染器注册
+
+- [ ] 提供 `customRenderers` prop，允许使用者注册 `itemType → Vue组件` 的映射
+- [ ] 注册的渲染器接收 `item` 数据作为 props，可完全自定义卡片样式
+- [ ] 与 inkeep/agents 的 `ComponentsConfig` 设计理念一致，但利用 Vue 的 slot 机制实现
+
+#### 目标 8.3.4：与现有 RAG 管线兼容
+
+- [ ] 后端 `/v1/chat` 返回的流式响应中可携带结构化数据标记
+- [ ] 前端解析流式响应时，识别结构化数据并构造对应的 `itemType` 消息
+- [ ] 现有的纯文本 + 来源链接模式作为默认行为不受影响
+
+### 8.4 验收标准
+
+- [ ] 当消息 `itemType` 为 `search-result` 时，渲染为带标题、摘要、来源链接的卡片
+- [ ] 当消息 `itemType` 为 `source-list` 时，渲染为来源列表卡片（替代当前 nav 链接）
+- [ ] 当消息无 `itemType` 或 `itemType` 未注册时，回退到默认 Markdown 渲染
+- [ ] 使用者可通过 `customRenderers` prop 注册自定义 `itemType` 渲染器
+- [ ] 卡片样式跟随主题色（与 P1 品牌化主题系统协同）
+- [ ] 现有 `useKnowledgeChat` 的流式 Markdown 渲染不受影响
+
+### 8.5 约束
+
+1. **不重复造轮子**：卡片渲染基于 `vue-element-plus-x` 的 `BubbleList` slot 机制，不自行实现消息列表和气泡组件
+2. **不新增重型依赖**：利用现有 `vue-element-plus-x` 和 `element-plus` 组件，不引入新的 UI 库
+3. **向后兼容**：现有 `AiChatMessage` 类型的 `content` 和 `sources` 字段保持不变，`itemType` 为可选字段
+4. **流式安全**：结构化卡片渲染需要等待完整数据到达后再渲染，不能在流式过程中部分渲染卡片

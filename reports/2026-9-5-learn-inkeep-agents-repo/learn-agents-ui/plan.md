@@ -704,6 +704,274 @@ export function useChatEvents(onChatEvent?: ChatEventHandler) {
 
 ---
 
+## 四点五、P3.5：DataComponent 结构化卡片渲染 [新增]
+
+> 本阶段是对 P3 富聊天体验增强的补充，专门解决结构化数据（搜索结果、工单等）的卡片渲染问题。
+> 建议在 P3 之后实施，因为需要 P3 的 `customComponents` 机制作为基础。
+
+### 4.5.1 设计原则：不重复造轮子
+
+**核心结论**：SmallAliceWeb 当前依赖的 `vue-element-plus-x`（v2.0.3）已经提供了完整的富聊天 UI 组件库，包括 BubbleList（消息列表）、Bubble（消息气泡）、FilesCard（文件卡片）、Prompts（提示卡片）、Welcome（欢迎卡片）、ThoughtChain（思维链）等。**不需要自己实现消息列表和气泡组件，也不需要引入新的 UI 库。**
+
+DataComponent 结构化卡片渲染的核心实现思路是：**利用 `BubbleList` 的 `#item` slot + `itemType` 机制**，按消息类型分发到不同的渲染组件。这与 inkeep/agents 的 `ComponentsConfig` 设计理念一致，但利用了 Vue 原生的 slot 机制，无需自行实现组件注册和查找逻辑。
+
+### 4.5.2 类型定义扩展
+
+```typescript
+// packages/ai-vue/src/components/ai-chat/types.ts（扩展）
+
+export type AiChatRole = "user" | "assistant";
+
+/** 内置的结构化消息类型 */
+export type BuiltinItemType =
+  | "text"           // 默认纯文本 + Markdown
+  | "search-result"  // 搜索结果卡片
+  | "source-list";   // 来源列表卡片
+
+/** 消息数据结构 */
+export interface AiChatMessage {
+  id: string;
+  role: AiChatRole;
+  content: string;
+  sources?: AiChatSource[];
+
+  /** 消息类型，用于 BubbleList 的 #item slot 分发渲染 */
+  itemType?: BuiltinItemType | string;
+
+  /** 结构化数据，传给自定义渲染器 */
+  data?: Record<string, unknown>;
+}
+
+/** 自定义渲染器映射：itemType → Vue 组件 */
+export type CustomRendererMap = Record<string, import('vue').Component>;
+
+export interface AiChatProps {
+  initialMessages?: AiChatMessage[];
+  messages?: AiChatMessage[];
+  isResponding?: boolean;
+  errorMessage?: string;
+  mode?: "mock" | "external";
+  placeholder?: string;
+  mockDelay?: number;
+
+  /** 自定义渲染器：按 itemType 注册 Vue 组件 */
+  customRenderers?: CustomRendererMap;
+}
+```
+
+### 4.5.3 内置卡片组件
+
+#### 搜索结果卡片
+
+```vue
+<!-- packages/ai-vue/src/components/ai-chat/cards/SearchResultCard.vue -->
+<script setup lang="ts">
+import { Card, Tag } from "element-plus";
+
+export interface SearchResultData {
+  title: string;
+  snippet: string;
+  sourceUrl: string;
+  sourceLabel: string;
+  score?: number;
+  headingPath?: string[];
+}
+
+const props = defineProps<{ data: SearchResultData }>();
+</script>
+
+<template>
+  <Card class="search-result-card" shadow="hover">
+    <template #header>
+      <div class="search-result-card__header">
+        <span class="search-result-card__title">{{ data.title }}</span>
+        <Tag v-if="data.score" size="small" type="info">
+          相关度 {{ Math.round(data.score * 100) }}%
+        </Tag>
+      </div>
+    </template>
+    <p class="search-result-card__snippet">{{ data.snippet }}</p>
+    <div v-if="data.headingPath?.length" class="search-result-card__path">
+      <span v-for="(h, i) in data.headingPath" :key="i">
+        {{ h }}<span v-if="i < data.headingPath.length - 1"> / </span>
+      </span>
+    </div>
+    <a :href="data.sourceUrl" class="search-result-card__link" target="_blank">
+      {{ data.sourceLabel }}
+    </a>
+  </Card>
+</template>
+```
+
+#### 来源列表卡片
+
+```vue
+<!-- packages/ai-vue/src/components/ai-chat/cards/SourceListCard.vue -->
+<script setup lang="ts">
+import type { AiChatSource } from "../types";
+
+defineProps<{ sources: AiChatSource[] }>();
+</script>
+
+<template>
+  <nav class="source-list-card">
+    <span class="source-list-card__label">参考来源：</span>
+    <a
+      v-for="(source, index) in sources"
+      :key="source.id"
+      :href="source.sourceHref"
+      class="source-list-card__link"
+      target="_blank"
+      rel="noopener"
+    >
+      [{{ index + 1 }}] {{ source.label }}
+    </a>
+  </nav>
+</template>
+```
+
+### 4.5.4 AiChat.vue 的 #item slot 分发逻辑
+
+修改 `AiChat.vue`，利用 `BubbleList` 的 `#item` slot 实现 itemType 分发：
+
+```vue
+<!-- packages/ai-vue/src/components/ai-chat/AiChat.vue（修改部分） -->
+<script setup lang="ts">
+import MarkdownRender from "markstream-vue";
+import { computed } from "vue";
+import { Bubble, BubbleList, Sender } from "vue-element-plus-x";
+import SearchResultCard from "./cards/SearchResultCard.vue";
+import SourceListCard from "./cards/SourceListCard.vue";
+import type { AiChatEmits, AiChatMessage, AiChatProps, CustomRendererMap } from "./types";
+
+const props = withDefaults(defineProps<AiChatProps>(), {
+  placeholder: "请输入消息",
+  mode: "mock",
+});
+
+/** 内置渲染器映射 */
+const builtinRenderers = {
+  "search-result": SearchResultCard,
+  "source-list": SourceListCard,
+} as const;
+
+/** 合并内置渲染器和自定义渲染器 */
+const allRenderers = computed<CustomRendererMap>(() => ({
+  ...builtinRenderers,
+  ...props.customRenderers,
+}));
+
+/** 根据 itemType 解析渲染器组件 */
+function resolveRenderer(item: AiChatMessage) {
+  const type = item.itemType ?? "text";
+  return allRenderers.value[type];
+}
+</script>
+
+<template>
+  <BubbleList :list="displayedMessages">
+    <!-- #item slot：按 itemType 分发渲染 -->
+    <template #item="{ item }">
+      <Bubble
+        :placement="item.placement"
+        :loading="item.loading"
+        variant="filled"
+      >
+        <!-- 有 itemType 且注册了渲染器：渲染结构化卡片 -->
+        <component
+          v-if="resolveRenderer(item)"
+          :is="resolveRenderer(item)"
+          :data="item.data"
+          :sources="item.sources"
+        />
+        <!-- 无 itemType 或未注册渲染器：回退到默认 Markdown 渲染 -->
+        <MarkdownRender
+          v-else
+          :content="item.content"
+          :is-done="!displayedResponding"
+        />
+        <!-- 来源链接（默认行为，保持向后兼容） -->
+        <SourceListCard
+          v-if="!item.itemType && item.sources?.length"
+          :sources="item.sources"
+        />
+      </Bubble>
+    </template>
+  </BubbleList>
+</template>
+```
+
+### 4.5.5 使用示例
+
+```vue
+<!-- 使用者在 VitePress 或 Vue 应用中 -->
+<script setup lang="ts">
+import { AiChat } from "@ruan-cat-drill-doc/ai-vue";
+import type { AiChatMessage } from "@ruan-cat-drill-doc/ai-vue";
+
+// 自定义工单卡片渲染器
+const TicketCard = defineComponent({
+  props: { data: Object },
+  template: `
+    <div class="ticket-card">
+      <h4>工单 #{{ data.id }}</h4>
+      <p>状态：{{ data.status }}</p>
+      <p>优先级：{{ data.priority }}</p>
+    </div>
+  `,
+});
+
+const messages: AiChatMessage[] = [
+  // 内置搜索结果卡片
+  {
+    id: "1",
+    role: "assistant",
+    itemType: "search-result",
+    data: {
+      title: "如何配置 VitePress",
+      snippet: "VitePress 是基于 Vite 的静态站点生成器...",
+      sourceUrl: "https://vitepress.dev/guide/",
+      sourceLabel: "VitePress 官方文档",
+      score: 0.95,
+      headingPath: ["指南", "快速开始"],
+    },
+  },
+  // 自定义工单卡片
+  {
+    id: "2",
+    role: "assistant",
+    itemType: "ticket-card",
+    data: { id: "42", status: "处理中", priority: "高" },
+  },
+  // 默认纯文本（无 itemType）
+  {
+    id: "3",
+    role: "assistant",
+    content: "这是普通文本消息",
+    sources: [{ id: "s1", label: "来源1", sourceHref: "#" }],
+  },
+];
+</script>
+
+<template>
+  <AiChat :messages="messages" :custom-renderers="{ 'ticket-card': TicketCard }" />
+</template>
+```
+
+### 4.5.6 实施任务清单
+
+| # | 任务 | 文件 | 优先级 |
+|---|------|------|--------|
+| 1 | 扩展 AiChatMessage 类型，新增 itemType 和 data 字段 | `ai-vue/src/components/ai-chat/types.ts` | P0 |
+| 2 | 新增 customRenderers prop | `ai-vue/src/components/ai-chat/types.ts` | P0 |
+| 3 | 实现 SearchResultCard 卡片组件 | `ai-vue/src/components/ai-chat/cards/SearchResultCard.vue` | P0 |
+| 4 | 实现 SourceListCard 卡片组件 | `ai-vue/src/components/ai-chat/cards/SourceListCard.vue` | P0 |
+| 5 | 修改 AiChat.vue 接入 #item slot 分发逻辑 | `ai-vue/src/components/ai-chat/AiChat.vue` | P0 |
+| 6 | 导出内置卡片组件供使用者引用 | `ai-vue/src/index.ts` | P1 |
+| 7 | 编写 DataComponent 单元测试 | `ai-vue/src/tests/data-component.test.ts` | P1 |
+
+---
+
 ## 五、P4：组件形态扩展 + 函数式嵌入
 
 ### 5.1 AiSidebarChat
@@ -1401,6 +1669,194 @@ describe('AiChat 示例问题', () => {
 });
 ```
 
+### 9.5.5 P3.5 DataComponent 结构化卡片测试
+
+#### `tests/data-component.test.ts` — 结构化卡片渲染
+
+```typescript
+import { describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { defineComponent } from 'vue';
+import AiChat from '../components/ai-chat/AiChat.vue';
+import SearchResultCard from '../components/ai-chat/cards/SearchResultCard.vue';
+import SourceListCard from '../components/ai-chat/cards/SourceListCard.vue';
+
+describe('DataComponent 结构化卡片渲染', () => {
+  describe('内置卡片', () => {
+    it('itemType="search-result" 时渲染 SearchResultCard', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              itemType: 'search-result',
+              data: {
+                title: '测试标题',
+                snippet: '测试摘要',
+                sourceUrl: 'https://example.com',
+                sourceLabel: '来源',
+                score: 0.95,
+              },
+            },
+          ],
+        },
+      });
+
+      expect(wrapper.findComponent(SearchResultCard).exists()).toBe(true);
+      expect(wrapper.text()).toContain('测试标题');
+      expect(wrapper.text()).toContain('测试摘要');
+      expect(wrapper.text()).toContain('95%');
+    });
+
+    it('itemType="source-list" 时渲染 SourceListCard', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              itemType: 'source-list',
+              sources: [
+                { id: 's1', label: '来源1', sourceHref: '#1' },
+                { id: 's2', label: '来源2', sourceHref: '#2' },
+              ],
+            },
+          ],
+        },
+      });
+
+      expect(wrapper.findComponent(SourceListCard).exists()).toBe(true);
+      expect(wrapper.text()).toContain('来源1');
+      expect(wrapper.text()).toContain('来源2');
+    });
+  });
+
+  describe('回退逻辑', () => {
+    it('无 itemType 时回退到 Markdown 渲染', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            { id: '1', role: 'assistant', content: '普通文本消息' },
+          ],
+        },
+      });
+
+      expect(wrapper.findComponent(SearchResultCard).exists()).toBe(false);
+      expect(wrapper.text()).toContain('普通文本消息');
+    });
+
+    it('itemType 未注册时回退到 Markdown 渲染', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              content: '回退文本',
+              itemType: 'unknown-type',
+            },
+          ],
+        },
+      });
+
+      expect(wrapper.text()).toContain('回退文本');
+    });
+  });
+
+  describe('自定义渲染器', () => {
+    it('customRenderers 注册的 itemType 正确渲染', () => {
+      const TicketCard = defineComponent({
+        props: { data: Object },
+        template: '<div class="ticket-card">工单 #{{ data.id }}</div>',
+      });
+
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              itemType: 'ticket-card',
+              data: { id: 42 },
+            },
+          ],
+          customRenderers: { 'ticket-card': TicketCard },
+        },
+      });
+
+      expect(wrapper.find('.ticket-card').exists()).toBe(true);
+      expect(wrapper.text()).toContain('工单 #42');
+    });
+
+    it('自定义渲染器覆盖同名内置渲染器', () => {
+      const CustomSearchCard = defineComponent({
+        props: { data: Object },
+        template: '<div class="custom-search">自定义搜索卡片</div>',
+      });
+
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              itemType: 'search-result',
+              data: { title: '测试' },
+            },
+          ],
+          customRenderers: { 'search-result': CustomSearchCard },
+        },
+      });
+
+      expect(wrapper.find('.custom-search').exists()).toBe(true);
+      expect(wrapper.findComponent(SearchResultCard).exists()).toBe(false);
+    });
+  });
+
+  describe('向后兼容', () => {
+    it('无 itemType 的消息仍展示来源链接', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              content: '回答内容',
+              sources: [{ id: 's1', label: '来源1', sourceHref: '#1' }],
+            },
+          ],
+        },
+      });
+
+      // 来源链接应通过 SourceListCard 渲染
+      expect(wrapper.findComponent(SourceListCard).exists()).toBe(true);
+      expect(wrapper.text()).toContain('来源1');
+    });
+
+    it('有 itemType 的消息不重复展示来源链接', () => {
+      const wrapper = mount(AiChat, {
+        props: {
+          messages: [
+            {
+              id: '1',
+              role: 'assistant',
+              itemType: 'search-result',
+              data: { title: '测试', sourceUrl: '#', sourceLabel: '来源' },
+              sources: [{ id: 's1', label: '来源1', sourceHref: '#1' }],
+            },
+          ],
+        },
+      });
+
+      // itemType 消息不展示额外的来源链接
+      const sourceListCards = wrapper.findAllComponents(SourceListCard);
+      expect(sourceListCards).toHaveLength(0);
+    });
+  });
+});
+```
+
 ### 9.6 P4 函数式嵌入测试
 
 #### 9.6.1 `tests/mount.test.ts` — mountAiChat 函数
@@ -1521,6 +1977,7 @@ describe('mountAiChat', () => {
 | `ai-chat-custom-renderer.test.ts` | > 85% | 注册组件渲染、未注册回退 |
 | `ai-chat-feedback.test.ts` | > 85% | 按钮显示/隐藏、事件触发 |
 | `ai-chat-example-questions.test.ts` | > 85% | 空状态展示、点击触发 |
+| `data-component.test.ts` | > 90% | 内置卡片渲染、回退逻辑、自定义渲染器、向后兼容 |
 | `mount.test.ts` | > 90% | 选择器/元素挂载、卸载清理、配置传递、事件回调 |
 
 ---
