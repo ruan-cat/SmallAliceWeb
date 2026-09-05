@@ -20,7 +20,7 @@
 | P1 | 品牌化主题系统 | 3 天 | `useBrandTheme` composable + 色板自动派生 |
 | P2 | Shadow DOM 样式隔离 | 2 天 | `AiShadowRoot` 组件 + variant 配置 |
 | P3 | 富聊天体验增强 | 4 天 | 自定义渲染器 + 消息操作 + 反馈 + 示例问题 |
-| P4 | 组件形态扩展 + 函数式嵌入 | 3 天 | SidebarChat + ModalChat + embed 包 |
+| P4 | 组件形态扩展 + 函数式嵌入 | 3 天 | SidebarChat + ModalChat + `mountAiChat` 函数 |
 
 ### 1.2 文件变更预览
 
@@ -59,12 +59,9 @@ packages/ai-vue/src/
 └── styles/
     └── index.scss                    # 修改：改用 CSS 变量驱动
 
-packages/ai-vue-embed/                # 新增包：函数式嵌入
-├── package.json
-├── src/
-│   ├── index.ts
-│   └── mount.ts
-└── tsconfig.json
+# 注意：不新增独立子包。函数式嵌入（mountAiChat）直接在 ai-vue 包内导出，
+# 避免增加 monorepo 的构建配置、版本同步和发布流程复杂度。
+# 宿主环境（VitePress）已有 Vue 运行时，无需独立打包 Vue。
 ```
 
 ---
@@ -785,19 +782,34 @@ function close() { isOpen.value = false; }
 </template>
 ```
 
-### 5.3 函数式嵌入包
+### 5.3 函数式嵌入（在 ai-vue 包内导出，不新增子包）
+
+**设计决策**：不创建独立的 `ai-vue-embed` 子包。理由如下：
+
+1. **monorepo 复杂度**：每新增一个子包，就增加一套 package.json、构建配置、tsconfig、版本号、发布流程、依赖管理。SmallAliceWeb 已有 5 个 packages，不应为单一函数增加包。
+2. **Vue 运行时已存在**：inkeep/agents-ui 之所以有独立 JS 包，是因为 React 组件库需要在非 React 环境打包 React 运行时。而 ai-vue 的宿主环境（VitePress）已有 Vue 运行时，`mountAiChat` 只需 `import { createApp } from 'vue'`，由宿主环境的 Vue 提供。
+3. **函数足够轻量**：`mountAiChat` 本质是 `createApp(AiChat).mount(target)` 的封装，加上 props 传递和卸载清理，总共不超过 50 行代码，不值得独立成包。
+4. **tree-shaking 友好**：放在 ai-vue 包内，通过 `exports` 字段单独导出，未使用 `mountAiChat` 的项目不会打包这部分代码。
 
 ```typescript
-// packages/ai-vue-embed/src/mount.ts
+// packages/ai-vue/src/mount.ts
+// 直接在 ai-vue 包内实现，不新增子包
 
-import { createApp, h } from 'vue';
-import AiChat from '@ruan-cat-drill-doc/ai-vue';
-import type { AiChatProps } from '@ruan-cat-drill-doc/ai-vue';
-import type { BrandThemeConfig } from '@ruan-cat-drill-doc/ai-vue';
+import { createApp, h, type App as VueApp } from 'vue';
+import AiChat from './components/ai-chat/AiChat.vue';
+import type { AiChatProps } from './components/ai-chat/types';
+import type { BrandThemeConfig } from './theme/types';
 
 export interface MountAiChatOptions extends AiChatProps {
   brandTheme?: BrandThemeConfig;
   variant?: 'no-shadow' | 'container-with-shadow';
+}
+
+export interface MountResult {
+  /** 卸载并清理 DOM */
+  unmount: () => void;
+  /** 获取 Vue 应用实例（高级用法） */
+  app: VueApp;
 }
 
 /**
@@ -808,7 +820,7 @@ export interface MountAiChatOptions extends AiChatProps {
  * ```html
  * <div id="ai-chat-target"></div>
  * <script type="module">
- *   import { mountAiChat } from '@ruan-cat-drill-doc/ai-vue-embed';
+ *   import { mountAiChat } from '@ruan-cat-drill-doc/ai-vue';
  *   const { unmount } = mountAiChat('#ai-chat-target', {
  *     brandTheme: { primaryBrandColor: '#3784ff' },
  *     mode: 'external',
@@ -819,7 +831,7 @@ export interface MountAiChatOptions extends AiChatProps {
 export function mountAiChat(
   target: string | HTMLElement,
   options: MountAiChatOptions,
-): { unmount: () => void } {
+): MountResult {
   const el = typeof target === 'string' ? document.querySelector(target) : target;
   if (!el) throw new Error(`Target not found: ${target}`);
 
@@ -827,8 +839,8 @@ export function mountAiChat(
     render() {
       return h(AiChat, {
         ...options,
-        onSend: (msg: any) => options.onSend?.(msg),
-        onStop: () => options.onStop?.(),
+        onSend: options.onSend,
+        onStop: options.onStop,
       });
     },
   });
@@ -836,37 +848,38 @@ export function mountAiChat(
   app.mount(el);
 
   return {
-    unmount: () => app.unmount(),
+    app,
+    unmount: () => {
+      app.unmount();
+    },
   };
 }
 ```
 
-### 5.4 独立包 package.json
+在 `package.json` 的 `exports` 中新增入口：
 
-```json
+```jsonc
 {
-  "name": "@ruan-cat-drill-doc/ai-vue-embed",
-  "version": "0.0.1",
-  "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+    ".": { /* 主入口 */ },
+    "./styles": { /* 样式入口 */ },
+    "./mount": {
+      "types": "./dist/mount.d.ts",
+      "import": "./dist/mount.js",
+      "require": "./dist/mount.cjs"
     }
-  },
-  "scripts": {
-    "build": "vite build",
-    "typecheck": "vue-tsc --noEmit"
-  },
-  "dependencies": {
-    "@ruan-cat-drill-doc/ai-vue": "workspace:*",
-    "vue": "^3.5.28"
   }
 }
+```
+
+使用者按需引入：
+
+```typescript
+// 方式1：只引入 mount 函数（tree-shaking 友好）
+import { mountAiChat } from '@ruan-cat-drill-doc/ai-vue/mount';
+
+// 方式2：从主入口引入（与组件一起打包）
+import { mountAiChat, AiChat } from '@ruan-cat-drill-doc/ai-vue';
 ```
 
 ---
@@ -914,10 +927,10 @@ export function mountAiChat(
 |------|------|------|------|
 | P4-1 | 实现 AiSidebarChat | `components/ai-sidebar-chat/` | 侧边栏滑入动画正常 |
 | P4-2 | 实现 AiModalChat | `components/ai-modal-chat/` | 弹窗 + 遮罩正常 |
-| P4-3 | 创建 ai-vue-embed 包 | `packages/ai-vue-embed/` | 独立包可构建 |
-| P4-4 | 实现 mountAiChat 函数 | `ai-vue-embed/src/mount.ts` | 非 Vue 环境可挂载 |
-| P4-5 | 更新 index.ts 导出 | 修改 `ai-vue/src/index.ts` | 新组件可导入 |
-| P4-6 | 编写 embed 集成测试 | `ai-vue-embed/tests/` | 挂载/卸载正常 |
+| P4-3 | 实现 mountAiChat 函数 | `ai-vue/src/mount.ts` | 非 Vue 环境可挂载 |
+| P4-4 | 新增 `./mount` exports 入口 | `ai-vue/package.json` | 子路径导入正常 |
+| P4-5 | 更新 index.ts 导出新组件 | 修改 `ai-vue/src/index.ts` | SidebarChat/ModalChat 可导入 |
+| P4-6 | 编写 mountAiChat 单元测试 | `ai-vue/src/tests/mount.test.ts` | 挂载/卸载/事件传递正常 |
 
 ---
 
@@ -941,11 +954,11 @@ export function mountAiChat(
 
 **缓解**：所有新增 props 设置默认值，确保不传时行为与当前一致。`useKnowledgeChat` 无需修改即可继续工作。新增能力通过可选 props 暴露。
 
-### 7.4 函数式嵌入包体积
+### 7.4 函数式嵌入的 Vue 运行时依赖
 
-**风险**：`ai-vue-embed` 需要包含 Vue 运行时，gzip 后体积可能超过 60KB。
+**风险**：`mountAiChat` 依赖 `vue` 的 `createApp`，在非 Vue 环境使用时需要宿主页面自行引入 Vue。
 
-**缓解**：使用 Vite 的 `build.lib` 模式 + `external` 配置，将 Vue 设为外部依赖（要求宿主页面自行引入 Vue）。同时提供"全量版"（含 Vue）和"外部 Vue 版"两个产物。
+**缓解**：已在文档中说明 `mountAiChat` 要求宿主环境提供 Vue 3.5+。通过 `peerDependencies` 声明 Vue 依赖，构建时将 Vue 设为 external。如需在完全无 Vue 的环境使用，使用者需自行通过 CDN 引入 Vue。
 
 ---
 
@@ -965,8 +978,8 @@ export function mountAiChat(
 
 ### 8.2 非功能验收
 
-- [ ] ai-vue 包体积增量 < 15KB（gzip）
-- [ ] ai-vue-embed 包体积 < 80KB（gzip，含 Vue）
+- [ ] ai-vue 包体积增量 < 15KB（gzip，不含 Vue 运行时）
+- [ ] `mountAiChat` 通过 `./mount` 子路径导入时 tree-shaking 正常
 - [ ] TypeScript 严格模式无报错
 - [ ] VitePress SSR 构建无报错
 - [ ] 单元测试覆盖率 > 85%
@@ -974,9 +987,547 @@ export function mountAiChat(
 
 ---
 
-## 九、参考资源
+## 九、Vitest 测试用例设计
 
-### 9.1 @inkeep/agents-ui 关键源码位置
+> 本章节详细定义各阶段的 vitest 测试用例，确保每个能力都有可验证的测试覆盖。
+> 测试文件统一放在 `packages/ai-vue/src/tests/` 目录，遵循现有项目的 vitest 配置。
+
+### 9.1 测试环境配置
+
+现有 `packages/ai-vue` 已配置 vitest + jsdom，测试文件放在 `src/tests/` 目录。新增测试沿用此约定：
+
+```typescript
+// vitest.config.ts（已有，无需修改）
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
+});
+```
+
+### 9.2 P1 品牌化主题系统测试
+
+#### 9.2.1 `tests/color-utils.test.ts` — 颜色派生函数
+
+```typescript
+import { describe, expect, it } from 'vitest';
+import { deriveColorScheme, hexToHsl, hslToHex } from '../theme/color-utils';
+
+describe('deriveColorScheme', () => {
+  it('从 hex 颜色派生 11 个色阶', () => {
+    const scheme = deriveColorScheme('#3b82f6');
+    expect(scheme).toHaveProperty('lighter');
+    expect(scheme).toHaveProperty('light');
+    expect(scheme).toHaveProperty('medium');
+    expect(scheme).toHaveProperty('strong');
+    expect(scheme).toHaveProperty('stronger');
+    expect(scheme).toHaveProperty('textColorOnPrimary');
+    // 共 11 个字段
+    expect(Object.keys(scheme)).toHaveLength(11);
+  });
+
+  it('深色品牌色派生的 textColorOnPrimary 为白色', () => {
+    const scheme = deriveColorScheme('#1a1a2e');
+    expect(scheme.textColorOnPrimary).toBe('#ffffff');
+  });
+
+  it('浅色品牌色派生的 textColorOnPrimary 为黑色', () => {
+    const scheme = deriveColorScheme('#fbbf24');
+    expect(scheme.textColorOnPrimary).toBe('#000000');
+  });
+
+  it('rgb 格式输入也能正确派生', () => {
+    const scheme = deriveColorScheme('rgb(59, 130, 246)');
+    expect(scheme.strong).toMatch(/^#/);
+  });
+
+  it('无效颜色输入抛出错误', () => {
+    expect(() => deriveColorScheme('not-a-color')).toThrow();
+  });
+});
+
+describe('hexToHsl / hslToHex', () => {
+  it('hex → hsl → hex 往返转换保持一致', () => {
+    const original = '#3b82f6';
+    const hsl = hexToHsl(original);
+    const result = hslToHex(hsl.h, hsl.s, hsl.l);
+    // 允许极小误差
+    expect(result.toLowerCase()).toBe(original.toLowerCase());
+  });
+});
+```
+
+#### 9.2.2 `tests/use-brand-theme.test.ts` — 品牌主题 composable
+
+```typescript
+import { describe, expect, it, vi } from 'vitest';
+import { useBrandTheme } from '../composables/useBrandTheme';
+
+describe('useBrandTheme', () => {
+  it('使用传入的 primaryBrandColor 作为种子色', () => {
+    const { seedColor } = useBrandTheme({ primaryBrandColor: '#ff0000' });
+    expect(seedColor.value).toBe('#ff0000');
+  });
+
+  it('未传入 primaryBrandColor 时使用默认值 #3b82f6', () => {
+    const { seedColor } = useBrandTheme();
+    expect(seedColor.value).toBe('#3b82f6');
+  });
+
+  it('colorSchemeOverrides 能覆盖派生的色阶', () => {
+    const { colorScheme } = useBrandTheme({
+      primaryBrandColor: '#3b82f6',
+      colorSchemeOverrides: { strong: '#ff0000' },
+    });
+    expect(colorScheme.value.strong).toBe('#ff0000');
+    // 其他色阶不受影响
+    expect(colorScheme.value.lighter).not.toBe('#ff0000');
+  });
+
+  it('cssVars 返回可直接绑定到 style 的对象', () => {
+    const { cssVars } = useBrandTheme({ primaryBrandColor: '#3b82f6' });
+    expect(cssVars.value).toHaveProperty('--ai-chat-primary');
+    expect(cssVars.value['--ai-chat-primary']).toMatch(/^#/);
+  });
+});
+```
+
+### 9.3 P1.5 Teek 主题色传递测试
+
+#### 9.3.1 `tests/use-theme-color.test.ts` — 运行时主题色获取
+
+```typescript
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { useThemeColor } from '../composables/useThemeColor';
+
+// 模拟 document 环境
+function mockComputedStyle(props: Record<string, string>) {
+  return {
+    getPropertyValue: (name: string) => props[name] ?? '',
+  };
+}
+
+describe('useThemeColor', () => {
+  beforeEach(() => {
+    // 重置 DOM 状态
+    document.documentElement.className = '';
+    document.documentElement.removeAttribute('theme-color');
+  });
+
+  it('优先读取 --tk-theme-color', () => {
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue(
+      mockComputedStyle({ '--tk-theme-color': '#ff6600', '--vp-c-brand-1': '#3b82f6' }) as any
+    );
+
+    const { primary, isReady } = useThemeColor();
+    expect(primary.value).toBe('#ff6600');
+    expect(isReady.value).toBe(true);
+  });
+
+  it('Teek 变量不存在时降级到 --vp-c-brand-1', () => {
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue(
+      mockComputedStyle({ '--vp-c-brand-1': '#3b82f6' }) as any
+    );
+
+    const { primary } = useThemeColor();
+    expect(primary.value).toBe('#3b82f6');
+  });
+
+  it('两个变量都不存在时使用默认值', () => {
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue(
+      mockComputedStyle({}) as any
+    );
+
+    const { primary } = useThemeColor();
+    expect(primary.value).toBe('#3b82f6');
+  });
+
+  it('检测暗色模式（html.dark class）', () => {
+    document.documentElement.classList.add('dark');
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue(
+      mockComputedStyle({ '--tk-theme-color': '#3b82f6' }) as any
+    );
+
+    const { isDark } = useThemeColor();
+    expect(isDark.value).toBe(true);
+  });
+
+  it('非暗色模式时 isDark 为 false', () => {
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue(
+      mockComputedStyle({ '--tk-theme-color': '#3b82f6' }) as any
+    );
+
+    const { isDark } = useThemeTheme();
+    expect(isDark.value).toBe(false);
+  });
+});
+```
+
+#### 9.3.2 `ai-vitepress-plugins/src/tests/theme-style.test.ts` — 增强 Teek 变量桥接测试
+
+在现有测试文件中追加：
+
+```typescript
+describe('Teek 主题变量桥接', () => {
+  test('桥接 --tk-theme-color 到 --ai-chat-primary-color', () => {
+    expect(styleSource).toContain('var(--tk-theme-color');
+  });
+
+  test('桥接 --tk-color-primary-light-3 到 --ai-chat-primary-hover-color', () => {
+    expect(styleSource).toContain('var(--tk-color-primary-light-3');
+  });
+
+  test('桥接 --tk-bg-color 到 --ai-chat-surface-color', () => {
+    expect(styleSource).toContain('var(--tk-bg-color');
+  });
+
+  test('桥接 --tk-text-color 到 --ai-chat-text-color', () => {
+    expect(styleSource).toContain('var(--tk-text-color');
+  });
+
+  test('Teek 变量优先于 VitePress 变量（嵌套 var）', () => {
+    // 验证优先级：--tk-theme-color 在 --vp-c-brand-1 之前
+    const primaryLine = styleSource.match(/--ai-chat-primary-color:[^;]+;/)?.[0] ?? '';
+    expect(primaryLine).toContain('--tk-theme-color');
+    expect(primaryLine).toContain('--vp-c-brand-1');
+    // tk 在 vp 之前
+    expect(primaryLine.indexOf('--tk-theme-color')).toBeLessThan(
+      primaryLine.indexOf('--vp-c-brand-1')
+    );
+  });
+
+  test('暗色模式覆盖存在', () => {
+    expect(styleSource).toContain('html.dark');
+    expect(styleSource).toMatch(/html\.dark.*--ai-chat-surface-color/s);
+  });
+});
+```
+
+### 9.4 P2 Shadow DOM 测试
+
+#### 9.4.1 `tests/ai-shadow-root.test.ts` — Shadow DOM 隔离
+
+```typescript
+import { describe, expect, it } from 'vitest';
+import { mount } from '@vue/test-utils';
+import AiShadowRoot from '../components/ai-shadow-root/AiShadowRoot.vue';
+
+describe('AiShadowRoot', () => {
+  it('variant="container-with-shadow" 时创建 Shadow Root', () => {
+    const wrapper = mount(AiShadowRoot, {
+      props: { variant: 'container-with-shadow' },
+      slots: { default: '<div class="test-content">内容</div>' },
+    });
+
+    const el = wrapper.element as HTMLElement;
+    expect(el.shadowRoot).not.toBeNull();
+  });
+
+  it('variant="no-shadow" 时不创建 Shadow Root', () => {
+    const wrapper = mount(AiShadowRoot, {
+      props: { variant: 'no-shadow' },
+      slots: { default: '<div class="test-content">内容</div>' },
+    });
+
+    const el = wrapper.element as HTMLElement;
+    expect(el.shadowRoot).toBeNull();
+  });
+
+  it('默认 variant 为 no-shadow', () => {
+    const wrapper = mount(AiShadowRoot, {
+      slots: { default: '内容' },
+    });
+
+    expect(wrapper.props('variant')).toBe('no-shadow');
+  });
+});
+```
+
+### 9.5 P3 富聊天体验测试
+
+#### 9.5.1 `tests/ai-chat-custom-renderer.test.ts` — 自定义渲染器
+
+```typescript
+import { describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import AiChat from '../components/ai-chat/AiChat.vue';
+
+describe('AiChat 自定义渲染器', () => {
+  it('customComponents 中注册的组件在消息流中渲染', () => {
+    const customComponents = {
+      'ticket-card': (props: { id: string }) => `工单 #${props.id}`,
+    };
+
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [
+          {
+            id: '1',
+            role: 'assistant',
+            content: '',
+            customType: 'ticket-card',
+            customProps: { id: '42' },
+          },
+        ],
+        customComponents,
+      },
+    });
+
+    expect(wrapper.text()).toContain('工单 #42');
+  });
+
+  it('未注册的 customType 回退到纯文本渲染', () => {
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [
+          {
+            id: '1',
+            role: 'assistant',
+            content: '普通文本',
+            customType: 'unknown-type',
+          },
+        ],
+      },
+    });
+
+    expect(wrapper.text()).toContain('普通文本');
+  });
+});
+```
+
+#### 9.5.2 `tests/ai-chat-feedback.test.ts` — 反馈按钮
+
+```typescript
+import { describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import AiChat from '../components/ai-chat/AiChat.vue';
+
+describe('AiChat 反馈功能', () => {
+  it('feedbackOptions.enabled=true 时助手消息下方出现反馈按钮', () => {
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [{ id: '1', role: 'assistant', content: '回答' }],
+        feedbackOptions: { enabled: true },
+      },
+    });
+
+    const feedbackBtns = wrapper.findAll('[data-testid="feedback-positive"], [data-testid="feedback-negative"]');
+    expect(feedbackBtns).toHaveLength(2);
+  });
+
+  it('feedbackOptions.enabled=false 时不渲染反馈按钮', () => {
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [{ id: '1', role: 'assistant', content: '回答' }],
+        feedbackOptions: { enabled: false },
+      },
+    });
+
+    expect(wrapper.find('[data-testid="feedback-positive"]').exists()).toBe(false);
+  });
+
+  it('点击赞触发 onChatEvent 事件', async () => {
+    const onChatEvent = vi.fn();
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [{ id: '1', role: 'assistant', content: '回答' }],
+        feedbackOptions: { enabled: true },
+        onChatEvent,
+      },
+    });
+
+    await wrapper.find('[data-testid="feedback-positive"]').trigger('click');
+    expect(onChatEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'positive_feedback_submitted',
+        messageId: '1',
+      })
+    );
+  });
+});
+```
+
+#### 9.5.3 `tests/ai-chat-example-questions.test.ts` — 示例问题
+
+```typescript
+import { describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import AiChat from '../components/ai-chat/AiChat.vue';
+
+describe('AiChat 示例问题', () => {
+  it('消息列表为空时展示示例问题', () => {
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [],
+        exampleQuestions: ['怎么使用？', '常见问题'],
+      },
+    });
+
+    expect(wrapper.text()).toContain('怎么使用？');
+    expect(wrapper.text()).toContain('常见问题');
+  });
+
+  it('消息列表非空时不展示示例问题', () => {
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [{ id: '1', role: 'user', content: '你好' }],
+        exampleQuestions: ['怎么使用？'],
+      },
+    });
+
+    expect(wrapper.text()).not.toContain('怎么使用？');
+  });
+
+  it('点击示例问题触发 send 事件', async () => {
+    const onSend = vi.fn();
+    const wrapper = mount(AiChat, {
+      props: {
+        messages: [],
+        exampleQuestions: ['怎么使用？'],
+        onSend,
+      },
+    });
+
+    await wrapper.find('[data-testid="example-question-0"]').trigger('click');
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({ content: '怎么使用？' })
+    );
+  });
+});
+```
+
+### 9.6 P4 函数式嵌入测试
+
+#### 9.6.1 `tests/mount.test.ts` — mountAiChat 函数
+
+```typescript
+import { describe, expect, it, afterEach } from 'vitest';
+import { mountAiChat } from '../mount';
+
+describe('mountAiChat', () => {
+  let container: HTMLDivElement;
+
+  afterEach(() => {
+    container?.remove();
+  });
+
+  it('通过 CSS 选择器挂载到目标节点', () => {
+    container = document.createElement('div');
+    container.id = 'test-target';
+    document.body.appendChild(container);
+
+    const { unmount } = mountAiChat('#test-target', { mode: 'mock' });
+
+    expect(container.querySelector('.ai-chat')).toBeTruthy();
+    unmount();
+  });
+
+  it('通过 HTMLElement 挂载到目标节点', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const { unmount } = mountAiChat(container, { mode: 'mock' });
+
+    expect(container.querySelector('.ai-chat')).toBeTruthy();
+    unmount();
+  });
+
+  it('目标节点不存在时抛出错误', () => {
+    expect(() => mountAiChat('#nonexistent', { mode: 'mock' })).toThrow(
+      'Target not found: #nonexistent'
+    );
+  });
+
+  it('unmount 后清理 DOM', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const { unmount } = mountAiChat(container, { mode: 'mock' });
+    expect(container.querySelector('.ai-chat')).toBeTruthy();
+
+    unmount();
+    expect(container.querySelector('.ai-chat')).toBeFalsy();
+  });
+
+  it('brandTheme 配置传递到组件', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const { unmount } = mountAiChat(container, {
+      mode: 'mock',
+      brandTheme: { primaryBrandColor: '#ff0000' },
+    });
+
+    const aiChatEl = container.querySelector('.ai-chat') as HTMLElement;
+    const styles = getComputedStyle(aiChatEl);
+    // 验证 CSS 变量已注入
+    expect(styles.getPropertyValue('--ai-chat-primary')).toBe('#ff0000');
+
+    unmount();
+  });
+
+  it('返回的 app 实例可访问', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const { app, unmount } = mountAiChat(container, { mode: 'mock' });
+
+    expect(app).toBeDefined();
+    expect(typeof app.unmount).toBe('function');
+
+    unmount();
+  });
+
+  it('事件回调正常传递', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const onSend = vi.fn();
+    const { unmount } = mountAiChat(container, {
+      mode: 'mock',
+      onSend,
+    });
+
+    // 模拟用户输入并发送
+    const input = container.querySelector('textarea') as HTMLTextAreaElement;
+    const sendBtn = container.querySelector('[data-testid="send-btn"]') as HTMLButtonElement;
+
+    input.value = '测试消息';
+    await sendBtn.click();
+
+    expect(onSend).toHaveBeenCalledWith(
+      expect.objectContaining({ content: '测试消息' })
+    );
+
+    unmount();
+  });
+});
+```
+
+### 9.7 测试覆盖率目标
+
+| 测试文件 | 覆盖目标 | 关键覆盖点 |
+|----------|----------|------------|
+| `color-utils.test.ts` | > 95% | 所有颜色格式输入、边界值、往返转换 |
+| `use-brand-theme.test.ts` | > 90% | 种子色优先级、覆盖逻辑、cssVars 生成 |
+| `use-theme-color.test.ts` | > 90% | Teek/VitePress 变量读取、暗色模式检测、SSR 安全 |
+| `theme-style.test.ts` | > 85% | Teek 变量桥接、优先级、暗色模式覆盖 |
+| `ai-shadow-root.test.ts` | > 85% | Shadow Root 创建/不创建、variant 切换 |
+| `ai-chat-custom-renderer.test.ts` | > 85% | 注册组件渲染、未注册回退 |
+| `ai-chat-feedback.test.ts` | > 85% | 按钮显示/隐藏、事件触发 |
+| `ai-chat-example-questions.test.ts` | > 85% | 空状态展示、点击触发 |
+| `mount.test.ts` | > 90% | 选择器/元素挂载、卸载清理、配置传递、事件回调 |
+
+---
+
+## 十、参考资源
+
+### 10.1 @inkeep/agents-ui 关键源码位置
 
 | 文件 | 作用 |
 |------|------|
@@ -989,7 +1540,7 @@ export function mountAiChat(
 | `dist/types/color-mode.d.ts` | `ColorModeProviderProps`（暗色模式） |
 | `dist/react/embedded-chat.d.ts` | `InkeepEmbeddedChatProps`（组件 props） |
 
-### 9.2 实际使用示例
+### 10.2 实际使用示例
 
 | 文件 | 作用 |
 |------|------|
@@ -999,7 +1550,7 @@ export function mountAiChat(
 | `agents-manage-ui/.../snippets/react-component.ts` | React 组件嵌入示例 |
 | `agents-ui-demo/src/App.tsx` | 最简使用示例 |
 
-### 9.3 SmallAliceWeb 现有代码
+### 10.3 SmallAliceWeb 现有代码
 
 | 文件 | 作用 |
 |------|------|
