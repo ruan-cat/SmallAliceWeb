@@ -1,0 +1,15 @@
+diff --git a/dist/module.mjs b/dist/module.mjs
+index 9e84066b634b6e8796189debb6e86b8dbe40940f..f91cf75ed88c1ae3c87b68e15a84f40403c9f8b7 100644
+--- a/dist/module.mjs
++++ b/dist/module.mjs
+@@ -525,8 +525,8 @@ const module$1 = defineNuxtModule({
+     extendViteConfig((config) => {
+       config.optimizeDeps ||= {};
+       config.optimizeDeps.include ||= [];
+-      config.optimizeDeps.include.push("@nuxt/content > slugify");
+-      config.optimizeDeps.include = config.optimizeDeps.include.map((id) => id.replace(/^@nuxtjs\/mdc > /, "@nuxt/content > @nuxtjs/mdc > "));
++      config.optimizeDeps.include.push("@ztl-uwu/nuxt-content > slugify");
++      config.optimizeDeps.include = config.optimizeDeps.include.map((id) => id.replace(/^@nuxtjs\/mdc > /, "@ztl-uwu/nuxt-content > @nuxtjs/mdc > "));
+       config.plugins?.push({
+         name: "content-slot",
+         enforce: "pre",

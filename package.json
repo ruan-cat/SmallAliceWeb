@@ -99,6 +99,37 @@
 	"pnpm": {
 		"overrides": {
 			"nuxt-og-image": "5.1.9"
+		},
+		"packageExtensions": {
+			"@nuxt/icon@1.15.0": {
+				"dependencies": {
+					"h3": "1.15.11"
+				}
+			},
+			"@nuxtjs/mdc@0.18.4": {
+				"dependencies": {
+					"h3": "1.15.11"
+				}
+			},
+			"@nuxtjs/mdc@0.20.2": {
+				"dependencies": {
+					"h3": "1.15.11"
+				}
+			},
+			"@ztl-uwu/nuxt-content@2.13.9": {
+				"dependencies": {
+					"h3": "1.15.11"
+				}
+			},
+			"nuxt-og-image@5.1.9": {
+				"dependencies": {
+					"h3": "1.15.11"
+				}
+			}
+		},
+		"patchedDependencies": {
+			"emf-converter@2.0.2": "patches/emf-converter@2.0.2.patch",
+			"@ztl-uwu/nuxt-content@2.13.9": "patches/@ztl-uwu__nuxt-content@2.13.9.patch"
 		}
 	},
 	"author": {
