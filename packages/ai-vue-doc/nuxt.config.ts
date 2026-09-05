@@ -65,12 +65,12 @@ export default defineNuxtConfig({
 						trace: false,
 					},
 				}
-			: {
-					// Linux/macOS（CI/Vercel）构建保留追踪，并显式纳入 sharp。
-					// IPX 对 sharp 的 require 是变量拼接的动态路径，nft 静态分析可能漏追平台二进制。
-					externals: {
-						traceInclude: ["sharp"],
-					},
-				}),
+			: {}),
+		// 曾为 Linux/CI 分支补过 externals.traceInclude: ["sharp"]，实机证伪（Vercel linux 构建
+		// dpl_AnX24PMQQVfGh6QigwLrZeEWyURS）：nitro 在 pnpm 环境下把 "sharp" resolve 成
+		// "<pkg>/sharp" 伪路径交给 @vercel/nft，emitDependency 对不存在的文件直接抛
+		// "File .../sharp does not exist" 硬错误，构建失败。且本 Vercel 项目部署产物是
+		// docs/.vitepress/dist，ai-vue-doc 的 .output 仅作构建门禁，traceInclude 无部署收益。
+		// 结论：所有平台均不配置 traceInclude；@nuxt/image 的 sharp 警告按良性噪音处理。
 	},
 });
