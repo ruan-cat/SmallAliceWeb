@@ -42,7 +42,6 @@ docs/.vuepress/dist/
 .env.production.local
 .env.local
 
-pnpm-lock.yaml
 .vercel
 .turbo
 
