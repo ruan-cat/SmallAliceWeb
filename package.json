@@ -29,11 +29,8 @@
 		"docs:update-package": "pnpm dlx vp-update",
 		"postinstall": "npx nuxi prepare",
 		"prepare": "simple-git-hooks",
-		"init-biome-config": "biome init",
-		"biome-migrate-prettier": "biome migrate prettier --write",
 		"format": "prettier --experimental-cli --write --no-parallel .",
 		"format:changelog": "pnpm exec prettier --experimental-cli --write CHANGELOG.md \"scripts/*/CHANGELOG.md\"",
-		"format:docs-biome": "biome format --write ./docs/**/*.md",
 		"format:docs-prettier": "prettier --experimental-cli --write ./docs/**/*.md",
 		"rm:node_modules": "rimraf node_modules pnpm-lock.yaml .nuxt .vercel",
 		"deploy-vercel": "vercel-deploy-tool deploy",
@@ -53,7 +50,6 @@
 		"@ruan-cat-drill-doc/ai-vue": "workspace:*"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
 		"@prettier/plugin-oxc": "^0.1.3",
 		"@ruan-cat-drill-doc/ai-rag-core": "workspace:*",
 		"@ruan-cat-drill-doc/ai-vue-doc": "workspace:*",
