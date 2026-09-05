@@ -40,76 +40,76 @@ ai-vue 当前是一个**最小可用**的聊天组件，仅满足"能对话、�
 
 ### 2.1 组件形态丰富度
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| 嵌入式聊天 | `InkeepEmbeddedChat` | `AiChat` | 基本对齐 |
-| 悬浮按钮 + 抽屉 | `InkeepChatButton` | `AiChatFloatingButton` | 基本对齐 |
-| 侧边栏聊天 | `InkeepSidebarChat` | ❌ 无 | 缺失 |
-| 弹窗聊天 | `InkeepModalChat` | ❌ 无 | 缺失 |
-| 搜索栏 | `InkeepSearchBar` | ❌ 无 | 缺失 |
-| 搜索 + 聊天组合 | `InkeepEmbeddedSearchAndChat` | ❌ 无 | 缺失 |
+| 能力            | @inkeep/agents-ui             | ai-vue（当前）         | 差距评估 |
+| --------------- | ----------------------------- | ---------------------- | -------- |
+| 嵌入式聊天      | `InkeepEmbeddedChat`          | `AiChat`               | 基本对齐 |
+| 悬浮按钮 + 抽屉 | `InkeepChatButton`            | `AiChatFloatingButton` | 基本对齐 |
+| 侧边栏聊天      | `InkeepSidebarChat`           | ❌ 无                  | 缺失     |
+| 弹窗聊天        | `InkeepModalChat`             | ❌ 无                  | 缺失     |
+| 搜索栏          | `InkeepSearchBar`             | ❌ 无                  | 缺失     |
+| 搜索 + 聊天组合 | `InkeepEmbeddedSearchAndChat` | ❌ 无                  | 缺失     |
 
 **差距说明**：ai-vue 只有 2 种形态，agents-ui 有 6+ 种。侧边栏和弹窗形态在 SaaS 产品集成场景中需求很高。
 
 ### 2.2 品牌化与主题系统
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| 品牌色入口 | `primaryBrandColor` 自动生成色板 | ❌ 无自动色板 | 重大差距 |
-| 色板精细覆盖 | `UserProvidedColorScheme`（11 个色阶） | 仅 CSS 变量覆盖 | 重大差距 |
-| 主题令牌系统 | `IkpTheme`（colors/fontFamily/fontSize/zIndex） | ❌ 无 | 重大差距 |
-| CSS 前缀定制 | `prefix` 配置（默认 `ikp`） | ❌ 固定 `ai-chat` 前缀 | 中等差距 |
-| 暗色模式同步 | `ColorModeProviderProps`（system/forced/storage） | 仅 CSS 媒体查询 | 中等差距 |
-| 组织名展示 | `organizationDisplayName` | ❌ 无 | 低差距 |
+| 能力         | @inkeep/agents-ui                                 | ai-vue（当前）         | 差距评估 |
+| ------------ | ------------------------------------------------- | ---------------------- | -------- |
+| 品牌色入口   | `primaryBrandColor` 自动生成色板                  | ❌ 无自动色板          | 重大差距 |
+| 色板精细覆盖 | `UserProvidedColorScheme`（11 个色阶）            | 仅 CSS 变量覆盖        | 重大差距 |
+| 主题令牌系统 | `IkpTheme`（colors/fontFamily/fontSize/zIndex）   | ❌ 无                  | 重大差距 |
+| CSS 前缀定制 | `prefix` 配置（默认 `ikp`）                       | ❌ 固定 `ai-chat` 前缀 | 中等差距 |
+| 暗色模式同步 | `ColorModeProviderProps`（system/forced/storage） | 仅 CSS 媒体查询        | 中等差距 |
+| 组织名展示   | `organizationDisplayName`                         | ❌ 无                  | 低差距   |
 
 **差距说明**：ai-vue 的品牌化能力非常薄弱。当前 `styles/index.scss` 虽然定义了 CSS 变量（如 `--ai-chat-primary-color`），但需要使用者手动覆盖每个变量，没有"输入一个品牌色，自动生成完整色板"的能力。agents-ui 通过 `colorjs.io` 库从 `primaryBrandColor` 自动派生出 11 个色阶（lighter/light/medium/strong 等），极大降低了品牌定制成本。
 
 ### 2.3 样式隔离
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| Shadow DOM 隔离 | ✅ 内置 Shadow 组件 | ❌ 无 | 重大差距 |
-| 样式冲突风险 | 极低 | 高（全局 CSS） | 重大差距 |
-| 第三方嵌入可行性 | 高 | 低 | 重大差距 |
+| 能力             | @inkeep/agents-ui   | ai-vue（当前） | 差距评估 |
+| ---------------- | ------------------- | -------------- | -------- |
+| Shadow DOM 隔离  | ✅ 内置 Shadow 组件 | ❌ 无          | 重大差距 |
+| 样式冲突风险     | 极低                | 高（全局 CSS） | 重大差距 |
+| 第三方嵌入可行性 | 高                  | 低             | 重大差距 |
 
 **差距说明**：ai-vue 当前使用全局 SCSS，当被嵌入到第三方页面时，宿主页面的 CSS 可能污染聊天组件的样式（如 `button`、`input`、`a` 等元素的全局样式）。agents-ui 通过 Shadow DOM 彻底隔离了组件样式，这是"可嵌入"能力的基础。
 
 ### 2.4 富聊天体验
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| Markdown 渲染 | ✅ react-markdown + remark-gfm + prism | ✅ markstream-vue | 基本对齐 |
-| 来源引用展示 | ✅ citation 组件 | ✅ 来源链接列表 | 基本对齐 |
-| 自定义消息渲染 | `ComponentsConfig`（按名称注册渲染器） | ❌ 无 | 重大差距 |
-| 工具调用 UI | `IkpTool`（含审批按钮） | ❌ 无 | 重大差距 |
-| 表单收集 | `openForm(formSettings)` | ❌ 无 | 中等差距 |
-| 反馈机制 | `InkeepFeedback`（正/负面 + 详情） | ❌ 无 | 中等差距 |
-| 消息操作菜单 | `CustomMessageAction[]` | ❌ 无 | 中等差距 |
-| 示例问题 | `exampleQuestions` | ❌ 无 | 低差距 |
-| 引导消息 | `introMessage` | ❌ 无 | 低差距 |
-| 文件附件 | `FileUIPart` | ❌ 无 | 中等差距 |
+| 能力           | @inkeep/agents-ui                      | ai-vue（当前）    | 差距评估 |
+| -------------- | -------------------------------------- | ----------------- | -------- |
+| Markdown 渲染  | ✅ react-markdown + remark-gfm + prism | ✅ markstream-vue | 基本对齐 |
+| 来源引用展示   | ✅ citation 组件                       | ✅ 来源链接列表   | 基本对齐 |
+| 自定义消息渲染 | `ComponentsConfig`（按名称注册渲染器） | ❌ 无             | 重大差距 |
+| 工具调用 UI    | `IkpTool`（含审批按钮）                | ❌ 无             | 重大差距 |
+| 表单收集       | `openForm(formSettings)`               | ❌ 无             | 中等差距 |
+| 反馈机制       | `InkeepFeedback`（正/负面 + 详情）     | ❌ 无             | 中等差距 |
+| 消息操作菜单   | `CustomMessageAction[]`                | ❌ 无             | 中等差距 |
+| 示例问题       | `exampleQuestions`                     | ❌ 无             | 低差距   |
+| 引导消息       | `introMessage`                         | ❌ 无             | 低差距   |
+| 文件附件       | `FileUIPart`                           | ❌ 无             | 中等差距 |
 
 **差距说明**：ai-vue 的聊天体验停留在"文本 + 来源链接"阶段。agents-ui 支持通过 `ComponentsConfig` 注册自定义渲染器，实现工单卡片、订单状态、数据图表等富组件渲染，这是"智能客服"区别于"文档问答"的关键能力。
 
 ### 2.5 事件与可观测性
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| 用户行为事件 | `InkeepCallbackEvent`（15+ 事件类型） | ❌ 仅 send/stop/clear-error | 重大差距 |
-| 反馈事件 | `AssistantPositiveFeedbackSubmitted` 等 | ❌ 无 | 重大差距 |
-| 消息完成事件 | `AssistantAnswerDisplayed` | `onResponseComplete` | 部分对齐 |
-| 用户升级事件 | `UserEscalationIndicatedEvent` | ❌ 无 | 中等差距 |
+| 能力         | @inkeep/agents-ui                       | ai-vue（当前）              | 差距评估 |
+| ------------ | --------------------------------------- | --------------------------- | -------- |
+| 用户行为事件 | `InkeepCallbackEvent`（15+ 事件类型）   | ❌ 仅 send/stop/clear-error | 重大差距 |
+| 反馈事件     | `AssistantPositiveFeedbackSubmitted` 等 | ❌ 无                       | 重大差距 |
+| 消息完成事件 | `AssistantAnswerDisplayed`              | `onResponseComplete`        | 部分对齐 |
+| 用户升级事件 | `UserEscalationIndicatedEvent`          | ❌ 无                       | 中等差距 |
 
 **差距说明**：ai-vue 的事件系统非常简单，只有 3 个 emit 事件。agents-ui 暴露了完整的用户行为事件链，包括消息提交、回复展示、反馈提交、清除点击、分享点击、升级指示等，为数据分析和质量优化提供了基础。
 
 ### 2.6 嵌入方式
 
-| 能力 | @inkeep/agents-ui | ai-vue（当前） | 差距评估 |
-|------|-------------------|----------------|----------|
-| Vue 组件引入 | ❌（React） | ✅ | ai-vue 优势 |
-| npm 包安装 | ✅ | ✅ | 对齐 |
-| script 标签嵌入 | ✅（`@inkeep/agents-ui-js-cloud`） | ❌ | 重大差距 |
-| 函数式挂载 | `Inkeep.EmbeddedChat(target, config)` | ❌ | 重大差距 |
+| 能力            | @inkeep/agents-ui                     | ai-vue（当前） | 差距评估    |
+| --------------- | ------------------------------------- | -------------- | ----------- |
+| Vue 组件引入    | ❌（React）                           | ✅             | ai-vue 优势 |
+| npm 包安装      | ✅                                    | ✅             | 对齐        |
+| script 标签嵌入 | ✅（`@inkeep/agents-ui-js-cloud`）    | ❌             | 重大差距    |
+| 函数式挂载      | `Inkeep.EmbeddedChat(target, config)` | ❌             | 重大差距    |
 
 **差距说明**：agents-ui 提供了独立的 JS Cloud 包，允许非 React 环境（如纯 HTML 页面、WordPress、Shopify）通过 `<script>` 标签 + 函数调用的方式嵌入聊天。这极大降低了集成门槛。ai-vue 目前只能在 Vue 环境使用。
 
@@ -209,18 +209,18 @@ ai-vue 当前是一个**最小可用**的聊天组件，仅满足"能对话、�
 
 ## 六、术语表
 
-| 术语 | 含义 |
-|------|------|
-| 品牌色（primaryBrandColor） | 使用者提供的单一 CSS 颜色值，作为主题色板生成的种子 |
-| 色板（ColorScheme） | 从品牌色派生出的多个色阶，用于不同 UI 层级（背景、边框、文字、强调等） |
-| 主题令牌（Theme Token） | 结构化的主题配置对象，包含 colors/fontFamily/fontSize/zIndex 四类令牌 |
-| Shadow DOM | Web Components 标准，将组件的 DOM 和 CSS 封装在 Shadow Root 内，与宿主页面隔离 |
-| 自定义渲染器（Custom Component） | 使用者注册的渲染函数，用于在消息流中渲染特定类型的富组件（如工单卡片） |
-| 函数式嵌入 | 通过 JavaScript 函数（如 `mountAiChat(target, config)`）将组件挂载到 DOM，无需框架环境 |
-| 事件链（Event Chain） | 用户在聊天过程中的完整行为事件序列，用于埋点分析 |
-| Teek 主题 | `vitepress-theme-teek`，SmallAliceWeb 文档站使用的 VitePress 主题，通过 `@ruan-cat/vitepress-preset-config` 引入 |
-| 主题色传递链路 | Teek 主题色 → VitePress CSS 变量 → ai-vitepress-plugins 桥接 → ai-vue 消费的完整颜色传递路径 |
-| CSS 变量桥接 | 在中间层将上游 CSS 变量（如 `--vp-c-brand-1`）映射为下游 CSS 变量（如 `--ai-chat-primary-color`）的机制 |
+| 术语                             | 含义                                                                                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 品牌色（primaryBrandColor）      | 使用者提供的单一 CSS 颜色值，作为主题色板生成的种子                                                              |
+| 色板（ColorScheme）              | 从品牌色派生出的多个色阶，用于不同 UI 层级（背景、边框、文字、强调等）                                           |
+| 主题令牌（Theme Token）          | 结构化的主题配置对象，包含 colors/fontFamily/fontSize/zIndex 四类令牌                                            |
+| Shadow DOM                       | Web Components 标准，将组件的 DOM 和 CSS 封装在 Shadow Root 内，与宿主页面隔离                                   |
+| 自定义渲染器（Custom Component） | 使用者注册的渲染函数，用于在消息流中渲染特定类型的富组件（如工单卡片）                                           |
+| 函数式嵌入                       | 通过 JavaScript 函数（如 `mountAiChat(target, config)`）将组件挂载到 DOM，无需框架环境                           |
+| 事件链（Event Chain）            | 用户在聊天过程中的完整行为事件序列，用于埋点分析                                                                 |
+| Teek 主题                        | `vitepress-theme-teek`，SmallAliceWeb 文档站使用的 VitePress 主题，通过 `@ruan-cat/vitepress-preset-config` 引入 |
+| 主题色传递链路                   | Teek 主题色 → VitePress CSS 变量 → ai-vitepress-plugins 桥接 → ai-vue 消费的完整颜色传递路径                     |
+| CSS 变量桥接                     | 在中间层将上游 CSS 变量（如 `--vp-c-brand-1`）映射为下游 CSS 变量（如 `--ai-chat-primary-color`）的机制          |
 
 ---
 
@@ -230,7 +230,7 @@ ai-vue 当前是一个**最小可用**的聊天组件，仅满足"能对话、�
 
 SmallAliceWeb 文档站的颜色体系并非单一来源，而是由三层主题叠加构成：
 
-```
+```plain
 ┌─────────────────────────────────────────────────────────┐
 │  第1层：VitePress 默认主题变量                            │
 │  --vp-c-brand-1/2/3/soft, --vp-c-bg, --vp-c-text-1 等   │
@@ -334,16 +334,16 @@ inkeep/agents 的 `DataComponent` 模式展示了更优的方案：Agent 返回�
 
 #### 8.2.1 vue-element-plus-x 已提供的组件
 
-| 组件 | 用途 | 可用于 DataComponent 的场景 |
-|------|------|----------------------------|
-| **BubbleList** | 消息列表（虚拟滚动、自动跟随） | 消息容器，通过 `itemType` + `#item` slot 分发渲染 |
-| **Bubble** | 单条消息气泡 | 卡片的外层容器（头像、placement、variant） |
-| **FilesCard** | 文件卡片（16 种文件类型） | 文档搜索结果卡片、附件展示 |
-| **Prompts** | 提示卡片（分组、图标、描述） | 示例问题、推荐操作 |
-| **Welcome** | 欢迎卡片 | 空状态引导 |
-| **ThoughtChain** | 思维链展示 | Agent 推理过程展示 |
-| **Conversations** | 会话列表 | 多轮对话历史 |
-| **XSender** | 输入框（提及、触发器） | 增强输入体验 |
+| 组件              | 用途                           | 可用于 DataComponent 的场景                       |
+| ----------------- | ------------------------------ | ------------------------------------------------- |
+| **BubbleList**    | 消息列表（虚拟滚动、自动跟随） | 消息容器，通过 `itemType` + `#item` slot 分发渲染 |
+| **Bubble**        | 单条消息气泡                   | 卡片的外层容器（头像、placement、variant）        |
+| **FilesCard**     | 文件卡片（16 种文件类型）      | 文档搜索结果卡片、附件展示                        |
+| **Prompts**       | 提示卡片（分组、图标、描述）   | 示例问题、推荐操作                                |
+| **Welcome**       | 欢迎卡片                       | 空状态引导                                        |
+| **ThoughtChain**  | 思维链展示                     | Agent 推理过程展示                                |
+| **Conversations** | 会话列表                       | 多轮对话历史                                      |
+| **XSender**       | 输入框（提及、触发器）         | 增强输入体验                                      |
 
 #### 8.2.2 BubbleList 的自定义渲染机制
 
@@ -415,3 +415,97 @@ slots: {
 2. **不新增重型依赖**：利用现有 `vue-element-plus-x` 和 `element-plus` 组件，不引入新的 UI 库
 3. **向后兼容**：现有 `AiChatMessage` 类型的 `content` 和 `sources` 字段保持不变，`itemType` 为可选字段
 4. **流式安全**：结构化卡片渲染需要等待完整数据到达后再渲染，不能在流式过程中部分渲染卡片
+
+---
+
+## 九、vue-element-plus-x 升级评估与组件复用策略 [新增]
+
+### 9.1 调研问题与方法
+
+用户提出三个问题：
+
+1. vue-element-plus-x 要不要升级到最新版？
+2. 最新版是否提供了更多组件可供合理使用？
+3. ai-vue 接下来如何增加组件，在学习 @inkeep/agents-ui、不重复造轮子的前提下复用 vue-element-plus-x？
+
+调研方法：不依赖 README 口径，直接对 npm 产物做 dist 实测 —— `npm pack vue-element-plus-x@2.0.3` 解包读取 `types/` 类型声明，与仓库实际安装的 1.3.98 类型逐项对照。
+
+### 9.2 版本现状
+
+| 对比项        | 当前（仓库安装）                          | 最新（npm latest）                                                   |
+| :------------ | :---------------------------------------- | :------------------------------------------------------------------- |
+| 版本          | 1.3.98（package.json 声明 ^1.3.2）        | 2.0.3（2026-05-15 发布）                                             |
+| 组件目录数    | 17                                        | 11                                                                   |
+| Markdown 渲染 | 内置 XMarkdown 系列（捆绑 shiki，体积大） | 已移除，交给业务侧（本仓库用 markstream-vue）                        |
+| 输入组件      | Sender / EditorSender / MentionSender     | 统一为 XSender（基于独立 x-sender 包）                               |
+| 主题系统      | 无官方入口                                | ConfigProvider（namespace/theme/themeOverrides/applyTo）+ useTheme() |
+| BubbleList    | 无虚拟滚动、无 #item slot                 | 虚拟滚动（virtua）+ #item slot + itemType 解析器 + loadMore 分页     |
+
+peer 依赖对照：v2 要求 `element-plus ^2.9.7`、`vue ^3.5.17`；仓库为 `element-plus ^2.11.8`、`vue ^3.5.28`，满足，无版本冲突。
+
+### 9.3 组件盘点与可用性评估（v2.0.3 dist 实测）
+
+| 组件                         | v2 状态                  | 用途                                       | 对 ai-vue 的价值                                    |
+| :--------------------------- | :----------------------- | :----------------------------------------- | :-------------------------------------------------- |
+| Bubble / BubbleList          | 保留（API 有破坏性演进） | 气泡与消息列表                             | 核心承载，#item slot 是 P3.5 的基础                 |
+| XSender                      | 新增（替代 Sender）      | 聊天输入框                                 | 必须迁移，AiChat.vue 当前 import 的 Sender 已被移除 |
+| ConfigProvider               | 增强                     | 主题注入（namespace/theme/themeOverrides） | P1 品牌化的官方通道，替代直接改内部 CSS 变量        |
+| useTheme / useNamespace      | 新增 hooks               | 读取主题态、生成 CSS 变量                  | 供 useBrandTheme 桥接 Teek 主题色                   |
+| Prompts / Welcome            | 保留                     | 示例问题 / 空状态引导                      | 对应 agents-ui 的 exampleQuestions / introMessage   |
+| ThoughtChain / Thinking      | 保留                     | 推理过程与思考态                           | 对应 StatusComponent 的过程可见性                   |
+| Conversations                | 保留                     | 会话历史列表                               | 多轮对话管理（后续阶段）                            |
+| FilesCard / Attachments      | 保留                     | 文件卡片 / 附件                            | 知识库文档引用展示                                  |
+| Typewriter / XMarkdown\*     | 移除                     | 打字机 / Markdown 渲染                     | 无损失：markstream-vue 已承担                       |
+| EditorSender / MentionSender | 移除（能力并入 XSender） | 富文本 / @提及输入                         | 暂无诉求                                            |
+
+### 9.4 升级决策：升级到 2.0.3，并作为 P0 前置任务
+
+**决策**：升级，且必须先于 P3.5 实施（落地方案见 plan 第十三章）。
+
+**理由**：
+
+1. P3.5 DataComponent 依赖的 `#item` slot 与 `itemType` 解析器只在 v2 存在 —— 1.3.98 的 BubbleList 类型实测无此 API，不升级则 P3.5 方案是空中楼阁。
+2. v2 ConfigProvider + useTheme 是官方主题注入通道，P1/P1.5 应搭车而不是逆向 CSS 变量。
+3. v2 移除的 Typewriter/XMarkdown 与仓库现状零冲突（markdown 归 markstream-vue）。
+4. shiki 捆绑移除后安装体积显著下降。
+
+**破坏点与对策**：
+
+- `Sender` 移除 → AiChat.vue 改用 XSender（无 v-model，取值走 `getModelValue()`；`auto-size`/`submit-btn-disabled` 无对应，见 plan 13.2 对照表）。
+- BubbleList `complete`/`triggerIndices`/TypewriterInstance 移除 → AiChat 未使用，无影响。
+- Bubble `typing/isMarkdown/isFog` 移除 → AiChat 的 Bubble 仅做空状态壳，无影响。
+
+验收标准：
+
+- [ ] 升级后构建与类型检查通过
+- [ ] Sender→XSender 迁移后发送/停止/禁用行为不变
+- [ ] 空状态 Bubble 与消息列表渲染回归通过（vitest 现有用例全绿）
+- [ ] agent-browser 视觉验证（plan 第十二章流程）确认消息列表与输入框外观正常
+
+### 9.5 组件复用策略：三层分工，不重复造轮子
+
+**分层原则**：
+
+1. **原子组件层 = vue-element-plus-x**：气泡、列表、输入、提示、欢迎、思维链等原子能力直接复用，禁止在 ai-vue 内重写同类组件。
+2. **ai-vue 包装层 = 项目增值所在**：品牌化主题（useBrandTheme + ConfigProvider 桥接）、Teek 主题色传递（useThemeColor）、类型系统（AiChatMessage/itemType）、事件链（useChatEvents）、Shadow DOM 隔离（AiShadowRoot）、组件形态（Sidebar/Modal 容器）。学习 @inkeep/agents-ui 的产出全部落在这一层。
+3. **自研边界**：仅当 vepx 无对应组件时自研（如 AiShadowRoot、色板派生 color-utils）。
+
+**映射表**：
+
+| @inkeep/agents-ui 能力      | ai-vue 落地                     | 复用的 vepx 组件              | ai-vue 自研部分            |
+| :-------------------------- | :------------------------------ | :---------------------------- | :------------------------- |
+| EmbeddedChat                | AiChat                          | BubbleList / Bubble / XSender | 主题系统、事件链、消息类型 |
+| ComponentsConfig 自定义渲染 | customRenderers + itemType 分发 | BubbleList `#item` slot       | 渲染器注册类型与回退逻辑   |
+| exampleQuestions            | 示例问题区                      | Prompts                       | 事件上报                   |
+| introMessage / 空状态       | 引导消息                        | Welcome / Bubble              | 文案配置                   |
+| InkeepFeedback              | 反馈按钮                        | Bubble `#footer` slot         | 反馈事件与上报协议         |
+| StatusComponent             | 生成过程可见性                  | Thinking / ThoughtChain       | 状态事件映射               |
+| SidebarChat / ModalChat     | AiSidebarChat / AiModalChat     | 复用 AiChat 内核              | 容器交互与定位             |
+| 会话切换                    | useConversation                 | Conversations                 | 历史存储与压缩             |
+
+### 9.6 约束
+
+1. 版本锁定策略：package.json 声明 `^2.0.3`，锁文件已入库（.gitignore 已移除 pnpm-lock.yaml 忽略规则），升级必须走 lock 文件 diff review。
+2. 不 fork vepx 源码：定制一律通过 wrapper 组件、slot、ConfigProvider themeOverrides、CSS 变量前缀实现。
+3. 升级与功能解耦：升级本身是独立 P0 任务，回归通过后才允许叠加新功能开发。
+4. tree-shaking：ai-vue 构建保持按需引入 vepx 组件，避免全量注册。
