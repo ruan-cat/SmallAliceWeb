@@ -16,6 +16,13 @@ export default defineAppConfig({
 			title: "AI Vue",
 			showTitle: true,
 			darkModeToggle: true,
+			// 主题默认 logo 指向 /logo.svg 与 /logo-dark.svg，但主题包不附带这两个源文件，
+			// 经 NuxtImg/IPX 处理时产生 404。注意 Logo.vue 的标题文本嵌在 logo 的 v-if 分支内，
+			// logo 置空会连带丢失站点标题，故指向真实存在的 favicon.svg（明暗共用）。
+			logo: {
+				light: "/favicon.svg",
+				dark: "/favicon.svg",
+			},
 			nav: [
 				{
 					title: "快速开始",
