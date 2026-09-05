@@ -262,6 +262,12 @@ metadata:
 - 适用场景：agent 创建「临时」git worktree/分支/目录等设施后未清理，或后续会话把一次性绕路 workaround 当作既定流程复用。
 - 关键约束：agent 自建临时资源必须同会话清理；发布 main 一律 `git push origin dev:main`（先确认 fast-forward），禁止重建 main 同步 worktree；写入 memorix 时区分「最优解」与「历史遗留」。
 
+### 13.12 ai-vue-doc 本地 dev 多层叠加故障修复（2026-09-05）
+
+- 详细案例：`2026-09-05-ai-vue-doc-local-dev-fix.md`
+- 适用场景：shadcn-docs-nuxt 站点 dev 启动即崩、SSR 全站 500/404-UI、客户端不水合且 console 无错；或 h3 v1/v2 混世、`.client` 插件依赖未被 optimizeDeps 预构建。
+- 关键约束：catch-all 路由会把 404 渲染成 HTTP 200，验证必须断言内容；h3 裸导入未声明用 `packageExtensions` 注入而非全局 override；`.client` 插件的依赖树用 `optimizeDeps.include`（嵌套 `>` 语法）显式纳入；浏览器无错不水合时用 `#__nuxt.__vue_app__` + 动态 import entry 抓真实 SyntaxError。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
