@@ -7,12 +7,12 @@
 
 /** 使用者提供的品牌色配置 */
 export interface BrandThemeConfig {
-	/** 主品牌色，任意 CSS 颜色值（hex/rgb/hsl） */
-	primaryBrandColor: string;
+	/** 主品牌色，任意 CSS 颜色值（hex/rgb/hsl）；缺省时使用默认品牌色 #3b82f6 */
+	primaryBrandColor?: string;
 	/** 组织展示名称，显示在头部等位置 */
 	organizationDisplayName?: string;
-	/** 精细覆盖特定色阶 */
-	customColorScheme?: Partial<ColorScheme>;
+	/** 精细覆盖特定色阶（叠加在种子色派生结果之上，未覆盖的色阶保留派生值） */
+	colorSchemeOverrides?: Partial<ColorScheme>;
 	/** 主题令牌覆盖 */
 	theme?: Partial<IkpTheme>;
 	/** CSS 变量前缀，默认 'ai-chat' */
