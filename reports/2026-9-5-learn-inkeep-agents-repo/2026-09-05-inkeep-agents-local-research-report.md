@@ -110,9 +110,10 @@ customer-support 的 Zendesk 代理在创建工单时注入 `{{$conversation.id}
 
 ## 六、边界与不引入清单
 
-- **不引入**：DoltgreSQL/dolt、SpiceDB 授权、durable workflow 引擎、agents-manage-ui、agents-cli 平台同步、Langfuse（模式自实现）、**MCP 协议栈与一切工具执行能力（用户明确约束：web RAG 无 node 执行环境、不代用户操作，见 1.3）**、多轮会话机制（用户明确约束，设计备查）。
+- **不引入**：DoltgreSQL/dolt、SpiceDB 授权、durable workflow 引擎、agents-manage-ui、agents-cli 平台同步、Langfuse（模式自实现）、**MCP 协议栈与一切工具执行能力（用户明确约束：web RAG 无 node 执行环境、不代用户操作，见 1.3）**、多轮会话机制（用户明确约束，设计备查）、**`@hono/zod-openapi` 验证栈（2026-09-05 用户拍板：框架错位——本仓库是 Nitro/h3 非 Hono 生态；规模错位——4 个入口的 schema 无需工厂复用；引入会与 openspec 行为 spec 形成双事实源）**。
 - **理由**：均为平台级重依赖或与产品定位冲突，与我们「自有栈 + 零平台依赖 + ELv2 规避」的既定边界一致（主调研报告已论证）。
-- **暂列备查**：credential-stores 多后端抽象、external-fetch 安全套件、sandbox 执行器、多轮压缩三件套与 reconcileToolPairs（重启多轮时启用）。
+- **暂列备查**：credential-stores 多后端抽象、external-fetch 安全套件、sandbox 执行器、多轮压缩三件套与 reconcileToolPairs（重启多轮时启用）、OpenAPI 文档生成与 `createApiSchema` 式 schema 工厂（触发条件：API 面向第三方消费者或 schema 规模增长一个数量级，届时评估 Nitro 生态方案并先行定义其与 openspec 的分工）。
+- **验证层对标结论（2026-09-05 拍板，已吸收）**：维持 zod + contracts 薄路由模式——框架无关可离线单测、错误映射已由 chat-api Requirement 3 行为化固化、schema 即 TS 类型单源；吸收 inkeep 的 shared 共享契约组织思想，落地起点为 CC-1（PageContext schema 下沉 `@ruan-cat-drill-doc/ai-rag-core` 两端共用），后续跨端字段按需跟进；新字段必进 schema 的纪律不变。
 
 ## 七、结论
 

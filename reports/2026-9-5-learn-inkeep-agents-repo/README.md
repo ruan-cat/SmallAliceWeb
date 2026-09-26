@@ -4,6 +4,8 @@
 > 调研目标：深入分析 [inkeep/agents](https://github.com/inkeep/agents) 的子包结构与核心能力，评估其对 [SmallAliceWeb](https://github.com/ruan-cat/SmallAliceWeb) 项目在 AI 智能客服方向的增强价值。
 > 调研分支：`2026-9-5-learn-inkeep-agents-repo`（基于 `dev` 分支）
 
+> **⚠️ 路线修订公告（2026-09-05）**：本文为云端调研阶段的历史文献。其中的多轮对话、对话历史压缩、MCP 工具调用相关结论与待办（含 7.1 实施路线图第一阶段「多轮对话 + 对话历史存储与压缩」）**已被用户四条路线约束取代**：不做多轮会话、不接 MCP、模型更换与切换为 P0、单轮回流评估。现行路线唯一以[重调研报告](./2026-09-05-inkeep-agents-local-research-report.md) 1.3 节与第四章为准；压缩三件套等设计转入备查档案（见[探索笔记 B](./research-notes/B-api-runtime.md)）。另：4.5 节与增强 7 所称「SmallAliceWeb 当前缺乏质量评估机制」**已过时**——本仓已有三层自研评估（确定性 IR 指标 / 语料预检门控 / 关键词 smoke，见 learn-agents-ui spec 11.8），缺的只是结果落库与只读查询。**后续 agent 不得把本文旧结论当作待办实施。**
+
 ---
 
 ## 一、概述与背景
@@ -44,7 +46,7 @@ inkeep/agents 是一个**企业级全功能 Agent 平台**，其核心价值在�
 
 inkeep/agents 是一个 pnpm monorepo，包含以下顶层包和子包：
 
-```
+```plain
 inkeep/agents/
 ├── agents-api/              # REST API 服务器（Hono 框架）
 ├── agents-manage-ui/        # 可视化构建器（Next.js）
@@ -67,19 +69,19 @@ inkeep/agents/
 
 ### 2.2 技术栈选型
 
-| 层面 | 技术选型 | 说明 |
-|------|----------|------|
-| API 框架 | Hono | 轻量级、边缘运行时友好的 Web 框架 |
-| ORM | Drizzle ORM | 类型安全的 SQL ORM |
-| 数据库 | DoltgreSQL | 支持 Git 式版本控制的 PostgreSQL 分支 |
-| 认证 | better-auth + SpiceDB | 认证 + 细粒度授权 |
-| LLM 接口 | Vercel AI SDK | 标准化的 LLM 调用接口 |
-| 可观测性 | OpenTelemetry | 全链路追踪标准 |
-| 前端框架 | Next.js + React | 可视化构建器与管理后台 |
-| UI 组件 | @inkeep/agents-ui | 独立发布的聊天 UI 组件库 |
-| 包管理 | pnpm + catalog | 统一版本管理 |
-| 代码规范 | Biome | 格式化 + Lint |
-| 许可证 | Elastic License 2.0 | 源码可见，限制商业竞争使用 |
+| 层面     | 技术选型              | 说明                                  |
+| -------- | --------------------- | ------------------------------------- |
+| API 框架 | Hono                  | 轻量级、边缘运行时友好的 Web 框架     |
+| ORM      | Drizzle ORM           | 类型安全的 SQL ORM                    |
+| 数据库   | DoltgreSQL            | 支持 Git 式版本控制的 PostgreSQL 分支 |
+| 认证     | better-auth + SpiceDB | 认证 + 细粒度授权                     |
+| LLM 接口 | Vercel AI SDK         | 标准化的 LLM 调用接口                 |
+| 可观测性 | OpenTelemetry         | 全链路追踪标准                        |
+| 前端框架 | Next.js + React       | 可视化构建器与管理后台                |
+| UI 组件  | @inkeep/agents-ui     | 独立发布的聊天 UI 组件库              |
+| 包管理   | pnpm + catalog        | 统一版本管理                          |
+| 代码规范 | Biome                 | 格式化 + Lint                         |
+| 许可证   | Elastic License 2.0   | 源码可见，限制商业竞争使用            |
 
 ### 2.3 核心设计理念
 
@@ -185,7 +187,7 @@ agents-api 是整个框架的运行时核心，基于 Hono 框架构建，OpenAP
 
 inkeep/agents 的多代理架构是其最核心的差异化能力。通过 customer-support 示例可以清晰看到这一架构的运作方式：
 
-```
+```plain
 customerSupport (Agent)
 └── customerSupportCoordinator (SubAgent, default)
     ├── canDelegateTo: [knowledgeBaseAgent, zendeskAgent]
@@ -258,21 +260,21 @@ AgentSession 内置了对话历史的压缩与摘要机制。当对话超过 tok
 
 ### 5.1 架构对比
 
-| 维度 | SmallAliceWeb 现状 | inkeep/agents | 差距评估 |
-|------|-------------------|---------------|----------|
-| Agent 架构 | 单 Agent，静态提示词 | 多 Agent，Coordinator + Specialist | 重大差距 |
-| 工具调用 | 无 | MCP 协议，100+ 工具 | 重大差距 |
-| 上下文管理 | 静态系统提示词 + RAG 检索 | ContextConfig 动态获取 + RAG | 中等差距 |
-| 凭证管理 | 环境变量 | 多后端（memory/keychain/Nango） | 中等差距 |
-| 对话历史 | 无（每次独立） | 完整管理 + 压缩摘要 | 重大差距 |
-| UI 组件 | 文本 + 来源链接 | DataComponent/Artifact/Status | 中等差距 |
-| 可观测性 | 无 | OpenTelemetry + Traces UI | 重大差距 |
-| 评估框架 | 无 | Dataset + Evaluator 闭环 | 重大差距 |
-| 触发系统 | 无 | Scheduled/Webhook/Slack/GitHub | 中等差距 |
-| 可视化构建 | 无 | 完整拖拽画布 | 低优先级 |
-| 部署方式 | Vercel（Nitro + VitePress） | Vercel / Docker | 一致 |
-| 前端框架 | Vue 3 | React 19 | 技术栈不同 |
-| LLM 接口 | 直接调用 CF Workers AI / OpenAI | Vercel AI SDK | 可对齐 |
+| 维度       | SmallAliceWeb 现状              | inkeep/agents                      | 差距评估   |
+| ---------- | ------------------------------- | ---------------------------------- | ---------- |
+| Agent 架构 | 单 Agent，静态提示词            | 多 Agent，Coordinator + Specialist | 重大差距   |
+| 工具调用   | 无                              | MCP 协议，100+ 工具                | 重大差距   |
+| 上下文管理 | 静态系统提示词 + RAG 检索       | ContextConfig 动态获取 + RAG       | 中等差距   |
+| 凭证管理   | 环境变量                        | 多后端（memory/keychain/Nango）    | 中等差距   |
+| 对话历史   | 无（每次独立）                  | 完整管理 + 压缩摘要                | 重大差距   |
+| UI 组件    | 文本 + 来源链接                 | DataComponent/Artifact/Status      | 中等差距   |
+| 可观测性   | 无                              | OpenTelemetry + Traces UI          | 重大差距   |
+| 评估框架   | 无                              | Dataset + Evaluator 闭环           | 重大差距   |
+| 触发系统   | 无                              | Scheduled/Webhook/Slack/GitHub     | 中等差距   |
+| 可视化构建 | 无                              | 完整拖拽画布                       | 低优先级   |
+| 部署方式   | Vercel（Nitro + VitePress）     | Vercel / Docker                    | 一致       |
+| 前端框架   | Vue 3                           | React 19                           | 技术栈不同 |
+| LLM 接口   | 直接调用 CF Workers AI / OpenAI | Vercel AI SDK                      | 可对齐     |
 
 ### 5.2 技术栈兼容性分析
 
