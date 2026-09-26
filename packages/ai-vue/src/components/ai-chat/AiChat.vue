@@ -74,16 +74,19 @@ function handleSend(content: string) {
 	const normalizedContent = content.trim();
 	if (displayedResponding.value || !normalizedContent) return;
 
+	/** emit 负载必须在 sendMessage() 之前构造：mock 模式下 sendMessage() 会同步 push 消息，若在其后求值 id 会整体后移一位。 */
+	const message: AiChatMessage = {
+		id: `user-${displayedMessages.value.length + 1}`,
+		role: "user",
+		content: normalizedContent,
+	};
+
 	if (props.mode === "mock") {
 		input.value = normalizedContent;
 		sendMessage();
 	}
 
-	emit("send", {
-		id: `user-${displayedMessages.value.length + 1}`,
-		role: "user",
-		content: normalizedContent,
-	});
+	emit("send", message);
 }
 
 /** 请求外部聊天状态管理器中止当前生成。 */

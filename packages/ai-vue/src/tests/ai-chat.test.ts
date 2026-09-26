@@ -315,6 +315,25 @@ describe("AiChat library adapters", () => {
 		expect(onSend).toHaveBeenCalledWith({ id: "user-1", role: "user", content: "项目问题" });
 	});
 
+	test("mock 模式下 send 负载 id 与 composable 推送的消息对齐且随发送递增", () => {
+		const onSend = vi.fn();
+		const host = mountAiChat({ mode: "mock", isResponding: false, mockDelay: 0, onSend });
+		const input = host.querySelector<HTMLInputElement>(".sender-input");
+		if (!input) throw new Error("XSender input stub was not rendered");
+
+		function typeAndSubmit(text: string) {
+			input.value = text;
+			input.dispatchEvent(new Event("input", { bubbles: true }));
+			host.querySelector<HTMLButtonElement>(".sender-submit")?.click();
+		}
+
+		typeAndSubmit("第一问");
+		expect(onSend).toHaveBeenLastCalledWith({ id: "user-1", role: "user", content: "第一问" });
+
+		typeAndSubmit("第二问");
+		expect(onSend).toHaveBeenLastCalledWith({ id: "user-2", role: "user", content: "第二问" });
+	});
+
 	test("仅在生成中显示本地停止按钮，并由点击发出 stop", () => {
 		const idleHost = mountAiChat({ mode: "external", messages: [], isResponding: false });
 		expect(idleHost.querySelector(".ai-chat__stop")).toBeNull();
