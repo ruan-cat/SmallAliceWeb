@@ -2661,9 +2661,9 @@ v2 提供官方主题入口（dist 实测类型）：`ConfigProviderProps { name
 
 ### 13.4 实施步骤（小步提交，每步可验证）
 
-- [ ] **步骤 1：升级依赖。** 修改 `packages/ai-vue/package.json` 将 `vue-element-plus-x` 置为 `^2.0.3`，执行 `pnpm install`；核对已入库的 `pnpm-lock.yaml` diff 仅包含 vepx 相关条目与新增 `x-sender`、`virtua` 依赖。验证：`pnpm --filter @ruan-cat-drill-doc/ai-vue run build` 通过。
-- [ ] **步骤 2：Sender 迁移。** 按 13.2 对照表改写 `AiChat.vue` 输入区；移除 `auto-size`、`submit-btn-disabled`，值读写改走 `getModelValue()`。验证：`pnpm --filter @ruan-cat-drill-doc/ai-vue run test` 全绿（现有用例的 vepx mock 需同步补 `getModelValue`）。
-- [ ] **步骤 3：接入 ConfigProvider。** 按 13.3 包裹根部并接临时品牌色常量。验证：浏览器中 vepx 组件颜色随 overrides 变化。
+- [x] **步骤 1：升级依赖。** 修改 `packages/ai-vue/package.json` 将 `vue-element-plus-x` 置为 `^2.0.3`，执行 `pnpm install`；核对已入库的 `pnpm-lock.yaml` diff 仅包含 vepx 相关条目与新增 `x-sender`、`virtua` 依赖。验证：`pnpm --filter @ruan-cat-drill-doc/ai-vue run build` 通过。
+- [x] **步骤 2：Sender 迁移。** 按 13.2 对照表改写 `AiChat.vue` 输入区；移除 `auto-size`、`submit-btn-disabled`，值读写改走 `getModelValue()`。验证：`pnpm --filter @ruan-cat-drill-doc/ai-vue run test` 全绿（现有用例的 vepx mock 需同步补 `getModelValue`）。
+- [x] **步骤 3：接入 ConfigProvider。** 按 13.3 包裹根部并接临时品牌色常量。验证：浏览器中 vepx 组件颜色随 overrides 变化。
 - [ ] **步骤 4：BubbleList 回归核对。** 确认 `:auto-scroll="false"`、`#content`、`#footer` 行为不变；`complete`/`triggerIndices` 未被 AiChat 使用，无需处理。验证：消息流式渲染与来源链接显示正常。
 - [ ] **步骤 5：视觉验证收尾。** 按第十二章 agent-browser 流程完成默认主题/主题色切换/暗色模式三场景截图判读。
 - [ ] **步骤 6：提交。** 按修改职责拆分：依赖升级（lock）一个提交、Sender 迁移一个提交、ConfigProvider 接入一个提交。
@@ -3466,53 +3466,53 @@ pnpm run docs:build
 
 ### 19.6 执行进度总表（动态维护，每任务完成即更新）
 
-| 组   | 任务                               | 状态 | 完成证据（commit / 输出） |
-| :--- | :--------------------------------- | :--- | :------------------------ |
-| P0   | P0-1 升级 vepx ^2.0.3              | ⬜   |                           |
-| P0   | P0-2 Sender→XSender 迁移           | ⬜   |                           |
-| P0   | P0-3 ConfigProvider 主题通道       | ⬜   |                           |
-| P1   | P1-1 主题类型定义                  | ⬜   |                           |
-| P1   | P1-2 颜色派生函数                  | ⬜   |                           |
-| P1   | P1-3 默认主题令牌                  | ⬜   |                           |
-| P1   | P1-4 useBrandTheme                 | ⬜   |                           |
-| P1   | P1-5 AiChat 接入主题               | ⬜   |                           |
-| P1   | P1-6 AiChatFloatingButton 接入     | ⬜   |                           |
-| P1   | P1-7 主题单元测试                  | ⬜   |                           |
-| P1.5 | Teek 主题色桥接 + useThemeColor    | ⬜   |                           |
-| P2   | P2-1 ~ P2-5 Shadow DOM 隔离        | ⬜   |                           |
-| P3   | P3-1 ~ P3-8 富聊天体验增强         | ⬜   |                           |
-| P3.5 | DataComponent 结构化卡片           | ⬜   |                           |
-| P4   | P4-1 AiSidebarChat                 | ⬜   |                           |
-| P4   | P4-2 AiModalChat                   | ⬜   |                           |
-| P4   | P4-3 mountAiChat 函数              | ⬜   |                           |
-| P4   | P4-4 ./mount exports 入口          | ⬜   |                           |
-| P4   | P4-5 index.ts 导出更新             | ⬜   |                           |
-| P4   | P4-6 mountAiChat 单元测试          | ⬜   |                           |
-| FC   | FC-1 页面上下文采集透传            | ⬜   |                           |
-| FC   | FC-2 provider 无关契约矩阵         | ⬜   |                           |
-| FC   | FC-3 TTFT 与 response-metadata     | ⬜   |                           |
-| FC   | FC-4 反馈载荷关联                  | ⬜   |                           |
-| FC   | FC-5 conversationId 语义固化       | ⬜   |                           |
-| CC   | CC-0 openspec 修订 chat-api R1     | ⬜   |                           |
-| CC   | CC-1 PageContext 共享契约          | ⬜   |                           |
-| CC   | CC-2 ChatContext 与归一化          | ⬜   |                           |
-| CC   | CC-3 函数式 prompt 模板            | ⬜   |                           |
-| CC   | CC-4 接线 contracts/chat.ts        | ⬜   |                           |
-| CC   | CC-5 vitest 降级路径               | ⬜   |                           |
-| MS   | MS-0 openspec 修订 chat-api R8     | ⬜   |                           |
-| MS   | MS-1 注册表 label + GET /v1/models | ⬜   |                           |
-| MS   | MS-2 请求级 provider 分发          | ⬜   |                           |
-| MS   | MS-3 useKnowledgeChat 接线         | ⬜   |                           |
-| MS   | MS-4 AiChat 分段选择器             | ⬜   |                           |
-| MS   | MS-5 vitest 全链路                 | ⬜   |                           |
-| EV   | EV-1 evaluation_runs 表与迁移      | ⬜   |                           |
-| EV   | EV-2 CLI 脚本落库                  | ⬜   |                           |
-| EV   | EV-3 只读两枚接口                  | ⬜   |                           |
-| EV   | EV-4 vitest 覆盖                   | ⬜   |                           |
-| SY   | SY-0 openspec 修订 knowledge-sync  | ⬜   |                           |
-| SY   | SY-1 GA workflow 文件              | ⬜   |                           |
-| SY   | SY-2 Secrets 配置                  | ⬜   |                           |
-| SY   | SY-3 首跑与增量验证                | ⬜   |                           |
+| 组   | 任务                               | 状态 | 完成证据（commit / 输出）                                                                                        |
+| :--- | :--------------------------------- | :--- | :--------------------------------------------------------------------------------------------------------------- |
+| P0   | P0-1 升级 vepx ^2.0.3              | ✅   | b8709a6；lock 含升级固有的 debug 变体确定性翻转，已裁决接受并在报告勘误披露                                      |
+| P0   | P0-2 Sender→XSender 迁移           | ✅   | e5dbe6d + 修复轮 c6c967c（mock 模式 id 求值时机回归已修，21/21 绿）                                              |
+| P0   | P0-3 ConfigProvider 主题通道       | ✅   | 3f4d3f0；22/22 绿；已知临时 `--elx-color-primary` 在 AiChat 树无消费方，显色待 P1.5 CSS 桥接                     |
+| P1   | P1-1 主题类型定义                  | ✅   | 899a5ea；无 any，接口经 9.2.2 兼容反推                                                                           |
+| P1   | P1-2 颜色派生函数                  | ✅   | 899a5ea；与 9.2.1 测试契约逐条核对（hex 输出/无效 throw/#fbbf24 黑字/hexToHsl+hslToHex 导出），WCAG 手算独立验证 |
+| P1   | P1-3 默认主题令牌                  | ✅   | 899a5ea；15 个 colors 令牌与 index.scss fallback 逐值一致                                                        |
+| P1   | P1-4 useBrandTheme                 | ⬜   |                                                                                                                  |
+| P1   | P1-5 AiChat 接入主题               | ⬜   |                                                                                                                  |
+| P1   | P1-6 AiChatFloatingButton 接入     | ⬜   |                                                                                                                  |
+| P1   | P1-7 主题单元测试                  | ⬜   |                                                                                                                  |
+| P1.5 | Teek 主题色桥接 + useThemeColor    | ⬜   |                                                                                                                  |
+| P2   | P2-1 ~ P2-5 Shadow DOM 隔离        | ⬜   |                                                                                                                  |
+| P3   | P3-1 ~ P3-8 富聊天体验增强         | ⬜   |                                                                                                                  |
+| P3.5 | DataComponent 结构化卡片           | ⬜   |                                                                                                                  |
+| P4   | P4-1 AiSidebarChat                 | ⬜   |                                                                                                                  |
+| P4   | P4-2 AiModalChat                   | ⬜   |                                                                                                                  |
+| P4   | P4-3 mountAiChat 函数              | ⬜   |                                                                                                                  |
+| P4   | P4-4 ./mount exports 入口          | ⬜   |                                                                                                                  |
+| P4   | P4-5 index.ts 导出更新             | ⬜   |                                                                                                                  |
+| P4   | P4-6 mountAiChat 单元测试          | ⬜   |                                                                                                                  |
+| FC   | FC-1 页面上下文采集透传            | ⬜   |                                                                                                                  |
+| FC   | FC-2 provider 无关契约矩阵         | ⬜   |                                                                                                                  |
+| FC   | FC-3 TTFT 与 response-metadata     | ⬜   |                                                                                                                  |
+| FC   | FC-4 反馈载荷关联                  | ⬜   |                                                                                                                  |
+| FC   | FC-5 conversationId 语义固化       | ⬜   |                                                                                                                  |
+| CC   | CC-0 openspec 修订 chat-api R1     | ✅   | 4d31fc7 + 修复轮 ffd2e76；strict 校验 exit 0；R1 场景分层矛盾已修                                                |
+| CC   | CC-1 PageContext 共享契约          | ⬜   |                                                                                                                  |
+| CC   | CC-2 ChatContext 与归一化          | ⬜   |                                                                                                                  |
+| CC   | CC-3 函数式 prompt 模板            | ⬜   |                                                                                                                  |
+| CC   | CC-4 接线 contracts/chat.ts        | ⬜   |                                                                                                                  |
+| CC   | CC-5 vitest 降级路径               | ⬜   |                                                                                                                  |
+| MS   | MS-0 openspec 修订 chat-api R8     | ✅   | 4d31fc7 + ffd2e76（与 CC-0 同变更包）；MUST NOT 三条款 + R10 id=provider key + R11 封口                          |
+| MS   | MS-1 注册表 label + GET /v1/models | ⬜   |                                                                                                                  |
+| MS   | MS-2 请求级 provider 分发          | ⬜   |                                                                                                                  |
+| MS   | MS-3 useKnowledgeChat 接线         | ⬜   |                                                                                                                  |
+| MS   | MS-4 AiChat 分段选择器             | ⬜   |                                                                                                                  |
+| MS   | MS-5 vitest 全链路                 | ⬜   |                                                                                                                  |
+| EV   | EV-1 evaluation_runs 表与迁移      | ⬜   |                                                                                                                  |
+| EV   | EV-2 CLI 脚本落库                  | ⬜   |                                                                                                                  |
+| EV   | EV-3 只读两枚接口                  | ⬜   |                                                                                                                  |
+| EV   | EV-4 vitest 覆盖                   | ⬜   |                                                                                                                  |
+| SY   | SY-0 openspec 修订 knowledge-sync  | ⬜   |                                                                                                                  |
+| SY   | SY-1 GA workflow 文件              | ⬜   |                                                                                                                  |
+| SY   | SY-2 Secrets 配置                  | ⬜   |                                                                                                                  |
+| SY   | SY-3 首跑与增量验证                | ⬜   |                                                                                                                  |
 
 > 注：P1.5/P3.5 以整体一行追踪（定义分别见 spec 11.2 目标形态与 plan 4.5.6 任务清单，均为**表格形态、无细分 checkbox**——完成时整行更新状态即可，19.4 第 3 步的「勾选 checkbox」对这两行不适用）；P2/P3 行内「~」表示组内按第六章编号顺序执行，状态列更新到组粒度即可。P1.5/P3.5 未在第六章设组表，其定义位置以本注为准。
 
