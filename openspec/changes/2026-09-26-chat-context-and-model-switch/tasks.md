@@ -11,13 +11,13 @@
 
 - [ ] 2.1 [CC-1] [新增] `packages/ai-rag-core/src/page-context.ts` - PageContext zod schema（`pagePath` 必填 min(1).max(512)、`title` 可选 max(256)）并导出推导类型；`ai-vitepress-plugins` 增加 `"@ruan-cat-drill-doc/ai-rag-core": "workspace:*"` 依赖，FC-1 采集类型改为引用该 schema。
   - 验收：`pnpm --filter @ruan-cat-drill-doc/ai-rag-core run typecheck` 与 `pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins run typecheck` 通过。
-- [ ] 2.2 [CC-2] [新增] `packages/ai-rag-api/server/context/types.ts` 与 `server/context/sources.ts` - ChatContext 容器、ServerFetchDefinition 类型预留（v1 不实现执行器）、`normalizeClientContext` / `assembleChatContext` 归一化装配：合法返回值，非法或缺失返回 undefined、永不抛错。
+- [ ] 2.2 [CC-2] [新增] `packages/ai-rag-api/server/context/types.ts` 与 `server/context/sources.ts` - ChatContext 容器、ServerFetchDefinition 类型预留（v1 不实现执行器）、`normalizeClientContext` / `assembleChatContext` 归一化装配：合法返回值，非法或缺失返回 undefined、永不抛错（contracts 入站 schema 校验之下的纵深防御层，不与 400 分层冲突）。
   - 验收：归一化三态（合法 / 非法 / 缺失）单测通过。
 - [ ] 2.3 [CC-3] [新增] `packages/ai-rag-api/server/context/prompt-template.ts` - `buildSystemPrompt` 五段式函数式模板（角色设定 / 检索引导 / 引用格式 / 页面上下文条件注入段 / 参考资料与拒答策略），段落常量独立导出，页面上下文段附带防误引声明。
   - 验收：有 / 无 pageContext 两态渲染快照；对外行为与现实现逐字对齐（除新增注入段外），openspec 行为验收不变。
 - [ ] 2.4 [CC-4] [修改] `packages/ai-rag-api/server/contracts/chat.ts` - `chatRequestSchema` 增加可选 `pageContext` 字段（引用 ai-rag-core schema）；硬编码 prompt 替换为 `assembleChatContext` + `buildSystemPrompt` 调用；来源帧、abort 传播、错误映射逻辑零改动。
   - 验收：现有 chat 用例全绿；新增「携带合法 pageContext 的集成用例」断言 system 含页面路径。
-- [ ] 2.5 [CC-5] [验证] `packages/ai-rag-api/tests/` vitest 覆盖 - prompt-template 两态快照、sources 归一化三态、降级路径（非法 pageContext → 基础模板输出、无异常抛出）、入站校验回归（pageContext 非法值返回 400 与统一错误体，Requirement 3 行为不变）。出站来源数据帧构造不加运行时校验（数据库自有数据属可信边界，spec 11.6 第 2 条）。
+- [ ] 2.5 [CC-5] [验证] `packages/ai-rag-api/tests/` vitest 覆盖 - prompt-template 两态快照、sources 归一化三态（合法 / 非法 / 缺失：归一化对非法输入返回 undefined、永不抛错）、降级路径（pageContext 字段缺失或归一化/装配失败 → 基础模板输出、无异常抛出）、入站校验回归（pageContext 结构非法即未通过请求 schema 校验 → 400 与统一错误体，Requirement 3 行为不变）。分层互斥：结构非法由 400 独占、不进入降级路径；降级仅覆盖字段缺失与归一化/装配失败（修正 plan 15.7 原文「非法 pageContext → 基础模板输出」与「非法值返回 400」的并排歧义）。出站来源数据帧构造不加运行时校验（数据库自有数据属可信边界，spec 11.6 第 2 条）。
   - 验收命令：`pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test`。
 
 ## 3. MS 模型切换（plan 16.3-16.7）

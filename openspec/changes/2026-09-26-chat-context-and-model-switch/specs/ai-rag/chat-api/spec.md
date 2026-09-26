@@ -2,7 +2,7 @@
 
 ### Requirement: 1. 流式问答接口
 
-系统 MUST 提供 `POST /v1/chat` 接口，接收 `{message, conversationId?, pageContext?}` 请求体，其中 `message` 非空、`conversationId` 与 `pageContext` 可选；`pageContext` MUST 进入请求 schema 校验，非法值 MUST 返回 400。系统 MUST 由类型化上下文容器与函数式模板模块组装 system prompt：检索到的上下文（Top-5）作为参考资料，页面上下文作为可选注入段；任一上下文来源缺失、非法或装配失败时，系统 MUST 跳过该来源并回退基础模板，问答 MUST NOT 因上下文问题而失败。响应 MUST 为 AI SDK 标准流式 Response（含 data-stream content-type），MUST NOT 包装为 JSON，也 MUST NOT 在返回该 Response 后改写状态码；回答 MUST 为每个观点标注来源 `[来源N]`，资料不足时 MUST 说明「根据现有资料无法回答」。system prompt 文本 MUST 集中由模板模块维护，contracts 路由的请求处理逻辑 MUST NOT 内联提示词文本；提示词内容变更 SHALL 仅需修改模板模块。
+系统 MUST 提供 `POST /v1/chat` 接口，接收 `{message, conversationId?, pageContext?}` 请求体，其中 `message` 非空、`conversationId` 与 `pageContext` 可选；`pageContext` MUST 进入请求 schema 校验，结构非法（未通过请求 schema 校验）的值 MUST 返回 400 且不进入降级路径。系统 MUST 由类型化上下文容器与函数式模板模块组装 system prompt：检索到的上下文（Top-5）作为参考资料，页面上下文作为可选注入段；任一上下文来源缺失或归一化/装配失败时，系统 MUST 跳过该来源并回退基础模板，问答 MUST NOT 因上下文问题而失败。响应 MUST 为 AI SDK 标准流式 Response（含 data-stream content-type），MUST NOT 包装为 JSON，也 MUST NOT 在返回该 Response 后改写状态码；回答 MUST 为每个观点标注来源 `[来源N]`，资料不足时 MUST 说明「根据现有资料无法回答」。system prompt 文本 MUST 集中由模板模块维护，contracts 路由的请求处理逻辑 MUST NOT 内联提示词文本；提示词内容变更 SHALL 仅需修改模板模块。
 
 #### Scenario: 有效请求返回流式响应
 
@@ -14,7 +14,7 @@
 
 #### Scenario: 无效输入返回 400
 
-- **GIVEN** 请求体不满足校验规则（`message` 为空、缺失或类型非法，或 `pageContext` 未通过 schema 校验）
+- **GIVEN** 请求体不满足校验规则（`message` 为空、缺失或类型非法，或 `pageContext` 结构非法、未通过请求 schema 校验）
 - **WHEN** 系统校验该请求
 - **THEN** 系统 MUST 返回 HTTP 400
 - **AND** 错误响应体 SHALL 为统一错误体 `{success, code, message, data}`（Requirement 3 行为不变）
@@ -26,9 +26,9 @@
 - **THEN** 回答文本 MUST 以 `[来源N]` 标注对应来源
 - **AND** 当检索上下文不足以回答问题时，回答 MUST 说明「根据现有资料无法回答」
 
-#### Scenario: 页面上下文缺失或非法时降级
+#### Scenario: 页面上下文缺失或装配失败时降级
 
-- **GIVEN** `pageContext` 字段缺失、未通过 schema 校验或上下文来源装配失败
+- **GIVEN** `pageContext` 字段缺失，或已通过请求 schema 校验但归一化/装配失败
 - **WHEN** 客户端提交问答请求
 - **THEN** 系统 MUST 跳过页面上下文来源并使用基础模板正常回答，无报错、无重试
 - **AND** 问答 MUST NOT 因任何上下文来源问题而失败
@@ -111,13 +111,14 @@
 
 ### Requirement: 10. 模型列表下发接口
 
-系统 MUST 提供 `GET /v1/models` 接口，返回模型选择元数据 `{models: [{id, label, model}]}`；数据 MUST 全部来自编译期注册表，注册表 SHALL 为每个 provider 维护 `label` 展示字段（如 `Claude Sonnet 5` / `GPT-5.6 Luna`）。该端点不触碰 provider 运行时，MUST NOT 依赖 503 装配守卫，即使聊天运行时未装配也 SHALL 正常返回静态注册表数据；响应 MUST NOT 包含 `baseUrl` 与任何 API key 凭据。该端点 SHALL 作为模型列表的唯一事实源，前端 MUST NOT 硬编码第二份模型清单。
+系统 MUST 提供 `GET /v1/models` 接口，返回模型选择元数据 `{models: [{id, label, model}]}`；数据 MUST 全部来自编译期注册表，注册表 SHALL 为每个 provider 维护 `label` 展示字段（如 `Claude Sonnet 5` / `GPT-5.6 Luna`）；`models[].id` MUST 等于注册表 provider key，SHALL 可直接作为 `/v1/chat` 请求 `provider` 字段的覆盖值，MUST NOT 产生与注册表白名单不一致的标识。该端点不触碰 provider 运行时，MUST NOT 依赖 503 装配守卫，即使聊天运行时未装配也 SHALL 正常返回静态注册表数据；响应 MUST NOT 包含 `baseUrl` 与任何 API key 凭据。该端点 SHALL 作为模型列表的唯一事实源，前端 MUST NOT 硬编码第二份模型清单。
 
 #### Scenario: 下发公开模型元数据
 
 - **GIVEN** 编译期注册表包含全部 provider 配置
 - **WHEN** 客户端请求 `GET /v1/models`
 - **THEN** 系统 MUST 返回注册表全部 provider 的 `id`、`label` 与 `model`
+- **AND** 每个条目的 `id` MUST 等于注册表 provider key，SHALL 可直接作为 `/v1/chat` 请求 `provider` 覆盖值
 - **AND** 响应 MUST NOT 包含 `baseUrl` 与任何 API key 凭据
 
 #### Scenario: 不受装配守卫约束
@@ -136,7 +137,7 @@
 
 ### Requirement: 11. 单轮上下文边界约束
 
-动态上下文系统 MUST 保持单轮、无状态、全部可选：系统 MUST NOT 引入多轮会话语义或维护跨请求的历史消息数组；系统 MUST NOT 实现对话历史压缩机制（以 LLM 摘要替代早期轮次）——该机制的压缩对象是多轮历史消息数组，在单轮架构下没有挂载对象，且单轮请求上下文实测有界（system 模板 + Top-5 参考资料片段 + user message，约 1 万 tokens 量级，不足 1M 窗口的 1%）；单轮内上下文若膨胀，SHALL 采用确定性裁剪（按 rerank 分数取 top-k、截断片段前 N 字符、上下文来源降级跳过），MUST NOT 采用 LLM 摘要式压缩；系统 MUST NOT 接入 MCP（Model Context Protocol）。仅当重启多轮会话，或单轮引入全文注入场景且确定性裁剪不足时，才允许重新评估压缩机制。
+动态上下文系统 MUST 保持单轮、无状态、全部可选：系统 MUST NOT 引入多轮会话语义或维护跨请求的历史消息数组（既有可选 `conversationId` 字段仅作请求关联标识，不构成多轮会话语义）；系统 MUST NOT 实现对话历史压缩机制（以 LLM 摘要替代早期轮次）——该机制的压缩对象是多轮历史消息数组，在单轮架构下没有挂载对象，且单轮请求上下文实测有界（system 模板 + Top-5 参考资料片段 + user message，约 1 万 tokens 量级，不足 1M 窗口的 1%）；单轮内上下文若膨胀，SHALL 采用确定性裁剪（按 rerank 分数取 top-k、截断片段前 N 字符、上下文来源降级跳过），MUST NOT 采用 LLM 摘要式压缩；系统 MUST NOT 接入 MCP（Model Context Protocol）。仅当重启多轮会话，或单轮引入全文注入场景且确定性裁剪不足时，才允许重新评估压缩机制。
 
 #### Scenario: 上下文保持单轮无状态
 

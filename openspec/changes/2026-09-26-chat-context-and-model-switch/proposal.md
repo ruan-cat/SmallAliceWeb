@@ -24,7 +24,7 @@ CC-0 与 MS-0 按计划（learn-agents-ui plan 任务表）合并为同一变更
 ### 2.2 Requirement 8（双协议聊天模型注册表）修订要点
 
 - 「固定一个 activeProvider」修订为「默认 activeProvider；请求 MAY 携带 `provider` 字段覆盖，覆盖值 MUST 属于注册表 provider key 白名单」（plan 16.2）。
-- 白名单语义按拷问 V3 拍板校准：**非法值返回 400**（错误输入显式报错，符合 Requirement 3 错误映射纪律）、**字段缺失回退 activeProvider**——「回退」仅指字段缺失场景（spec 12.2 / plan 16.8 V3）。
+- 白名单语义按拷问 V3 拍板校准，并**显式推翻 plan 16.2 原句「非法或缺失 MUST 回退 activeProvider」**：该句已被 spec 12.2 / plan 16.8 V3 拍板取代——**非法值返回 400**（错误输入显式报错，符合 Requirement 3 错误映射纪律），**字段缺失回退 activeProvider**，「回退」仅指字段缺失场景。
 - 安全边界：MUST NOT 接受注册表白名单之外的自由 model 字符串，模型与 baseUrl 由服务端注册表唯一决定，杜绝模型名注入与成本失控（spec 12.2）。
 - 装配分发：请求选择未配置凭据的 provider 时返回 500 与可识别的 `RAG provider not configured` 错误，MUST NOT 静默回退到其他 provider（plan 16.4 拍板，本条即计划要求的「记入 openspec 修订」项）。
 - 响应回显：复用既有 `response-metadata` 事件回显实际使用的 provider 与 model，MUST NOT 新增第二套元数据通道（spec 12.2）。
