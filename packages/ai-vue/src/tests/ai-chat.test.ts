@@ -53,36 +53,32 @@ vi.mock("vue-element-plus-x", async () => {
 					);
 			},
 		}),
-		Sender: defineComponent({
-			name: "Sender",
+		XSender: defineComponent({
+			name: "XSender",
 			props: {
-				modelValue: { type: String, default: "" },
 				placeholder: { type: String, default: "" },
 				loading: Boolean,
-				submitBtnDisabled: Boolean,
 			},
-			emits: ["update:modelValue", "submit", "cancel"],
-			setup(props, { emit }) {
+			emits: ["submit", "cancel"],
+			setup(props, { emit, expose }) {
+				let value = "";
+				expose({
+					getModelValue: () => ({ html: "", text: value }),
+					clear: () => {
+						value = "";
+					},
+				});
 				return () =>
-					h("div", { "data-library-component": "Sender" }, [
+					h("div", { "data-library-component": "XSender" }, [
 						h("input", {
 							class: "sender-input",
-							value: props.modelValue,
 							placeholder: props.placeholder,
-							onInput: (event: Event) => emit("update:modelValue", (event.target as HTMLInputElement).value),
-						}),
-						h(
-							"button",
-							{
-								class: "sender-submit",
-								disabled: props.submitBtnDisabled,
-								onClick: () => emit("submit", props.modelValue),
+							onInput: (event: Event) => {
+								value = (event.target as HTMLInputElement).value;
 							},
-							"提交",
-						),
-						props.loading
-							? h("button", { class: "sender-cancel", onClick: () => emit("cancel", props.modelValue) }, "取消")
-							: null,
+						}),
+						h("button", { class: "sender-submit", onClick: () => emit("submit") }, "提交"),
+						props.loading ? h("button", { class: "sender-cancel", onClick: () => emit("cancel") }, "取消") : null,
 					]);
 			},
 		}),
@@ -302,15 +298,15 @@ describe("AiChat library adapters", () => {
 		});
 	});
 
-	test("maps Sender submit to send", async () => {
+	test("maps XSender submit to send", async () => {
 		const onSend = vi.fn();
 		const sendHost = mountAiChat({ mode: "external", messages: [], isResponding: false, onSend });
 		const input = sendHost.querySelector<HTMLInputElement>(".sender-input");
-		expect(sendHost.querySelector('[data-library-component="Sender"]')).not.toBeNull();
+		expect(sendHost.querySelector('[data-library-component="XSender"]')).not.toBeNull();
 		expect(sendHost.querySelector<HTMLElement>('[data-library-component="Bubble"]')?.dataset.noStyle).toBe("false");
 		expect(input).not.toBeNull();
 
-		if (!input) throw new Error("Sender input stub was not rendered");
+		if (!input) throw new Error("XSender input stub was not rendered");
 		input.value = "  项目问题  ";
 		input.dispatchEvent(new Event("input", { bubbles: true }));
 		await nextTick();

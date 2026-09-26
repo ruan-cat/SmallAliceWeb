@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import MarkdownRender from "markstream-vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { Bubble, BubbleList, Sender } from "vue-element-plus-x";
+import { Bubble, BubbleList, XSender } from "vue-element-plus-x";
+import type { ModelValue } from "vue-element-plus-x/types/XSender";
 import { useMockAiChat } from "../../composables/useMockAiChat";
 import type { AiChatEmits, AiChatMessage, AiChatProps } from "./types";
 
@@ -21,7 +22,7 @@ const { messages, input, isResponding, sendMessage } = useMockAiChat({
 });
 const displayedMessages = computed(() => props.messages ?? messages.value);
 const displayedResponding = computed(() => props.isResponding ?? isResponding.value);
-const canSendMessage = computed(() => input.value.trim().length > 0 && !displayedResponding.value);
+const senderRef = ref<InstanceType<typeof XSender> | null>(null);
 const prefersReducedMotion = ref(false);
 const smoothStreaming = computed<false | "auto">(() => (prefersReducedMotion.value ? false : "auto"));
 const bubbleItems = computed<AiChatBubbleItem[]>(() =>
@@ -56,20 +57,33 @@ function isAssistantMessageFinal(message: AiChatMessage) {
 	return !displayedResponding.value || message.id !== lastAssistantMessageId.value;
 }
 
+/** 读取 XSender 当前输入并清空：XSender 不提供 v-model，值经 expose 的 getModelValue 获取，清空走 expose 的 clear。 */
+function readAndClearSender(): string {
+	const value: ModelValue | undefined = senderRef.value?.getModelValue();
+	senderRef.value?.clear();
+	return value?.text?.trim() ?? "";
+}
+
+/** 处理 XSender 提交：submit 事件不携带负载，取值与清空均经模板 ref 完成。 */
+function handleXSenderSubmit() {
+	handleSend(readAndClearSender());
+}
+
 /** 发送用户输入，并通知组件使用方。 */
 function handleSend(content: string) {
 	const normalizedContent = content.trim();
-	if (!canSendMessage.value || !normalizedContent) return;
+	if (displayedResponding.value || !normalizedContent) return;
 
-	const message: AiChatMessage = {
+	if (props.mode === "mock") {
+		input.value = normalizedContent;
+		sendMessage();
+	}
+
+	emit("send", {
 		id: `user-${displayedMessages.value.length + 1}`,
 		role: "user",
 		content: normalizedContent,
-	};
-
-	if (props.mode === "mock") sendMessage();
-	else input.value = "";
-	emit("send", message);
+	});
 }
 
 /** 请求外部聊天状态管理器中止当前生成。 */
@@ -139,13 +153,12 @@ function handleStop() {
 
 		<slot name="notification-control" />
 
-		<Sender
-			v-model="input"
-			:auto-size="{ minRows: 1, maxRows: 4 }"
+		<XSender
+			ref="senderRef"
 			:loading="displayedResponding"
 			:placeholder="placeholder"
-			:submit-btn-disabled="!canSendMessage"
-			@submit="handleSend"
+			submit-type="enter"
+			@submit="handleXSenderSubmit"
 			@cancel="handleStop"
 		/>
 	</section>
