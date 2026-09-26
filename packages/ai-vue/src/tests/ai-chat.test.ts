@@ -82,6 +82,27 @@ vi.mock("vue-element-plus-x", async () => {
 					]);
 			},
 		}),
+		ConfigProvider: defineComponent({
+			name: "ConfigProvider",
+			props: {
+				theme: { type: String, default: "light" },
+				themeOverrides: { type: Object, default: undefined },
+				applyTo: { type: String, default: "self" },
+			},
+			setup(props, { slots }) {
+				return () =>
+					h(
+						"div",
+						{
+							"data-library-component": "ConfigProvider",
+							"data-apply-to": props.applyTo,
+							"data-theme": props.theme,
+							"data-theme-overrides": JSON.stringify(props.themeOverrides),
+						},
+						slots.default?.(),
+					);
+			},
+		}),
 	};
 });
 
@@ -313,6 +334,16 @@ describe("AiChat library adapters", () => {
 		sendHost.querySelector<HTMLButtonElement>(".sender-submit")?.click();
 
 		expect(onSend).toHaveBeenCalledWith({ id: "user-1", role: "user", content: "项目问题" });
+	});
+
+	test("AiChat 根部经 ConfigProvider 注入主题与品牌色覆盖", () => {
+		const host = mountAiChat({ mode: "external", messages: [] });
+		const provider = host.querySelector<HTMLElement>('[data-library-component="ConfigProvider"]');
+
+		expect(provider).not.toBeNull();
+		expect(provider?.dataset.theme).toBe("light");
+		expect(provider?.dataset.themeOverrides).toContain("color-primary");
+		expect(provider?.querySelector(".ai-chat")).not.toBeNull();
 	});
 
 	test("mock 模式下 send 负载 id 与 composable 推送的消息对齐且随发送递增", () => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MarkdownRender from "markstream-vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { Bubble, BubbleList, XSender } from "vue-element-plus-x";
+import { Bubble, BubbleList, ConfigProvider, XSender } from "vue-element-plus-x";
 import type { ModelValue } from "vue-element-plus-x/types/XSender";
 import { useMockAiChat } from "../../composables/useMockAiChat";
 import type { AiChatEmits, AiChatMessage, AiChatProps } from "./types";
@@ -23,6 +23,7 @@ const { messages, input, isResponding, sendMessage } = useMockAiChat({
 const displayedMessages = computed(() => props.messages ?? messages.value);
 const displayedResponding = computed(() => props.isResponding ?? isResponding.value);
 const senderRef = ref<InstanceType<typeof XSender> | null>(null);
+const isDark = ref(false);
 const prefersReducedMotion = ref(false);
 const smoothStreaming = computed<false | "auto">(() => (prefersReducedMotion.value ? false : "auto"));
 const bubbleItems = computed<AiChatBubbleItem[]>(() =>
@@ -36,20 +37,38 @@ const lastAssistantMessageId = computed(
 );
 let reducedMotionMediaQuery: MediaQueryList | undefined;
 
+/** 临时品牌色覆盖：键名为 vepx dist buildThemeVars 原样拼接的 --elx- 前缀 CSS 变量名（kebab-case）；P1 将替换为 useBrandTheme 色板派生输出。 */
+const brandThemeOverrides = {
+	common: {
+		"color-primary": "#3b82f6",
+	},
+};
+
 /** 将系统减少动态效果偏好映射为 Markdown 渲染节奏。 */
 function updateReducedMotionPreference(event?: MediaQueryListEvent) {
 	prefersReducedMotion.value = event?.matches ?? reducedMotionMediaQuery?.matches ?? false;
 }
+
+/** 将系统暗色偏好映射为 ConfigProvider 主题判定；P1.5 将替换为 useThemeColor 的正式通道。 */
+function updateDarkSchemePreference(event?: MediaQueryListEvent) {
+	isDark.value = event?.matches ?? darkSchemeMediaQuery?.matches ?? false;
+}
+
+let darkSchemeMediaQuery: MediaQueryList | undefined;
 
 onMounted(() => {
 	if (typeof window.matchMedia !== "function") return;
 	reducedMotionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 	updateReducedMotionPreference();
 	reducedMotionMediaQuery.addEventListener("change", updateReducedMotionPreference);
+	darkSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+	updateDarkSchemePreference();
+	darkSchemeMediaQuery.addEventListener("change", updateDarkSchemePreference);
 });
 
 onBeforeUnmount(() => {
 	reducedMotionMediaQuery?.removeEventListener("change", updateReducedMotionPreference);
+	darkSchemeMediaQuery?.removeEventListener("change", updateDarkSchemePreference);
 });
 
 /** 标记当前仍在生成的最后一条助手消息。 */
@@ -97,72 +116,74 @@ function handleStop() {
 </script>
 
 <template>
-	<section class="ai-chat" aria-label="AI 对话">
-		<div class="ai-chat__messages" aria-live="polite">
-			<div v-if="errorMessage" class="ai-chat__error" role="alert">
-				<span>{{ errorMessage }}</span>
-				<button type="button" class="ai-chat__error-dismiss" aria-label="关闭错误提示" @click="emit('clear-error')">
-					关闭
-				</button>
+	<ConfigProvider :theme="isDark ? 'dark' : 'light'" :theme-overrides="brandThemeOverrides" apply-to="self">
+		<section class="ai-chat" aria-label="AI 对话">
+			<div class="ai-chat__messages" aria-live="polite">
+				<div v-if="errorMessage" class="ai-chat__error" role="alert">
+					<span>{{ errorMessage }}</span>
+					<button type="button" class="ai-chat__error-dismiss" aria-label="关闭错误提示" @click="emit('clear-error')">
+						关闭
+					</button>
+				</div>
+				<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
+					<template #content>
+						<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
+						<p class="ai-chat__empty-title">暂无消息</p>
+						<p class="ai-chat__empty-description">问一个和当前文档有关的问题。</p>
+					</template>
+				</Bubble>
+
+				<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
+					<template #content="{ item }">
+						<span v-if="item.role === 'user'">{{ item.content }}</span>
+						<MarkdownRender
+							v-else
+							mode="chat"
+							:content="item.content"
+							:final="isAssistantMessageFinal(item)"
+							html-policy="escape"
+							:smooth-streaming="smoothStreaming"
+							:typewriter="!prefersReducedMotion"
+							:fade="false"
+						/>
+					</template>
+
+					<template #footer="{ item }">
+						<nav v-if="item.sources?.length" class="ai-chat__sources" aria-label="参考资料">
+							<a
+								v-for="source in item.sources"
+								:key="source.id"
+								class="ai-chat__source"
+								:href="source.sourceHref"
+								rel="noopener noreferrer"
+							>
+								{{ source.label }}
+							</a>
+						</nav>
+					</template>
+				</BubbleList>
 			</div>
-			<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
-				<template #content>
-					<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
-					<p class="ai-chat__empty-title">暂无消息</p>
-					<p class="ai-chat__empty-description">问一个和当前文档有关的问题。</p>
-				</template>
-			</Bubble>
 
-			<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
-				<template #content="{ item }">
-					<span v-if="item.role === 'user'">{{ item.content }}</span>
-					<MarkdownRender
-						v-else
-						mode="chat"
-						:content="item.content"
-						:final="isAssistantMessageFinal(item)"
-						html-policy="escape"
-						:smooth-streaming="smoothStreaming"
-						:typewriter="!prefersReducedMotion"
-						:fade="false"
-					/>
-				</template>
+			<button
+				v-if="props.mode === 'external' && displayedResponding"
+				type="button"
+				class="ai-chat__stop"
+				aria-label="停止生成"
+				@click="handleStop"
+			>
+				停止生成
+			</button>
 
-				<template #footer="{ item }">
-					<nav v-if="item.sources?.length" class="ai-chat__sources" aria-label="参考资料">
-						<a
-							v-for="source in item.sources"
-							:key="source.id"
-							class="ai-chat__source"
-							:href="source.sourceHref"
-							rel="noopener noreferrer"
-						>
-							{{ source.label }}
-						</a>
-					</nav>
-				</template>
-			</BubbleList>
-		</div>
+			<slot name="notification-control" />
 
-		<button
-			v-if="props.mode === 'external' && displayedResponding"
-			type="button"
-			class="ai-chat__stop"
-			aria-label="停止生成"
-			@click="handleStop"
-		>
-			停止生成
-		</button>
-
-		<slot name="notification-control" />
-
-		<XSender
-			ref="senderRef"
-			:loading="displayedResponding"
-			:placeholder="placeholder"
-			submit-type="enter"
-			@submit="handleXSenderSubmit"
-			@cancel="handleStop"
-		/>
-	</section>
+			<XSender
+				ref="senderRef"
+				:loading="displayedResponding"
+				:placeholder="placeholder"
+				submit-type="enter"
+				@submit="handleXSenderSubmit"
+				@cancel="handleStop"
+			/>
+		</section>
+	</ConfigProvider>
 </template>

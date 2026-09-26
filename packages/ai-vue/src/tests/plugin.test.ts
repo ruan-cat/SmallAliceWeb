@@ -2,7 +2,7 @@ import { describe, test, vi } from "vitest";
 import { expect } from "vitest";
 import type { App } from "vue";
 
-vi.mock("vue-element-plus-x", () => ({ Bubble: {}, BubbleList: {}, XSender: {} }));
+vi.mock("vue-element-plus-x", () => ({ Bubble: {}, BubbleList: {}, ConfigProvider: {}, XSender: {} }));
 vi.mock("markstream-vue", () => ({ default: {} }));
 
 import plugin, { AiChat, AiChatFloatingButton, install } from "../index";
