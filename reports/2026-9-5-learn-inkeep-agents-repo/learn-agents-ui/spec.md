@@ -613,3 +613,99 @@ peer 依赖对照：v2 要求 `element-plus ^2.9.7`、`vue ^3.5.17`；仓库为 
 2. 不新增运行时依赖（zod 已有；不引入 JMESPath——函数式模板不需要）。
 3. 所有新增请求字段可选，向后兼容现有 `/v1/chat` 契约。
 4. 四项关键决策（Q1 范围 / Q2 载体 / Q3 字段最小集 / Q4 独立注入段）按推荐默认拍板，备选方案与推翻成本记录于 plan 15.8 蓝军拷问记录，用户可随时推翻。
+
+### 11.6 验证层方式与对标结论 [2026-09-05 补录]
+
+CC 系列任务的请求验证遵守本仓既有「zod + contracts 薄路由」模式，分层纪律如下：
+
+1. **入站严格校验**：新增字段（如 `pageContext`）必须进入 `chatRequestSchema`，在 contracts 层 `safeParse`，非法输入映射为统一错误体 `{success, code, message, data}` 与真实 HTTP 400（openspec chat-api Requirement 3 行为不变，仅组装方式变）。
+2. **出站不加运行时校验**：来源数据帧由 `createSourceUrl` / `resolveSourceHref` 等纯函数从数据库自有数据构造，输入属可信边界，以 TS 类型单源保证，不为其堆运行时防御。
+3. **验证栈对标结论**（2026-09-05 用户拍板，详见重调研报告第六章）：维持 zod + contracts 模式，**不引入 `@hono/zod-openapi`**——框架错位（本仓 Nitro/h3 非 Hono 生态）、规模错位（4 个入口 schema 无需工厂复用）、避免与 openspec 行为 spec 形成双事实源；OpenAPI 文档生成与 `createApiSchema` 式 schema 工厂列入备查（触发条件：API 面向第三方消费者或 schema 规模增长一个数量级，届时评估 Nitro 生态方案并先行定义其与 openspec 的分工）。
+4. **吸收项**：inkeep 的 shared 共享契约组织思想照常落地——CC-1 将 PageContext schema 下沉 `@ruan-cat-drill-doc/ai-rag-core` 两端共用即为该模式起点，后续跨端字段按需跟进。
+
+---
+
+## 十二、模型切换功能需求 [新增]
+
+### 12.1 背景与问题
+
+主调研报告 3.4 节对 ai-sdk-provider 的启示（"未来需要支持多模型切换时，可借鉴 Provider 抽象模式"）已在后端兑现一半：`ai-rag-api/src/llm-config.ts` 维护类型化双协议注册表（`anthropic → claude-sonnet-5[1m]` 激活 / `openai → gpt-5.6-luna` 备用），以 `activeProvider` 固定激活项。但生产环境存在典型功能缺失：**前端没有任何切换模型的入口**——用户不能在提问前选择模型，也不能在对话进行中切换，双协议能力对用户完全不可见。
+
+本章定义模型切换的完整功能需求：**对话前可切换、对话进行中可切换（当前流不打断、下一条消息生效）**。落地遵循 1.3 约束：单轮、无 MCP。
+
+### 12.2 契约设计：请求级 provider 白名单
+
+- `/v1/chat` 请求体新增可选 `provider` 字段：取值必须是注册表已注册的 provider key（当前 `anthropic` | `openai`）；**非法值返回 400**（错误输入显式报错，符合 chat-api Requirement 3 错误映射纪律，plan 16.6 拷问 V3 拍板），**字段缺失**时回退 `activeProvider`。
+- **安全边界**：前端只能传注册表 key 白名单值，**禁止传自由 model 字符串**——模型与 baseUrl 由服务端注册表唯一决定，杜绝模型名注入与成本失控。
+- **规格前置**：chat-api Requirement 8 的「固定一个 activeProvider」须以 openspec change 修订为「默认 activeProvider，请求可覆盖，覆盖值必须在注册表白名单内」后方可实施。
+- **响应回显**：复用 FC-3 的 `response-metadata` 事件（provider/model/ttftMs），前端可展示每条回答实际使用的模型，不重复定义事件。
+
+### 12.3 模型列表下发：GET /v1/models
+
+- 注册表补充展示字段 `label`（如 `Claude Sonnet 5` / `GPT-5.6 Luna`）。
+- 新增 `GET /v1/models`：返回 `{ models: [{ id, label, model }] }`，数据全部来自编译期注册表；该端点不触碰 provider 运行时，**不需要 503 装配守卫**（区别于 chat/search/sync 四路由）。
+- 响应**绝不包含 baseUrl 与 API key**（Requirement 8 红线）。
+- 该端点是模型列表的**唯一事实源**，前端不硬编码第二份清单。
+
+### 12.4 前端设计
+
+- **状态与接线（ai-vitepress-plugins）**：`useKnowledgeChat` 新增 `models` / `selectedProvider` 状态——初始化时拉取 `/v1/models`，`experimental_prepareRequestBody` 注入 `provider` 字段；用户选择持久化到 localStorage，恢复时校验（不在列表则回退默认），仅作 UI 偏好、不携带会话语义。
+- **选择器 UI（ai-vue）**：`AiChat` 新增 `models` / `selectedModelId` props 与 `select-model` emit；Sender 上方右对齐渲染 `el-segmented` 分段选择器（element-plus 既有依赖，键盘可访问性白得）；**`models` prop 为空时不渲染选择器**——现有宿主与 mock 模式零破坏，向后兼容。
+- **中途切换语义**：`isResponding` 期间允许切换；当前流式回答继续使用旧模型完成，切换立即生效于下一次发送（单轮架构下每条消息独立携带 provider，该语义自然无歧义）。
+- **ai-vue 零网络职责**：模型列表由 plugins 层拉取后经 props 传入（与 FC-1 同款边界判定），AiChat 不发任何请求；mock 模式使用组件内置假列表供演示。
+
+### 12.5 验收标准
+
+- [ ] 生产对话 UI 可见模型选择器，提问前可切换
+- [ ] responding 中切换不打断当前流，下一条消息使用新模型（response-metadata 回显佐证）
+- [ ] 非法 provider 返回 400（拷问 V3 拍板）、缺失 provider 回退 activeProvider
+- [ ] `/v1/models` 响应不含 baseUrl 与任何凭据
+- [ ] `models` prop 缺省时 AiChat 无选择器，现有用例全绿（向后兼容）
+- [ ] 选择器可键盘操作（el-segmented 原生可访问性）
+
+### 12.6 约束
+
+1. openspec change 修订 Requirement 8 前置合入，才允许动后端代码（spec 纪律）。
+2. provider 白名单来自编译期注册表，前端禁止硬编码第二份清单。
+3. 不做多轮语义：切换不绑定会话，仅影响单次请求；localStorage 只存 UI 偏好。
+4. 事件复用 FC-3 的 `response-metadata`，不新增第二套元数据通道。
+
+### 11.7 上下文压缩不适用声明 [2026-09-05 决策]
+
+主调研报告与 docs-assistant 对标报告所述的「对话历史压缩」，其压缩对象是**多轮历史消息数组**（早期轮次以 LLM 摘要替代）。本仓自重调研报告 1.3 路线修订起不做多轮会话，该机制没有挂载对象：
+
+- **单轮请求上下文实测有界**：system 模板（常数）+ 参考资料（5 条 chunk 原文，`limit: 5` 固定）+ user message（schema `max(4_000)`），合计约 1 万 tokens 量级，不足 `claude-sonnet-5[1m]` 1M 窗口的 1%——「超过 token 限制」的触发条件永不成立。
+- **单轮内若未来膨胀**（提高检索条数、上下文注入扩容），正确工具是**确定性裁剪**（按 rerank 分数取 top-k、每条截断前 N 字符、`requiredToFetch` 降级语义），不是 LLM 摘要——单轮内信息可见，挑比压便宜且无损。
+- **压缩机制回归的两个触发条件**：① 重启多轮会话；② 单轮引入全文注入场景且确定性裁剪不足。届时启用备查档案（压缩三件套：`BaseCompressor.ts:854` 触发公式、priorSummary 链式摘要、reconcileToolPairs 工具对守恒——探索笔记 B 有完整带行号参照）。
+
+**后续 agent 禁止**把主调研报告中「SmallAliceWeb 当前缺乏对话历史压缩能力」的表述当作待办实施——那是多轮前提下的评估，已被 2026-09-05 路线修订取代。
+
+### 11.8 可评估性与可观测性边界声明 [2026-09-05 决策]
+
+现状盘点（证据：探索笔记 D）：本仓已有三层自研评估——确定性 IR 指标（`retrieval-metrics.ts:43`，Recall/Precision/MRR/nDCG@K 候选池+终榜双份）、语料预检四态门控（`corpus-preflight.ts:55`）、关键词 smoke（`evaluator.ts:295-302`）；经 CLI 脚本 + promptfoo 运行，产出 JSON 证据文件，零持久化。据此拍板：
+
+1. **概念区分**：可观测性（看见发生什么：trace/span/TTFT）与可评估性（判定做得好不好：gold-set/指标/评估运行）是两回事。OpenTelemetry 属于前者——README 增强 7 将其归入可评估性章节是概念混用。
+2. **v1 不引入 OTel SDK**：Nitro 单体 + 单一入口，结构化日志 + FC-3 `response-metadata`（ttftMs）已满足最小观测。触发条件：接入外部 trace 平台（Jaeger/Tempo）需求出现，或 span 需跨服务传播。inkeep 亦是自研 `TelemetrySpan` 抽象先行（`telemetry-provider.ts:39-55`）而非直接绑 OTel。
+3. **评估框架边界维持**：promptfoo 保持 dev-only（rag-evaluation spec 已固化禁入生产运行时）；不引入 Langfuse/RAGAS；答案级评估（rag-evaluation Requirement 3）等单轮回流真实数据后再实施。
+4. **评估数据分层**：题集（`rag-gold-set.jsonl`）继续留 git 文件版本化，**不建表**；**评估运行结果新增 `evaluation_runs` 表入库**（`datasetVersion` 哈希锚定题集版本 / `kind` / `params` 快照 / `metrics` JSON / `corpusIsolation` / `createdAt`），仿 `knowledge_sync_runs` 模式，drizzle 迁移 0005。
+5. **接口边界**：v1 只做只读两枚——`GET /v1/evaluation/runs`（分页列表）+ `GET /v1/evaluation/runs/:id`（详情），沿用 503 装配守卫与统一错误体；**不做 POST 触发**（评估是重操作，触发继续走 CLI，符合「web RAG 不提供操作行为」约束；未来单轮回流由 qa_records 落库钩子内部触发写入，不经公网）。
+6. **过时表述封印**：主调研报告 README「SmallAliceWeb 当前缺乏质量评估机制」（4.5 节 / 增强 7 前后）已过时——三层自研评估存在，缺的是结果落库与只读查询，以本节为准。
+
+实施任务见 plan 第十七章（EV 任务组）。
+
+### 11.9 知识库同步定时调度需求 [2026-09-05 决策]
+
+用户拍板采用 **GitHub Actions 方案**实现知识库同步自动化（背景：README 增强 9 触发系统；管线现状与 CI 核查见探索笔记 E）：
+
+1. **路线选定：GA 双触发**——`push main`（paths 过滤 `docs/**`）事件驱动增量同步 + `schedule` 每日兜底（UTC `30 18` = 北京 02:30 低峰）+ `workflow_dispatch` 手动入口。
+2. **Vercel Cron 路线放弃**：vercel.json 已删且 spec 禁止重建（多项目配置污染）、2026-08-07 设计文档已因套餐限制判定不配置、HTTP 同步等待模式在全量重建（290 文件串行 embedding）时有 serverless 超时风险。**Neon 自身不做调度**（pg_cron 只能跑 SQL，扛不动 TS 管线）。
+3. **CI 运行前提**（探索笔记 E 核查）：8 类非空 `NITRO_*` 环境变量进 GitHub Secrets——`NITRO_SYNC_DATABASE_URL` **必须 non-pooled**（advisory lock 依赖独占连接，spec.md:156-157）；workflow 先构建 `ai-rag-core`；凭据只走 Secrets，禁止出现在代码、日志与文档。
+4. **增量保证**：真增量已内置（sha256 + 四元组对比，`knowledge-sync.ts:248-258`），未变更轮零 embedding 调用、零写库——每日兜底的边际成本仅为读文件 + 哈希对比。
+5. **审计与同源性不变**：GA 触发与 CLI/HTTP 共用同一 `createKnowledgeSyncService`（HTTP/CLI 共用 `createRagRuntime`），`knowledge_sync_runs` 审计记录照常写入；`NITRO_REPOSITORY_ROOT` 由 `rag-sync.ts:4-5` 自动置为仓库根，GA checkout 后天然满足。
+6. **spec 修订点**：knowledge-sync spec 需以 openspec change 新增「GA 触发路径」行为（双触发方式、Secrets 前提、non-pooled 连接串），并承接 2026-08-07「不配置 Cron」决策的修订说明——该决策否决的是 Vercel Cron（vercel.json crons），GA 路线不触碰 vercel.json，无配置污染问题。
+
+实施任务见 plan 第十八章（SY 任务组）。
+
+### 11.10 执行保障声明 [2026-09-05 决策]
+
+本 spec 与 plan 的执行由 **plan 第十九章「执行运行手册」**规范（面向零上下文的独立执行会话）：启动协议、全局执行 DAG、全局基线检查、进度状态规范、中断汇报流程、意外中断恢复与回滚、本地联调复现。执行会话 MUST 以手册为唯一流程事实源；第六章任务表承担**任务定义**（静态），手册 19.6 进度总表承担**进度追踪**（动态，每任务完成即更新）——两者不混用。

@@ -7,6 +7,20 @@
 > 参考对象：`@inkeep/agents-ui` v0.17.8
 > 配套 spec：`./spec.md`
 
+> **For agentic workers（执行者必读）**：执行本 plan 前必须先读第十九章「执行运行手册」——启动协议、全局执行 DAG、进度总表（19.6）、中断汇报与恢复机制均以手册为唯一流程事实源。步骤使用 checkbox（`- [ ]`）语法追踪，每任务完成后勾选并同步更新 19.6 总表状态。
+>
+> **Goal:** 将 `@ruan-cat-drill-doc/ai-vue` 升级为借鉴 @inkeep/agents-ui 后的可落地增强组件库（P0-P4），并以 `ai-rag-api` 配套任务（FC/CC/MS/EV/SY）支撑智能客服路线。
+>
+> **Tech Stack:** Vue 3.5 / vue-element-plus-x v2 / element-plus / markstream-vue / Nitro 3 / Neon PostgreSQL / GitHub Actions
+>
+> **Global Constraints:**
+>
+> - Node 22.x、pnpm（版本以根 `package.json#packageManager` 为准）；Windows 开发环境
+> - **不做多轮会话、不接 MCP**（重调研报告 1.3 用户约束，优先级高于本文任何章节）
+> - openspec 纪律：spec 修订先行合入才允许动代码（SY-0/CC-0/MS-0 前置）
+> - 提交按任务组粒度拆分，格式遵循仓库 commitlint（中文 + emoji）
+> - 文档语言简体中文；表格对齐沿文档既有惯例
+
 ---
 
 ## 一、实施总览
@@ -1213,14 +1227,43 @@ import { mountAiChat, AiChat } from "@ruan-cat-drill-doc/ai-vue";
 
 ### CC：ContextConfig 动态上下文改造任务（后端为主，详见第十五章）
 
-| 编号 | 任务                                        | 产出                                 | 验收                |
-| :--- | :------------------------------------------ | :----------------------------------- | :------------------ |
-| CC-0 | openspec change 修订 chat-api Requirement 1 | openspec 变更包                      | spec 修订先行合入   |
-| CC-1 | PageContext 共享契约                        | `ai-rag-core` page-context schema    | 两端 typecheck 通过 |
-| CC-2 | ChatContext 与来源归一化                    | `ai-rag-api` context/types + sources | 归一化三态单测通过  |
-| CC-3 | 函数式 prompt 模板                          | `context/prompt-template.ts`         | 渲染两态快照通过    |
-| CC-4 | 接线 contracts/chat.ts                      | 修改 `chat.ts:129` 硬编码段          | 既有 chat 用例全绿  |
-| CC-5 | vitest 覆盖降级路径                         | context 模块测试文件                 | 全量通过            |
+| 编号 | 任务                                                                      | 产出                                 | 验收                |
+| :--- | :------------------------------------------------------------------------ | :----------------------------------- | :------------------ |
+| CC-0 | openspec change 修订 chat-api Requirement 1（可与 MS-0 合并为同一变更包） | openspec 变更包                      | spec 修订先行合入   |
+| CC-1 | PageContext 共享契约                                                      | `ai-rag-core` page-context schema    | 两端 typecheck 通过 |
+| CC-2 | ChatContext 与来源归一化                                                  | `ai-rag-api` context/types + sources | 归一化三态单测通过  |
+| CC-3 | 函数式 prompt 模板                                                        | `context/prompt-template.ts`         | 渲染两态快照通过    |
+| CC-4 | 接线 contracts/chat.ts                                                    | 修改 `chat.ts:129` 硬编码段          | 既有 chat 用例全绿  |
+| CC-5 | vitest 覆盖降级路径                                                       | context 模块测试文件                 | 全量通过            |
+
+### MS：模型切换功能任务（前后端联动，详见第十六章）
+
+| 编号 | 任务                                                                                                          | 产出                                        | 验收                             |
+| :--- | :------------------------------------------------------------------------------------------------------------ | :------------------------------------------ | :------------------------------- |
+| MS-0 | openspec change 修订 Requirement 8 + 新增 MUST NOT 边界条款（禁多轮历史/禁对话历史压缩/禁 MCP，见 spec 11.7） | openspec 变更包                             | 请求级覆盖语义与边界条款先行合入 |
+| MS-1 | 注册表 label + GET /v1/models                                                                                 | `llm-config.ts` + `routes/v1/models.get.ts` | 响应无 baseUrl/凭据              |
+| MS-2 | 请求级 provider 选择（装配分发）                                                                              | `rag-assembly.ts` + `contracts/chat.ts`     | 白名单校验 + 回退用例通过        |
+| MS-3 | useKnowledgeChat 状态与请求接线                                                                               | 修改 `useKnowledgeChat.ts`                  | 请求体携带 provider，持久化      |
+| MS-4 | AiChat 分段选择器 UI                                                                                          | 修改 `AiChat.vue` + `types.ts`              | 向后兼容，键盘可操作             |
+| MS-5 | vitest 全链路覆盖                                                                                             | 三包测试文件                                | 全量通过                         |
+
+### EV：可评估性落库任务（后端，详见第十七章）
+
+| 编号 | 任务                          | 产出                                      | 验收                       |
+| :--- | :---------------------------- | :---------------------------------------- | :------------------------- |
+| EV-1 | evaluation_runs 表与迁移 0005 | `schema.ts` + 迁移 SQL                    | 迁移可重放，typecheck 通过 |
+| EV-2 | CLI 评估脚本落库              | `scripts/run-*.ts` + `runs-repository.ts` | 三脚本各写一行，失败不阻断 |
+| EV-3 | 只读两枚接口                  | `routes/v1/evaluation/`                   | 四态契约测试通过           |
+| EV-4 | vitest 覆盖                   | 测试文件                                  | 全量通过                   |
+
+### SY：同步调度任务（GitHub Actions，详见第十八章）
+
+| 编号 | 任务                                     | 产出                                       | 验收                     |
+| :--- | :--------------------------------------- | :----------------------------------------- | :----------------------- |
+| SY-0 | openspec change 修订 knowledge-sync spec | openspec 变更包                            | GA 触发路径行为先行合入  |
+| SY-1 | GitHub Actions workflow                  | `.github/workflows/rag-sync-schedule.yaml` | 双触发配置就绪，首跑通过 |
+| SY-2 | Secrets 配置                             | 8 类 `NITRO_*` GitHub Secrets              | 脚本门禁核查通过，零泄漏 |
+| SY-3 | 首跑与增量验证                           | workflow 运行记录                          | 增量生效、审计记录完整   |
 
 ---
 
@@ -2265,7 +2308,7 @@ agent-browser install --with-deps
 # 在 SmallAliceWeb 仓库根目录
 pnpm install
 pnpm run docs:dev
-# 文档站启动在 http://localhost:5173
+# 文档站启动在 http://localhost:8080
 ```
 
 #### 11.1.3 确认验证目标
@@ -2286,7 +2329,7 @@ pnpm run docs:dev
 
 ```bash
 # 打开文档站
-agent-browser open http://localhost:5173
+agent-browser open http://localhost:8080
 
 # 等待页面加载完成
 agent-browser wait --load networkidle
@@ -2458,7 +2501,7 @@ agent-browser close
 
 set -e
 
-BASE_URL="${1:-http://localhost:5173}"
+BASE_URL="${1:-http://localhost:8080}"
 OUTPUT_DIR="${2:-./verify-screenshots}"
 
 mkdir -p "$OUTPUT_DIR"
@@ -2528,7 +2571,7 @@ echo "请人工检查截图，确认 AI 聊天组件颜色与文档站主题色�
 ### 12.5 注意事项
 
 1. **Windows 路径**：在 Windows PowerShell 中执行时，路径使用反斜杠 `\` 或正斜杠 `/` 均可，但建议统一使用正斜杠
-2. **端口冲突**：如果 5173 端口被占用，VitePress 会自动切换到 5174 等，需确认实际端口
+2. **端口冲突**：如果 8080 端口被占用，VitePress 会自动切换到 8081 等，需确认实际端口
 3. **SSR 注意**：VitePress 的 SSR 模式下 `agent-browser eval` 可能无法获取到客户端注入的 CSS 变量，需确保在客户端渲染完成后执行
 4. **截图对比**：建议使用工具（如 `pixelmatch`）对比基线截图和验证截图，实现自动化视觉回归
 5. **CI 集成**：可将 `verify-ai-chat-theme.sh` 集成到 CI 流程，在每次 PR 时自动执行视觉验证
@@ -2919,22 +2962,26 @@ const system = buildSystemPrompt(
 - [ ] `prompt-template` 渲染两态快照（有/无 pageContext）
 - [ ] `sources` 归一化三态（合法 / 非法 / 缺失）
 - [ ] 降级路径：非法 pageContext → 基础模板输出、无异常抛出
+- [ ] 入站校验回归：pageContext 非法值返回 400 与统一错误体（spec 11.6 验证层纪律，Requirement 3 行为不变）
+- 出站边界：来源数据帧构造（`createSourceUrl` / `resolveSourceHref`）不加运行时校验——输入为数据库自有数据，属可信边界，TS 类型单源保证（spec 11.6 第 2 条）
 - 运行：`pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test`
 
 ### 15.8 蓝军拷问记录（grill-me 自审：推荐默认已执行，均可推翻）
 
-| 拷问                                           | 结论                                                                                                     | 推翻成本                                               |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------- | :----------------------------------------------------- |
-| Q1 为何 v1 不实现服务端 fetchDefinition 执行器 | 无真实拉取场景（文档元数据已在检索结果内，页面信息由客户端透传），YAGNI；类型接口已预留                  | 场景出现后约 1 天，接口不变                            |
-| Q2 为何 TS 函数式模板而非字符串模板 + 渲染器   | prompt 不入库、无可视化编辑器；函数模板类型安全、零解析层。inkeep 用字符串模板是因 prompt 可被构建器存库 | 未来 prompt 上库时切换载体，buildSystemPrompt 签名不变 |
-| Q3 为何字段最小集（pagePath + title）          | 足够支撑「这个怎么配」指代消解；字段越多校验与隐私面越大                                                 | 加字段 = schema + 采集 + 模板三处小改                  |
-| Q4 为何独立注入段 + 防误引声明                 | 防止模型把页面信息当作来源标注 [来源 N]，污染引用编号体系                                                | 换注入方式 = 改一个段落函数                            |
-| D3 为何 PageContext schema 放 ai-rag-core      | api 已依赖该包（workspace:\*，chat.ts:1 已在用）；plugins 加一条 workspace 依赖换取两端契约不漂移        | 挪包 = 移文件 + 改 import                              |
-| 上下文会不会演化成「隐形多轮」                 | 不会：单轮、无状态、全部可选、任何来源失败只降级不阻塞                                                   | —                                                      |
+| 拷问                                                   | 结论                                                                                                                     | 推翻成本                                                                             |
+| :----------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| Q1 为何 v1 不实现服务端 fetchDefinition 执行器         | 无真实拉取场景（文档元数据已在检索结果内，页面信息由客户端透传），YAGNI；类型接口已预留                                  | 场景出现后约 1 天，接口不变                                                          |
+| Q2 为何 TS 函数式模板而非字符串模板 + 渲染器           | prompt 不入库、无可视化编辑器；函数模板类型安全、零解析层。inkeep 用字符串模板是因 prompt 可被构建器存库                 | 未来 prompt 上库时切换载体，buildSystemPrompt 签名不变                               |
+| Q3 为何字段最小集（pagePath + title）                  | 足够支撑「这个怎么配」指代消解；字段越多校验与隐私面越大                                                                 | 加字段 = schema + 采集 + 模板三处小改                                                |
+| Q4 为何独立注入段 + 防误引声明                         | 防止模型把页面信息当作来源标注 [来源 N]，污染引用编号体系                                                                | 换注入方式 = 改一个段落函数                                                          |
+| D3 为何 PageContext schema 放 ai-rag-core              | api 已依赖该包（workspace:\*，chat.ts:1 已在用）；plugins 加一条 workspace 依赖换取两端契约不漂移                        | 挪包 = 移文件 + 改 import                                                            |
+| V1 为何不引入 @hono/zod-openapi 而维持 zod + contracts | 框架错位（Nitro/h3 非 Hono 生态）、规模错位（4 入口无需工厂）、避免与 openspec 行为 spec 双事实源（2026-09-05 用户拍板） | API 面向第三方消费者或 schema 规模增长一个数量级时重评，触发条件已记重调研报告第六章 |
+| V2 为何出站数据帧不加运行时校验                        | 帧由纯函数从数据库自有数据构造，属可信边界；TS 类型单源已足够，运行时防御是给不可达路径堆代码                            | 出现数据库外数据源直通出站帧时再评估                                                 |
+| 上下文会不会演化成「隐形多轮」                         | 不会：单轮、无状态、全部可选、任何来源失败只降级不阻塞                                                                   | —                                                                                    |
 
 ### 15.9 实施顺序与验收标准
 
-实施顺序：openspec change（15.2）→ CC-1 → CC-2 → CC-3 → CC-4 → CC-5；前端 FC-1（plan 14.2）与 CC-1 的 schema 定稿并行。
+实施顺序：openspec change（15.2）→ CC-1 → CC-2 → CC-3 → CC-4 → CC-5；FC-1 的**开发**可与 CC-1 并行推进，但**合入**以 CC-1 的 schema 定稿为硬前置（统一口径，见 19.2 跨组依赖清单）。
 
 验收标准：
 
@@ -2944,3 +2991,541 @@ const system = buildSystemPrompt(
 - [ ] 提示词修改只触碰模板模块，`contracts/chat.ts` 请求处理逻辑不变
 - [ ] `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test` 全量通过
 - [ ] 四项拍板决策（Q1-Q4）在 15.8 有记录，用户可随时推翻重拍
+
+---
+
+## 十六、模型切换功能实施方案 [新增]
+
+> 2026-09-05 新增。落地 spec 第十二章：把 `llm-config.ts` 注册表的切换能力暴露给用户——请求级 provider 白名单契约 + `GET /v1/models` 下发 + 前端分段选择器。事实基础：两个协议 adapter 工厂同签名（`createAnthropicChatStream` / `createOpenAiChatStream` → `ChatDependencies["stream"]`），装配层当前只绑单个（`rag-assembly.ts:248` `stream: (request) => model.stream(request)`），请求级选择只是装配处的分发升级。
+
+### 16.1 文件变更预览
+
+```plain
+packages/ai-rag-api/
+├── src/llm-config.ts                        # 修改：providers 增加 label 字段 + resolveRagLlmConfigById
+├── server/routes/v1/models.get.ts           # 新增：GET /v1/models 静态下发
+├── server/contracts/chat.ts                 # 修改：chatRequestSchema 增可选 provider + 透传
+└── server/runtime/rag-assembly.ts           # 修改：双 adapter 构造 + 按 request.provider 分发
+packages/ai-vitepress-plugins/src/client/
+└── composables/useKnowledgeChat.ts          # 修改：models/selectedProvider 状态 + 请求注入 + localStorage
+packages/ai-vue/src/components/ai-chat/
+├── types.ts                                 # 修改：AiChatModelOption + props/emits 扩展
+└── AiChat.vue                               # 修改：el-segmented 选择器（条件渲染）
+```
+
+### 16.2 前置步骤：openspec change 修订 Requirement 8
+
+- [ ] 「MUST 固定一个 activeProvider」修订为「MUST 默认 activeProvider；请求 MAY 携带 provider 字段覆盖，覆盖值 MUST 属于注册表 provider key 白名单，非法或缺失 MUST 回退 activeProvider」
+- [ ] 新增 Requirement：`GET /v1/models` 静态下发公开元数据，响应 MUST NOT 包含 baseUrl 与凭据
+- 纪律：spec 修订合入后才允许动后端代码
+
+### 16.3 MS-1：注册表 label 与 GET /v1/models
+
+```ts
+// packages/ai-rag-api/src/llm-config.ts（增量）
+export type RagLlmProviderConfig = Readonly<{
+	protocol: RagLlmProtocol;
+	baseUrl: string;
+	model: string;
+	label: string; // 新增展示名
+}>;
+
+// providers 补充：anthropic.label: "Claude Sonnet 5"、openai.label: "GPT-5.6 Luna"
+
+/** 按 id 解析公开 provider 配置；未知 id 返回 undefined（调用方回退 activeProvider）。 */
+export function getRagLlmConfigById(id: string): (RagLlmProviderConfig & { id: RagLlmProviderId }) | undefined {
+	if (!(id in ragLlmConfig.providers)) return undefined;
+	const key = id as RagLlmProviderId;
+	return { id: key, ...ragLlmConfig.providers[key] };
+}
+```
+
+```ts
+// packages/ai-rag-api/server/routes/v1/models.get.ts（新增）
+import { defineEventHandler } from "nitro/h3";
+import { ragLlmConfig } from "../../../src/llm-config";
+
+/** 静态下发模型选择元数据：纯编译期注册表，无装配守卫，无 baseUrl 与凭据。 */
+export default defineEventHandler(() => ({
+	success: true,
+	code: 200,
+	message: "操作成功",
+	data: {
+		models: Object.entries(ragLlmConfig.providers).map(([id, config]) => ({
+			id,
+			label: config.label,
+			model: config.model,
+		})),
+	},
+}));
+```
+
+- 验证：curl 断言响应含两个条目、不含 baseUrl/apiKey 字样
+
+### 16.4 MS-2：请求级 provider 选择（装配分发）
+
+```ts
+// contracts/chat.ts：schema 增字段 + 透传
+export const chatRequestSchema = z.object({
+	message: z.string().trim().min(1).max(4_000),
+	conversationId: z.string().trim().min(1).max(128).optional(),
+	provider: z.enum(["anthropic", "openai"]).optional(), // 与注册表 key 同源；非法值走 400 之外的回退路径见下
+});
+```
+
+> 白名单语义二选一（16.8 拷问 V3 记录）：a) zod enum 直接拒绝非法值（400）；b) zod string + 运行时回退（非法值静默回退 activeProvider）。推荐 **a**——错误输入显式报错符合 Requirement 3 的错误映射纪律，「回退」仅指字段缺失场景。spec 12.2 的「非法回退」表述以此为准修正为「非法 400、缺失回退」。
+
+```ts
+// rag-assembly.ts：双 adapter 构造 + 分发（伪代码示意，实施以现有装配结构为准）
+const streams = {
+	anthropic: createAnthropicChatStream({ ...resolveById("anthropic", keys) }),
+	openai: createOpenAiChatStream({ ...resolveById("openai", keys) }),
+} satisfies Partial<Record<RagLlmProviderId, ChatDependencies["stream"]>>;
+// 仅构造已配置 key 的 provider；ChatDependencies.stream 按请求 provider 分发，缺省用 activeProvider
+```
+
+- [ ] `ChatDependencies` 类型扩展：`stream` 改为接受 `{ provider?: RagLlmProviderId }` 或新增分发包装（实施时保持 `handleChatRequest` 对上层接口最小改动）
+- [ ] 仅激活 provider 的 key 必须存在（现有 Requirement 8 语义保留）；未激活 provider 的 key 缺失时该 provider 不进入分发表且前端不返回该选项？——不：`/v1/models` 仍全量下发（静态），仅当请求选择未配置 key 的 provider 时返回 503 语义错误。实施时以「key 缺失 → 该 provider 请求报 500 RAG provider not configured」处理，并记入 openspec 修订
+- 验证：白名单内双 provider 各一例流式请求成功；缺失 provider 字段回退 activeProvider
+
+### 16.5 MS-3：useKnowledgeChat 状态与请求接线
+
+```ts
+// packages/ai-vitepress-plugins/src/client/composables/useKnowledgeChat.ts（增量示意）
+export type AiChatModelOption = { id: string; label: string; model: string };
+
+const PROVIDER_STORAGE_KEY = "ai-chat-provider";
+
+// 状态
+const models = ref<AiChatModelOption[]>([]);
+const selectedProvider = ref<string>();
+
+// 初始化：拉取 /v1/models（失败静默，选择器不渲染——models 为空）
+void (options.fetch ?? globalThis.fetch)(resolveKnowledgeChatApi(options.api).replace(/\/chat$/, "/models"))
+	.then((response) => (response.ok ? response.json() : undefined))
+	.then((payload) => {
+		const list: AiChatModelOption[] = payload?.data?.models ?? [];
+		models.value = list;
+		const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
+		selectedProvider.value = list.some((item) => item.id === stored) ? stored : list[0]?.id;
+	})
+	.catch(() => {});
+
+/** 切换模型：立即生效于下一次发送；responding 中切换不打断当前流。 */
+function selectModel(id: string) {
+	if (!models.value.some((item) => item.id === id)) return;
+	selectedProvider.value = id;
+	localStorage.setItem(PROVIDER_STORAGE_KEY, id);
+}
+
+// experimental_prepareRequestBody 注入：
+return {
+	message: ...,
+	conversationId,
+	...(selectedProvider.value ? { provider: selectedProvider.value } : {}),
+};
+// 返回值增加 { models, selectedProvider, selectModel }
+```
+
+- [ ] localStorage 仅存 UI 偏好；恢复时不在列表则回退默认（防注册表变更后残留脏值）
+- [ ] `/v1/models` 地址由 chat api 地址派生（同源 `/v1` 前缀），或允许 options 显式覆盖
+- 验证：请求体携带 provider；存储脏值回退；models 拉取失败时聊天功能完全正常
+
+### 16.6 MS-4：AiChat 分段选择器 UI
+
+```ts
+// packages/ai-vue/src/components/ai-chat/types.ts（增量）
+/** 模型选择器选项（由宿主经 props 下发，ai-vue 不发请求）。 */
+export interface AiChatModelOption {
+	id: string;
+	label: string;
+	model: string;
+}
+
+export interface AiChatProps {
+	// ...既有字段
+	models?: AiChatModelOption[];
+	selectedModelId?: string;
+}
+
+export type AiChatEmits = {
+	// ...既有事件
+	(event: "select-model", id: string): void;
+};
+```
+
+```vue
+<!-- AiChat.vue：Sender 上方条件渲染；models 为空整块不渲染（向后兼容） -->
+<div v-if="props.models?.length" class="ai-chat__model-picker">
+	<el-segmented
+		:model-value="props.selectedModelId"
+		:options="props.models.map((item) => ({ label: item.label, value: item.id }))"
+		size="small"
+		:disabled="false"
+		aria-label="切换问答模型"
+		@update:model-value="emit('select-model', String($event))"
+	/>
+</div>
+```
+
+- [ ] **responding 中不禁用选择器**（Q1 拍板）：切换仅改选中态，当前流继续旧模型，下一消息生效；选择器加 `title="切换后下一条消息生效"` 说明
+- [ ] mock 模式：宿主未传 models 时不渲染（内置假列表仅用于组件 demo/story，不进生产路径）
+- [ ] 样式走 `--ai-chat-*` 变量，与 P1 主题系统协同；右对齐、紧凑尺寸
+- 验证：键盘 Tab+方向键可切换（el-segmented 原生）；models 缺省渲染与现版本逐像素一致
+
+### 16.7 MS-5：vitest 全链路覆盖
+
+- [ ] ai-rag-api：`/v1/models` 契约（条目数、无 baseUrl/凭据）；chat 契约（provider 白名单 400、缺失回退 activeProvider、双 provider 分发 mock）
+- [ ] ai-vitepress-plugins：请求体注入 provider；localStorage 持久化与脏值回退；models 拉取失败不影响聊天
+- [ ] ai-vue：选择器条件渲染（传/不传 models）；select-model 事件负载；responding 中可切换
+- 运行：`pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test && pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins run test && pnpm --filter @ruan-cat-drill-doc/ai-vue run test`
+
+### 16.8 蓝军拷问记录（推荐默认已执行，均可推翻）
+
+| 拷问                              | 结论                                                                                                                | 推翻成本                                                   |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------- |
+| Q1 responding 中切换的语义        | 允许切换，当前流继续旧模型完成，下一消息生效——单轮架构下每请求独立携带 provider，语义自然；满足「对话中可切换」诉求 | 若要求切换即停当前流：加 stop 调用一行 + UX 文案变更       |
+| Q2 模型列表来源                   | `GET /v1/models` 唯一事实源（编译期注册表），前端零硬编码；AiChat 经 props 接收，保持零网络职责                     | 前端 props 全量自管：删端点 + 移数据源，但引入漂移风险     |
+| Q3 契约形态：provider key 白名单  | 请求只能传注册表 key（enum 校验，非法 400），禁止自由 model 字符串——杜绝注入与成本失控；缺省回退 activeProvider     | 开放自由 model 字段需服务端白名单校验层 + 成本审计，不建议 |
+| Q4 UI 形态                        | el-segmented（element-plus 既有依赖，键盘可访问性白得）；两 provider 场景分段控件优于下拉                           | provider 超过 3 个时换 el-select，模板一处改动             |
+| V3 白名单非法值：400 还是静默回退 | 400——错误输入显式报错符合 Requirement 3 纪律；「回退」仅指字段缺失（spec 12.2 表述已按此校准）                      | 改静默回退 = 放宽 zod schema 一行                          |
+
+### 16.9 实施顺序与验收标准
+
+实施顺序：MS-0（openspec 修订）→ MS-1 → MS-2 → MS-3 → MS-4 → MS-5；MS-3/MS-4 依赖 MS-1/MS-2 的契约定型，可与后端并行开发（mock 契约先行）。
+
+验收标准（汇总 spec 12.5）：
+
+- [ ] 生产 UI 可见选择器，提问前可切换，responding 中切换不打断当前流
+- [ ] 非法 provider 返回 400、缺失回退 activeProvider
+- [ ] `/v1/models` 无 baseUrl 与凭据
+- [ ] models 缺省时选择器不渲染，现有用例全绿
+- [ ] 三包 vitest 全量通过 + 第十二章视觉验证场景补「切换模型后回归」一例
+
+---
+
+## 十七、可评估性落库与只读接口实施方案 [新增]
+
+> 2026-09-05 新增。落地 spec 11.8：评估从一次性实验变成可查询实体——`evaluation_runs` 表 + 只读两枚接口；OTel 与外部评估框架不引入（边界声明随行）。依据：探索笔记 D（`research-notes/D-evaluation.md`）。
+
+### 17.1 文件变更预览
+
+```plain
+packages/ai-rag-api/
+├── server/db/schema.ts                      # 修改：新增 evaluationRuns 表声明
+├── drizzle/0005_add_evaluation_runs.sql     # 新增：迁移（沿用 0000-0004 手写迁移惯例）
+├── server/evaluation/runs-repository.ts     # 新增：评估运行写入/查询数据访问
+├── server/routes/v1/evaluation/
+│   ├── runs.get.ts                          # 新增：GET /v1/evaluation/runs 分页列表
+│   └── runs-id.get.ts                       # 新增：GET /v1/evaluation/runs/:id 详情
+└── scripts/run-rag-evaluation.ts 等 3 个    # 修改：评估完成后写入一行（不阻断原输出）
+```
+
+### 17.2 EV-1：evaluation_runs 表与迁移
+
+```ts
+// server/db/schema.ts（增量）
+export const evaluationRuns = pgTable("evaluation_runs", {
+	id: text("id").primaryKey(),
+	/** gold-set 文件内容哈希（sha256 前 12 位）——题集仍在 git，版本由哈希锚定 */
+	datasetVersion: text("dataset_version").notNull(),
+	/** retrieval | parameter | real | promptfoo */
+	kind: text("kind").notNull(),
+	/** 运行参数快照（chunk profile / 检索配置 / reranker 等） */
+	params: jsonb("params"),
+	/** 指标结果（IR 指标全集，与证据 JSON 同构） */
+	metrics: jsonb("metrics").notNull(),
+	/** 语料预检状态（含 isolationReason） */
+	corpusIsolation: text("corpus_isolation"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+- [ ] 手写迁移 `0005_add_evaluation_runs.sql`（CREATE TABLE），与既有 0000-0004 惯例一致
+- 验证：迁移可重放；`pnpm --filter @ruan-cat-drill-doc/ai-rag-api run typecheck` 通过
+
+### 17.3 EV-2：CLI 脚本落库接线
+
+- [ ] `run-rag-evaluation.ts` / `run-parameter-evaluation.ts` / `run-real-evaluation.ts` 在指标计算完成后经 `runs-repository` 写入一行
+- [ ] `runs-repository.ts`：`insertEvaluationRun(record)` + `listEvaluationRuns({ limit, cursor })` + `getEvaluationRunById(id)`
+- [ ] **落库失败不阻断评估**：stdout 与 JSON 证据文件照旧产出（它们仍是事实源），入库失败记 warn
+- 验证：三脚本各完成一次真实运行并查表确认
+
+### 17.4 EV-3：只读两枚接口
+
+- [ ] `GET /v1/evaluation/runs?limit=&cursor=`：查询 schema 复用 `syncRunsQuerySchema` 同款模式（limit/coerce/cursor）
+- [ ] `GET /v1/evaluation/runs/:id`：404 语义 = `{ success: false, code: 404 }`，与统一错误体一致
+- [ ] 两路由沿用 503 装配守卫（`ragNotConfiguredResponse`，依赖 database provider）与错误映射（Requirement 3 模式）
+- 验证：200/400/404/503 四态契约测试
+
+### 17.5 EV-4：vitest 覆盖
+
+- [ ] 表迁移 smoke（表存在、insert、query 往返）
+- [ ] 两接口契约测试（200/400/404/503）
+- [ ] CLI 落库单测（mock repository；断言落库失败不阻断评估输出）
+- 运行：`pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test`
+
+### 17.6 蓝军拷问记录（推荐默认已执行，均可推翻）
+
+| 拷问                                | 结论                                                                                  | 推翻成本                               |
+| :---------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------- |
+| V1 题集为何不建表                   | git diff review + 天然版本化 + 规模小（当前 1 条）；入库引入「谁写库」问题            | 题集需多人在线协作维护时再议           |
+| V2 为何不做 POST 触发接口           | 评估是重操作（跑检索 + 判分），公网触发有滥用与成本风险；与「不提供操作行为」约束一致 | 内部管理后台需求出现时加，需鉴权与配额 |
+| V3 为何 v1 不引 OTel                | 可观测性 ≠ 可评估性；结构化日志 + response-metadata 够用；无 collector/trace 平台     | 接入外部 trace 平台需求出现时引入      |
+| V4 为何 metrics 用 jsonb 而非展开列 | 指标集随评估类型变化（ks、@K 值），jsonb 保 schema 稳定；跨运行对比在应用层做         | 需按单指标 SQL 过滤/聚合时加生成列     |
+
+### 17.7 实施顺序与验收标准
+
+实施顺序：EV-1 → EV-2 → EV-3 → EV-4（EV-3/EV-4 依赖 EV-1 表结构定型，可与 EV-2 并行）。
+
+验收标准：
+
+- [ ] 迁移可重放，typecheck 通过
+- [ ] 三个评估脚本完成后 `evaluation_runs` 各有一行，stdout/JSON 证据输出不变
+- [ ] 只读两枚接口四态契约测试通过（200/400/404/503）
+- [ ] 现有测试全量通过，无破坏性变更
+
+---
+
+## 十八、知识库同步 GitHub Actions 调度实施方案 [新增]
+
+> 2026-09-05 新增。落地 spec 11.9：GA 双触发（push main 增量 + schedule 每日兜底）驱动现有 rag-sync 管线。依据：探索笔记 E（`research-notes/E-sync-pipeline.md`）——CI 无硬阻塞，需 8 类 `NITRO_*` Secrets、先构建 ai-rag-core、advisory lock 要求 non-pooled 连接串。
+
+### 18.1 文件变更预览
+
+```plain
+.github/workflows/rag-sync-schedule.yaml      # 新增：双触发 workflow（本方案唯一新增文件）
+openspec/specs/ai-rag/knowledge-sync/spec.md  # SY-0：openspec change 修订（GA 触发路径行为）
+packages/ai-rag-api/*                         # 零代码改动——管线复用现有 rag:sync 脚本
+```
+
+### 18.2 SY-0：openspec change 修订 knowledge-sync spec
+
+- [ ] 新增「GA 触发路径」行为：触发方式（push main `paths: docs/**` + schedule + `workflow_dispatch`）、Secrets 前提（8 类 `NITRO_` 前缀环境变量）、`NITRO_SYNC_DATABASE_URL` 必须 non-pooled
+- [ ] 承接 2026-08-07「不配置 Cron」决策修订：该决策否决的是 **Vercel Cron**（vercel.json crons 配置污染 + 套餐限制），GA 路线不触碰 vercel.json，与其无冲突；spec 中如有「不配置定时」表述需同步校准为「不在 Vercel 侧配置 Cron，调度由 GitHub Actions 承担」
+- 纪律：spec 修订合入后才允许合入 workflow 文件
+
+### 18.3 SY-1：workflow 文件草案
+
+```yaml
+# .github/workflows/rag-sync-schedule.yaml
+name: RAG 知识库同步
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**"]
+  schedule:
+    - cron: "30 18 * * *" # UTC 18:30 = 北京 02:30 低峰；增量轮仅哈希对比，成本极低
+  workflow_dispatch: {}
+
+concurrency:
+  group: rag-sync
+  cancel-in-progress: false # 同步不可并发（advisory lock 语义在 CI 外的兜底）
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @ruan-cat-drill-doc/ai-rag-core build
+      - run: pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync
+        env:
+          NITRO_DATABASE_URL: ${{ secrets.NITRO_DATABASE_URL }}
+          NITRO_SYNC_DATABASE_URL: ${{ secrets.NITRO_SYNC_DATABASE_URL }} # 必须 non-pooled
+          NITRO_EMBEDDING_MODEL: ${{ secrets.NITRO_EMBEDDING_MODEL }}
+          NITRO_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.NITRO_CLOUDFLARE_ACCOUNT_ID }}
+          NITRO_CLOUDFLARE_API_TOKEN: ${{ secrets.NITRO_CLOUDFLARE_API_TOKEN }}
+          NITRO_KNOWLEDGE_SYNC_TOKEN: ${{ secrets.NITRO_KNOWLEDGE_SYNC_TOKEN }}
+          NITRO_CRON_SECRET: ${{ secrets.NITRO_CRON_SECRET }}
+          NITRO_ANTHROPIC_API_KEY: ${{ secrets.NITRO_ANTHROPIC_API_KEY }} # 按激活 provider；切 OpenAI 时换 NITRO_OPENAI_API_KEY
+```
+
+- [ ] 变量清单以探索笔记 E 第 84-93 行核查表为准（8 类必填 + 2 类可省略）；`NITRO_REPOSITORY_ROOT`/`NITRO_KNOWLEDGE_SOURCE_ROOT` 可省略（checkout 后默认值即正确）
+- [ ] `NITRO_KNOWLEDGE_SYNC_TOKEN`/`NITRO_CRON_SECRET` 为门禁变量（CLI 不消费但装配要求非空）
+- 验证：workflow_dispatch 首跑成功
+
+### 18.4 SY-2：Secrets 配置清单
+
+- [ ] GitHub 仓库 Settings → Secrets and variables → Actions 逐项配置上表 8 类
+- [ ] **凭据纪律**：全部走 GitHub 加密 Secrets；禁止出现在 workflow 日志、代码、文档与本仓库任何文件（AGENTS.md 既有红线）
+- [ ] `NITRO_SYNC_DATABASE_URL` 从 Neon 控制台获取 **non-pooled**（直连）连接串——pooled URL 会使 advisory lock 失效，可能导致并发同步互踩
+
+### 18.5 SY-3：首跑与增量验证
+
+- [ ] `workflow_dispatch` 手动首跑：未变更轮快速通过（读 290 文件 + 哈希对比，预期分钟级）
+- [ ] 人为修改一个 md → push main → 触发增量：仅该文件重新 embedding + 写库，`knowledge_sync_runs` 新增一条审计记录
+- [ ] 次日核对 schedule 自动运行成功（Actions 页面运行历史）
+- [ ] 检查 workflow 日志无任何 Secret 值泄漏（`::add-mask::` 由 GitHub 自动处理，人工复核日志）
+
+### 18.6 蓝军拷问记录（推荐默认已执行，均可推翻）
+
+| 拷问                          | 结论                                                                                                   | 推翻成本                               |
+| :---------------------------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------- |
+| S1 为何弃 Vercel Cron         | spec 禁止 vercel.json 重建 + 套餐限制判定在先（2026-08-07）+ HTTP 同步等待模式全量重建超时风险         | 改 Pro 套餐 + 同步端点异步化后才可重议 |
+| S2 为何双触发而非纯定时       | push 贴合更新节奏（实测 12/60 天活跃，合并即入库）；schedule 兜底防漏；增量成本≈零，双触发无额外负担   | 只要纯定时：删 push 段即可             |
+| S3 为何必须 non-pooled 连接串 | advisory lock（pg_advisory_lock）防并发同步依赖独占连接，pooled 连接下锁语义失效可能互踩               | 无——这是正确性要求非性能偏好           |
+| S4 频率为何每日而非每小时     | 更新频率 12/60 天，每小时空转 23 次无价值；每日兜底 + push 事件驱动已覆盖全部时效场景                  | 文档更新频率显著提升后可加密 schedule  |
+| S5 workflow 失败怎么办        | Actions 失败邮件通知（默认）；同步失败不影响线上检索（旧 chunks 仍在）；下次 push 或 schedule 自动补跑 | 需要更强告警时接 Slack/Lark webhook    |
+
+### 18.7 实施顺序与验收标准
+
+实施顺序：SY-0（spec 修订）→ SY-2（Secrets）→ SY-1（workflow）→ SY-3（验证）；SY-2 可与 SY-0 并行。
+
+验收标准（汇总 spec 11.9）：
+
+- [ ] openspec 修订先行合入，workflow 后合入
+- [ ] 首跑成功；变更 md 后增量生效（仅变更文件重新处理）
+- [ ] schedule 次日自动运行；`knowledge_sync_runs` 审计完整
+- [ ] Secrets 零泄漏；现有代码零改动（管线全复用）
+
+---
+
+## 十九、执行运行手册（面向独立执行会话）[新增]
+
+> 受众：**零上下文的新执行会话**。本手册是执行流程的唯一事实源——无论哪个 agent、哪个会话来执行，都按本章协议开工、追踪、汇报、恢复。第六章任务表是任务定义（静态），19.6 总表是进度追踪（动态）。
+
+### 19.1 启动协议（新会话五步）
+
+1. 读本手册全文（本章就是流程上下文，无需重读全部 spec/plan）
+2. 读 19.6 进度总表，找到**第一个状态非 ✅ 的任务**
+3. 读该任务的定义（第六章对应组表）与其详情章节（如 CC-3 → 第十五章）
+4. 跑 19.3 基线检查（首次开工必跑；接力时至少跑受影响包的测试）
+5. 按 19.4 循环执行直到被中断或完成
+
+### 19.2 全局执行 DAG 与并行关系
+
+**主线（串行，ai-vue 侧）**：P0 → P1 → P1.5 → P2 → P3（含 P3.5）→ P4
+
+**并行轨道（与主线任意点并行，组内按编号顺序）**：
+
+| 任务组              | 组内顺序                      | 前置             | 说明                                                 |
+| :------------------ | :---------------------------- | :--------------- | :--------------------------------------------------- |
+| CC（ContextConfig） | CC-0→CC-1→CC-2→CC-3→CC-4→CC-5 | 无（纯后端）     | CC-1 的 PageContext schema 是 FC-1 的前置            |
+| MS（模型切换）      | MS-0→MS-1→MS-2→MS-3→MS-4→MS-5 | 无（纯后端起步） | MS-4/MS-5 的 UI 部分建议 P1 完成后做（主题变量协同） |
+| EV（评估落库）      | EV-1→EV-2→EV-3→EV-4           | 无（纯后端）     | 独立                                                 |
+| SY（同步调度）      | SY-0→SY-2→SY-1→SY-3           | 无（零代码改动） | SY-2 是 GitHub 网页配置                              |
+
+**跨组依赖清单（硬前置，违反即返工）**：
+
+| 后置任务                    | 硬前置                    | 原因                                                         |
+| :-------------------------- | :------------------------ | :----------------------------------------------------------- |
+| FC-1                        | CC-1                      | 引用 ai-rag-core 的 PageContext schema                       |
+| FC-3                        | P3 的 4.6 事件系统 + MS-1 | 挂靠 useChatEvents；provider 元数据来自 /v1/models 与响应帧  |
+| FC-4                        | P3 的 4.4 反馈组件        | 载荷扩展在反馈组件上                                         |
+| MS-4 样式                   | P1                        | 选择器走 `--ai-chat-*` 主题变量                              |
+| 全部 P0-后任务（ai-vue 侧） | P0                        | vepx v2 是前端任务组的硬前置；后端组（CC/MS/EV/SY）不依赖 P0 |
+
+**恢复点 = commit 边界**：每个任务（非任务组）完成后立即 commit，commit 即恢复点。
+
+### 19.3 全局基线检查清单（首次开工必跑，全绿才允许动手）
+
+```bash
+node -v && pnpm -v   # Node 22.x；pnpm 以 package.json#packageManager 为准
+pnpm install
+pnpm --filter @ruan-cat-drill-doc/ai-vue run test
+pnpm --filter @ruan-cat-drill-doc/ai-vitepress-plugins run test
+pnpm --filter @ruan-cat-drill-doc/ai-rag-api run test
+pnpm run docs:build
+```
+
+- 全部通过 → 在执行会话的进度记录里贴出各命令尾部输出（基线证据）
+- 任一失败 → **停止执行**，先修复基线（修复本身作为一个独立 commit），禁止在红色基线上开工
+
+### 19.4 进度状态规范与中断汇报流程
+
+**状态标记**：⬜ 待办 / 🔄 进行中 / ✅ 完成 / ⛔ 阻塞（注明原因）
+
+**每任务完成循环（六步，不可省略）**：
+
+1. 完成任务实施，跑该任务详情章节的**验证命令**
+2. 验证输出**贴进汇报**（证据，不是"应该可以"）
+3. 更新 19.6 总表该行状态为 ✅ 并填 commit hash；同步勾选详情章节对应 checkbox
+4. `git commit`（任务粒度；格式遵循仓库 commitlint，中文 + emoji；涉及用户暂存区时先报告 `git diff --cached --name-only` 获得确认）
+5. 向用户汇报：完成了什么 / 验证证据 / 下一个任务是什么
+6. 遇到阻塞 → 状态改 ⛔ + 原因，**停下汇报**，不静默跳过
+
+**中断交接单（会话被中断或换会话时输出）**：最近 3 个 ✅ 任务的 commit hash + 当前 🔄 任务做到哪一步 + 下一步动作。新会话凭交接单 + 19.6 总表无缝续接。
+
+### 19.5 意外中断恢复与回滚
+
+- **接力恢复协议**：新会话从 19.6 总表第一个非 ✅ 任务开始；**先重跑该任务的验证步骤**（前任声称完成但证据缺失时，按未完成处理——防"自嗨完成"传染）
+- **回滚指引**：
+  - vepx 升级失败 → `git revert` 升级 commit（lock 文件已入库，回滚干净）
+  - drizzle 迁移失败 → drop 新表 + revert 迁移文件，修后重跑
+  - workflow 误触发 → GitHub Actions 页面取消运行 + `workflow_dispatch` 仅手动
+  - 任何半成品 → 状态 ⛔ + 提交说明「WIP: 停在 XX 步」，不留在工作区不提交的模糊状态
+- **会话压缩防护**：单任务实施中发现上下文吃紧 → 先完成当前小步并 commit（恢复点落袋）再继续，禁止带着半成品硬扛
+
+### 19.6 执行进度总表（动态维护，每任务完成即更新）
+
+| 组   | 任务                               | 状态 | 完成证据（commit / 输出） |
+| :--- | :--------------------------------- | :--- | :------------------------ |
+| P0   | P0-1 升级 vepx ^2.0.3              | ⬜   |                           |
+| P0   | P0-2 Sender→XSender 迁移           | ⬜   |                           |
+| P0   | P0-3 ConfigProvider 主题通道       | ⬜   |                           |
+| P1   | P1-1 主题类型定义                  | ⬜   |                           |
+| P1   | P1-2 颜色派生函数                  | ⬜   |                           |
+| P1   | P1-3 默认主题令牌                  | ⬜   |                           |
+| P1   | P1-4 useBrandTheme                 | ⬜   |                           |
+| P1   | P1-5 AiChat 接入主题               | ⬜   |                           |
+| P1   | P1-6 AiChatFloatingButton 接入     | ⬜   |                           |
+| P1   | P1-7 主题单元测试                  | ⬜   |                           |
+| P1.5 | Teek 主题色桥接 + useThemeColor    | ⬜   |                           |
+| P2   | P2-1 ~ P2-5 Shadow DOM 隔离        | ⬜   |                           |
+| P3   | P3-1 ~ P3-8 富聊天体验增强         | ⬜   |                           |
+| P3.5 | DataComponent 结构化卡片           | ⬜   |                           |
+| P4   | P4-1 AiSidebarChat                 | ⬜   |                           |
+| P4   | P4-2 AiModalChat                   | ⬜   |                           |
+| P4   | P4-3 mountAiChat 函数              | ⬜   |                           |
+| P4   | P4-4 ./mount exports 入口          | ⬜   |                           |
+| P4   | P4-5 index.ts 导出更新             | ⬜   |                           |
+| P4   | P4-6 mountAiChat 单元测试          | ⬜   |                           |
+| FC   | FC-1 页面上下文采集透传            | ⬜   |                           |
+| FC   | FC-2 provider 无关契约矩阵         | ⬜   |                           |
+| FC   | FC-3 TTFT 与 response-metadata     | ⬜   |                           |
+| FC   | FC-4 反馈载荷关联                  | ⬜   |                           |
+| FC   | FC-5 conversationId 语义固化       | ⬜   |                           |
+| CC   | CC-0 openspec 修订 chat-api R1     | ⬜   |                           |
+| CC   | CC-1 PageContext 共享契约          | ⬜   |                           |
+| CC   | CC-2 ChatContext 与归一化          | ⬜   |                           |
+| CC   | CC-3 函数式 prompt 模板            | ⬜   |                           |
+| CC   | CC-4 接线 contracts/chat.ts        | ⬜   |                           |
+| CC   | CC-5 vitest 降级路径               | ⬜   |                           |
+| MS   | MS-0 openspec 修订 chat-api R8     | ⬜   |                           |
+| MS   | MS-1 注册表 label + GET /v1/models | ⬜   |                           |
+| MS   | MS-2 请求级 provider 分发          | ⬜   |                           |
+| MS   | MS-3 useKnowledgeChat 接线         | ⬜   |                           |
+| MS   | MS-4 AiChat 分段选择器             | ⬜   |                           |
+| MS   | MS-5 vitest 全链路                 | ⬜   |                           |
+| EV   | EV-1 evaluation_runs 表与迁移      | ⬜   |                           |
+| EV   | EV-2 CLI 脚本落库                  | ⬜   |                           |
+| EV   | EV-3 只读两枚接口                  | ⬜   |                           |
+| EV   | EV-4 vitest 覆盖                   | ⬜   |                           |
+| SY   | SY-0 openspec 修订 knowledge-sync  | ⬜   |                           |
+| SY   | SY-1 GA workflow 文件              | ⬜   |                           |
+| SY   | SY-2 Secrets 配置                  | ⬜   |                           |
+| SY   | SY-3 首跑与增量验证                | ⬜   |                           |
+
+> 注：P1.5/P3.5 以整体一行追踪（定义分别见 spec 11.2 目标形态与 plan 4.5.6 任务清单，均为**表格形态、无细分 checkbox**——完成时整行更新状态即可，19.4 第 3 步的「勾选 checkbox」对这两行不适用）；P2/P3 行内「~」表示组内按第六章编号顺序执行，状态列更新到组粒度即可。P1.5/P3.5 未在第六章设组表，其定义位置以本注为准。
+
+### 19.7 本地联调复现（FC/CC/MS 集成验收用）
+
+```bash
+# 终端 1：文档站（端口 8080——注意不是 5173， 第十二章旧文已勘误）
+pnpm run docs:dev
+
+# 终端 2：Nitro API（predev 先构建 ai-rag-core）
+pnpm --filter @ruan-cat-drill-doc/ai-rag-api run dev
+```
+
+- 前端连本地 API：docs 侧 `.env` 设 `VITE_RAG_API_BASE=http://localhost:3000/v1/chat`（`useKnowledgeChat.ts:33-37` 的解析逻辑）；默认同源路径仅生产可用
+- 若请求被 CORS 拦截 → 检查 `ai-rag-api` 的 `rag-cors` 中间件对 `localhost:8080` 的放行配置
+- 联调验收示例（FC-1）：在文档页 A 提问「这个怎么配」→ Nitro 终端日志可见 pageContext 携带页面 A 路径
