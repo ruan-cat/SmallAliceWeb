@@ -137,6 +137,7 @@ describe("RAG runtime assembly", () => {
 		expect(calls).toEqual([
 			"database:postgres://fake",
 			"embedding:embedding-fake",
+			"model:openai:gpt-5.6-luna:key-fake",
 			"model:anthropic:claude-sonnet-5[1m]:anthropic-key-fake",
 			"sync",
 		]);

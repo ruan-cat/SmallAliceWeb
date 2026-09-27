@@ -1,5 +1,7 @@
 import { createSourceUrl, pageContextSchema, resolveSourceHref } from "@ruan-cat-drill-doc/ai-rag-core";
 import { z } from "zod";
+import type { RagLlmProviderId } from "../../src/llm-config";
+import { RagProviderNotConfiguredError } from "../runtime/rag-assembly";
 import { assembleChatContext } from "../context/sources";
 import { buildSystemPrompt } from "../context/prompt-template";
 
@@ -14,6 +16,13 @@ export const chatRequestSchema = z.object({
 	conversationId: z.string().trim().min(1).max(128).optional(),
 	/** 客户端页面上下文（FC-1 透传），缺失或非法时 400 拦截，不阻断成功后端响应。 */
 	pageContext: pageContextSchema.optional(),
+	/**
+	 * MS-2 引入：请求级 provider 选择（与注册表 provider key 同源）。
+	 * - 字段缺失时由装配层回退 activeProvider（spec Requirement 8）
+	 * - 非法值由 zod enum 直接拒绝 → 400（spec 12.2 / plan 16.8 V3）
+	 * - 选中的 provider 若未配置凭据由装配层返回 500 `RAG provider not configured`（不静默回退）
+	 */
+	provider: z.enum(["anthropic", "openai"]).optional(),
 });
 
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
@@ -39,6 +48,8 @@ export type ChatStreamRequest = ChatRequest & {
 	sources: ChatSourceDto[];
 	system: string;
 	abortSignal?: AbortSignal;
+	/** MS-2 引入：已通过 zod 校验的合法 provider 字段（或 undefined）；缺省由装配层回退 activeProvider。 */
+	provider?: RagLlmProviderId;
 };
 
 export type ChatDependencies = {
@@ -149,8 +160,15 @@ export async function handleChatRequest(
 			abortSignal: upstreamAbortController.signal,
 		});
 		return wrapCancellableResponse(response, upstreamAbortController, cleanupAbort);
-	} catch {
+	} catch (error) {
 		cleanupAbort();
+		// MS-2: 请求选择了未配置凭据的 provider → 500 + 可识别错误 message（spec Requirement 8 / plan 16.4）
+		if (error instanceof RagProviderNotConfiguredError) {
+			return {
+				status: 500,
+				body: { success: false, code: 500, message: error.message, data: null },
+			};
+		}
 		return {
 			status: 500,
 			body: { success: false, code: 500, message: "对话请求失败", data: null },

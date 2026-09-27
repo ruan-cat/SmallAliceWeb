@@ -1,9 +1,11 @@
 import {
 	getActiveRagLlmConfig,
+	ragLlmConfig,
 	type RagLlmProviderConfig,
+	type RagLlmProviderId,
 } from "../../src/llm-config";
 import type { RagNitroConfig } from "../../src/runtime-config";
-import type { ChatDependencies, ChatSource } from "../contracts/chat";
+import type { ChatDependencies, ChatSource, ChatStreamRequest } from "../contracts/chat";
 import { createNoopReranker } from "../reranker/noop-reranker";
 import type { RerankerProvider } from "../reranker/types";
 import { hybridSearch, type HybridSearchItem } from "../search/hybrid-search";
@@ -121,6 +123,27 @@ export class RagRuntimeProviderError extends Error {
 	readonly cause: unknown;
 }
 
+/**
+ * 表示请求选择了注册表存在但当前未配置凭据的 provider。
+ *
+ * MS-2 引入：装配层在注册表存在该 provider 但缺少 apiKey 时不构造 adapter，
+ * 请求选择该 provider 时由装配层抛出本错误；handleChatRequest 捕获后返回
+ * 500 与可识别的 message（spec Requirement 8 / plan 16.4）。
+ *
+ * 不静默回退到其他 provider（plan 16.8 Q3 拍板）。
+ */
+export class RagProviderNotConfiguredError extends Error {
+	readonly code = "RAG_PROVIDER_NOT_CONFIGURED" as const;
+	readonly status = 500 as const;
+	readonly provider: RagLlmProviderId;
+
+	constructor(provider: RagLlmProviderId) {
+		super(`RAG provider ${provider} not configured`);
+		this.provider = provider;
+		this.name = "RagProviderNotConfiguredError";
+	}
+}
+
 function requiredConfigMissing(
 	config: RagRuntimeConfig,
 ): RagRuntimeRequirement[] {
@@ -131,6 +154,36 @@ function requiredConfigMissing(
 	const activeApiKey = config[`${activeProvider.id}ApiKey`];
 	if (!activeApiKey?.trim()) missing.push("model");
 	return missing;
+}
+
+/**
+ * MS-2：基于注册表 + 凭据可用性，逐 provider 调用工厂构造 adapter。
+ *
+ * - 仅当对应 apiKey 存在时才构造（避免在 init 阶段就为未配置 provider 抛 503）
+ * - activeProvider 缺 key 的判定仍交给 requiredConfigMissing 在调用前完成
+ * - 未构造的 provider 在请求层表现为 RagProviderNotConfiguredError（500）
+ */
+async function buildModelAdapters(
+	config: RagRuntimeConfig,
+	factories: RagRuntimeProviderFactories,
+): Promise<Partial<Record<RagLlmProviderId, RagModelProvider>>> {
+	const adapters: Partial<Record<RagLlmProviderId, RagModelProvider>> = {};
+	for (const id of Object.keys(ragLlmConfig.providers) as RagLlmProviderId[]) {
+		const apiKey = config[`${id}ApiKey`];
+		if (!apiKey?.trim()) continue;
+		const providerConfig = ragLlmConfig.providers[id];
+		adapters[id] = assertProviderFunction(
+			await initializeProvider("createModel", () =>
+				factories.createModel({
+					apiKey,
+					provider: { id, ...providerConfig },
+				}),
+			),
+			"createModel",
+			["stream"],
+		);
+	}
+	return adapters;
 }
 
 function assertProviderFunction<T extends object>(
@@ -195,16 +248,7 @@ export async function createRagRuntimeContext(
 		"createEmbedding",
 		["createEmbedding"],
 	);
-	const model = assertProviderFunction(
-		await initializeProvider("createModel", () =>
-			factories.createModel({
-				apiKey: config[`${getActiveRagLlmConfig().id}ApiKey`],
-				provider: getActiveRagLlmConfig(),
-			}),
-		),
-		"createModel",
-		["stream"],
-	);
+	const modelAdapters = await buildModelAdapters(config, factories);
 	const sync = assertProviderFunction(
 		await initializeProvider("createSync", () =>
 			factories.createSync({ database, config }),
@@ -245,7 +289,16 @@ export async function createRagRuntimeContext(
 		search,
 		retrieve: (message, options) =>
 			search(message, { limit: options.limit, k: 60 }),
-		stream: (request) => model.stream(request),
+		stream: async (request) => {
+			// MS-2：按请求 provider 字段选择 adapter；缺省回退 activeProvider；
+			// 选中的 provider 若未在当前 runtime 构造（凭据缺失）则抛 RagProviderNotConfiguredError（500）。
+			const providerId: RagLlmProviderId = (request.provider ?? ragLlmConfig.activeProvider) as RagLlmProviderId;
+			const adapter = modelAdapters[providerId];
+			if (!adapter) {
+				throw new RagProviderNotConfiguredError(providerId);
+			}
+			return adapter.stream(request);
+		},
 		sync: (input) => sync.sync(input),
 		syncRuns: (options) => sync.syncRuns(options),
 		config: Object.freeze({
