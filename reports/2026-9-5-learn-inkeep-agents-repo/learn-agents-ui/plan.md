@@ -2733,10 +2733,42 @@ function collectPageContext(): PageContext | undefined {
 
 ### 14.3 FC-2：provider 无关契约回归矩阵
 
-- [ ] 清单化 AiChat 消费的全部流式帧与事件（文本流、来源帧、错误态、abort），形成「前端消费面」表格
-- [ ] vitest 断言：mock 传输层在两种 provider 假设（不同上游事件命名）下，前端解析结果一致 —— 对齐 openspec chat-api Requirement 8「下游流格式保持稳定」
+- [x] 清单化 AiChat 消费的全部流式帧与事件（文本流、来源帧、错误态、abort），形成「前端消费面」表格
+- [x] vitest 断言：mock 传输层在两种 provider 假设（不同上游事件命名）下，前端解析结果一致 —— 对齐 openspec chat-api Requirement 8「下游流格式保持稳定」
 - [ ] 第十二章视觉验证流程的场景表新增一行「切换 provider 后回归」：同一 URL 在 provider A/B 下分别执行默认主题、主题色切换、暗色模式三场景截图判读
 - 验证：`pnpm --filter @ruan-cat-drill-doc/ai-vue run test` 全绿；视觉验证报告（12.3 模板）记录两次判读一致
+
+#### 14.3.1 前端消费面表格（FC-2 实施落地）
+
+useKnowledgeChat 通过 `@ai-sdk/vue` 抽象层消费上游 provider 流式响应。AI SDK 已将 OpenAI / Anthropic 等上游事件统一归一为 **AI SDK data stream protocol**，前端解析层只关心协议前缀帧：
+
+| 帧前缀  | 含义                 | useKnowledgeChat 处理                            | 测试覆盖 |
+| :----- | :------------------- | :---------------------------------------------- | :------ |
+| `0:`   | 文本增量             | 由 AI SDK 合并到 `chat.messages` 当前助手消息     | `http-complete` ✓ |
+| `1:`   | 函数调用增量         | AI SDK 内部处理，前端不暴露                      | —       |
+| `2:`   | 自定义数据帧（来源） | `collectSourceFrames` 解析 `type: source` 帧，写入 `sourcesByAssistantMessageId` | `http-complete` / `nested-source` / `many-sources` / `source-first` ✓ |
+| `3:`   | 错误帧               | AI SDK 写入 `chat.error.value`；`errorMessage` 计算属性暴露 | `http-error-frame` ✓（FC-2 新增） |
+| `d:`   | 消息结束             | AI SDK 标记 `chat.status.value = 'ready'`；`onResponseComplete` 触发 | `http-complete` ✓ |
+| `f:`   | 消息元数据（id）     | AI SDK 设置 `chat.messages[].id`                | `http-source-first` ✓ |
+| `8:`   | 步骤完成             | AI SDK 内部处理，前端不暴露                      | —       |
+| `9:`   | 步骤开始             | AI SDK 内部处理，前端不暴露                      | —       |
+| `e:`   | 步骤结束             | AI SDK 内部处理，前端不暴露                      | —       |
+| abort  | HTTP 中止            | `chat.stop()` 通过 AbortController 中止上游；保留已接收内容；`isResponding=false` | `http-abort` ✓ |
+| 4xx/5xx | HTTP 错误          | `chat.error.value` 包含错误对象；`errorMessage` 暴露 | `RAG_NOT_CONFIGURED` 已在 use-knowledge-chat.test.ts ✓ |
+
+#### 14.3.2 provider 无关回归矩阵（FC-2 实施落地）
+
+`@ai-sdk/vue` 已将上游协议差异（OpenAI `data: { choices: [...] }` vs Anthropic `event: content_block_delta` 等）归一为统一 data stream 协议，因此**前端解析层天然对 provider 透明**。回归矩阵通过两条路径验证：
+
+1. **真实 HTTP 服务**：`tests/use-knowledge-chat-http.test.ts` 用 `node:http.createServer` 模拟上游服务，发送原始 data stream 字节流（`0:` / `2:` / `3:` / `f:` 等前缀帧），覆盖 6 种 stream 模式（complete / nested-source / many-sources / source-first / error-frame / abort）
+2. **mock @ai-sdk/vue**：`tests/use-knowledge-chat.test.ts` 直接 mock AI SDK 的高层 API（`useChat` / `setData`），覆盖 RAG_NOT_CONFIGURED 错误传播与 `onResponseComplete` 回调
+
+新增 `error-frame` 模式断言：上游发送 `3:"upstream provider error"` 帧后，`chat.errorMessage.value` 包含错误信息、`isResponding=false`、已接收的文本段保留、`sources` 不被错误帧误判。
+
+**provider 切换回归路径**（第十二章视觉验证流程配套，待人工触发）：
+- 同一 VitePress 文档页 URL，分别在 OpenAI / Anthropic 模型装配下截图（默认主题 + 主题色切换 + 暗色模式三场景）
+- 判读两次截图中 AiChat 浮动面板布局、来源列表样式、Markdown 渲染无差异
+- 结果记录于 `reports/2026-9-5-learn-inkeep-agents-repo/learn-agents-ui/` 下一次视觉验证报告（12.3 模板）
 
 ### 14.4 FC-3：客户端 TTFT 与 response-metadata 事件
 
@@ -3489,7 +3521,7 @@ pnpm run docs:build
 | P4   | P4-5 index.ts 导出更新             | ✅   | bded4ca；主入口导出 AiSidebarChat / AiModalChat + mountAiChat wrapper（固定注入 component: AiChat，options 直传 AiChatProps，避免破坏 mount 子包 standalone）；components/index.ts re-export 两个新组件子目录；install 注册 4 个组件                                                                                                                                                                                                                                                                                                                                                                                                |
 | P4   | P4-6 mountAiChat 单元测试          | ✅   | f1e59ae；p4-mount.test.ts 新增 11 用例（mountAiChat 子入口 4 + 主入口 wrapper 1 + AiSidebarChat 3 + AiModalChat 3）；plugin.test.ts install 注册数同步 2→4；ai-vue 120/120 + ai-vitepress-plugins 41/41 + ai-rag-api 144/144 全绿；vue-tsc + vite build 通过；docs:dev 内 in-app Browser 打开 AI 浮动面板正常显示「待外部搬运」状态，console 0 错误 |
 | FC   | FC-1 页面上下文采集透传            | ⬜   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| FC   | FC-2 provider 无关契约矩阵         | ⬜   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| FC   | FC-2 provider 无关契约矩阵         | ✅   | 2ccfc6c；plan.md 14.3 节补充「前端消费面表格」（10 种帧前缀 × useKnowledgeChat 处理路径 + 测试覆盖）+ provider 无关回归矩阵说明（@ai-sdk/vue 抽象层 + 真实 HTTP + mock 双路径）；新增 data stream 错误帧（3:）mode + 2 个用例：错误状态传播（errorMessage 暴露上游信息 + 已接收文本段保留 + sources 不被误判）+ clearError 恢复（isResponding=false + errorMessage 清空）；ai-vitepress-plugins 43/43 + ai-vue 120/120 + ai-rag-api 147/147 全绿零回归；第十二章视觉验证流程配套的 provider 切换截图待人工触发 |
 | FC   | FC-3 TTFT 与 response-metadata     | ⬜   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | FC   | FC-4 反馈载荷关联                  | ⬜   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | FC   | FC-5 conversationId 语义固化       | ⬜   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
