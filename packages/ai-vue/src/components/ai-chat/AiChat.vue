@@ -48,6 +48,11 @@ const lastAssistantMessageId = computed(
 );
 /** 已反馈过的消息 ID 集合：避免重复反馈 */
 const feedbackSubmitted = ref<Set<string>>(new Set());
+/** FC-4 接入：会话级 conversationId，AI 对话面板内反馈载荷携带此 ID 供后端 qa_records 关联。
+ *  默认 "knowledge-chat" 与 ai-vitepress-plugins useKnowledgeChat 默认值一致；
+ *  未来若 AiChatProps 开放 conversationId prop，可改为从 props 注入以避免硬编码。
+ */
+const conversationId = "knowledge-chat";
 let reducedMotionMediaQuery: MediaQueryList | undefined;
 
 /** 品牌主题上下文：cssVars 绑定根节点使 --ai-chat-* 变量随 brandTheme prop 生效；未传 prop 时 useBrandTheme 内部缺省回落默认品牌色 #3b82f6。isDark 由 useThemeColor 注入，跟随 Teek / VitePress 的 html.dark 切换。 */
@@ -155,9 +160,11 @@ function handleFeedbackSubmit(payload: FeedbackPayload) {
 	feedbackSubmitted.value.add(payload.messageId);
 	// 触发 Vue 响应式更新（Set 替换而非 add）
 	feedbackSubmitted.value = new Set(feedbackSubmitted.value);
-	emit("feedback", payload);
-	props.feedbackOptions?.onSubmit?.(payload);
-	emitFeedbackEvent(payload.type, payload.messageId, payload.details);
+	/** FC-4：补充会话级 conversationId，确保反馈载荷可定位一条问答记录 */
+	const fullPayload: FeedbackPayload = { ...payload, conversationId };
+	emit("feedback", fullPayload);
+	props.feedbackOptions?.onSubmit?.(fullPayload);
+	emitFeedbackEvent(fullPayload.type, fullPayload.messageId, fullPayload.details, fullPayload.conversationId);
 }
 
 /** 处理消息操作点击 */
