@@ -1,9 +1,19 @@
-import { createSourceUrl, resolveSourceHref } from "@ruan-cat-drill-doc/ai-rag-core";
+import { createSourceUrl, pageContextSchema, resolveSourceHref } from "@ruan-cat-drill-doc/ai-rag-core";
 import { z } from "zod";
+import { assembleChatContext } from "../context/sources";
+import { buildSystemPrompt } from "../context/prompt-template";
+
+/**
+ * 当前站点标识：用于 system prompt 的 site 字段。
+ * 后续若需运行时配置，可从 RagRuntimeContext.config 透传。
+ */
+const SITE_NAME = "SmallAliceWeb";
 
 export const chatRequestSchema = z.object({
 	message: z.string().trim().min(1).max(4_000),
 	conversationId: z.string().trim().min(1).max(128).optional(),
+	/** 客户端页面上下文（FC-1 透传），缺失或非法时 400 拦截，不阻断成功后端响应。 */
+	pageContext: pageContextSchema.optional(),
 });
 
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
@@ -126,7 +136,11 @@ export async function handleChatRequest(
 			sourceUrl: createSourceUrl(source.sourcePath),
 			sourceHref: resolveSourceHref(source),
 		}));
-		const system = `你是知识库问答助手。根据以下参考资料回答问题。\n如果资料不足，说明「根据现有资料无法回答」。\n\n参考资料：\n${sources.map((source, index) => `[${index + 1}] ${source.content}`).join("\n\n")}`;
+		const context = assembleChatContext(parsed.data.pageContext, SITE_NAME);
+		const system = buildSystemPrompt(
+			context,
+			sources.map((source) => source.content),
+		);
 
 		const response = await deps.stream({
 			...parsed.data,
