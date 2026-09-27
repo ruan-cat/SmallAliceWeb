@@ -5,6 +5,8 @@ import { Bubble, BubbleList, ConfigProvider, XSender } from "vue-element-plus-x"
 import type { ModelValue } from "vue-element-plus-x/types/XSender";
 import { useBrandTheme } from "../../composables/useBrandTheme";
 import { useMockAiChat } from "../../composables/useMockAiChat";
+import { AI_CHAT_SHADOW_STYLES } from "../../styles/shadow-scoped";
+import AiShadowRoot from "../ai-shadow-root/AiShadowRoot.vue";
 import type { AiChatEmits, AiChatMessage, AiChatProps } from "./types";
 
 type AiChatBubbleItem = AiChatMessage & {
@@ -14,6 +16,7 @@ type AiChatBubbleItem = AiChatMessage & {
 const props = withDefaults(defineProps<AiChatProps>(), {
 	placeholder: "请输入消息",
 	mode: "mock",
+	variant: "no-shadow",
 });
 const emit = defineEmits<AiChatEmits>();
 
@@ -46,6 +49,27 @@ const vepxThemeOverrides = computed(() => ({
 		"color-primary": colorScheme.value.strong,
 	},
 }));
+
+/**
+ * SSR 安全判定：VitePress 构建时 document 不存在，
+ * 此时 attachShadow / StyleSheet 等 DOM API 不可用，必须降级为 no-shadow。
+ */
+const isSSR = computed(() => typeof window === "undefined" || typeof document === "undefined");
+
+/** 是否启用 Shadow DOM 隔离：variant 显式开启且非 SSR。 */
+const shouldUseShadow = computed(() => props.variant === "container-with-shadow" && !isSSR.value);
+
+/**
+ * Shadow 模式下注入 Shadow Root 的样式：CSS 变量以 `:host` 暴露，
+ * 使 Shadow Root 内的 .ai-chat 节点能继承宿主桥接的 brand tokens。
+ */
+const shadowStyles = computed(() => {
+	if (!shouldUseShadow.value) return "";
+	const hostVars = Object.entries(cssVars.value)
+		.map(([key, value]) => `  ${key}: ${value};`)
+		.join("\n");
+	return `:host {\n${hostVars}\n}\n${AI_CHAT_SHADOW_STYLES}`;
+});
 
 /** 将系统减少动态效果偏好映射为 Markdown 渲染节奏。 */
 function updateReducedMotionPreference(event?: MediaQueryListEvent) {
@@ -109,7 +133,80 @@ function handleStop() {
 
 <template>
 	<ConfigProvider :theme="isDark ? 'dark' : 'light'" :theme-overrides="vepxThemeOverrides" apply-to="self">
-		<section class="ai-chat" aria-label="AI 对话" :style="cssVars">
+		<!-- Shadow DOM 隔离：把整个 .ai-chat 节点搬到 Shadow Root 内，宿主页面 CSS 无法穿透。
+		     enabled=false（variant='no-shadow' 或 SSR）时降级为普通 light DOM 渲染，行为与之前完全一致。 -->
+		<AiShadowRoot v-if="shouldUseShadow" :styles="shadowStyles" mode="open">
+			<section class="ai-chat" aria-label="AI 对话">
+				<div class="ai-chat__messages" aria-live="polite">
+					<div v-if="errorMessage" class="ai-chat__error" role="alert">
+						<span>{{ errorMessage }}</span>
+						<button type="button" class="ai-chat__error-dismiss" aria-label="关闭错误提示" @click="emit('clear-error')">
+							关闭
+						</button>
+					</div>
+					<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
+						<template #content>
+							<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
+							<p class="ai-chat__empty-title">暂无消息</p>
+							<p class="ai-chat__empty-description">问一个和当前文档有关的问题。</p>
+						</template>
+					</Bubble>
+
+					<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
+						<template #content="{ item }">
+							<span v-if="item.role === 'user'">{{ item.content }}</span>
+							<MarkdownRender
+								v-else
+								mode="chat"
+								:content="item.content"
+								:final="isAssistantMessageFinal(item)"
+								html-policy="escape"
+								:smooth-streaming="smoothStreaming"
+								:typewriter="!prefersReducedMotion"
+								:fade="false"
+							/>
+						</template>
+
+						<template #footer="{ item }">
+							<nav v-if="item.sources?.length" class="ai-chat__sources" aria-label="参考资料">
+								<a
+									v-for="source in item.sources"
+									:key="source.id"
+									class="ai-chat__source"
+									:href="source.sourceHref"
+									rel="noopener noreferrer"
+								>
+									{{ source.label }}
+								</a>
+							</nav>
+						</template>
+					</BubbleList>
+				</div>
+
+				<button
+					v-if="props.mode === 'external' && displayedResponding"
+					type="button"
+					class="ai-chat__stop"
+					aria-label="停止生成"
+					@click="handleStop"
+				>
+					停止生成
+				</button>
+
+				<slot name="notification-control" />
+
+				<XSender
+					ref="senderRef"
+					:loading="displayedResponding"
+					:placeholder="placeholder"
+					submit-type="enter"
+					@submit="handleXSenderSubmit"
+					@cancel="handleStop"
+				/>
+			</section>
+		</AiShadowRoot>
+
+		<section v-else class="ai-chat" aria-label="AI 对话" :style="cssVars">
 			<div class="ai-chat__messages" aria-live="polite">
 				<div v-if="errorMessage" class="ai-chat__error" role="alert">
 					<span>{{ errorMessage }}</span>

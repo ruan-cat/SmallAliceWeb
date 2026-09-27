@@ -27,6 +27,8 @@ export interface AiChatProps {
 	mockDelay?: number;
 	/** 品牌主题配置：驱动 --ai-chat-* CSS 变量派生与 vepx 品牌色覆盖；缺省时使用默认品牌色 #3b82f6。普通对象配置在挂载时按快照语义取值。 */
 	brandTheme?: BrandThemeConfig;
+	/** 样式隔离模式；container-with-shadow 时把内容渲染到 Shadow Root 内，宿主 CSS 不影响组件。SSR 下强制 no-shadow。 */
+	variant?: "no-shadow" | "container-with-shadow";
 }
 
 export type AiChatEmits = {
