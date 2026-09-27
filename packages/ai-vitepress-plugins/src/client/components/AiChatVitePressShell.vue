@@ -3,6 +3,7 @@ import { AiChatFloatingButton } from "@ruan-cat-drill-doc/ai-vue";
 import { withBase } from "vitepress";
 import { onMounted, ref } from "vue";
 import { useChatCompletionAttention } from "../composables/useChatCompletionAttention";
+import { collectPageContext } from "../composables/collectPageContext";
 import { useKnowledgeChat } from "../composables/useKnowledgeChat";
 
 const isMounted = ref(false);
@@ -15,6 +16,8 @@ const attention = useChatCompletionAttention({
 const { permission, canRequestPermission, requestPermission } = attention;
 const { messages, isResponding, errorMessage, send, stop, clearError } = useKnowledgeChat("knowledge-chat", {
 	onResponseComplete: attention.markCompleted,
+	/** FC-1 接入：每次 send 时按需采集最新 pageContext；SSR 阶段返回 undefined 不发该字段 */
+	getPageContext: () => collectPageContext(),
 });
 
 /** 在客户端挂载后渲染对话入口，保持 VitePress SSR 输出稳定。 */

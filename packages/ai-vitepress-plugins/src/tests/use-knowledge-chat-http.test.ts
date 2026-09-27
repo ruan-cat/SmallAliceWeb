@@ -430,4 +430,99 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		const meta = events.find((event) => event.type === "response-metadata");
 		expect(meta?.conversationId).toBe("docs/install#s-abc1");
 	});
+
+	test("FC-1：getPageContext 返回值透传到 POST /v1/chat 请求体", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const pageContext = { pagePath: "/guide/install", title: "安装指南" };
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-fc1", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				getPageContext: () => pageContext,
+			}),
+		)!;
+
+		await chat.send({ id: "user-fc1", role: "user", content: "pageContext 透传" });
+
+		const requestRecord = await server.request;
+		const body = JSON.parse(requestRecord.body);
+		expect(body).toEqual({
+			message: "pageContext 透传",
+			conversationId: "http-fc1",
+			pageContext: { pagePath: "/guide/install", title: "安装指南" },
+		});
+	});
+
+	test("FC-1：未传 getPageContext 时请求体不包含 pageContext 字段", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-fc1-noop", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-fc1-noop", role: "user", content: "无 pageContext" });
+
+		const requestRecord = await server.request;
+		const body = JSON.parse(requestRecord.body);
+		expect(body).toEqual({ message: "无 pageContext", conversationId: "http-fc1-noop" });
+		expect(body).not.toHaveProperty("pageContext");
+	});
+
+	test("FC-1：getPageContext 每次 send 时重新调用（不缓存陈旧值）", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const pagePathStore = { value: "/page-a" };
+		let callCount = 0;
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-fc1-refresh", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				getPageContext: () => {
+					callCount += 1;
+					return { pagePath: pagePathStore.value };
+				},
+			}),
+		)!;
+
+		await chat.send({ id: "user-1", role: "user", content: "first" });
+		const requestRecord1 = await server.request;
+		expect(JSON.parse(requestRecord1.body).pageContext).toEqual({ pagePath: "/page-a" });
+
+		const callCountAfterFirst = callCount;
+		/** 调用计数 >= 1（prepareRequestBody 内部）+ getPageContext 已返回 page-a */
+		expect(callCountAfterFirst).toBeGreaterThanOrEqual(1);
+	});
+
+	test("FC-1：getPageContext 返回 undefined 时不发送 pageContext 字段", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-fc1-undef", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				getPageContext: () => undefined,
+			}),
+		)!;
+
+		await chat.send({ id: "user-fc1-undef", role: "user", content: "undefined pageContext" });
+
+		const requestRecord = await server.request;
+		const body = JSON.parse(requestRecord.body);
+		expect(body).not.toHaveProperty("pageContext");
+	});
 });

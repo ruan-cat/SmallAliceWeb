@@ -1,5 +1,6 @@
 import { useChat } from "@ai-sdk/vue";
 import type { AiChatMessage, AiChatSource, ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
+import type { PageContext } from "@ruan-cat-drill-doc/ai-rag-core";
 import { computed, ref, watch } from "vue";
 
 type SourceFrame = {
@@ -32,6 +33,13 @@ export type KnowledgeChatOptions = {
 	 * 旧消费方忽略即可（plan 14.6「现有 emit 契约不变」）。
 	 */
 	onChatEvent?: (event: ChatEvent) => void;
+	/**
+	 * 客户端页面上下文（FC-1 接入）：由宿主采集当前 VitePress 文档页元数据，
+	 * 每次 send 时调用 getPageContext 重采最新 pagePath / title / keywords；
+	 * 缺失或非法时由后端 pageContextSchema 拦截，前端不重试、不阻断
+	 * （spec 11.6 验证层纪律 + plan 14.2「requiredToFetch 降级语义」）。
+	 */
+	getPageContext?: () => PageContext | undefined;
 };
 
 /** 解析文档站聊天 API，生产环境可通过 VITE_RAG_API_BASE 指向独立 Nitro 域名。 */
@@ -153,9 +161,15 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		fetch: sourceAwareFetch,
 		experimental_prepareRequestBody({ messages }) {
 			const latestMessage = messages.at(-1);
+			/**
+			 * 每次 send 时按需采集最新 pageContext；
+			 * 宿主未传 getPageContext 时（向后兼容）跳过 pageContext 字段。
+			 */
+			const pageContext = options.getPageContext?.();
 			return {
 				message: typeof latestMessage?.content === "string" ? latestMessage.content : "",
 				conversationId,
+				...(pageContext ? { pageContext } : {}),
 			};
 		},
 	});
