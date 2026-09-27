@@ -93,7 +93,19 @@ export async function collectSourceFrames(
 	if (buffer) consumeLine(buffer.trimEnd());
 }
 
-/** 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。 */
+/**
+ * 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。
+ *
+ * @param conversationId 会话追溯标识（FC-5）：
+ *   - 默认 `"knowledge-chat"` 向后兼容：所有 VitePress 页面共享同一会话分组，
+ *     适合无状态的"单轮问答"使用方式
+ *   - 宿主可传入页面级 ID 提升回流粒度：示例 `docs/getting-started#s-3f9a`（即
+ *     `${pagePath}#${sessionSeed}`），让后端 qa_records 与评估运行能按页面分组
+ *   - **仅作追溯分组标识，不携带历史注入语义**：前端不会基于该 ID 注入历史消息；
+ *     多轮能力由宿主（sessionStorage / 路由状态）自行管理，本函数不强制实现
+ *   - 该 ID 出现在请求体（experimental_prepareRequestBody）、日志（Nitro 终端）
+ *     与 ai-vue response-metadata 事件（FC-3），形成完整的回链
+ */
 export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const capturedSources = ref<AiChatSource[]>([]);
 	const emit = options.onChatEvent;
@@ -217,7 +229,13 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		};
 		chat.setData(undefined);
 		capturedSources.value = [];
-		await chat.append({ ...message, content });
+		/**
+		 * ai-vue AiChatMessage 携带 sources/component/itemType/data 等渲染指令，
+		 * @ai-sdk/vue 的 CreateMessage 不识别这些字段——AI SDK 不会读它们，丢失不影响 chat 行为。
+		 * 显式 narrow 出 id/role/content 三字段后再 cast，避免触发 noUnusedParameters 等隐性问题。
+		 */
+		const sdkMessage = { id: message.id, role: message.role, content } as Parameters<typeof chat.append>[0];
+		await chat.append(sdkMessage);
 
 		const request = activeRequest.value;
 		if (!request || request.requestId !== requestId || request.stopped || request.completionNotified) return;

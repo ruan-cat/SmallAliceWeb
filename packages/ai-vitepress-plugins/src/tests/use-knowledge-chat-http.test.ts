@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
+import type { ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
 import { collectSourceFrames, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
 type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first" | "error-frame";
@@ -321,11 +322,11 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		await chat.send({ id: "user-fc3", role: "user", content: "TTFT 测量" });
 		await waitFor(() => events.length > 0);
 
-		const meta = events.find((event): event is { type: string; properties?: { ttftMs?: number } } => {
+		const meta = events.find((event): event is ChatEvent => {
 			return typeof event === "object" && event !== null && (event as { type?: string }).type === "response-metadata";
 		});
 		expect(meta).toBeDefined();
-		expect(meta?.properties?.ttftMs).toBeGreaterThanOrEqual(0);
+		expect((meta?.properties?.ttftMs as number | undefined) ?? 0).toBeGreaterThanOrEqual(0);
 		/** 旧消费方零感知：response-metadata 是新增事件类型，旧字段（type/messageId/conversationId/tags/properties）保持通用 */
 		expect(meta?.conversationId).toBe("http-fc3");
 		expect(meta?.tags).toContain("response");
@@ -368,5 +369,65 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 			chat.send({ id: "user-fc3-noop", role: "user", content: "无回调" }),
 		).resolves.not.toThrow();
 		expect(chat.messages.value.at(-1)?.content).toContain("第一段");
+	});
+
+	test("FC-5：默认 conversationId 'knowledge-chat' 透传到请求体", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat(undefined, { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-default-conv", role: "user", content: "默认 ID 测试" });
+
+		const requestRecord = await server.request;
+		expect(JSON.parse(requestRecord.body)).toEqual({
+			message: "默认 ID 测试",
+			conversationId: "knowledge-chat",
+		});
+	});
+
+	test("FC-5：宿主传入页面级 conversationId（含 # 种子）完整透传", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const pageLevelId = "docs/getting-started#s-3f9a";
+		const chat = scope.run(() => useKnowledgeChat(pageLevelId, { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-page-conv", role: "user", content: "页面级 ID 测试" });
+
+		const requestRecord = await server.request;
+		expect(JSON.parse(requestRecord.body)).toEqual({
+			message: "页面级 ID 测试",
+			conversationId: "docs/getting-started#s-3f9a",
+		});
+	});
+
+	test("FC-5：response-metadata 事件携带 conversationId（回链贯通）", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const events: { type: string; conversationId?: string }[] = [];
+		const chat = scope.run(() =>
+			useKnowledgeChat("docs/install#s-abc1", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onChatEvent: (event) => events.push(event as { type: string; conversationId?: string }),
+			}),
+		)!;
+
+		await chat.send({ id: "user-trace", role: "user", content: "回链贯通" });
+		await waitFor(() => events.some((event) => event.type === "response-metadata"));
+
+		const meta = events.find((event) => event.type === "response-metadata");
+		expect(meta?.conversationId).toBe("docs/install#s-abc1");
 	});
 });
