@@ -45,6 +45,13 @@ describe("useBrandTheme", () => {
 		expect(cssVars.value["--ai-chat-zIndex-floating"]).toBe("1000");
 	});
 
+	test("cssVars 不产出面板正文变量（--ai-chat-text / --ai-chat-text-muted 归 index.scss 所有）", () => {
+		const { cssVars } = useBrandTheme({ primaryBrandColor: "#3b82f6" });
+		// 色阶 textBold / textSubtle 刻意不映射，避免派生深色文字内联覆盖暗色面板的浅色正文
+		expect(cssVars.value).not.toHaveProperty("--ai-chat-text");
+		expect(cssVars.value).not.toHaveProperty("--ai-chat-text-muted");
+	});
+
 	test("自定义 prefix 改变所有 CSS 变量前缀", () => {
 		const { cssVars, prefix } = useBrandTheme({ prefix: "my-brand" });
 		expect(prefix.value).toBe("my-brand");

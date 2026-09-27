@@ -1,3 +1,5 @@
+import type { BrandThemeConfig } from "../../theme/types";
+
 export type AiChatRole = "user" | "assistant";
 
 export interface AiChatMessage {
@@ -23,6 +25,8 @@ export interface AiChatProps {
 	mode?: "mock" | "external";
 	placeholder?: string;
 	mockDelay?: number;
+	/** 品牌主题配置：驱动 --ai-chat-* CSS 变量派生与 vepx 品牌色覆盖；缺省时使用默认品牌色 #3b82f6。普通对象配置在挂载时按快照语义取值。 */
+	brandTheme?: BrandThemeConfig;
 }
 
 export type AiChatEmits = {

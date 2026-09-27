@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import type { AiChatEmits, AiChatProps } from "./types";
+import { useBrandTheme } from "../../composables/useBrandTheme";
 import { onMounted, ref } from "vue";
 import AiChat from "./AiChat.vue";
 
-const props = defineProps<Pick<AiChatProps, "messages" | "isResponding" | "errorMessage">>();
+const props = defineProps<Pick<AiChatProps, "messages" | "isResponding" | "errorMessage" | "brandTheme">>();
 const emit = defineEmits<AiChatEmits>();
 const isMounted = ref(false);
 const isOpen = ref(false);
+
+/** 品牌主题上下文：trigger 与 dock header 位于 .ai-chat 作用域之外（靠 --ai-chat-* 兜底取色），在其根部绑定 cssVars 使变量作用域覆盖整个悬浮组件。 */
+const { cssVars } = useBrandTheme(props.brandTheme);
 
 /** 在客户端挂载后启用悬浮入口，避免服务端渲染不一致。 */
 onMounted(() => {
@@ -25,7 +29,12 @@ function closeDock() {
 </script>
 
 <template>
-	<div v-if="isMounted" class="ai-chat-floating-button" :class="{ 'ai-chat-floating-button--open': isOpen }">
+	<div
+		v-if="isMounted"
+		class="ai-chat-floating-button"
+		:class="{ 'ai-chat-floating-button--open': isOpen }"
+		:style="cssVars"
+	>
 		<aside
 			v-if="isOpen"
 			id="ai-chat-floating-button-dock"
@@ -48,6 +57,7 @@ function closeDock() {
 				</header>
 				<AiChat
 					mode="external"
+					:brand-theme="props.brandTheme"
 					:messages="props.messages"
 					:is-responding="props.isResponding"
 					:error-message="props.errorMessage"

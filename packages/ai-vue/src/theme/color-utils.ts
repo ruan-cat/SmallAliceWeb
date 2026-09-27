@@ -241,13 +241,19 @@ export function deriveColorScheme(primaryBrandColor: string): ColorScheme {
  * 将色板转换为 CSS 变量对象。
  * 变量名为 `--{prefix}-{语义键}` 形式（语义键为 kebab-case），
  * 可直接通过 :style 绑定到组件根元素。
+ *
+ * 色板只负责 surface / primary 族变量。面板正文变量 `--{prefix}-text` 与
+ * `--{prefix}-text-muted` 归组件样式（index.scss）所有（默认浅色文字配暗色面板），
+ * 色阶 textBold / textSubtle 刻意不映射产出，避免默认无参使用时派生的深色文字
+ * 内联覆盖暗色面板正文导致不可读。
+ *
  * @param scheme 色板
  * @param prefix CSS 变量前缀，默认 'ai-chat'
  * @returns CSS 变量对象，如 { "--ai-chat-primary": "#3b82f6" }
  */
 export function colorSchemeToCssVars(scheme: ColorScheme, prefix = "ai-chat"): Record<string, string> {
 	const vars: Record<string, string> = {};
-	const keyMap: Record<keyof ColorScheme, string> = {
+	const keyMap: Partial<Record<keyof ColorScheme, string>> = {
 		lighter: "surface-lighter",
 		light: "surface-light",
 		lightSubtle: "surface-light-subtle",
@@ -256,8 +262,6 @@ export function colorSchemeToCssVars(scheme: ColorScheme, prefix = "ai-chat"): R
 		strongerLight: "surface-stronger-light",
 		strong: "primary",
 		stronger: "primary-hover",
-		textBold: "text",
-		textSubtle: "text-muted",
 		textColorOnPrimary: "primary-contrast",
 	};
 	for (const [key, cssKey] of Object.entries(keyMap)) {

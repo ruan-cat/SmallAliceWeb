@@ -5,6 +5,7 @@ import "./styles/index.scss";
 
 export { AiChat, AiChatFloatingButton };
 export type { AiChatEmits, AiChatMessage, AiChatProps, AiChatRole, AiChatSource } from "./components";
+export type { BrandThemeConfig } from "./theme/types";
 export { useMockAiChat } from "./composables/useMockAiChat";
 export type { UseMockAiChatOptions } from "./composables/useMockAiChat";
 

@@ -118,8 +118,11 @@ describe("colorSchemeToCssVars", () => {
 		const vars = colorSchemeToCssVars(scheme);
 		expect(vars).toHaveProperty("--ai-chat-primary");
 		expect(vars["--ai-chat-primary"]).toMatch(/^#/);
-		// 11 个色阶全部映射为 CSS 变量
-		expect(Object.keys(vars)).toHaveLength(11);
+		// 9 个色阶映射为 CSS 变量：textBold / textSubtle 刻意不映射
+		expect(Object.keys(vars)).toHaveLength(9);
+		// 面板正文变量归 index.scss 所有，色板不产出（避免派生深色文字内联覆盖暗色面板浅色正文）
+		expect(vars).not.toHaveProperty("--ai-chat-text");
+		expect(vars).not.toHaveProperty("--ai-chat-text-muted");
 		// 语义键映射正确：strong→primary、stronger→primary-hover、light→surface-light
 		expect(vars["--ai-chat-primary"]).toBe(scheme.strong);
 		expect(vars["--ai-chat-primary-hover"]).toBe(scheme.stronger);

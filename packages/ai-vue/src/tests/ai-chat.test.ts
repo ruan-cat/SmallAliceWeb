@@ -396,4 +396,58 @@ describe("AiChat library adapters", () => {
 		await nextTick();
 		expect(onClearError).toHaveBeenCalledOnce();
 	});
+
+	describe("品牌主题接入", () => {
+		test("AiChat 根部绑定派生品牌 CSS 变量，缺省主色为默认品牌色", () => {
+			const host = mountAiChat({ mode: "external", messages: [] });
+			const section = host.querySelector<HTMLElement>(".ai-chat");
+
+			expect(section?.style.getPropertyValue("--ai-chat-primary")).toBe("#3b82f6");
+		});
+
+		test("brandTheme prop 驱动 --ai-chat-* 变量派生与 ConfigProvider 品牌色覆盖", () => {
+			const host = mountAiChat({
+				mode: "external",
+				messages: [],
+				brandTheme: { primaryBrandColor: "#e11d48" },
+			});
+			const section = host.querySelector<HTMLElement>(".ai-chat");
+			const provider = host.querySelector<HTMLElement>('[data-library-component="ConfigProvider"]');
+
+			expect(section?.style.getPropertyValue("--ai-chat-primary")).toBe("#e11d48");
+			expect(provider?.dataset.themeOverrides).toContain("#e11d48");
+		});
+
+		test("AiChatFloatingButton 根部绑定品牌变量作用域并透传 brandTheme 给 AiChat", async () => {
+			const host = mountFloatingButtonWithNotificationControl({
+				messages: [],
+				brandTheme: { primaryBrandColor: "#e11d48" },
+			});
+			await nextTick();
+			host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__trigger")?.click();
+			await nextTick();
+
+			const floatingRoot = host.querySelector<HTMLElement>(".ai-chat-floating-button");
+			const innerSection = host.querySelector<HTMLElement>(".ai-chat");
+
+			expect(floatingRoot?.style.getPropertyValue("--ai-chat-primary")).toBe("#e11d48");
+			expect(innerSection?.style.getPropertyValue("--ai-chat-primary")).toBe("#e11d48");
+		});
+
+		test("AiChatFloatingButton 可关闭已打开的对话 dock", async () => {
+			const host = mountFloatingButtonWithNotificationControl({ messages: [] });
+			await nextTick();
+
+			const trigger = host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__trigger");
+			trigger?.click();
+			await nextTick();
+			expect(host.querySelector(".ai-chat-floating-button__dock")).not.toBeNull();
+
+			host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__close")?.click();
+			await nextTick();
+
+			expect(host.querySelector(".ai-chat-floating-button__dock")).toBeNull();
+			expect(trigger?.getAttribute("aria-expanded")).toBe("false");
+		});
+	});
 });

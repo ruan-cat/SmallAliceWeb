@@ -3,6 +3,7 @@ import MarkdownRender from "markstream-vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Bubble, BubbleList, ConfigProvider, XSender } from "vue-element-plus-x";
 import type { ModelValue } from "vue-element-plus-x/types/XSender";
+import { useBrandTheme } from "../../composables/useBrandTheme";
 import { useMockAiChat } from "../../composables/useMockAiChat";
 import type { AiChatEmits, AiChatMessage, AiChatProps } from "./types";
 
@@ -37,12 +38,15 @@ const lastAssistantMessageId = computed(
 );
 let reducedMotionMediaQuery: MediaQueryList | undefined;
 
-/** 临时品牌色覆盖：键名为 vepx dist buildThemeVars 原样拼接的 --elx- 前缀 CSS 变量名（kebab-case）；P1 将替换为 useBrandTheme 色板派生输出。 */
-const brandThemeOverrides = {
+/** 品牌主题上下文：cssVars 绑定根节点使 --ai-chat-* 变量随 brandTheme prop 生效；未传 prop 时 useBrandTheme 内部缺省回落默认品牌色 #3b82f6。 */
+const { colorScheme, cssVars } = useBrandTheme(props.brandTheme);
+
+/** vepx ConfigProvider 主题覆盖：键名遵循 vepx dist buildThemeVars 原样拼接 --elx- 前缀的 kebab-case 约定；主色取派生色板的 strong（hex 归一化值），不从 cssVars 复用。 */
+const vepxThemeOverrides = computed(() => ({
 	common: {
-		"color-primary": "#3b82f6",
+		"color-primary": colorScheme.value.strong,
 	},
-};
+}));
 
 /** 将系统减少动态效果偏好映射为 Markdown 渲染节奏。 */
 function updateReducedMotionPreference(event?: MediaQueryListEvent) {
@@ -116,8 +120,8 @@ function handleStop() {
 </script>
 
 <template>
-	<ConfigProvider :theme="isDark ? 'dark' : 'light'" :theme-overrides="brandThemeOverrides" apply-to="self">
-		<section class="ai-chat" aria-label="AI 对话">
+	<ConfigProvider :theme="isDark ? 'dark' : 'light'" :theme-overrides="vepxThemeOverrides" apply-to="self">
+		<section class="ai-chat" aria-label="AI 对话" :style="cssVars">
 			<div class="ai-chat__messages" aria-live="polite">
 				<div v-if="errorMessage" class="ai-chat__error" role="alert">
 					<span>{{ errorMessage }}</span>
