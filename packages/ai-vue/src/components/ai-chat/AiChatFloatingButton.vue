@@ -4,7 +4,7 @@ import { useBrandTheme } from "../../composables/useBrandTheme";
 import { onMounted, ref } from "vue";
 import AiChat from "./AiChat.vue";
 
-const props = defineProps<Pick<AiChatProps, "messages" | "isResponding" | "errorMessage" | "brandTheme">>();
+const props = defineProps<Pick<AiChatProps, "messages" | "isResponding" | "errorMessage" | "brandTheme" | "variant">>();
 const emit = defineEmits<AiChatEmits>();
 const isMounted = ref(false);
 const isOpen = ref(false);
@@ -61,6 +61,7 @@ function closeDock() {
 					:messages="props.messages"
 					:is-responding="props.isResponding"
 					:error-message="props.errorMessage"
+					:variant="props.variant"
 					@send="emit('send', $event)"
 					@stop="emit('stop')"
 					@clear-error="emit('clear-error')"
