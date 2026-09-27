@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { effectScope, nextTick, type EffectScope } from "vue";
 import { collectSourceFrames, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
-type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first";
+type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first" | "error-frame";
 type RequestRecord = { body: string; aborted: boolean };
 
 type TestServer = {
@@ -80,6 +80,12 @@ async function createTestServer(mode: StreamMode): Promise<TestServer> {
 						`2:[{"type":"source","data":{"id":"source-${index}","label":"指南${index}","sourceHref":"/guide-${index}"}}]\n`,
 					);
 				}
+				res.end();
+				return;
+			}
+			if (mode === "error-frame") {
+				res.write('0:"第一段"\n');
+				res.write('3:"upstream provider error"\n');
 				res.end();
 				return;
 			}
@@ -254,5 +260,45 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		expect(chat.isResponding.value).toBe(false);
 		expect(chat.errorMessage.value).toBeUndefined();
 		expect(completed).not.toHaveBeenCalled();
+	});
+
+	test("data stream 错误帧（3:）触发错误状态 + errorMessage 暴露上游信息", async () => {
+		const server = await createTestServer("error-frame");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-error", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-error", role: "user", content: "上游错误测试" });
+		await waitFor(() => Boolean(chat.errorMessage.value));
+
+		/** 已接收的文本段保留下来，错误后流终止（用 toContain 容错流式合并追加） */
+		expect(chat.messages.value.at(-1)?.content).toContain("第一段");
+		expect(chat.isResponding.value).toBe(false);
+		expect(chat.errorMessage.value).toContain("upstream provider error");
+		/** 来源帧 0 命中时 collectSourceFrames 不应把错误帧误判为来源 */
+		expect(chat.messages.value.at(-1)?.sources).toBeUndefined();
+	});
+
+	test("clearError 后可继续发送新消息，errorMessage 清空", async () => {
+		const server = await createTestServer("error-frame");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-recover", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await chat.send({ id: "user-recover-1", role: "user", content: "触发错误" });
+		await waitFor(() => Boolean(chat.errorMessage.value));
+		expect(chat.errorMessage.value).toBeDefined();
+
+		chat.clearError();
+		await nextTick();
+		expect(chat.errorMessage.value).toBeUndefined();
+		/** isResponding 在错误后已为 false，再发新消息能继续 */
+		expect(chat.isResponding.value).toBe(false);
 	});
 });
