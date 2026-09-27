@@ -19,6 +19,8 @@ export interface FeedbackPayload {
 	type: FeedbackType;
 	messageId: string;
 	details?: string;
+	/** FC-4 接入：会话追溯 ID，可唯一定位一条问答记录供后端 qa_records 关联 */
+	conversationId: string;
 }
 
 /** 消息操作菜单项 */

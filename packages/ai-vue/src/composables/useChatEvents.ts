@@ -9,8 +9,8 @@ export interface UseChatEventsReturn {
 	emitUserMessage: (message: AiChatMessage) => void;
 	/** 助手回复展示事件 */
 	emitAssistantDisplayed: (message: AiChatMessage) => void;
-	/** 反馈提交事件 */
-	emitFeedback: (type: FeedbackType, messageId: string, details?: string) => void;
+	/** 反馈提交事件（FC-4 接入：可选 conversationId 供后端 qa_records 关联） */
+	emitFeedback: (type: FeedbackType, messageId: string, details?: string, conversationId?: string) => void;
 	/** 消息操作触发事件 */
 	emitMessageAction: (messageId: string, actionLabel: string) => void;
 	/** 示例问题选中事件 */
@@ -59,9 +59,10 @@ export function useChatEvents(onChatEvent?: ChatEventHandler): UseChatEventsRetu
 				},
 			});
 		},
-		emitFeedback(type, messageId, details) {
+		emitFeedback(type, messageId, details, conversationId) {
 			emitEvent({
 				type: "feedback_submitted",
+				...(conversationId !== undefined ? { conversationId } : {}),
 				messageId,
 				tags: ["chat", "feedback"],
 				properties: {
