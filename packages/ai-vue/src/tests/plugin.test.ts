@@ -5,7 +5,7 @@ import type { App } from "vue";
 vi.mock("vue-element-plus-x", () => ({ Bubble: {}, BubbleList: {}, ConfigProvider: {}, XSender: {} }));
 vi.mock("markstream-vue", () => ({ default: {} }));
 
-import plugin, { AiChat, AiChatFloatingButton, install } from "../index";
+import plugin, { AiChat, AiChatFloatingButton, AiModalChat, AiSidebarChat, install } from "../index";
 
 function createAppMock() {
 	const componentCalls: [string, unknown][] = [];
@@ -20,7 +20,7 @@ function createAppMock() {
 }
 
 describe("ai-vue plugin", () => {
-	test("the named install function registers both components", () => {
+	test("the named install function registers all components", () => {
 		const { app, componentCalls } = createAppMock();
 
 		install(app);
@@ -28,10 +28,12 @@ describe("ai-vue plugin", () => {
 		expect(componentCalls).toEqual([
 			["AiChat", AiChat],
 			["AiChatFloatingButton", AiChatFloatingButton],
+			["AiSidebarChat", AiSidebarChat],
+			["AiModalChat", AiModalChat],
 		]);
 	});
 
-	test("the default plugin installs both components", () => {
+	test("the default plugin installs all components", () => {
 		const { app, componentCalls } = createAppMock();
 
 		plugin.install(app);
@@ -39,6 +41,8 @@ describe("ai-vue plugin", () => {
 		expect(componentCalls).toEqual([
 			["AiChat", AiChat],
 			["AiChatFloatingButton", AiChatFloatingButton],
+			["AiSidebarChat", AiSidebarChat],
+			["AiModalChat", AiModalChat],
 		]);
 	});
 });
