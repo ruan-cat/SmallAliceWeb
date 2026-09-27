@@ -29,6 +29,21 @@ export interface MessageAction {
 	handler: (message: AiChatMessage) => void;
 }
 
+/** P3.5：内置结构化消息类型，配合 customRenderers 使用 */
+export type BuiltinItemType = "search-result" | "source-list";
+
+/** P3.5：SearchResultCard 卡片数据结构 */
+export interface SearchResultData {
+	title: string;
+	snippet: string;
+	sourceUrl: string;
+	sourceLabel: string;
+	/** 相关度 0~1 */
+	score?: number;
+	/** 文档标题层级路径 */
+	headingPath?: string[];
+}
+
 export interface AiChatMessage {
 	id: string;
 	role: AiChatRole;
@@ -36,6 +51,10 @@ export interface AiChatMessage {
 	sources?: AiChatSource[];
 	/** P3-1：富组件渲染指令（与 content 互斥；存在时跳过 Markdown 渲染） */
 	component?: CustomComponentDirective;
+	/** P3.5：结构化消息类型，按 itemType 在 builtinRenderers/customRenderers 中查找渲染器；存在时跳过 Markdown 渲染 */
+	itemType?: BuiltinItemType | string;
+	/** P3.5：传给 itemType 对应渲染器的结构化数据 */
+	data?: Record<string, unknown>;
 }
 
 /** 可展示、可跳转的 RAG 检索来源。 */
@@ -91,6 +110,8 @@ export interface AiChatProps {
 	variant?: "no-shadow" | "container-with-shadow";
 	/** P3-2：自定义消息渲染器注册表（按 name 映射到 Vue 组件） */
 	customComponents?: Record<string, Component>;
+	/** P3.5：结构化卡片渲染器注册表（按 itemType 映射到 Vue 组件）；与内置卡片合并，内置卡片可被同名自定义组件覆盖 */
+	customRenderers?: Record<string, Component>;
 	/** P3-4：示例问题列表（空状态展示） */
 	exampleQuestions?: string[];
 	/** P3-4：引导消息 */
