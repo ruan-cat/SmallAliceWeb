@@ -14,11 +14,12 @@ const attention = useChatCompletionAttention({
 	icon: withBase("/favicon.svg"),
 });
 const { permission, canRequestPermission, requestPermission } = attention;
-const { messages, isResponding, errorMessage, send, stop, clearError } = useKnowledgeChat("knowledge-chat", {
-	onResponseComplete: attention.markCompleted,
-	/** FC-1 接入：每次 send 时按需采集最新 pageContext；SSR 阶段返回 undefined 不发该字段 */
-	getPageContext: () => collectPageContext(),
-});
+const { messages, isResponding, errorMessage, send, stop, clearError, models, selectedProvider, selectModel } =
+	useKnowledgeChat("knowledge-chat", {
+		onResponseComplete: attention.markCompleted,
+		/** FC-1 接入：每次 send 时按需采集最新 pageContext；SSR 阶段返回 undefined 不发该字段 */
+		getPageContext: () => collectPageContext(),
+	});
 
 /** 在客户端挂载后渲染对话入口，保持 VitePress SSR 输出稳定。 */
 onMounted(() => {
@@ -34,9 +35,12 @@ onMounted(() => {
 			:is-responding="isResponding"
 			:error-message="errorMessage"
 			variant="container-with-shadow"
+			:models="models"
+			:selected-model-id="selectedProvider"
 			@send="send"
 			@stop="stop"
 			@clear-error="clearError"
+			@select-model="selectModel"
 		>
 			<template #notification-control>
 				<button

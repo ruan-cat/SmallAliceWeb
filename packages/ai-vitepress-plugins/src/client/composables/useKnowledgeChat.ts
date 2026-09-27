@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/vue";
-import type { AiChatMessage, AiChatSource, ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
+import type { AiChatMessage, AiChatModelOption, AiChatSource, ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
 import type { PageContext } from "@ruan-cat-drill-doc/ai-rag-core";
 import { computed, ref, watch } from "vue";
 
@@ -21,6 +21,10 @@ type ActiveRequest = {
 	completionNotified: boolean;
 };
 
+/** MS-3: localStorage 中持久化当前选中的 provider id 的键名。
+ *  仅存 UI 偏好，不携带会话语义；恢复时若不在当前列表则回退默认（plan 16.5 验证点）。 */
+const PROVIDER_STORAGE_KEY = "ai-chat-provider";
+
 export type KnowledgeChatOptions = {
 	/** 覆盖默认的本地聊天 API，便于文档站或本地集成测试使用。 */
 	api?: string;
@@ -40,6 +44,15 @@ export type KnowledgeChatOptions = {
 	 * （spec 11.6 验证层纪律 + plan 14.2「requiredToFetch 降级语义」）。
 	 */
 	getPageContext?: () => PageContext | undefined;
+	/**
+	 * MS-3: 注入初始模型列表（默认从 GET /v1.models 拉取）。
+	 * 用于测试或宿主自行管理模型来源时跳过网络请求。
+	 */
+	initialModels?: AiChatModelOption[];
+	/**
+	 * MS-3: 注入初始选中 provider。优先级高于 localStorage 与列表首项。
+	 */
+	initialProvider?: string;
 };
 
 /** 解析文档站聊天 API，生产环境可通过 VITE_RAG_API_BASE 指向独立 Nitro 域名。 */
@@ -117,6 +130,77 @@ export async function collectSourceFrames(
 export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const capturedSources = ref<AiChatSource[]>([]);
 	const emit = options.onChatEvent;
+
+	/** MS-3: 模型列表与当前选中 provider（来自 GET /v1.models + localStorage 持久化） */
+	const models = ref<AiChatModelOption[]>(options.initialModels ?? []);
+	/**
+	 * 初始 selectedProvider 解析优先级（仅在传 initialModels 时生效，避免测试污染 localStorage）：
+	 * 1. initialProvider（白名单校验：必须 ∈ models）
+	 * 2. localStorage 中存储的 provider（白名单校验：必须 ∈ models）
+	 * 3. 空串（请求体不携带 provider，由后端回退 activeProvider）
+	 *
+	 * 未传 initialModels 时，selectedProvider 初始化为空串，等待 loadModels 异步拉取后由
+	 * loadModels 内部完成 initialProvider > localStorage > list[0] 的恢复。
+	 */
+	let initialSelected = "";
+	if (options.initialModels) {
+		if (options.initialProvider && options.initialModels.some((item) => item.id === options.initialProvider)) {
+			initialSelected = options.initialProvider;
+		} else if (typeof localStorage !== "undefined") {
+			const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
+			if (stored && options.initialModels.some((item) => item.id === stored)) {
+				initialSelected = stored;
+			}
+		}
+	}
+	const selectedProvider = ref<string>(initialSelected);
+
+	/**
+	 * MS-3: 选择当前 provider。校验 id 必须在 models 列表内（白名单语义），
+	 * 写入选中态 + localStorage。responding 中切换仅改下一请求的 provider，
+	 * 当前流继续完成（plan 16.8 Q1 拍板）。
+	 */
+	function selectModel(id: string) {
+		if (!models.value.some((item) => item.id === id)) return;
+		selectedProvider.value = id;
+		if (typeof localStorage !== "undefined") {
+			localStorage.setItem(PROVIDER_STORAGE_KEY, id);
+		}
+	}
+
+	/**
+	 * MS-3: 客户端挂载后拉取 /v1/models；失败静默（models 保持空数组，
+	 * AiChat 选择器不渲染——向后兼容）；成功后用 list + localStorage 恢复 selectedProvider。
+	 *
+	 * - 优先级：initialProvider > localStorage 存储值（仍需在 list 内）> list 首项
+	 * - localStorage 脏值（注册表变更后残留 id 不在 list）回退默认，防漂移
+	 * - SSR 安全：typeof window 守卫，避免 VitePress 构建时 fetch 报错
+	 */
+	function loadModels() {
+		if (typeof window === "undefined" || typeof fetch === "undefined") return;
+		const fetcher = options.fetch ?? globalThis.fetch;
+		const chatApi = resolveKnowledgeChatApi(options.api);
+		/**
+		 * 仅在 chat api 是相对路径（生产环境 /v1/chat 派生 URL）时才自动拉取 /v1/models。
+		 * 测试环境通常传绝对 URL（http://127.0.0.1:NNNN），跳过自动拉取避免污染测试 server 行为。
+		 */
+		if (/^https?:\/\//i.test(chatApi)) return;
+		const modelsUrl = chatApi.replace(/\/chat$/, "/models");
+		void fetcher(modelsUrl)
+			.then((response) => (response.ok ? response.json() : undefined))
+			.then((payload) => {
+				const list: AiChatModelOption[] = Array.isArray(payload?.data?.models) ? payload.data.models : [];
+				models.value = list;
+				if (options.initialProvider && list.some((item) => item.id === options.initialProvider)) {
+					selectedProvider.value = options.initialProvider;
+					return;
+				}
+				const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
+				selectedProvider.value = list.some((item) => item.id === stored) ? stored! : list[0]?.id ?? "";
+			})
+			.catch(() => {});
+	}
+
 	const sourceAwareFetch: typeof fetch = async (input, init) => {
 		const fetcher = options.fetch ?? globalThis.fetch;
 		const requestStart = Date.now();
@@ -166,13 +250,29 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 			 * 宿主未传 getPageContext 时（向后兼容）跳过 pageContext 字段。
 			 */
 			const pageContext = options.getPageContext?.();
+			/**
+			 * MS-3: 注入当前选中的 provider（缺省时由后端回退 activeProvider）。
+			 * 该字段按 spec Requirement 8 进入白名单校验，非法值由后端 400 拒绝（plan 16.8 V3）。
+			 */
 			return {
 				message: typeof latestMessage?.content === "string" ? latestMessage.content : "",
 				conversationId,
 				...(pageContext ? { pageContext } : {}),
+				...(selectedProvider.value ? { provider: selectedProvider.value } : {}),
 			};
 		},
 	});
+	/**
+	 * MS-3: 立即异步拉取 /v1/models（满足 plan 16.5「void 立即调用」示意）。
+	 * - 宿主已传 initialModels 时跳过自动拉取（测试与受控场景）。
+	 * - 失败静默：models 保持空数组 / selectedProvider 保持空串，选择器不渲染。
+	 *
+	 * 注：仍保留由宿主主动控制的能力——返回 refreshModels 函数，宿主可按需手动触发
+	 * （如 SSR 阶段延迟到 onMounted、注册表变更后刷新等场景）。
+	 */
+	if (!options.initialModels) {
+		loadModels();
+	}
 	const activeRequest = ref<ActiveRequest>();
 	let nextRequestId = 0;
 	const sourcesByAssistantMessageId = ref<Record<string, AiChatSource[]>>({});
@@ -277,5 +377,5 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		chat.error.value = undefined;
 	}
 
-	return { messages, isResponding, errorMessage, send, stop, clearError };
+	return { messages, isResponding, errorMessage, send, stop, clearError, models, selectedProvider, selectModel, refreshModels: loadModels };
 }
