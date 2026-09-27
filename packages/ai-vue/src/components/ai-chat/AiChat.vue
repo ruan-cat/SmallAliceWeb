@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MarkdownRender from "markstream-vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import type { Component } from "vue";
 import { Bubble, BubbleList, ConfigProvider, XSender } from "vue-element-plus-x";
 import type { ModelValue } from "vue-element-plus-x/types/XSender";
 import { useBrandTheme } from "../../composables/useBrandTheme";
@@ -8,6 +9,8 @@ import { useChatEvents } from "../../composables/useChatEvents";
 import { useMockAiChat } from "../../composables/useMockAiChat";
 import { AI_CHAT_SHADOW_STYLES } from "../../styles/shadow-scoped";
 import AiShadowRoot from "../ai-shadow-root/AiShadowRoot.vue";
+import SearchResultCard from "./cards/SearchResultCard.vue";
+import SourceListCard from "./cards/SourceListCard.vue";
 import AiChatCustomRenderer from "./parts/AiChatCustomRenderer.vue";
 import AiChatExampleQuestions from "./parts/AiChatExampleQuestions.vue";
 import AiChatFeedback from "./parts/AiChatFeedback.vue";
@@ -176,6 +179,25 @@ const showFeedbackFor = (id: string) => Boolean(props.feedbackOptions?.enabled) 
 const showActionsFor = (message: AiChatMessage) =>
 	Boolean(props.messageActions?.length) && message.role === "assistant";
 
+/** P3.5：内置结构化卡片注册表；与 customRenderers 合并时，customRenderers 同名可覆盖内置实现 */
+const builtinRenderers: Record<string, Component> = {
+	"search-result": SearchResultCard,
+	"source-list": SourceListCard,
+};
+
+/** P3.5：合并内置与外部 customRenderers；外部覆盖内置 */
+const allDataRenderers = computed<Record<string, Component>>(() => ({
+	...builtinRenderers,
+	...props.customRenderers,
+}));
+
+/** P3.5：根据 message.itemType 解析结构化卡片渲染器；找不到则回退 Markdown */
+function resolveDataRenderer(item: AiChatMessage): Component | undefined {
+	const type = item.itemType;
+	if (!type) return undefined;
+	return allDataRenderers.value[type];
+}
+
 /** AiChat 主体内容：在 Shadow 与 Light 两个分支中复用 */
 defineSlots<{
 	"notification-control"(): unknown;
@@ -217,6 +239,12 @@ defineSlots<{
 								:component-props="item.component.props"
 								:message-id="item.id"
 								:custom-components="props.customComponents"
+							/>
+							<component
+								v-else-if="resolveDataRenderer(item)"
+								:is="resolveDataRenderer(item)"
+								:data="item.data"
+								:sources="item.sources"
 							/>
 							<MarkdownRender
 								v-else
@@ -312,6 +340,12 @@ defineSlots<{
 							:component-props="item.component.props"
 							:message-id="item.id"
 							:custom-components="props.customComponents"
+						/>
+						<component
+							v-else-if="resolveDataRenderer(item)"
+							:is="resolveDataRenderer(item)"
+							:data="item.data"
+							:sources="item.sources"
 						/>
 						<MarkdownRender
 							v-else
