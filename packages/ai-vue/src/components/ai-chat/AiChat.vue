@@ -4,10 +4,15 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Bubble, BubbleList, ConfigProvider, XSender } from "vue-element-plus-x";
 import type { ModelValue } from "vue-element-plus-x/types/XSender";
 import { useBrandTheme } from "../../composables/useBrandTheme";
+import { useChatEvents } from "../../composables/useChatEvents";
 import { useMockAiChat } from "../../composables/useMockAiChat";
 import { AI_CHAT_SHADOW_STYLES } from "../../styles/shadow-scoped";
 import AiShadowRoot from "../ai-shadow-root/AiShadowRoot.vue";
-import type { AiChatEmits, AiChatMessage, AiChatProps } from "./types";
+import AiChatCustomRenderer from "./parts/AiChatCustomRenderer.vue";
+import AiChatExampleQuestions from "./parts/AiChatExampleQuestions.vue";
+import AiChatFeedback from "./parts/AiChatFeedback.vue";
+import AiChatMessageActions from "./parts/AiChatMessageActions.vue";
+import type { AiChatEmits, AiChatMessage, AiChatProps, FeedbackPayload, MessageAction } from "./types";
 
 type AiChatBubbleItem = AiChatMessage & {
 	placement: "start" | "end";
@@ -38,6 +43,8 @@ const bubbleItems = computed<AiChatBubbleItem[]>(() =>
 const lastAssistantMessageId = computed(
 	() => [...displayedMessages.value].reverse().find((message) => message.role === "assistant")?.id,
 );
+/** 已反馈过的消息 ID 集合：避免重复反馈 */
+const feedbackSubmitted = ref<Set<string>>(new Set());
 let reducedMotionMediaQuery: MediaQueryList | undefined;
 
 /** 品牌主题上下文：cssVars 绑定根节点使 --ai-chat-* 变量随 brandTheme prop 生效；未传 prop 时 useBrandTheme 内部缺省回落默认品牌色 #3b82f6。isDark 由 useThemeColor 注入，跟随 Teek / VitePress 的 html.dark 切换。 */
@@ -70,6 +77,15 @@ const shadowStyles = computed(() => {
 		.join("\n");
 	return `:host {\n${hostVars}\n}\n${AI_CHAT_SHADOW_STYLES}`;
 });
+
+/** 事件聚合：onChatEvent prop 统一回调；缺省时为 no-op */
+const {
+	emitUserMessage,
+	emitAssistantDisplayed,
+	emitFeedback: emitFeedbackEvent,
+	emitMessageAction,
+	emitExampleQuestionSelected,
+} = useChatEvents(props.onChatEvent);
 
 /** 将系统减少动态效果偏好映射为 Markdown 渲染节奏。 */
 function updateReducedMotionPreference(event?: MediaQueryListEvent) {
@@ -122,6 +138,29 @@ function handleSend(content: string) {
 	}
 
 	emit("send", message);
+	emitUserMessage(message);
+}
+
+/** 处理示例问题点击：直接当作用户消息发送 */
+function handleExampleQuestionSelect(question: string) {
+	handleSend(question);
+	emitExampleQuestionSelected(question);
+}
+
+/** 处理反馈提交：更新已反馈集合 + emit 事件 + 调用回调 + 触发埋点 */
+function handleFeedbackSubmit(payload: FeedbackPayload) {
+	feedbackSubmitted.value.add(payload.messageId);
+	// 触发 Vue 响应式更新（Set 替换而非 add）
+	feedbackSubmitted.value = new Set(feedbackSubmitted.value);
+	emit("feedback", payload);
+	props.feedbackOptions?.onSubmit?.(payload);
+	emitFeedbackEvent(payload.type, payload.messageId, payload.details);
+}
+
+/** 处理消息操作点击 */
+function handleMessageAction(action: MessageAction, message: AiChatMessage) {
+	action.handler(message);
+	emitMessageAction(message.id, action.label);
 }
 
 /** 请求外部聊天状态管理器中止当前生成。 */
@@ -129,12 +168,23 @@ function handleStop() {
 	if (!displayedResponding.value) return;
 	emit("stop");
 }
+
+/** 是否展示反馈按钮（feedbackOptions.enabled 且助手消息） */
+const showFeedbackFor = (id: string) => Boolean(props.feedbackOptions?.enabled) && !feedbackSubmitted.value.has(id);
+
+/** 是否展示消息操作菜单 */
+const showActionsFor = (message: AiChatMessage) =>
+	Boolean(props.messageActions?.length) && message.role === "assistant";
+
+/** AiChat 主体内容：在 Shadow 与 Light 两个分支中复用 */
+defineSlots<{
+	"notification-control"(): unknown;
+}>();
 </script>
 
 <template>
 	<ConfigProvider :theme="isDark ? 'dark' : 'light'" :theme-overrides="vepxThemeOverrides" apply-to="self">
-		<!-- Shadow DOM 隔离：把整个 .ai-chat 节点搬到 Shadow Root 内，宿主页面 CSS 无法穿透。
-		     enabled=false（variant='no-shadow' 或 SSR）时降级为普通 light DOM 渲染，行为与之前完全一致。 -->
+		<!-- Shadow DOM 隔离分支 -->
 		<AiShadowRoot v-if="shouldUseShadow" :styles="shadowStyles" mode="open">
 			<section class="ai-chat" aria-label="AI 对话">
 				<div class="ai-chat__messages" aria-live="polite">
@@ -147,14 +197,27 @@ function handleStop() {
 					<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
 						<template #content>
 							<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
-							<p class="ai-chat__empty-title">暂无消息</p>
+							<p v-if="props.introMessage" class="ai-chat__empty-title">{{ props.introMessage }}</p>
+							<p v-else class="ai-chat__empty-title">暂无消息</p>
 							<p class="ai-chat__empty-description">问一个和当前文档有关的问题。</p>
 						</template>
 					</Bubble>
+					<AiChatExampleQuestions
+						v-if="props.exampleQuestions?.length && displayedMessages.length === 0"
+						:questions="props.exampleQuestions"
+						@select="handleExampleQuestionSelect"
+					/>
 
 					<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
 						<template #content="{ item }">
 							<span v-if="item.role === 'user'">{{ item.content }}</span>
+							<AiChatCustomRenderer
+								v-else-if="item.component"
+								:component-name="item.component.name"
+								:component-props="item.component.props"
+								:message-id="item.id"
+								:custom-components="props.customComponents"
+							/>
 							<MarkdownRender
 								v-else
 								mode="chat"
@@ -179,6 +242,17 @@ function handleStop() {
 									{{ source.label }}
 								</a>
 							</nav>
+							<AiChatFeedback
+								v-if="item.role === 'assistant' && showFeedbackFor(item.id)"
+								:message-id="item.id"
+								@submit="handleFeedbackSubmit"
+							/>
+							<AiChatMessageActions
+								v-if="showActionsFor(item)"
+								:message="item"
+								:actions="props.messageActions ?? []"
+								@action="(action, msg) => handleMessageAction(action, msg)"
+							/>
 						</template>
 					</BubbleList>
 				</div>
@@ -206,6 +280,7 @@ function handleStop() {
 			</section>
 		</AiShadowRoot>
 
+		<!-- Light DOM 渲染分支（默认 / SSR 降级） -->
 		<section v-else class="ai-chat" aria-label="AI 对话" :style="cssVars">
 			<div class="ai-chat__messages" aria-live="polite">
 				<div v-if="errorMessage" class="ai-chat__error" role="alert">
@@ -217,14 +292,27 @@ function handleStop() {
 				<Bubble v-if="displayedMessages.length === 0 && !displayedResponding" class="ai-chat__empty" content="">
 					<template #content>
 						<div class="ai-chat__empty-mark" aria-hidden="true">AI</div>
-						<p class="ai-chat__empty-title">暂无消息</p>
+						<p v-if="props.introMessage" class="ai-chat__empty-title">{{ props.introMessage }}</p>
+						<p v-else class="ai-chat__empty-title">暂无消息</p>
 						<p class="ai-chat__empty-description">问一个和当前文档有关的问题。</p>
 					</template>
 				</Bubble>
+				<AiChatExampleQuestions
+					v-if="props.exampleQuestions?.length && displayedMessages.length === 0"
+					:questions="props.exampleQuestions"
+					@select="handleExampleQuestionSelect"
+				/>
 
 				<BubbleList v-if="bubbleItems.length" class="ai-chat__bubble-list" :list="bubbleItems" :auto-scroll="false">
 					<template #content="{ item }">
 						<span v-if="item.role === 'user'">{{ item.content }}</span>
+						<AiChatCustomRenderer
+							v-else-if="item.component"
+							:component-name="item.component.name"
+							:component-props="item.component.props"
+							:message-id="item.id"
+							:custom-components="props.customComponents"
+						/>
 						<MarkdownRender
 							v-else
 							mode="chat"
@@ -249,6 +337,17 @@ function handleStop() {
 								{{ source.label }}
 							</a>
 						</nav>
+						<AiChatFeedback
+							v-if="item.role === 'assistant' && showFeedbackFor(item.id)"
+							:message-id="item.id"
+							@submit="handleFeedbackSubmit"
+						/>
+						<AiChatMessageActions
+							v-if="showActionsFor(item)"
+							:message="item"
+							:actions="props.messageActions ?? []"
+							@action="(action, msg) => handleMessageAction(action, msg)"
+						/>
 					</template>
 				</BubbleList>
 			</div>
