@@ -301,4 +301,72 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		/** isResponding 在错误后已为 false，再发新消息能继续 */
 		expect(chat.isResponding.value).toBe(false);
 	});
+
+	test("FC-3：首个流式 chunk 触发 response-metadata 事件，ttftMs > 0", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const events: unknown[] = [];
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-fc3", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onChatEvent: (event) => events.push(event),
+			}),
+		)!;
+
+		await chat.send({ id: "user-fc3", role: "user", content: "TTFT 测量" });
+		await waitFor(() => events.length > 0);
+
+		const meta = events.find((event): event is { type: string; properties?: { ttftMs?: number } } => {
+			return typeof event === "object" && event !== null && (event as { type?: string }).type === "response-metadata";
+		});
+		expect(meta).toBeDefined();
+		expect(meta?.properties?.ttftMs).toBeGreaterThanOrEqual(0);
+		/** 旧消费方零感知：response-metadata 是新增事件类型，旧字段（type/messageId/conversationId/tags/properties）保持通用 */
+		expect(meta?.conversationId).toBe("http-fc3");
+		expect(meta?.tags).toContain("response");
+	});
+
+	test("FC-3：同一请求仅触发一次 response-metadata（firstChunk 单次语义）", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const events: { type: string }[] = [];
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-fc3-once", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onChatEvent: (event) => events.push(event as { type: string }),
+			}),
+		)!;
+
+		await chat.send({ id: "user-fc3-once", role: "user", content: "TTFT 单次" });
+		await waitFor(() => events.some((event) => event.type === "response-metadata"));
+		await nextTick();
+
+		const metaEvents = events.filter((event) => event.type === "response-metadata");
+		expect(metaEvents).toHaveLength(1);
+	});
+
+	test("FC-3：未传 onChatEvent 时不抛错（旧消费方零感知）", async () => {
+		const server = await createTestServer("complete");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const chat = scope.run(() => useKnowledgeChat("http-fc3-noop", { api: server.url, fetch: globalThis.fetch }))!;
+
+		await expect(
+			chat.send({ id: "user-fc3-noop", role: "user", content: "无回调" }),
+		).resolves.not.toThrow();
+		expect(chat.messages.value.at(-1)?.content).toContain("第一段");
+	});
 });

@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/vue";
-import type { AiChatMessage, AiChatSource } from "@ruan-cat-drill-doc/ai-vue";
+import type { AiChatMessage, AiChatSource, ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
 import { computed, ref, watch } from "vue";
 
 type SourceFrame = {
@@ -27,6 +27,11 @@ export type KnowledgeChatOptions = {
 	fetch?: typeof globalThis.fetch;
 	/** 当前请求自然完成且产生新助手消息时触发一次。 */
 	onResponseComplete?: () => void;
+	/**
+	 * 统一事件回调（FC-3 接入）：首 chunk 延迟触发的 response-metadata 事件经此出口；
+	 * 旧消费方忽略即可（plan 14.6「现有 emit 契约不变」）。
+	 */
+	onChatEvent?: (event: ChatEvent) => void;
 };
 
 /** 解析文档站聊天 API，生产环境可通过 VITE_RAG_API_BASE 指向独立 Nitro 域名。 */
@@ -91,11 +96,34 @@ export async function collectSourceFrames(
 /** 为 VitePress 页面提供本地 RAG 聊天 transport、来源帧和可清除错误状态。 */
 export function useKnowledgeChat(conversationId = "knowledge-chat", options: KnowledgeChatOptions = {}) {
 	const capturedSources = ref<AiChatSource[]>([]);
+	const emit = options.onChatEvent;
 	const sourceAwareFetch: typeof fetch = async (input, init) => {
 		const fetcher = options.fetch ?? globalThis.fetch;
+		const requestStart = Date.now();
 		const response = await fetcher(input, init);
 		if (!response.body) return response;
-		const [captureStream, responseStream] = response.body.tee();
+		const [rawCapture, responseStream] = response.body.tee();
+		/**
+		 * 在 captureStream 上挂 TransformStream：首次非空 chunk 触发 response-metadata 事件，
+		 * ttftMs = firstChunkAt - requestStart。
+		 */
+		let firstChunkReported = false;
+		const captureStream = rawCapture.pipeThrough(
+			new TransformStream<Uint8Array, Uint8Array>({
+				transform(chunk, controller) {
+					if (!firstChunkReported) {
+						firstChunkReported = true;
+						emit?.({
+							type: "response-metadata",
+							conversationId,
+							tags: ["chat", "response", "metadata"],
+							properties: { ttftMs: Date.now() - requestStart },
+						});
+					}
+					controller.enqueue(chunk);
+				},
+			}),
+		);
 		void collectSourceFrames(captureStream, (nextSources) => {
 			const byId = new Map(capturedSources.value.map((source) => [source.id, source]));
 			for (const source of nextSources) byId.set(source.id, source);
