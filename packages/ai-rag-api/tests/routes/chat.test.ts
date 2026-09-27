@@ -78,6 +78,81 @@ describe("POST /v1/chat 合同", () => {
 		expect(streamed.system).toContain("[1] RAG 使用检索结果作为回答上下文。");
 		expect(await result.text()).toBe('0:"回答"\n');
 	});
+
+	test("合法 pageContext 注入 system：system 包含页面路径与防误引声明", async () => {
+		let streamed: ChatStreamRequest | undefined;
+		const dataStreamResponse = new Response('0:"回答"\n', {
+			headers: { "x-vercel-ai-data-stream": "v1" },
+		});
+		const result = await handleChatRequest(
+			{
+				message: "这个怎么配？",
+				pageContext: { pagePath: "/guide/install", title: "安装指南" },
+			},
+			{
+				retrieve: async () => [source],
+				stream: (request) => {
+					streamed = request;
+					return dataStreamResponse;
+				},
+			},
+		);
+
+		expect(result).toBeInstanceOf(Response);
+		if (!(result instanceof Response) || !streamed) throw new Error("合法 pageContext 应进入流式分支");
+		expect(streamed.system).toContain("/guide/install");
+		expect(streamed.system).toContain("安装指南");
+		/** 防误引声明：页面上下文段独立，模型不应把页面信息混入 [来源N] */
+		expect(streamed.system).toContain("【页面上下文】");
+		expect(streamed.system).toContain("不计入 [来源N] 编号");
+	});
+
+	test("非法 pageContext 返回 400 统一错误体，不进入检索或模型边界", async () => {
+		let retrieved = false;
+		const result = await handleChatRequest(
+			{
+				message: "这个怎么配？",
+				pageContext: { pagePath: "" },
+			},
+			{
+				retrieve: async () => {
+					retrieved = true;
+					return [];
+				},
+				stream: () => new Response(),
+			},
+		);
+
+		expect(result).not.toBeInstanceOf(Response);
+		expect(retrieved).toBe(false);
+		if (result instanceof Response) throw new Error("非法 pageContext 不应返回流响应");
+		expect(result).toEqual({ status: 400, body: { success: false, code: 400, message: "对话请求无效", data: null } });
+	});
+
+	test("缺失 pageContext 走基础模板（不含【页面上下文】段）", async () => {
+		let streamed: ChatStreamRequest | undefined;
+		const dataStreamResponse = new Response('0:"回答"\n', {
+			headers: { "x-vercel-ai-data-stream": "v1" },
+		});
+		const result = await handleChatRequest(
+			{ message: "什么是 RAG？" },
+			{
+				retrieve: async () => [source],
+				stream: (request) => {
+					streamed = request;
+					return dataStreamResponse;
+				},
+			},
+		);
+
+		expect(result).toBeInstanceOf(Response);
+		if (!(result instanceof Response) || !streamed) throw new Error("缺失 pageContext 应走基础模板分支");
+		/** 不应出现页面上下文段 */
+		expect(streamed.system).not.toContain("【页面上下文】");
+		/** 但基础模板仍在（参考资料段标识） */
+		expect(streamed.system).toContain("[1] RAG 使用检索结果作为回答上下文。");
+		expect(streamed.system).toContain("如果资料不足");
+	});
 });
 
 describe("POST /v1/chat Nitro 路由", () => {
