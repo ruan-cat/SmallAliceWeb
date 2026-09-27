@@ -3561,3 +3561,60 @@ pnpm --filter @ruan-cat-drill-doc/ai-rag-api run dev
 - 前端连本地 API：docs 侧 `.env` 设 `VITE_RAG_API_BASE=http://localhost:3000/v1/chat`（`useKnowledgeChat.ts:33-37` 的解析逻辑）；默认同源路径仅生产可用
 - 若请求被 CORS 拦截 → 检查 `ai-rag-api` 的 `rag-cors` 中间件对 `localhost:8080` 的放行配置
 - 联调验收示例（FC-1）：在文档页 A 提问「这个怎么配」→ Nitro 终端日志可见 pageContext 携带页面 A 路径
+
+---
+
+## 二十一、Agent Browser 实测清单（plan 与 spec 12.7 对接）[2026-09-27 补录]
+
+**适用范围**：第十九章 19.6 总表内任何 ⬜ → ✅ 的阶段都必须在合并前完成浏览器实测，禁止仅凭「控制台 0 错误」+「单张视觉截图」声称完成。本章与 spec 12.7「Agent Browser 实测方法学」对齐。
+
+### 21.1 工具与执行约定
+
+| 项目          | 取值                                                                                       |
+| :----------- | :----------------------------------------------------------------------------------------- |
+| 执行端        | in-app Browser（Google Chrome 内核，原生 Chromium 渲染管线；非 Playwright/headless 替代品）    |
+| 被测端        | 本地 docs:dev（端口 8080）+ 可选 ai-rag-api Nitro dev（端口 3000）                            |
+| 浏览器证据目录   | `reports/2026-9-5-learn-inkeep-agents-repo/learn-agents-ui/browser-evidence/<阶段代号>/`    |
+| 辅助工具原语     | `browser` 工具的 `navigate` / `click` / `inspect` / `query kind="console"` / `query kind="network"` / `screenshot` |
+
+### 21.2 各阶段浏览器实测必做清单
+
+**正向流程 + 边界条件 + 关键错误三态必测，缺一不可。** 每条断言都附 `browser` 工具调用 + ref/响应。
+
+| 阶段          | 正向流程                                                          | 边界条件                                                          | 关键错误                                                              |
+| :------------ | :---------------------------------------------------------------- | :---------------------------------------------------------------- | :------------------------------------------------------------------- |
+| P1.5 主题桥接  | 切换 Teek / VitePress / fallback 三模式                          | 主题色板颜色与 --ai-chat-primary 一致                                | html.dark 类移除后浅色 surface 不残留                                |
+| P2 Shadow DOM | 浮动 AI 面板打开后 .ai-chat 容器存在于 Shadow Root                | `attachShadow({ mode: 'closed' })` 容器外不可查内部节点            | brand primary 缺失时不卡死                                            |
+| P3 富聊天    | 真实发送一条问答触发流式渲染 + 反馈 + 消息操作 + 示例问题          | 反向反馈触发详情输入框 + 多条反馈互斥                              | onChatEvent 6 种事件类型都被正确 emit（query kind="console"）         |
+| P3.5 卡片    | 含 itemType=search-result 的消息被 SearchResultCard 渲染          | 同名 itemType 走 customRenderers 覆盖内置                          | component 优先级高于 itemType 不被绕过                                |
+| P4 容器组件  | AiSidebarChat 抽屉开关 / AiModalChat 弹窗 / mountAiChat 挂载       | ESC 键关闭 modal / 非 Vue 宿主 mount 子入口                        | unmount 后 host innerHTML 清空                                       |
+| FC-1 pageCtx | 文档页 A 提问「这个怎么配」回答针对页面 A                         | 缺失 pageContext 时后端降级到基础模板                              | 非法 pageContext 返回 400 与统一错误体                              |
+| FC-3 TTFT    | response-metadata 事件携带 ttftMs > 0                             | 慢速上游下 ttftMs 显著大于快速                                     | 流不产生 chunk 时仍能 emit 一次 response-metadata                     |
+| FC-4 反馈    | 反馈 payload 含 conversationId + messageId + rating              | 负面反馈触发详情输入框 + 提交后两条反馈互斥                       | 反馈提交后 chat.errorMessage 不被污染                                 |
+| FC-5 convId  | 默认 "knowledge-chat" 透传到请求体                              | 页面级 ID `docs/install#s-abc1` 完整透传                          | 跨页面切换时 conversationId 严格隔离                                  |
+| MS-1~MS-5   | 模型选择器 UI 渲染 + 切换后新请求 provider 字段更新                | responding 中切换不打断当前流 + 下一条消息用新模型                 | 非法 provider 返回 400 + 缺失 provider 回退 activeProvider            |
+
+### 21.3 证据文件规范（每个阶段 ✅ 前必须存在）
+
+**目录**：`reports/2026-9-5-learn-inkeep-agents-repo/learn-agents-ui/browser-evidence/<阶段代号>/`
+
+**文件名**：`YYYY-MM-DD-<检查项>.md`，例如 `2026-09-27-FC3-firstchunk-trigger.md`
+
+**必含字段**：
+
+1. **测试环境**：Chrome 内核版本 / docs:dev 端口 / Nitro 装配状态 / 启动命令与启动时 commit hash
+2. **操作步骤**：每步带 `browser` 工具调用与对应 ref/响应；至少包含 navigate / click / inspect / console / network 五类
+3. **关键截图引用**：`browser screenshot` 输出的 JPEG 资产路径或相对路径
+4. **控制台错误断言**：`query kind="console" levels=["error"]` 全文贴出；空结果显式写「无错误」
+5. **网络请求断言**：`query kind="network"` 列出关键请求状态码与请求体（关键：POST /v1/chat 的 requestBody 与 response status）
+6. **结论判定**：✅ 通过 / ❌ 失败 + 失败原因 + 修复 commit hash
+
+**失败处理**：任何一态失败则该阶段不可标 ✅；修复后必须补一份新证据文件（旧证据保留作历史）。
+
+### 21.4 集成纪律
+
+1. **vitest 不替代浏览器**：vitest 覆盖解析层 / 契约层 / 状态机；浏览器实测覆盖用户可见行为、Shadow DOM 隔离、真实事件链路、跨包协作。
+2. **plan 总表 ✅ 前的最后一道关卡**：每阶段声称 ✅ 前必须先读最新证据文件确认全部通过（与 19.4 第 3 步的复盘纪律配合）。
+3. **回溯补录纪律**：2026-09-27 之前的阶段（P1.5 / P2 / P3 / P3.5 / P4 / FC-2 / FC-3 / FC-5）补录证据时，必须用 docs:dev 真实复跑 + in-app Browser 真实截图，不接受「理论可行」描述替代实测。
+4. **commit 粒度**：每阶段浏览器实测证据 + plan 总表 ✅ = 一个 commit（`docs(plan): 标记 …`）；与 spec/plan 文档纪律一致。
+5. **失败证据留档**：即使该阶段最终 ✅，失败复盘的证据文件保留在 `browser-evidence/<阶段代号>/_history/` 子目录下，作为回归检查清单。

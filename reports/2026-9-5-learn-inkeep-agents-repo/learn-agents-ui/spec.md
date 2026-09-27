@@ -670,6 +670,50 @@ CC 系列任务的请求验证遵守本仓既有「zod + contracts 薄路由」�
 3. 不做多轮语义：切换不绑定会话，仅影响单次请求；localStorage 只存 UI 偏好。
 4. 事件复用 FC-3 的 `response-metadata`，不新增第二套元数据通道。
 
+### 12.7 Agent Browser 实测方法学 [2026-09-27 补录]
+
+**适用范围**：plan 第十九章 19.6 总表内任何标 ⬜ → ✅ 的阶段，都必须在合并前完成基于 agent browser 的真实功能实测，禁止仅凭「控制台 0 错误」+「视觉截图」就声称完成。
+
+**工具与运行环境**：
+
+1. **执行端**：in-app Browser（Google Chrome 内核，原生 Chromium 渲染管线；非 Playwright/headless 替代品）。
+2. **被测端**：本地 `pnpm run docs:dev`（端口 8080）+ `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run dev`（Nitro dev，按 plan 19.7 联调验收协议；MS/CC 系列需要后端时启动）。
+3. **辅助能力**：in-app Browser 的 `browser` 工具原语（`navigate` / `click` / `inspect` / `query kind="console"` / `query kind="network"` / `screenshot`）。
+
+**每个阶段的实测必做清单**（最少要做「正向流程 + 边界条件 + 关键错误」三态）：
+
+| 阶段          | 正向流程必测                                              | 边界条件必测                                              | 关键错误必测                                                    |
+| :------------ | :-------------------------------------------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------- |
+| P1.5 主题桥接  | 切换 Teek / VitePress / fallback 三模式                    | 主题色板颜色与 --ai-chat-primary 一致                     | html.dark 类移除后浅色 surface 不残留                          |
+| P2 Shadow DOM | 浮动 AI 面板打开后 .ai-chat 容器存在于 Shadow Root          | `attachShadow({ mode: 'closed' })` 容器外不可查内部节点   | brand primary color 缺失时不卡死                                |
+| P3 富聊天    | 真实发送一条问答触发流式渲染 + 反馈 + 消息操作 + 示例问题    | 反向反馈触发详情输入框 + 多条反馈互斥                       | onChatEvent 6 种事件类型都被正确 emit                            |
+| P3.5 卡片    | 含 itemType=search-result 的消息被 SearchResultCard 渲染   | 同名 itemType 走 customRenderers 覆盖内置                   | component 优先级高于 itemType 不被绕过                          |
+| P4 容器组件  | AiSidebarChat 抽屉开关 / AiModalChat 弹窗 / mountAiChat 挂载 | ESC 键关闭 modal / 非 Vue 宿主 mount 子入口               | unmount 后 host innerHTML 清空                                  |
+| FC-1 pageCtx | 文档页 A 提问「这个怎么配」回答针对页面 A                 | 缺失 pageContext 时后端降级到基础模板                     | 非法 pageContext 返回 400 与统一错误体                            |
+| FC-3 TTFT    | response-metadata 事件携带 ttftMs > 0                      | 慢速上游下 ttftMs 显著大于快速                            | 流不产生 chunk（mock 错误）时仍能 emit 一次 response-metadata     |
+| FC-4 反馈    | 反馈 payload 含 conversationId + messageId + rating       | 负面反馈触发详情输入框 + 提交后两条反馈互斥             | 反馈提交后 chat.errorMessage 不被污染                              |
+| FC-5 convId  | 默认 "knowledge-chat" 透传到请求体                        | 页面级 ID `docs/install#s-abc1` 完整透传                  | 跨页面切换时 conversationId 严格隔离                              |
+| MS-1 ~ MS-5 | 模型选择器 UI 渲染 + 切换后新请求 provider 字段更新        | responding 中切换不打断当前流 + 下一条消息用新模型        | 非法 provider 返回 400 + 缺失 provider 回退 activeProvider       |
+
+**证据文件规范**（取代此前"截图+1 句话结论"的非正式做法）：
+
+1. **路径**：`reports/2026-9-5-learn-inkeep-agents-repo/learn-agents-ui/browser-evidence/<阶段代号>/<YYYY-MM-DD>-<检查项>.md`
+2. **必含字段**：
+   - 测试环境（Chrome 内核版本 / docs:dev 端口 / Nitro 装配状态 / 启动命令与 commit hash）
+   - 操作步骤（每步带 in-app Browser 工具调用与对应 ref/响应）
+   - 关键截图引用（`browser screenshot` 输出的 JPEG 资产路径或相对路径）
+   - 控制台错误断言（`query kind="console" levels=["error"]` 全文贴出）
+   - 网络请求断言（`query kind="network"` 列出关键请求状态码与请求体）
+   - 结论判定（✅ 通过 / ❌ 失败 + 失败原因 + 修复 commit）
+3. **失败处理**：任何一态失败则该阶段不可标 ✅；修复后必须补一份新证据文件（旧证据保留作历史）。
+
+**集成纪律**：
+
+1. spec/plan 是事实源；本章节是验收层的强制约束，所有 P- / FC- / MS- 阶段任务都必须遵守。
+2. vitest 单元测试不能替代浏览器实测：单元测试覆盖解析层/契约层/状态机；浏览器实测覆盖用户可见行为、Shadow DOM 隔离、真实事件链路、跨包协作。
+3. 视觉验证报告（plan 第十二章 12.3 模板）适用于品牌主题与暗色模式类视觉验收，不替代本章节的「正向+边界+错误」三态实测。
+4. 与 plan 第十九章 19.4 复盘纪律配合：每阶段 ✅ 前的最后一道关卡是「读最新 evidence 文件确认全部通过」。
+
 ### 11.7 上下文压缩不适用声明 [2026-09-05 决策]
 
 主调研报告与 docs-assistant 对标报告所述的「对话历史压缩」，其压缩对象是**多轮历史消息数组**（早期轮次以 LLM 摘要替代）。本仓自重调研报告 1.3 路线修订起不做多轮会话，该机制没有挂载对象：
