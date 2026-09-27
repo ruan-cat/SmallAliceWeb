@@ -125,6 +125,26 @@ export interface AiChatProps {
 	feedbackOptions?: FeedbackOptions;
 	/** P3-6：AI 对话事件回调 */
 	onChatEvent?: ChatEventHandler;
+	/**
+	 * MS-4 接入：模型选择器选项（由宿主经 props 下发，ai-vue 不发请求）。
+	 * 空数组或缺省时整块选择器不渲染，向后兼容。
+	 */
+	models?: AiChatModelOption[];
+	/**
+	 * MS-4 接入：当前选中模型的 id（与 models 某项 id 对应）。
+	 * 仅控制 el-segmented 的视觉选中态，实际 provider 切换由宿主通过 select-model 事件接收后回写到下一次请求。
+	 */
+	selectedModelId?: string;
+}
+
+/**
+ * MS-4 接入：模型选择器选项（由宿主经 props 下发，ai-vue 不发请求）。
+ * 该类型与 ai-vitepress-plugins useKnowledgeChat 的 AiChatModelOption 结构同源——保持单向事实源。
+ */
+export interface AiChatModelOption {
+	id: string;
+	label: string;
+	model: string;
 }
 
 /** AiChat emit 事件扩展 */
@@ -134,4 +154,9 @@ export type AiChatEmits = {
 	(event: "clear-error"): void;
 	/** P3-3：反馈提交 */
 	(event: "feedback", feedback: FeedbackPayload): void;
+	/**
+	 * MS-4 接入：用户切换模型；宿主收到后回写 useKnowledgeChat 的 selectedProvider 与 localStorage。
+	 * 仅改下一条消息的 provider；responding 中切换不打断当前流（plan 16.8 Q1 拍板）。
+	 */
+	(event: "select-model", id: string): void;
 };

@@ -19,6 +19,8 @@ const props =
 			| "messageActions"
 			| "feedbackOptions"
 			| "onChatEvent"
+			| "models"
+			| "selectedModelId"
 		>
 	>();
 const emit = defineEmits<AiChatEmits>();
@@ -84,10 +86,13 @@ function closeDock() {
 					:message-actions="props.messageActions"
 					:feedback-options="props.feedbackOptions"
 					:on-chat-event="props.onChatEvent"
+					:models="props.models"
+					:selected-model-id="props.selectedModelId"
 					@send="emit('send', $event)"
 					@stop="emit('stop')"
 					@clear-error="emit('clear-error')"
 					@feedback="emit('feedback', $event)"
+					@select-model="emit('select-model', $event)"
 				>
 					<template #notification-control>
 						<slot name="notification-control" />

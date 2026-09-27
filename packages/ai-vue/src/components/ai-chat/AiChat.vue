@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ElSegmented } from "element-plus";
 import MarkdownRender from "markstream-vue";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import type { Component } from "vue";
@@ -304,6 +305,24 @@ defineSlots<{
 
 				<slot name="notification-control" />
 
+				<!--
+				  MS-4 接入：模型选择器（el-segmented）。
+				  - models 为空或缺省时整块不渲染（向后兼容；mock 模式无网络也能保持原 UI）
+				  - 选择器在 XSender 上方右对齐，样式走 --ai-chat-* 变量
+				  - responding 中不禁用（plan 16.8 Q1 拍板：当前流继续，下条消息生效）
+				-->
+				<div v-if="props.models?.length" class="ai-chat__model-picker">
+					<el-segmented
+						:model-value="props.selectedModelId"
+						:options="props.models.map((item) => ({ label: item.label, value: item.id }))"
+						size="small"
+						:disabled="false"
+						aria-label="切换问答模型"
+						title="切换后下一条消息生效"
+						@update:model-value="emit('select-model', String($event))"
+					/>
+				</div>
+
 				<XSender
 					ref="senderRef"
 					:loading="displayedResponding"
@@ -404,6 +423,24 @@ defineSlots<{
 			</button>
 
 			<slot name="notification-control" />
+
+			<!--
+			  MS-4 接入：模型选择器（el-segmented）。
+			  - models 为空或缺省时整块不渲染（向后兼容；mock 模式无网络也能保持原 UI）
+			  - 选择器在 XSender 上方右对齐，样式走 --ai-chat-* 变量
+			  - responding 中不禁用（plan 16.8 Q1 拍板：当前流继续，下条消息生效）
+			-->
+			<div v-if="props.models?.length" class="ai-chat__model-picker">
+				<el-segmented
+					:model-value="props.selectedModelId"
+					:options="props.models.map((item) => ({ label: item.label, value: item.id }))"
+					size="small"
+					:disabled="false"
+					aria-label="切换问答模型"
+					title="切换后下一条消息生效"
+					@update:model-value="emit('select-model', String($event))"
+				/>
+			</div>
 
 			<XSender
 				ref="senderRef"
