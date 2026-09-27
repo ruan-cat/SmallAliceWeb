@@ -1,0 +1,1 @@
+export { default as AiModalChat } from "./AiModalChat.vue";
