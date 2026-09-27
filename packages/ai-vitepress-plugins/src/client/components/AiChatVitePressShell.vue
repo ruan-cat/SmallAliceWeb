@@ -30,6 +30,7 @@ onMounted(() => {
 			:messages="messages"
 			:is-responding="isResponding"
 			:error-message="errorMessage"
+			variant="container-with-shadow"
 			@send="send"
 			@stop="stop"
 			@clear-error="clearError"
