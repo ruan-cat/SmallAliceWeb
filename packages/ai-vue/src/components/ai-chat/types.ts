@@ -82,7 +82,8 @@ export interface ChatEvent {
 		| "chat_clear_clicked"
 		| "feedback_submitted"
 		| "example_question_selected"
-		| "message_action_clicked";
+		| "message_action_clicked"
+		| "response-metadata";
 	/** 会话 ID（暂未启用，留作多会话扩展） */
 	conversationId?: string;
 	/** 触发消息 ID（适用于反馈 / 操作 / 用户消息事件） */

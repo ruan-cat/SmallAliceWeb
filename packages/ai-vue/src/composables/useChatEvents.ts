@@ -17,6 +17,13 @@ export interface UseChatEventsReturn {
 	emitExampleQuestionSelected: (question: string) => void;
 	/** 清除点击事件 */
 	emitClearClicked: () => void;
+	/** 响应元数据事件（FC-3）：首 chunk 延迟 + provider/model；旧消费方忽略即可 */
+	emitResponseMetadata: (input: {
+		ttftMs: number;
+		provider?: string;
+		model?: string;
+		conversationId?: string;
+	}) => void;
 }
 
 /**
@@ -82,6 +89,18 @@ export function useChatEvents(onChatEvent?: ChatEventHandler): UseChatEventsRetu
 			emitEvent({
 				type: "chat_clear_clicked",
 				tags: ["chat", "lifecycle"],
+			});
+		},
+		emitResponseMetadata({ ttftMs, provider, model, conversationId }) {
+			emitEvent({
+				type: "response-metadata",
+				conversationId,
+				tags: ["chat", "response", "metadata"],
+				properties: {
+					ttftMs,
+					...(provider !== undefined ? { provider } : {}),
+					...(model !== undefined ? { model } : {}),
+				},
 			});
 		},
 	};
