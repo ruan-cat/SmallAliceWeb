@@ -34,6 +34,7 @@ describe("Anthropic Messages 聊天流适配器", () => {
 			protocol: "anthropic-messages",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "claude-sonnet-5[1m]",
+			label: "Claude Sonnet 5",
 		});
 		const abortController = new AbortController();
 		const result = stream({
@@ -87,6 +88,7 @@ describe("Anthropic Messages 聊天流适配器", () => {
 				protocol: "anthropic-messages",
 				baseUrl: "https://api.code-tab.com/v1",
 				model: "claude-sonnet-5[1m]",
+				label: "Claude Sonnet 5",
 			}),
 		).toThrow("RAG chat provider is not configured");
 	});
@@ -154,6 +156,7 @@ describe("Anthropic Messages 聊天流适配器", () => {
 			protocol: "anthropic-messages",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "claude-sonnet-5[1m]",
+			label: "Claude Sonnet 5",
 		});
 		const controller = new AbortController();
 

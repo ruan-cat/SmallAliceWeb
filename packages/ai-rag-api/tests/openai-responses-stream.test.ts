@@ -29,6 +29,7 @@ function createConfig() {
 		protocol: "openai-responses" as const,
 		baseUrl: "https://api.code-tab.com/v1",
 		model: "gpt-5.6-luna",
+		label: "GPT-5.6 Luna",
 	};
 }
 

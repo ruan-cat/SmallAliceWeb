@@ -9,6 +9,8 @@ export type RagLlmProviderConfig = Readonly<{
 	protocol: RagLlmProtocol;
 	baseUrl: string;
 	model: string;
+	/** 展示名，供前端模型选择器使用；不参与请求路由。 */
+	label: string;
 }>;
 
 /**
@@ -23,11 +25,13 @@ export const ragLlmConfig = {
 			protocol: "openai-responses",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "gpt-5.6-luna",
+			label: "GPT-5.6 Luna",
 		},
 		anthropic: {
 			protocol: "anthropic-messages",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "claude-sonnet-5[1m]",
+			label: "Claude Sonnet 5",
 		},
 	},
 } as const satisfies Readonly<{
@@ -39,6 +43,20 @@ export const ragLlmConfig = {
 export function getActiveRagLlmConfig(): RagLlmProviderConfig & { id: RagLlmProviderId } {
 	const id = ragLlmConfig.activeProvider;
 	return { id, ...ragLlmConfig.providers[id] };
+}
+
+/**
+ * 按 id 解析公开 provider 配置（含 label）；未知 id 返回 undefined。
+ *
+ * 调用方应在白名单校验失败的回退路径上自行决定行为：
+ * - chat 接口的非法 provider 字段由 zod enum 直接拒绝（返回 400，spec 12.2）
+ * - 字段缺失则回退 activeProvider（spec 12.2）
+ * - 该函数对未注册 id 一律返回 undefined，不静默回退到任何具体 provider
+ */
+export function getRagLlmConfigById(id: string): (RagLlmProviderConfig & { id: RagLlmProviderId }) | undefined {
+	if (!(id in ragLlmConfig.providers)) return undefined;
+	const key = id as RagLlmProviderId;
+	return { id: key, ...ragLlmConfig.providers[key] };
 }
 
 /**

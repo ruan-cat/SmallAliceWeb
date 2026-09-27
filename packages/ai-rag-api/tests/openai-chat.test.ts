@@ -28,6 +28,7 @@ describe("OpenAI 聊天流适配器", () => {
 				protocol: "openai-responses",
 				baseUrl: "https://api.code-tab.com/v1",
 				model: "gpt-test",
+				label: "GPT-5.6 Luna",
 			}),
 		).toThrow("RAG chat provider is not configured");
 	});
@@ -51,6 +52,7 @@ describe("OpenAI 聊天流适配器", () => {
 			protocol: "openai-responses",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "gpt-test",
+			label: "GPT-5.6 Luna",
 		});
 		const abortController = new AbortController();
 		const result = stream({

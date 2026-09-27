@@ -36,6 +36,7 @@ describe("Anthropic Messages 真实 SDK 流式合同", () => {
 			protocol: "anthropic-messages",
 			baseUrl: "https://api.code-tab.com/v1",
 			model: "claude-sonnet-5[1m]",
+			label: "Claude Sonnet 5",
 		})({
 			message: "什么是 RAG？",
 			system: "只根据资料回答。",
