@@ -24,7 +24,6 @@ const { messages, input, isResponding, sendMessage } = useMockAiChat({
 const displayedMessages = computed(() => props.messages ?? messages.value);
 const displayedResponding = computed(() => props.isResponding ?? isResponding.value);
 const senderRef = ref<InstanceType<typeof XSender> | null>(null);
-const isDark = ref(false);
 const prefersReducedMotion = ref(false);
 const smoothStreaming = computed<false | "auto">(() => (prefersReducedMotion.value ? false : "auto"));
 const bubbleItems = computed<AiChatBubbleItem[]>(() =>
@@ -38,8 +37,8 @@ const lastAssistantMessageId = computed(
 );
 let reducedMotionMediaQuery: MediaQueryList | undefined;
 
-/** 品牌主题上下文：cssVars 绑定根节点使 --ai-chat-* 变量随 brandTheme prop 生效；未传 prop 时 useBrandTheme 内部缺省回落默认品牌色 #3b82f6。 */
-const { colorScheme, cssVars } = useBrandTheme(props.brandTheme);
+/** 品牌主题上下文：cssVars 绑定根节点使 --ai-chat-* 变量随 brandTheme prop 生效；未传 prop 时 useBrandTheme 内部缺省回落默认品牌色 #3b82f6。isDark 由 useThemeColor 注入，跟随 Teek / VitePress 的 html.dark 切换。 */
+const { colorScheme, cssVars, isDark } = useBrandTheme(props.brandTheme);
 
 /** vepx ConfigProvider 主题覆盖：键名遵循 vepx dist buildThemeVars 原样拼接 --elx- 前缀的 kebab-case 约定；主色取派生色板的 strong（hex 归一化值），不从 cssVars 复用。 */
 const vepxThemeOverrides = computed(() => ({
@@ -53,26 +52,15 @@ function updateReducedMotionPreference(event?: MediaQueryListEvent) {
 	prefersReducedMotion.value = event?.matches ?? reducedMotionMediaQuery?.matches ?? false;
 }
 
-/** 将系统暗色偏好映射为 ConfigProvider 主题判定；P1.5 将替换为 useThemeColor 的正式通道。 */
-function updateDarkSchemePreference(event?: MediaQueryListEvent) {
-	isDark.value = event?.matches ?? darkSchemeMediaQuery?.matches ?? false;
-}
-
-let darkSchemeMediaQuery: MediaQueryList | undefined;
-
 onMounted(() => {
 	if (typeof window.matchMedia !== "function") return;
 	reducedMotionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 	updateReducedMotionPreference();
 	reducedMotionMediaQuery.addEventListener("change", updateReducedMotionPreference);
-	darkSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-	updateDarkSchemePreference();
-	darkSchemeMediaQuery.addEventListener("change", updateDarkSchemePreference);
 });
 
 onBeforeUnmount(() => {
 	reducedMotionMediaQuery?.removeEventListener("change", updateReducedMotionPreference);
-	darkSchemeMediaQuery?.removeEventListener("change", updateDarkSchemePreference);
 });
 
 /** 标记当前仍在生成的最后一条助手消息。 */

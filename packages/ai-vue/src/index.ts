@@ -8,6 +8,8 @@ export type { AiChatEmits, AiChatMessage, AiChatProps, AiChatRole, AiChatSource 
 export type { BrandThemeConfig } from "./theme/types";
 export { useMockAiChat } from "./composables/useMockAiChat";
 export type { UseMockAiChatOptions } from "./composables/useMockAiChat";
+export { useThemeColor } from "./composables/useThemeColor";
+export type { ThemeColorState } from "./composables/useThemeColor";
 
 function install(app: App) {
 	app.component("AiChat", AiChat);
