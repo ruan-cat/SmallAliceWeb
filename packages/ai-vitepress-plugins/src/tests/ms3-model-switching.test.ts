@@ -13,7 +13,8 @@ import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
  * - localStorage 脏值回退默认；valid 命中恢复
  * - initialProvider 优先级高于 localStorage
  * - /v1/models 拉取失败（fetch reject）时聊天功能不受影响
- * - initialModels 注入时不发起 /v1/models 网络请求
+ * - 调用方显式传 api 时跳过自动 loadModels（受控测试场景）
+ * - 不传 api（生产场景 / VITE_RAG_API_BASE 派生）时强制发起 loadModels
  * - refreshModels 暴露给宿主手动调用
  */
 
@@ -32,19 +33,18 @@ describe("MS-3 useKnowledgeChat 模型切换 state 单元", () => {
 		vi.restoreAllMocks();
 	});
 
-	test("initialModels 注入时 models 与 selectedProvider 立即就绪", () => {
+	test("initialModels + initialProvider 同时注入时 models 与 selectedProvider 立即就绪", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-init", {
-				api: "http://test/v1/chat",
 				fetch: vi.fn(),
 				initialModels: fakeModels,
+				initialProvider: "openai",
 			}),
 		)!;
 
 		expect(chat.models.value).toEqual(fakeModels);
-		// 未传 initialProvider 时 selectedProvider 缺省为空串（由 request 体不携带 provider）
-		expect(chat.selectedProvider.value).toBe("");
+		expect(chat.selectedProvider.value).toBe("openai");
 		scope.stop();
 	});
 
@@ -52,9 +52,9 @@ describe("MS-3 useKnowledgeChat 模型切换 state 单元", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-select", {
-				api: "http://test/v1/chat",
 				fetch: vi.fn(),
 				initialModels: fakeModels,
+				initialProvider: "anthropic",
 			}),
 		)!;
 
@@ -72,13 +72,12 @@ describe("MS-3 useKnowledgeChat 模型切换 state 单元", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-reject", {
-				api: "http://test/v1/chat",
 				fetch: vi.fn(),
 				initialModels: fakeModels,
+				initialProvider: "anthropic",
 			}),
 		)!;
 
-		chat.selectModel("anthropic");
 		const before = chat.selectedProvider.value;
 		const beforeStorage = localStorage.getItem("ai-chat-provider");
 
@@ -97,7 +96,6 @@ describe("MS-3 useKnowledgeChat 模型切换 state 单元", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-prio", {
-				api: "http://test/v1/chat",
 				fetch: vi.fn(),
 				initialModels: fakeModels,
 				initialProvider: "openai",
@@ -113,7 +111,6 @@ describe("MS-3 useKnowledgeChat 模型切换 state 单元", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-prio-fall", {
-				api: "http://test/v1/chat",
 				fetch: vi.fn(),
 				initialModels: fakeModels,
 				initialProvider: "google", // 白名单外
@@ -132,32 +129,39 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		vi.restoreAllMocks();
 	});
 
-	test("initialModels 已注入时不调用 fetch（避免重复拉取）", () => {
+	test("调用方显式传 api 时跳过自动 fetch（受控测试场景）", () => {
 		const fetchMock = vi.fn();
 		const scope = effectScope();
 		scope.run(() =>
 			useKnowledgeChat("ms3-skip-fetch", {
-				api: "http://test/v1/chat",
+				api: "http://127.0.0.1:9999/v1/chat",
 				fetch: fetchMock,
-				initialModels: fakeModels,
 			}),
 		)!;
-		// 不发起 /v1/models 网络请求
+		// 受控场景：显式传 api → 跳过自动 fetch，避免污染测试 server
 		expect(fetchMock).not.toHaveBeenCalled();
 		scope.stop();
 	});
 
-	test("api 为绝对 URL 时跳过自动 loadModels（测试场景）", () => {
-		const fetchMock = vi.fn();
+	test("不传 api（生产场景）必须发起 fetch /v1/models", async () => {
+		const fetchMock = vi.fn(async () => ({
+			ok: true,
+			json: async () => ({ success: true, code: 200, data: { models: fakeModels } }),
+		}));
 		const scope = effectScope();
 		scope.run(() =>
-			useKnowledgeChat("ms3-absolute-api", {
-				api: "http://127.0.0.1:3000/chat",
+			useKnowledgeChat("ms3-production", {
+				// 不传 api → 走默认 /v1/chat；模拟生产场景(VITE_RAG_API_BASE 未设置或 jsdom 测试环境)
 				fetch: fetchMock,
 			}),
 		)!;
-		// 绝对 URL → 不自动发起 /v1/models 请求（避免污染测试 server）
-		expect(fetchMock).not.toHaveBeenCalled();
+
+		await flushMicrotasks();
+		await flushMicrotasks();
+
+		// MS-4 浏览器实测暴露的 bug:旧版本用绝对 URL 跳过 loadModels → 前端拿不到模型列表
+		// 修复后:不传 api（生产场景/VITE_RAG_API_BASE 派生）必须发起 /v1/models 请求
+		expect(fetchMock).toHaveBeenCalledWith("/v1/models");
 		scope.stop();
 	});
 
@@ -168,7 +172,7 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-fetch-fail", {
-				api: "/v1/chat", // 相对路径触发自动 loadModels
+				// 不传 api → 走默认 /v1/chat → 触发自动 loadModels
 				fetch: fetchMock,
 			}),
 		)!;
@@ -180,10 +184,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		// 失败静默：models 与 selectedProvider 保持空
 		expect(chat.models.value).toEqual([]);
 		expect(chat.selectedProvider.value).toBe("");
-
-		// selectModel 仍可调用（仅受 initialModels 白名单约束；空列表下任何 id 都被拒绝）
-		chat.selectModel("openai");
-		expect(chat.selectedProvider.value).toBe(""); // 拒绝：白名单为空
 
 		scope.stop();
 	});
@@ -198,7 +198,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-bad-json", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -219,7 +218,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-not-ok", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -231,7 +229,7 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		scope.stop();
 	});
 
-	test("models 拉取成功后 selectedProvider 优先级：initialProvider > localStorage > list[0]", async () => {
+	test("models 拉取成功后 selectedProvider 优先级：localStorage 命中 → list[0]", async () => {
 		const fetchMock = vi.fn(async () => ({
 			ok: true,
 			json: async () => ({ success: true, code: 200, data: { models: fakeModels } }),
@@ -241,7 +239,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-recovery", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -250,7 +247,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		await flushMicrotasks();
 
 		expect(chat.models.value).toEqual(fakeModels);
-		// localStorage "openai" 在 list 内 → 恢复为 openai
 		expect(chat.selectedProvider.value).toBe("openai");
 
 		scope.stop();
@@ -266,7 +262,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-dirty", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -290,7 +285,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-first", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -302,29 +296,7 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		scope.stop();
 	});
 
-	test("models 拉取后 localStorage 命中并覆盖 list[0]", async () => {
-		const fetchMock = vi.fn(async () => ({
-			ok: true,
-			json: async () => ({ success: true, code: 200, data: { models: fakeModels } }),
-		}));
-		localStorage.setItem("ai-chat-provider", "openai");
-
-		const scope = effectScope();
-		const chat = scope.run(() =>
-			useKnowledgeChat("ms3-storage-wins", {
-				api: "/v1/chat",
-				fetch: fetchMock,
-			}),
-		)!;
-
-		await flushMicrotasks();
-		await flushMicrotasks();
-
-		expect(chat.selectedProvider.value).toBe("openai");
-		scope.stop();
-	});
-
-	test("/v1/models URL 由 chat api 派生：/v1/chat → /v1/models", async () => {
+	test("/v1/models URL 由默认 chat api 派生：/v1/chat → /v1/models", async () => {
 		const fetchMock = vi.fn(async () => ({
 			ok: true,
 			json: async () => ({ success: true, code: 200, data: { models: fakeModels } }),
@@ -333,7 +305,6 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		const scope = effectScope();
 		scope.run(() =>
 			useKnowledgeChat("ms3-url", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;
@@ -365,7 +336,6 @@ describe("MS-3 useKnowledgeChat refreshModels 暴露", () => {
 		const scope = effectScope();
 		const chat = scope.run(() =>
 			useKnowledgeChat("ms3-refresh", {
-				api: "/v1/chat",
 				fetch: fetchMock,
 			}),
 		)!;

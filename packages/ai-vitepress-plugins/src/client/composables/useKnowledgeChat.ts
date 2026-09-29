@@ -181,10 +181,17 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		const fetcher = options.fetch ?? globalThis.fetch;
 		const chatApi = resolveKnowledgeChatApi(options.api);
 		/**
-		 * 仅在 chat api 是相对路径（生产环境 /v1/chat 派生 URL）时才自动拉取 /v1/models。
-		 * 测试环境通常传绝对 URL（http://127.0.0.1:NNNN），跳过自动拉取避免污染测试 server 行为。
+		 * 跳过自动 loadModels 的条件：调用方显式传 options.api。
+		 *
+		 * - 测试场景：useKnowledgeChat(..., { api: server.url, ... }) 显式覆盖 URL；
+		 *   跳过 fetch 避免污染测试 server 行为。
+		 * - 生产场景：useKnowledgeChat(..., {}) 不传 api，composable 内部从
+		 *   import.meta.env.VITE_RAG_API_BASE 派生 → 必须发起 fetch /v1/models。
+		 *
+		 * 早期版本曾用「绝对 URL 跳过」，但 VITE_RAG_API_BASE=http://localhost:3000 派生的
+		 * chatApi 也是绝对 URL，会被错误跳过导致 /v1/models 永远不发起（MS-4 浏览器实测暴露）。
 		 */
-		if (/^https?:\/\//i.test(chatApi)) return;
+		if (options.api !== undefined) return;
 		const modelsUrl = chatApi.replace(/\/chat$/, "/models");
 		void fetcher(modelsUrl)
 			.then((response) => (response.ok ? response.json() : undefined))
@@ -196,7 +203,7 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 					return;
 				}
 				const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
-				selectedProvider.value = list.some((item) => item.id === stored) ? stored! : list[0]?.id ?? "";
+				selectedProvider.value = list.some((item) => item.id === stored) ? stored! : (list[0]?.id ?? "");
 			})
 			.catch(() => {});
 	}
@@ -377,5 +384,16 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		chat.error.value = undefined;
 	}
 
-	return { messages, isResponding, errorMessage, send, stop, clearError, models, selectedProvider, selectModel, refreshModels: loadModels };
+	return {
+		messages,
+		isResponding,
+		errorMessage,
+		send,
+		stop,
+		clearError,
+		models,
+		selectedProvider,
+		selectModel,
+		refreshModels: loadModels,
+	};
 }
