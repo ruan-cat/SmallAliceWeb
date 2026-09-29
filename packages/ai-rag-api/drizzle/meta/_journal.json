@@ -36,6 +36,13 @@
 			"when": 1788188460000,
 			"tag": "0004_add_pg_trgm_search",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1790682098276,
+			"tag": "0005_add_evaluation_runs",
+			"breakpoints": true
 		}
 	]
 }
