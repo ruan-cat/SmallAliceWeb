@@ -21,6 +21,6 @@
 ## 4. SY-3 首跑与增量验证（plan 18.5）
 
 - [ ] 4.1 [验证] `workflow_dispatch` 手动首跑：未变更轮快速通过（读 290 文件 + 哈希对比，预期分钟级），Actions 页面运行记录 success。
-- [ ] 4.2 [验证] 人为修改一个 `docs/**` 下 md → push main → 触发增量：仅该文件重新 embedding + 写库，`knowledge_sync_runs` 新增一条审计记录。
+- [x] ~~4.2 [验证] 人为修改一个 `docs/**` 下 md → push main → 触发增量~~（2026-09-29 22:10 用户决策取消：docs/docx 整目录 gitignored、origin/main 不含知识源，push 路径前提不成立；详见 browser-evidence/EV/2026-09-29-remaining-items-plan.md 第 2.3 节）。知识源分发机制为独立开放决策。
 - [ ] 4.3 [验证] 次日核对 schedule 自动运行成功（Actions 运行历史）。
 - [ ] 4.4 [验证] 检查 workflow 日志无任何 Secret 值泄漏（GitHub 自动 `::add-mask::` 之外人工复核）。

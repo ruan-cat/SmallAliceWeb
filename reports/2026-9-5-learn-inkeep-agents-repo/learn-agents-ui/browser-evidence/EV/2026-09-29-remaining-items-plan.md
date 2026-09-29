@@ -4,13 +4,13 @@
 
 ## 1. 事务清单与验证设计
 
-| #   | 事务                       | 验证手段                                                                                                                                                                                                                                   | 通过标准                                                                                                |
-| :-- | :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 1   | 真实 DB 迁移可重放 smoke   | 临时 tsx 脚本直连 Neon（pooled NITRO_DATABASE_URL）：①确认 evaluation_runs 不存在 → ②执行 drizzle/0005 迁移 → ③重放第二次（幂等） → ④INSERT→SELECT 往返断言 → ⑤DELETE 清理                                                                 | 迁移两次执行均成功；往返字段一致；清理后无残留                                                          |
-| 2   | 三 CLI 脚本真实运行 + 查表 | 顺序：run-rag-evaluation(dry，零 provider 调用) → run-real-evaluation（检索评估）→ run-parameter-evaluation（临时知识库全量 embedding ×3 profile，成本最大放最后）；脚本自 parse .env.local 注入环境变量；每个脚本后连库 SELECT 断言新增行 | evaluation_runs 表按 kind 各新增一行（retrieval/promptfoo、real、parameter），metrics 非空              |
-| 3   | 与 SY-3 首跑联调同批补做   | 即事务 1+2 的执行批次                                                                                                                                                                                                                      | 同上                                                                                                    |
-| 4   | 单文件增量断言             | docs/docx 某 md 追加 HTML 注释行（渲染不可见、contentHash 必变）→ commit → push dev → fast-forward push dev:main → GA run 完成后连库断言                                                                                                   | knowledge_sync_runs 最新行 updated_file_count=1、unchanged≈290；documents.last_synced_at 仅目标文件刷新 |
-| 5   | 次日 schedule 核对         | 一次性 automation（2026-09-30 02:40 GMT+8）核对 UTC 18:30 schedule run（Actions API），结论回填本文档第 3.5 节                                                                                                                             | schedule 触发的 run success                                                                             |
+| #   | 事务                       | 验证手段                                                                                                                                                                                                                                   | 通过标准                                                                                   |
+| :-- | :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| 1   | 真实 DB 迁移可重放 smoke   | 临时 tsx 脚本直连 Neon（pooled NITRO_DATABASE_URL）：①确认 evaluation_runs 不存在 → ②执行 drizzle/0005 迁移 → ③重放第二次（幂等） → ④INSERT→SELECT 往返断言 → ⑤DELETE 清理                                                                 | 迁移两次执行均成功；往返字段一致；清理后无残留                                             |
+| 2   | 三 CLI 脚本真实运行 + 查表 | 顺序：run-rag-evaluation(dry，零 provider 调用) → run-real-evaluation（检索评估）→ run-parameter-evaluation（临时知识库全量 embedding ×3 profile，成本最大放最后）；脚本自 parse .env.local 注入环境变量；每个脚本后连库 SELECT 断言新增行 | evaluation_runs 表按 kind 各新增一行（retrieval/promptfoo、real、parameter），metrics 非空 |
+| 3   | 与 SY-3 首跑联调同批补做   | 即事务 1+2 的执行批次                                                                                                                                                                                                                      | 同上                                                                                       |
+| 4   | 单文件增量断言             | **2026-09-29 22:10 用户决策正式取消**（执行中发现前提不成立，见 2.3）                                                                                                                                                                      | ~~knowledge_sync_runs 最新行 updated_file_count=1~~（取消）                                |
+| 5   | 次日 schedule 核对         | 一次性 automation（2026-09-30 02:40 GMT+8）核对 UTC 18:30 schedule run（Actions API），结论回填本文档第 3.5 节                                                                                                                             | schedule 触发的 run success                                                                |
 
 ## 2. 执行记录（回填区）
 
@@ -64,6 +64,8 @@ workflow 层 exit 0 造成「SUCCESS」假象，实际 CI checkout 内**没有�
 research-notes/E-sync-pipeline.md「checkout 内天然有 docs/docx（290 个 md）」为错误断言。
 
 **待用户拍板的方案空间**：知识源进 git（解除 ignore / 独立仓库）/ CI 内跑 DOCX 转换管线（drill-docx 目录同样被 ignore，需两级产物）/ 维持本地 CLI 同步为事实源、GA workflow 改造或暂停。
+
+**✅ 决策已拍板（2026-09-29 22:10）**：单文件增量断言正式取消，不再作为 SY-3 验收项，plan 18.5/18.7/19.6 与本文件均已同步标注。注意：取消的是「增量断言」这一验收动作，知识源分发机制仍为独立开放决策（影响 GA push 触发与 schedule 兜底的实际价值）。
 
 ### 2.4 事务 5：schedule 核对
 
