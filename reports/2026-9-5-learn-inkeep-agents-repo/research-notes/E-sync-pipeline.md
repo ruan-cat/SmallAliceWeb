@@ -49,17 +49,17 @@ spec 已固化的增量语义（`openspec/specs/ai-rag/knowledge-sync/spec.md`�
 
 ## 三、两种触发路径对比
 
-|      对比维度      |                             CLI（tsx 脚本）                              |                                                       HTTP（Nitro 端点）                                                       |
-| :----------------: | :----------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: |
-|      入口命令      |                    `pnpm run rag:sync` / `rag:watch`                     |                       `POST /v1/knowledge/sync`、`GET /v1/knowledge/sync`、`GET /v1/knowledge/sync-runs`                       |
-|      入口文件      |         `scripts/rag-sync.ts:1-12`、`scripts/rag-watch.ts:1-21`          |                  `server/routes/v1/knowledge/sync.post.ts:6-28`、`sync.get.ts:6-28`、`sync-runs.get.ts:7-17`                   |
-|        参数        |         仅支持 `--dry-run`，多余参数报错（local-sync.ts:69-74）          |                       POST body `{dryRun}`（schemas.ts:21-23）；GET 无 body，dryRun 默认 false 即真同步                        |
-|        鉴权        |                不经过 token 鉴权（local-sync.ts:66 注释）                |           POST 需 `Bearer NITRO_KNOWLEDGE_SYNC_TOKEN`（auth.ts:24-26）；GET 需 `Bearer CRON_SECRET`（auth.ts:21-23）           |
-|     服务层来源     | `createLocalRagRuntime`（local-sync.ts:47-64）→ 同一 `createRagRuntime`  |                             Nitro plugin 惰性装配（plugins/rag.ts:12-28）→ 同一 `createRagRuntime`                             |
-|      执行模式      | 进程内同步执行，无平台超时；watch 模式 500ms 去抖（local-sync.ts:31-34） | **同步等待**：`handleSyncRequest` 内 `await deps.sync`（contracts/handlers.ts:98-100），非异步任务，受 serverless 函数时长限制 |
-|    知识源可达性    |                   本地/CI checkout 内天然有 docs/docx                    |  依赖 Vercel 函数运行时能读到 docs/docx（deployment spec Requirement 6，`openspec/specs/ai-rag/deployment/spec.md:146-148`）   |
-|    失败返回形态    |             stdout JSON + exitCode 1（local-sync.ts:83-86）              |                                 HTTP 状态码 + JSON（401/403/409/503/500，handlers.ts:101-106）                                 |
-| advisory lock 行为 |                        同样申请锁，冲突时报错退出                        |                               冲突返回 409 KNOWLEDGE_SYNC_CONFLICT（knowledge-sync.ts:172-178）                                |
+|      对比维度      |                                                          CLI（tsx 脚本）                                                           |                                                       HTTP（Nitro 端点）                                                       |
+| :----------------: | :--------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: |
+|      入口命令      |                                                 `pnpm run rag:sync` / `rag:watch`                                                  |                       `POST /v1/knowledge/sync`、`GET /v1/knowledge/sync`、`GET /v1/knowledge/sync-runs`                       |
+|      入口文件      |                                      `scripts/rag-sync.ts:1-12`、`scripts/rag-watch.ts:1-21`                                       |                  `server/routes/v1/knowledge/sync.post.ts:6-28`、`sync.get.ts:6-28`、`sync-runs.get.ts:7-17`                   |
+|        参数        |                                      仅支持 `--dry-run`，多余参数报错（local-sync.ts:69-74）                                       |                       POST body `{dryRun}`（schemas.ts:21-23）；GET 无 body，dryRun 默认 false 即真同步                        |
+|        鉴权        |                                             不经过 token 鉴权（local-sync.ts:66 注释）                                             |           POST 需 `Bearer NITRO_KNOWLEDGE_SYNC_TOKEN`（auth.ts:24-26）；GET 需 `Bearer CRON_SECRET`（auth.ts:21-23）           |
+|     服务层来源     |                              `createLocalRagRuntime`（local-sync.ts:47-64）→ 同一 `createRagRuntime`                               |                             Nitro plugin 惰性装配（plugins/rag.ts:12-28）→ 同一 `createRagRuntime`                             |
+|      执行模式      |                              进程内同步执行，无平台超时；watch 模式 500ms 去抖（local-sync.ts:31-34）                              | **同步等待**：`handleSyncRequest` 内 `await deps.sync`（contracts/handlers.ts:98-100），非异步任务，受 serverless 函数时长限制 |
+|    知识源可达性    | **本地有 docs/docx；CI checkout 内没有**（该目录被 .gitignore:55 忽略，origin/main 不含知识源——2026-09-29 实测修正，详见下方批注） |  依赖 Vercel 函数运行时能读到 docs/docx（deployment spec Requirement 6，`openspec/specs/ai-rag/deployment/spec.md:146-148`）   |
+|    失败返回形态    |                                          stdout JSON + exitCode 1（local-sync.ts:83-86）                                           |                                 HTTP 状态码 + JSON（401/403/409/503/500，handlers.ts:101-106）                                 |
+| advisory lock 行为 |                                                     同样申请锁，冲突时报错退出                                                     |                               冲突返回 409 KNOWLEDGE_SYNC_CONFLICT（knowledge-sync.ts:172-178）                                |
 
 两条路径**共用同一服务层**且被 spec 固化：「一次性命令、POST 与 Cron 三种触发方式 MUST 复用同一同步服务」（`openspec/specs/ai-rag/knowledge-sync/spec.md:138,150`）。
 
@@ -75,7 +75,7 @@ pnpm --filter @ruan-cat-drill-doc/ai-rag-core run build   # 必须先构建 core
 pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync # scripts/rag-sync.ts
 ```
 
-脚本形态：`scripts/rag-sync.ts` 是普通 tsx 顶层 await 脚本，把 `process.env` 注入 `createLocalRagRuntime`（rag-sync.ts:5-10），用 Node `postgres` 客户端直连 Neon（rag-runtime.ts:189,216-219），无 HTTP 依赖，GitHub Actions checkout 内天然有 docs/docx（290 个 md）。CI job 上限 6 小时，远超全量重建所需。
+脚本形态：`scripts/rag-sync.ts` 是普通 tsx 顶层 await 脚本，把 `process.env` 注入 `createLocalRagRuntime`（rag-sync.ts:5-10），用 Node `postgres` 客户端直连 Neon（rag-runtime.ts:189,216-219），无 HTTP 依赖。~~GitHub Actions checkout 内天然有 docs/docx（290 个 md）~~ **此断言已被证伪（2026-09-29 GA 首跑实测）**：docs/docx 整目录被 .gitignore 忽略，CI checkout 内没有任何知识源。CI job 上限 6 小时，远超全量重建所需。
 
 必需环境变量清单（来自 `createLocalRagRuntime` 的映射 `local-sync.ts:50-62` + 配置门禁 `rag-runtime.ts:19-27,177-179` + `rag-assembly.ts:124-134`）：
 
@@ -113,3 +113,11 @@ pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync # scripts/rag-sync.ts
 5. **HTTP 同步是同步等待模式，全量重建有 serverless 超时风险**：`handleSyncRequest` 直接 `await deps.sync`（handlers.ts:98-100），无异步任务/轮询机制。写入为逐文件事务、逐 chunk INSERT（knowledge-sync.ts:305-356），无 COPY 批量；290 文件全量时串行 embedding 调用线性累加。若走 Vercel Cron，适合「未变更轮高频 + 全量重建交给别处」的组合；GA 直跑无此限制（job 上限 6h）。
 6. **并发与幂等护栏完备**：non-pooled 会话上的 `pg_try_advisory_lock` 拒绝并发同步返回 409（knowledge-sync.ts:100,168-179；spec.md:152-157）；文档/chunk 主键内容派生幂等（knowledge-sync.ts:544-553）；删除对账仅在扫描完整时执行（knowledge-sync.ts:379-394）。调度重叠（cron 重入、手动触发撞车）不会损坏数据，只会 409。
 7. **`maxEmbeddingTexts` 与 `syncRuns` 游标未接线**：前者默认无限（rag-runtime.ts:213-229 未传、knowledge-sync.ts:112-113）；`syncRunsQuerySchema` 有 `cursor` 字段（schemas.ts:25-30）但服务端只按 limit 查询（knowledge-sync.ts:131-140）——对定时调度无影响，但对「超大规模知识源失控」缺少一道保险丝。
+
+---
+
+## ⚠️ 2026-09-29 重要修正批注
+
+本笔记「候选 a（GA 直跑 CLI）」的前提「GitHub Actions checkout 内天然有 docs/docx（290 个 md）」**已被实测证伪**：`docs/docx` 整目录在 `.gitignore:55` 被忽略（本地由 DOCX 转换管线生成的产物），`origin/main` 不含任何知识源文件。GA 首跑（run 36569710912）workflow 层 exit 0，但同步层真实统计为 `status:"partial", scannedFileCount:0, failedFiles:["docs/docx"]`——CI 内扫 0 个文件。
+
+**推论**：GA 直跑 CLI 的同步能力当前**不成立**，push `paths: docs/**` 触发与 schedule 兜底轮都会扫 0 文件。知识库数据的生产事实源目前是**本地 CLI 同步**（本地连 Neon 写入）。知识源分发机制（进 git / CI 内跑 DOCX 转换两级管线 / 维持本地 CLI 为主）为独立开放决策，拍板后需修订 knowledge-sync spec（SY-0 delta Requirement 8 的知识源前提）与 workflow。证据链见 `learn-agents-ui/browser-evidence/SY/2026-09-29-ga-sync-first-run.md` 第 5 节。

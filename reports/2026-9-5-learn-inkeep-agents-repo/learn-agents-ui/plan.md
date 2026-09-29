@@ -1311,6 +1311,14 @@ import { mountAiChat, AiChat } from "@ruan-cat-drill-doc/ai-vue";
 
 ### 8.2 非功能验收
 
+> **⚠️ 2026-09-30 00:23 审计批注：本节非功能验收从未实测。** 以下五项没有证据记录，总表 ✅ 只覆盖功能验收。实测方案（一声令下即可执行）：
+>
+> 1. **TS 严格模式**：`pnpm -r --filter "./packages/*" run typecheck`（秒级）；
+> 2. **VitePress SSR 构建**：`pnpm run build:doc-in-vercel` 或 `pnpm --filter ./docs run build`（分钟级，dev CI 已等效跑通 `生产构建链路自检` ✓ 可引证）；
+> 3. **包体积 <15KB**：`pnpm --filter @ruan-cat-drill-doc/ai-vue run build` 后对 dist 产物 gzip 计量（需确认体积口径：不含 Vue 运行时）；
+> 4. **tree-shaking**：`node_modules/.bin/tsx` 脚本分别以根导入与 `./mount` 子路径导入构建两次，对比产物是否剔除未用组件；
+> 5. **单测覆盖率 >85%**：vitest `--coverage`（需确认 @vitest/coverage-v8 是否已安装）。
+
 - [ ] ai-vue 包体积增量 < 15KB（gzip，不含 Vue 运行时）
 - [ ] `mountAiChat` 通过 `./mount` 子路径导入时 tree-shaking 正常
 - [ ] TypeScript 严格模式无报错
@@ -2681,6 +2689,8 @@ v2 提供官方主题入口（dist 实测类型）：`ConfigProviderProps { name
 | P4   | Sidebar/Modal/函数式嵌入   | 复用 AiChat 全量                        | 容器组件、`mountAiChat`                          |
 
 ### 13.6 验收标准
+
+> **⚠️ 2026-09-30 00:23 审计批注**：13.6 验收标准中的**非功能类条目**（锁版本 diff 干净、tree-shaking、体积）与 8.2 同批未实测；**功能类条目**（Sender 迁移行为一致、BubbleList 渲染回归、vitest 全量通过、ConfigProvider 主题生效）已由 commit 历史（♻️ refactor Sender→XSender 等）与三包测试全绿覆盖。实测安排随 8.2 同批执行。
 
 - [ ] `vue-element-plus-x` 锁定 `^2.0.3`，`pnpm-lock.yaml` 入库且 diff 干净
 - [ ] `Sender`→`XSender` 迁移后发送、停止、loading 禁用逻辑与升级前行为一致
