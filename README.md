@@ -66,6 +66,14 @@ docs/docx
 
 完整评测、部署和浏览器证据见 [OpenSpec change](./openspec/changes/ai-rag-phase2/) 与 [生产浏览器记录](./openspec/changes/ai-rag-phase2/evidence/2026-08-28-production-browser.md)。
 
+### 3.5 RAG 命令、embedding 耗时与 Cloudflare 额度速览
+
+接手知识库维护前，先知道三件事（详细版见文档站 [RAG embedding 命令、模型消耗与频度纪律](./docs/about/rag-embedding-cost.md)，或仓库内 `docs/about/rag-embedding-cost.md`）：
+
+1. **`run-parameter-evaluation` 参数评估脚本耗时很长（约 18 分钟）是预期行为**——它要对 290 个文档做三种 chunk profile 的全量 embedding（约 1.9 万个 chunk、750 批次请求），控制台持续输出 `profile=xxx embedded=当前/总数` 进度即是在正常工作，不是卡死。
+2. **额度账本**：embedding 用 Cloudflare Workers AI `@cf/baai/bge-m3`（1024 维），免费额度 10,000 Neurons/天 ≈ 930 万 input tokens。单次全量同步约 1,600 Neurons（15~20% 日额度），参数评估一轮约 5,200 Neurons（约一半），增量同步与每日兜底轮几乎零消耗（内容哈希未变的文件自动跳过）。
+3. **频度纪律**：push 驱动增量为主 + 每日兜底一次；全量重建与参数评估**错峰、不同日各 ≤1 轮**（Neurons 是账户级共享额度池）。Cloudflare 偶发 502 时等待约 90 秒人工重跑即可。
+
 ### 3.5 已知边界
 
 - 当前对话浮层的视觉层级和信息密度需要后续单独进行 UI 重构；这不影响已验证的检索、流式、停止和来源跳转能力。
