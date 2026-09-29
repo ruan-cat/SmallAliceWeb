@@ -58,8 +58,9 @@ describe("EV-4 evaluation_runs 仓储单元", () => {
 		expect(statement).toContain("RETURNING");
 		expect(parameters?.[1]).toBe("abc123def456");
 		expect(parameters?.[2]).toBe("retrieval");
-		expect(parameters?.[3]).toBe(JSON.stringify({ mode: "local" }));
-		expect(parameters?.[4]).toBe(JSON.stringify({ recallAt5: 0.8 }));
+		// jsonb 列传原生对象（postgres-js 字符串参数会双重编码，2026-09-29 jsonb lab 实证）
+		expect(parameters?.[3]).toEqual({ mode: "local" });
+		expect(parameters?.[4]).toEqual({ recallAt5: 0.8 });
 		expect(parameters?.[5]).toBeNull();
 	});
 

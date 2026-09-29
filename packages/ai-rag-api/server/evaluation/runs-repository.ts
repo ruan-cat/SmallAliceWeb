@@ -91,8 +91,10 @@ export function createEvaluationRunsRepository(options: {
 					id,
 					record.datasetVersion,
 					kind,
-					record.params === undefined ? null : JSON.stringify(record.params),
-					JSON.stringify(record.metrics),
+					// postgres-js 对 jsonb 列须传原生对象：字符串参数会被整体存为 JSON
+					// 字符串值（双重编码），读回仍是 string（2026-09-29 jsonb lab 实证）
+					record.params === undefined ? null : record.params,
+					record.metrics,
 					record.corpusIsolation ?? null,
 					clock(),
 				],
