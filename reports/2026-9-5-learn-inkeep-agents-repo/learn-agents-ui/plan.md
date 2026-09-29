@@ -3443,6 +3443,10 @@ jobs:
 
 ---
 
+## 十八点五、openspec 工件清退与归档指针（2026-09-30 用户决策）[新增]
+
+> **⚠️ 用户决策：learn-agents-ui 系列任务不再使用 openspec 任务工件，进度记录统一以本 plan.md 与 spec.md 为唯一载体。** 原两个 openspec 变更包（`2026-09-26-chat-context-and-model-switch`＝CC-0/MS-0，`2026-09-29-ga-knowledge-sync-schedule`＝SY-0）已全文归档至本目录 `openspec-archive/`（proposal + tasks + delta spec 零删改），原目录已删除。其 delta spec 的能力修订文本（chat-api Requirement 1/8 修订与 Requirement 10/11 新增、knowledge-sync Requirement 5 修订与 Requirement 8 新增）仍为对应 spec 章节的修订蓝本——chat-api 修订已实施落地（CC/MS 组 ✅），knowledge-sync Requirement 8 已按方案 C 标注搁置。
+
 ## 十九、执行运行手册（面向独立执行会话）[新增]
 
 > 受众：**零上下文的新执行会话**。本手册是执行流程的唯一事实源——无论哪个 agent、哪个会话来执行，都按本章协议开工、追踪、汇报、恢复。第六章任务表是任务定义（静态），19.6 总表是进度追踪（动态）。
