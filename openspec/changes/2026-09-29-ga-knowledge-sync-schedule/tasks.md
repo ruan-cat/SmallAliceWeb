@@ -22,5 +22,11 @@
 
 - [ ] 4.1 [验证] `workflow_dispatch` 手动首跑：未变更轮快速通过（读 290 文件 + 哈希对比，预期分钟级），Actions 页面运行记录 success。
 - [x] ~~4.2 [验证] 人为修改一个 `docs/**` 下 md → push main → 触发增量~~（2026-09-29 22:10 用户决策取消：docs/docx 整目录 gitignored、origin/main 不含知识源，push 路径前提不成立；详见 browser-evidence/EV/2026-09-29-remaining-items-plan.md 第 2.3 节）。知识源分发机制为独立开放决策。
-- [ ] 4.3 [验证] 次日核对 schedule 自动运行成功（Actions 运行历史）。
+- [x] 4.3 [验证] 次日核对 schedule 自动运行成功（Actions 运行历史）。**（2026-09-30 00:36 随方案 C 决策失去实际意义：CI 无知识源，schedule 轮为空转；由 automation f0b99da9 代执行记录后关闭。）**
 - [ ] 4.4 [验证] 检查 workflow 日志无任何 Secret 值泄漏（GitHub 自动 `::add-mask::` 之外人工复核）。
+
+## 5. 决策记录（2026-09-30 00:36）
+
+- **知识源分发选方案 C：本地 CLI 为主、手动低频更新**——知识库更新 = 维护者本地执行 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync`（直连 Neon 写入），这是唯一事实源。
+- GA workflow（rag-sync-schedule.yaml，已合入 main）当前空转（CI 无知识源），调度路线搁置；workflow 文件处置（删除/保留留档）为后续待确认项，当前保留不动。
+- 非功能遗留不变：单文件增量断言已取消（用户决策）；schedule 核对由 automation 代执行。

@@ -120,4 +120,4 @@ pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync # scripts/rag-sync.ts
 
 本笔记「候选 a（GA 直跑 CLI）」的前提「GitHub Actions checkout 内天然有 docs/docx（290 个 md）」**已被实测证伪**：`docs/docx` 整目录在 `.gitignore:55` 被忽略（本地由 DOCX 转换管线生成的产物），`origin/main` 不含任何知识源文件。GA 首跑（run 36569710912）workflow 层 exit 0，但同步层真实统计为 `status:"partial", scannedFileCount:0, failedFiles:["docs/docx"]`——CI 内扫 0 个文件。
 
-**推论**：GA 直跑 CLI 的同步能力当前**不成立**，push `paths: docs/**` 触发与 schedule 兜底轮都会扫 0 文件。知识库数据的生产事实源目前是**本地 CLI 同步**（本地连 Neon 写入）。知识源分发机制（进 git / CI 内跑 DOCX 转换两级管线 / 维持本地 CLI 为主）为独立开放决策，拍板后需修订 knowledge-sync spec（SY-0 delta Requirement 8 的知识源前提）与 workflow。证据链见 `learn-agents-ui/browser-evidence/SY/2026-09-29-ga-sync-first-run.md` 第 5 节。
+**推论**：GA 直跑 CLI 的同步能力当前**不成立**，push `paths: docs/**` 触发与 schedule 兜底轮都会扫 0 文件。知识库数据的生产事实源目前是**本地 CLI 同步**（本地连 Neon 写入）。知识源分发机制**已于 2026-09-30 00:36 拍板选方案 C：本地 CLI 为主、手动低频更新**——GA 调度路线搁置，workflow 保留空转留档，knowledge-sync spec（SY-0 delta Requirement 8）已标注搁置前提。证据链见 `learn-agents-ui/browser-evidence/SY/2026-09-29-ga-sync-first-run.md` 第 5 节。

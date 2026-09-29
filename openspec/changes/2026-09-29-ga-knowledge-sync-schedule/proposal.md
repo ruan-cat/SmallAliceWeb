@@ -2,6 +2,8 @@
 
 ## 1. Why
 
+> **⚠️ 2026-09-30 00:36 状态更新：用户决策知识源分发选方案 C（本地 CLI 为主、手动低频更新），GA 调度路线正式搁置。** 本变更包的 SY-1（workflow 文件）已合入但当前空转（CI 无知识源），SY-3 4.3 次日 schedule 核对失去实际意义（由 automation 代执行记录）。本变更包规格保留为知识源分发方案落地后的重启蓝本。
+
 本变更是 learn-agents-ui 计划第十八章 SY 组任务（SY-1..SY-3）的**规格前置**（openspec 纪律：knowledge-sync spec 修订先行合入，才允许合入 workflow 文件）：
 
 1. **GA 触发路径缺位**：现状 Requirement 5 只定义了 CLI 一次性命令、`POST /v1/knowledge/sync` 与「Vercel Cron 调用」三种触发方式，而 2026-08-07 拍板「不配置 Cron」否决的是 **Vercel Cron**（vercel.json 配置污染 + 套餐限制）；知识库同步的实际调度责任（push 增量 + 每日兜底 + 手动首跑）需要由 GitHub Actions workflow 承接（spec 11.9 / plan 18.2），该行为 MUST 先在 spec 固化。

@@ -33,6 +33,8 @@
 
 ### Requirement: 8. GitHub Actions 调度触发路径
 
+> **⚠️ 2026-09-30 00:36 用户决策：本 GA 调度路径正式搁置（知识源分发选方案 C：本地 CLI 为主、手动低频更新）。** 理由：docs/docx 整目录 gitignored，CI checkout 内无知识源（首跑实测 scannedFileCount=0），push/schedule 触发均为空转。以下规格保留为知识源分发方案（进 git / CI 生成）未来落地时的重启蓝本；当前生效的同步事实源是本地 CLI（rag:sync 直连 Neon）。
+
 系统 MUST 支持 GitHub Actions workflow 作为知识库同步的调度承担方，workflow MUST 提供三种触发进入方式：push main（仅当 `docs/**` 路径文件变更，执行增量同步）、schedule 每日兜底（UTC 低峰时刻）与 `workflow_dispatch` 手动触发。GA job MUST 复用现有 `rag:sync` 一次性命令管线（先构建 `ai-rag-core`，再执行同步脚本），MUST NOT 为 GA 路径新增第二套同步实现，MUST NOT 修改同步管线代码。workflow 所需的 8 类 `NITRO_` 前缀环境变量（`NITRO_DATABASE_URL`、`NITRO_SYNC_DATABASE_URL`、`NITRO_EMBEDDING_MODEL`、`NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN`、`NITRO_KNOWLEDGE_SYNC_TOKEN`、`NITRO_CRON_SECRET`，以及按激活 provider 选择的 `NITRO_ANTHROPIC_API_KEY` 或 `NITRO_OPENAI_API_KEY`）MUST 全部经 GitHub Actions Secrets 注入；`NITRO_SYNC_DATABASE_URL` MUST 为 non-pooled 直连连接串（pooled URL 使 advisory lock 失效，属配置错误）；`NITRO_KNOWLEDGE_SYNC_TOKEN` 与 `NITRO_CRON_SECRET` 为装配门禁变量，MUST 非空。workflow MUST 配置 concurrency 组且 `cancel-in-progress: false`，与 advisory lock 共同保证同步不可并发。Secrets 值 MUST NOT 出现在 workflow 日志、代码、文档与本仓库任何文件。GA 路径 MUST NOT 触碰或重建 `vercel.json`，MUST NOT 与 Vercel 部署链路耦合。
 
 #### Scenario: push main 增量触发

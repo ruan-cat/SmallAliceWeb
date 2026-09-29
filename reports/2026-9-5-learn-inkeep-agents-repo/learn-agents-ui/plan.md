@@ -3332,6 +3332,14 @@ export const evaluationRuns = pgTable("evaluation_runs", {
 
 ## 十八、知识库同步 GitHub Actions 调度实施方案 [新增]
 
+> **✅ 2026-09-30 00:36 用户决策（重大）：知识源分发机制选方案 C——本地 CLI 为主、手动低频更新。**
+>
+> - 知识库更新 = 维护者本地执行 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync`（直连 Neon 写入），这是唯一事实源；
+> - GA workflow（rag-sync-schedule.yaml）在 CI 内无知识源（docs/docx gitignored），push/schedule 触发均为空转（首跑实测 scannedFileCount=0），**调度路线正式搁置**；
+> - workflow 文件处置（删除 / 保留仅 workflow_dispatch 留档）为后续待确认项，当前保留不动；
+> - openspec delta spec（Requirement 8）已标注搁置前提，保留为未来知识源分发方案落地后的重启蓝本；
+> - SY-3 4.3 次日 schedule 核对随决策失去实际意义（空转轮），由 automation（f0b99da9）代执行记录后关闭。
+
 > 2026-09-05 新增。落地 spec 11.9：GA 双触发（push main 增量 + schedule 每日兜底）驱动现有 rag-sync 管线。依据：探索笔记 E（`research-notes/E-sync-pipeline.md`）——CI 无硬阻塞，需 8 类 `NITRO_*` Secrets、先构建 ai-rag-core、advisory lock 要求 non-pooled 连接串。
 
 ### 18.1 文件变更预览

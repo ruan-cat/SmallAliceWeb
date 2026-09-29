@@ -48,3 +48,7 @@ postgres:// 明文: 0 / sk- key 明文: 0 / Bearer 明文: 0
 - **同步层 PARTIAL（假绿）**：真实统计 `status:"partial", scannedFileCount:0, failedFiles:["docs/docx"]`——`docs/docx` 整目录 gitignored（.gitignore:55），`origin/main` 不含知识源，CI checkout 内无任何 md 可扫。
 
 **影响面**：push main `paths: docs/**` 触发的设计前提在当前仓库形态下不成立（知识源不进 git）；schedule 兜底轮同样扫 0 文件。research-notes/E「checkout 内天然有 docs/docx」为错误断言。知识源分发机制（进 git / CI 生成 / 维持本地 CLI 为主）待用户拍板后另行修订 spec 与 workflow。
+
+## 6. 终局决策（2026-09-30 00:36）
+
+用户拍板**知识源分发选方案 C：本地 CLI 为主、手动低频更新**——GA 调度路线正式搁置（CI 内无知识源，push/schedule 均空转）。workflow 文件保留空转留档；SY-3 4.3 schedule 核对失去实际意义，由 automation（f0b99da9）代执行记录后关闭。本文件第 1/3 节的「SUCCESS」按第 5 节两层口径理解；本地 `rag:sync` 为唯一同步事实源。
