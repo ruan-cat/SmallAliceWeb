@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import postgres from "postgres";
 import { createCloudflareEmbeddingProvider } from "../server/providers/cloudflare-embedding";
 import { runRetrievalEvaluation, parseEvalQuestions } from "../server/evaluation/evaluator";
+import { computeDatasetVersion, createEvaluationRunsRepository } from "../server/evaluation/runs-repository";
 import { createPostgresSearchProvider } from "../server/search/postgres-search";
 
 const questions = parseEvalQuestions(
@@ -68,5 +69,27 @@ const output = { embeddingModel: process.env.NITRO_EMBEDDING_MODEL, counts, repo
 const outputPath = resolve(process.cwd(), "openspec/changes/ai-rag-phase2/evidence/2026-08-27-real-evaluation.json");
 await mkdir(resolve(process.cwd(), "openspec/changes/ai-rag-phase2/evidence"), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+
+/** EV-2：评估运行落库（复用脚本既有连接；失败仅 warn，不阻断 stdout 与证据文件）。 */
+try {
+	const evaluationRepository = createEvaluationRunsRepository({
+		executor: {
+			execute: (statement, parameters) =>
+				sql.unsafe(statement, [...(parameters ?? [])] as Parameters<typeof sql.unsafe>[1]),
+		},
+	});
+	const inserted = await evaluationRepository.insertEvaluationRun({
+		datasetVersion: computeDatasetVersion(JSON.stringify(questions)),
+		kind: "real",
+		params: { embeddingModel: process.env.NITRO_EMBEDDING_MODEL },
+		metrics: output,
+	});
+	console.log(`[evaluation-runs] 已写入评估运行 ${inserted.id}`);
+} catch (error) {
+	console.warn(
+		`[evaluation-runs] 落库失败（不阻断评估输出）: ${error instanceof Error ? error.message : String(error)}`,
+	);
+}
+
 console.log(JSON.stringify(output, null, 2));
 await sql.end({ timeout: 5 });

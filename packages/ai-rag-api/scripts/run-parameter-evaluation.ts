@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { prepareKnowledgeBase } from "../server/services/prepare-knowledge";
 import { createCloudflareEmbeddingProvider } from "../server/providers/cloudflare-embedding";
 import { runRetrievalEvaluation, parseEvalQuestions } from "../server/evaluation/evaluator";
+import { computeDatasetVersion, createEvaluationRunsRepository } from "../server/evaluation/runs-repository";
 import { createPostgresSearchProvider } from "../server/search/postgres-search";
 import { createAdaptiveEmbeddings, DEFAULT_EMBEDDING_BATCH_SIZE } from "./adaptive-embedding-batch";
 
@@ -164,6 +165,32 @@ try {
 		`${JSON.stringify(output, null, 2)}\n`,
 		"utf8",
 	);
+
+	/** EV-2：评估运行落库（复用脚本既有连接；失败仅 warn，不阻断 stdout 与证据文件）。 */
+	try {
+		const evaluationRepository = createEvaluationRunsRepository({
+			executor: {
+				execute: (statement, parameters) =>
+					sql.unsafe(statement, [...(parameters ?? [])] as Parameters<typeof sql.unsafe>[1]),
+			},
+		});
+		const inserted = await evaluationRepository.insertEvaluationRun({
+			datasetVersion: computeDatasetVersion(JSON.stringify(questions)),
+			kind: "parameter",
+			params: {
+				embeddingModel: process.env.NITRO_EMBEDDING_MODEL,
+				profiles: profiles.map((profile) => profile.name),
+			},
+			metrics: output,
+			corpusIsolation: output.isolation,
+		});
+		console.log(`[evaluation-runs] 已写入评估运行 ${inserted.id}`);
+	} catch (error) {
+		console.warn(
+			`[evaluation-runs] 落库失败（不阻断评估输出）: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
+
 	console.log(JSON.stringify(output, null, 2));
 } finally {
 	await connection.release();

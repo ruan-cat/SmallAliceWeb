@@ -1,9 +1,7 @@
 import { readFile, writeFile as writeFileToDisk } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import {
-	parseGoldSetJsonl,
-	type GoldSetRecord,
-} from "../server/evaluation/gold-set";
+import { parseGoldSetJsonl, type GoldSetRecord } from "../server/evaluation/gold-set";
+import { computeDatasetVersion, recordEvaluationRunFromEnv } from "../server/evaluation/runs-repository";
 import {
 	runRetrievalEvaluation,
 	type EvalQuestion,
@@ -50,9 +48,7 @@ const defaultConfigVersion = "ai-rag-phase3";
 const promptfooConfigPath = "packages/ai-rag-api/promptfoo.yaml";
 
 /** 运行 dry/local/external 三种评测边界，并返回可审计的退出状态。 */
-export async function runRagEvaluation(
-	options: RagEvaluationRunOptions = {},
-): Promise<RagEvaluationRunResult> {
+export async function runRagEvaluation(options: RagEvaluationRunOptions = {}): Promise<RagEvaluationRunResult> {
 	const mode = options.mode ?? "dry";
 	const configVersion = options.configVersion ?? defaultConfigVersion;
 	try {
@@ -77,16 +73,10 @@ export async function runRagEvaluation(
 			);
 		}
 
-		if (mode === "external")
-			return runExternal(options, questions.length, configVersion);
+		if (mode === "external") return runExternal(options, questions.length, configVersion);
 		if (!options.providers) {
 			return await finalize(
-				failedResult(
-					mode,
-					questions.length,
-					configVersion,
-					"local 模式缺少显式 provider",
-				),
+				failedResult(mode, questions.length, configVersion, "local 模式缺少显式 provider"),
 				options,
 			);
 		}
@@ -117,34 +107,24 @@ export async function runRagEvaluation(
 			options,
 		);
 	} catch (error) {
-		return await finalize(
-			failedResult(mode, 0, configVersion, sanitizeError(error)),
-			options,
-		);
+		return await finalize(failedResult(mode, 0, configVersion, sanitizeError(error)), options);
 	}
 }
 
 /** 将 gold-set 题目转换为 evaluator 兼容的关键词与 graded gold 输入。 */
-export function toEvalQuestions(
-	records: readonly GoldSetRecord[],
-): EvalQuestion[] {
+export function toEvalQuestions(records: readonly GoldSetRecord[]): EvalQuestion[] {
 	return records.map((record) => ({
 		id: record.id,
 		question: record.question,
 		category: record.category,
-		expected_keywords: record.requiredClaims?.length
-			? [...record.requiredClaims]
-			: [record.question],
+		expected_keywords: record.requiredClaims?.length ? [...record.requiredClaims] : [record.question],
 		gold: record.gold.map(({ chunkId, grade }) => ({ chunkId, grade })),
 	}));
 }
 
-async function loadQuestions(
-	options: RagEvaluationRunOptions,
-): Promise<EvalQuestion[]> {
+async function loadQuestions(options: RagEvaluationRunOptions): Promise<EvalQuestion[]> {
 	if (options.questions) return toEvalQuestions(options.questions);
-	if (options.goldSetText !== undefined)
-		return toEvalQuestions(parseGoldSetJsonl(options.goldSetText));
+	if (options.goldSetText !== undefined) return toEvalQuestions(parseGoldSetJsonl(options.goldSetText));
 	return [];
 }
 
@@ -187,15 +167,7 @@ async function runExternal(
 			options,
 		);
 	} catch (error) {
-		return await finalize(
-			failedResult(
-				"external",
-				questionCount,
-				configVersion,
-				sanitizeError(error),
-			),
-			options,
-		);
+		return await finalize(failedResult("external", questionCount, configVersion, sanitizeError(error)), options);
 	}
 }
 
@@ -226,11 +198,20 @@ async function finalize(
 	options: RagEvaluationRunOptions,
 ): Promise<RagEvaluationRunResult> {
 	if (options.outputPath) {
-		const writer =
-			options.writeFile ??
-			((path, content) => writeFileToDisk(path, content, "utf8"));
+		const writer = options.writeFile ?? ((path, content) => writeFileToDisk(path, content, "utf8"));
 		await writer(options.outputPath, `${JSON.stringify(result, null, 2)}\n`);
 	}
+	/** EV-2：评估运行落库（自建一次性连接；失败仅 warn，stdout 与 JSON 证据文件照旧产出）。 */
+	await recordEvaluationRunFromEnv({
+		datasetVersion: computeDatasetVersion(options.goldSetText ?? ""),
+		kind: result.mode === "local" ? "retrieval" : "promptfoo",
+		params: {
+			mode: result.mode,
+			configVersion: result.configVersion,
+			questionCount: result.questionCount,
+		},
+		metrics: result,
+	});
 	return result;
 }
 
@@ -244,21 +225,13 @@ function sanitizeError(error: unknown): string {
 }
 
 async function main(argv: readonly string[]) {
-	const mode = argv.includes("--local")
-		? "local"
-		: argv.includes("--external")
-			? "external"
-			: "dry";
+	const mode = argv.includes("--local") ? "local" : argv.includes("--external") ? "external" : "dry";
 	const outputIndex = argv.indexOf("--output");
 	const outputPath = outputIndex >= 0 ? argv[outputIndex + 1] : undefined;
-	const goldSetText = await readFile(
-		new URL("../data/rag-gold-set.jsonl", import.meta.url),
-		"utf8",
-	);
+	const goldSetText = await readFile(new URL("../data/rag-gold-set.jsonl", import.meta.url), "utf8");
 	const result = await runRagEvaluation({ mode, goldSetText, outputPath });
 	process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 	process.exitCode = result.exitCode;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1])
-	await main(process.argv.slice(2));
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) await main(process.argv.slice(2));
