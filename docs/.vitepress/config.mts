@@ -63,6 +63,19 @@ const userConfig = setUserConfig(
 		// 钻头项目有很多emf矢量图 需要添加到vite的assetsInclude中
 		vite: {
 			assetsInclude: ["**/*.emf"],
+			server: {
+				/**
+				 * dev 联调代理：把 /v1/* 相对路径转发到本地 Nitro API（默认 3000 端口）。
+				 *
+				 * useKnowledgeChat 的默认聊天路径是同源相对路径（/v1/chat、/v1/models），
+				 * 该路径仅在生产的「同源代理」模式下可用（plan 19.7）；本地 dev 缺少代理时，
+				 * /v1/models 会被 Vite fallback 成 index.html，导致 loadModels 静默失败、
+				 * 模型切换选择器永不渲染（2026-09-29 MS-3 dev 联调 bug）。
+				 */
+				proxy: {
+					"/v1": "http://localhost:3000",
+				},
+			},
 		},
 
 		markdown: {
