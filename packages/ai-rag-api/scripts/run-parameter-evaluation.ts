@@ -5,6 +5,7 @@ import { prepareKnowledgeBase } from "../server/services/prepare-knowledge";
 import { createCloudflareEmbeddingProvider } from "../server/providers/cloudflare-embedding";
 import { runRetrievalEvaluation, parseEvalQuestions } from "../server/evaluation/evaluator";
 import { computeDatasetVersion, createEvaluationRunsRepository } from "../server/evaluation/runs-repository";
+import { buildEmbeddingText } from "@ruan-cat-drill-doc/ai-rag-core";
 import { createPostgresSearchProvider } from "../server/search/postgres-search";
 import { createAdaptiveEmbeddings, DEFAULT_EMBEDDING_BATCH_SIZE } from "./adaptive-embedding-batch";
 
@@ -50,6 +51,7 @@ try {
 			heading_anchor text NOT NULL,
 			chunk_index integer NOT NULL,
 			image_urls jsonb NOT NULL,
+			search_text text NOT NULL DEFAULT '',
 			embedding vector(1024) NOT NULL
 		)
 	`);
@@ -83,12 +85,19 @@ try {
 					chunk.headingAnchor,
 					chunk.chunkIndex,
 					JSON.stringify(chunk.imageUrls),
+					// 与 knowledge-sync 写主表 search_text 同源：确定性标题上下文 + 正文
+					buildEmbeddingText({
+						sourcePath: chunk.sourcePath,
+						headingPath: chunk.headingPath,
+						content: chunk.content,
+						imageUrls: chunk.imageUrls,
+					}),
 					`[${vector.join(",")}]`,
 				);
-				return `($${start}, $${start + 1}, $${start + 2}, CAST($${start + 3} AS jsonb), $${start + 4}, $${start + 5}, $${start + 6}, CAST($${start + 7} AS jsonb), CAST($${start + 8} AS vector))`;
+				return `($${start}, $${start + 1}, $${start + 2}, CAST($${start + 3} AS jsonb), $${start + 4}, $${start + 5}, $${start + 6}, CAST($${start + 7} AS jsonb), $${start + 8}, CAST($${start + 9} AS vector))`;
 			});
 			await connection.unsafe(
-				`INSERT INTO ${evaluationTable} (id, content, source_path, heading_path, heading_index, heading_anchor, chunk_index, image_urls, embedding) VALUES ${values.join(", ")}`,
+				`INSERT INTO ${evaluationTable} (id, content, source_path, heading_path, heading_index, heading_anchor, chunk_index, image_urls, search_text, embedding) VALUES ${values.join(", ")}`,
 				parameters as Parameters<typeof connection.unsafe>[1],
 			);
 			process.stdout.write(
