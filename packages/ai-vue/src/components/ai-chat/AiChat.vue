@@ -157,7 +157,7 @@ function handleExampleQuestionSelect(question: string) {
 }
 
 /** 处理反馈提交：更新已反馈集合 + emit 事件 + 调用回调 + 触发埋点 */
-function handleFeedbackSubmit(payload: FeedbackPayload) {
+function handleFeedbackSubmit(payload: Omit<FeedbackPayload, "conversationId">) {
 	feedbackSubmitted.value.add(payload.messageId);
 	// 触发 Vue 响应式更新（Set 替换而非 add）
 	feedbackSubmitted.value = new Set(feedbackSubmitted.value);
