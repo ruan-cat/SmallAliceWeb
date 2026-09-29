@@ -39,3 +39,12 @@ postgres:// 明文: 0 / sk- key 明文: 0 / Bearer 明文: 0
 
 1. **单文件增量断言**：人为修改一个 `docs/**` md → push main → 核对仅该文件重新 embedding（触发路径已实机验证，精确断言待下次自然文档更新时补做）。
 2. **次日 schedule 核对**（4.3）：UTC 18:30 自动运行，物理需等一天，Actions 页面核对。
+
+## 5. 口径修正（2026-09-29 晚间补录）
+
+第 1/3 节「首跑 SUCCESS」需降级为两层口径：
+
+- **workflow 管线层 SUCCESS**：checkout/install/构建/脚本执行链路全部跑通，CLI exit 0。
+- **同步层 PARTIAL（假绿）**：真实统计 `status:"partial", scannedFileCount:0, failedFiles:["docs/docx"]`——`docs/docx` 整目录 gitignored（.gitignore:55），`origin/main` 不含知识源，CI checkout 内无任何 md 可扫。
+
+**影响面**：push main `paths: docs/**` 触发的设计前提在当前仓库形态下不成立（知识源不进 git）；schedule 兜底轮同样扫 0 文件。research-notes/E「checkout 内天然有 docs/docx」为错误断言。知识源分发机制（进 git / CI 生成 / 维持本地 CLI 为主）待用户拍板后另行修订 spec 与 workflow。
