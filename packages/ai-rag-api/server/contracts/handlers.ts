@@ -1,19 +1,8 @@
-import {
-	createSourceUrl,
-	resolveSourceHref,
-} from "@ruan-cat-drill-doc/ai-rag-core";
+import { createSourceUrl, resolveSourceHref } from "@ruan-cat-drill-doc/ai-rag-core";
 import { assertKnowledgeSyncAuth, type KnowledgeSyncCredentials } from "./auth";
 import { ApiHttpError, getStatusCode, toErrorResponse } from "./errors";
-export {
-	searchRequestSchema,
-	syncRequestSchema,
-	syncRunsQuerySchema,
-} from "./schemas";
-import {
-	searchRequestSchema,
-	syncRequestSchema,
-	syncRunsQuerySchema,
-} from "./schemas";
+export { searchRequestSchema, syncRequestSchema, syncRunsQuerySchema, evaluationRunsQuerySchema } from "./schemas";
+import { searchRequestSchema, syncRequestSchema, syncRunsQuerySchema, evaluationRunsQuerySchema } from "./schemas";
 
 type SearchItem = {
 	id: string;
@@ -121,6 +110,51 @@ export async function handleSyncRunsRequest(
 		return {
 			status: getStatusCode(error),
 			body: toErrorResponse(error, "同步记录查询失败"),
+		};
+	}
+}
+
+/** 解析分页参数并返回评估运行列表（EV-3，plan 17.4）。查询非法时 400（chat.ts safeParse 约定）。 */
+export async function handleEvaluationRunsRequest(
+	input: unknown,
+	deps: {
+		listRuns: (options: { limit: number; cursor?: string }) => Promise<unknown[]>;
+	},
+) {
+	try {
+		const parsed = evaluationRunsQuerySchema.safeParse(input);
+		if (!parsed.success) {
+			return {
+				status: 400,
+				body: { success: false, code: 400, message: "评估运行查询无效", data: null },
+			};
+		}
+		return {
+			status: 200,
+			body: success({
+				items: await deps.listRuns({ limit: parsed.data.limit, cursor: parsed.data.cursor }),
+			}),
+		};
+	} catch (error) {
+		return {
+			status: getStatusCode(error),
+			body: toErrorResponse(error, "评估运行查询失败"),
+		};
+	}
+}
+
+/** 按 id 返回评估运行详情；不存在时 404 与统一错误体一致。 */
+export async function handleEvaluationRunByIdRequest(id: string, deps: { getRun: (id: string) => Promise<unknown> }) {
+	try {
+		const run = await deps.getRun(id);
+		if (!run) {
+			throw new ApiHttpError(404, "EVALUATION_RUN_NOT_FOUND", "评估运行不存在。");
+		}
+		return { status: 200, body: success(run) };
+	} catch (error) {
+		return {
+			status: getStatusCode(error),
+			body: toErrorResponse(error, "评估运行查询失败"),
 		};
 	}
 }

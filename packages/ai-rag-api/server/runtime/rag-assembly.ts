@@ -18,10 +18,7 @@ export type RagRuntimeConfig = Readonly<RagNitroConfig["runtimeConfig"]> & {
 /** 数据库检索 provider；连接由调用方通过 factory 创建并注入。 */
 export type RagDatabaseProvider = {
 	lexicalSearch: (query: string, limit: number) => Promise<HybridSearchItem[]>;
-	vectorSearch: (
-		embedding: readonly number[],
-		limit: number,
-	) => Promise<HybridSearchItem[]>;
+	vectorSearch: (embedding: readonly number[], limit: number) => Promise<HybridSearchItem[]>;
 };
 
 /** embedding provider；模型连接由调用方通过 factory 创建并注入。 */
@@ -40,6 +37,12 @@ export type RagSyncProvider = {
 	syncRuns: (options: { limit: number }) => Promise<unknown[]>;
 };
 
+/** 评估运行 provider（EV-3）；仓储实现由调用方通过 factory 注入，缺省时评估路由返回 503。 */
+export type RagEvaluationProvider = {
+	evaluationRuns: (options: { limit: number; cursor?: string }) => Promise<unknown[]>;
+	evaluationRun: (id: string) => Promise<unknown>;
+};
+
 type RagSyncFactoryInput = {
 	database: RagDatabaseProvider;
 	config: RagRuntimeConfig;
@@ -47,22 +50,15 @@ type RagSyncFactoryInput = {
 
 /** 所有外部 provider 都必须通过显式 factory 注入。 */
 export type RagRuntimeProviderFactories = {
-	createDatabase: (input: {
-		databaseUrl: string;
-	}) => RagDatabaseProvider | Promise<RagDatabaseProvider>;
-	createEmbedding: (input: {
-		model: string;
-	}) => RagEmbeddingProvider | Promise<RagEmbeddingProvider>;
+	createDatabase: (input: { databaseUrl: string }) => RagDatabaseProvider | Promise<RagDatabaseProvider>;
+	createEmbedding: (input: { model: string }) => RagEmbeddingProvider | Promise<RagEmbeddingProvider>;
 	createModel: (input: {
 		apiKey: string;
 		provider: RagLlmProviderConfig & { id: "openai" | "anthropic" };
 	}) => RagModelProvider | Promise<RagModelProvider>;
-	createSync: (
-		input: RagSyncFactoryInput,
-	) => RagSyncProvider | Promise<RagSyncProvider>;
-	createReranker?: (input: {
-		config: RagRuntimeConfig;
-	}) => RerankerProvider | Promise<RerankerProvider>;
+	createSync: (input: RagSyncFactoryInput) => RagSyncProvider | Promise<RagSyncProvider>;
+	createEvaluation?: (input: RagSyncFactoryInput) => RagEvaluationProvider | Promise<RagEvaluationProvider>;
+	createReranker?: (input: { config: RagRuntimeConfig }) => RerankerProvider | Promise<RerankerProvider>;
 };
 
 /** 同步路由需要的公开配置视图，不暴露数据库 URL、API key 或模型名。 */
@@ -74,10 +70,7 @@ export type RagRuntimeConfigView = Readonly<{
 
 /** 可挂载到 event.context.rag 的完整能力集合。 */
 export type RagRuntimeContext = Readonly<{
-	retrieve: (
-		message: string,
-		options: { limit: number },
-	) => Promise<ChatSource[]>;
+	retrieve: (message: string, options: { limit: number }) => Promise<ChatSource[]>;
 	search: (
 		query: string,
 		options: {
@@ -90,6 +83,9 @@ export type RagRuntimeContext = Readonly<{
 	stream: ChatDependencies["stream"];
 	sync: RagSyncProvider["sync"];
 	syncRuns: RagSyncProvider["syncRuns"];
+	/** EV-3：评估运行只读两枚接口的数据源；未装配 createEvaluation 时缺省（路由 503）。 */
+	evaluationRuns?: RagEvaluationProvider["evaluationRuns"];
+	evaluationRun?: RagEvaluationProvider["evaluationRun"];
 	config: RagRuntimeConfigView;
 }>;
 
@@ -144,9 +140,7 @@ export class RagProviderNotConfiguredError extends Error {
 	}
 }
 
-function requiredConfigMissing(
-	config: RagRuntimeConfig,
-): RagRuntimeRequirement[] {
+function requiredConfigMissing(config: RagRuntimeConfig): RagRuntimeRequirement[] {
 	const missing: RagRuntimeRequirement[] = [];
 	if (!config.databaseUrl.trim()) missing.push("database");
 	if (!config.embeddingModel.trim()) missing.push("embedding");
@@ -192,17 +186,11 @@ function assertProviderFunction<T extends object>(
 	methods: readonly (keyof T)[],
 ): T {
 	if (!provider || typeof provider !== "object") {
-		throw new RagRuntimeProviderError(
-			providerName,
-			new TypeError("factory 未返回 provider 对象"),
-		);
+		throw new RagRuntimeProviderError(providerName, new TypeError("factory 未返回 provider 对象"));
 	}
 	for (const method of methods) {
 		if (typeof provider[method] !== "function") {
-			throw new RagRuntimeProviderError(
-				providerName,
-				new TypeError("provider 缺少 " + String(method) + " 方法"),
-			);
+			throw new RagRuntimeProviderError(providerName, new TypeError("provider 缺少 " + String(method) + " 方法"));
 		}
 	}
 	return provider;
@@ -235,28 +223,28 @@ export async function createRagRuntimeContext(
 	if (missing.length > 0) throw new RagRuntimeNotConfiguredError(missing);
 
 	const database = assertProviderFunction(
-		await initializeProvider("createDatabase", () =>
-			factories.createDatabase({ databaseUrl: config.databaseUrl }),
-		),
+		await initializeProvider("createDatabase", () => factories.createDatabase({ databaseUrl: config.databaseUrl })),
 		"createDatabase",
 		["lexicalSearch", "vectorSearch"],
 	);
 	const embedding = assertProviderFunction(
-		await initializeProvider("createEmbedding", () =>
-			factories.createEmbedding({ model: config.embeddingModel }),
-		),
+		await initializeProvider("createEmbedding", () => factories.createEmbedding({ model: config.embeddingModel })),
 		"createEmbedding",
 		["createEmbedding"],
 	);
 	const modelAdapters = await buildModelAdapters(config, factories);
 	const sync = assertProviderFunction(
-		await initializeProvider("createSync", () =>
-			factories.createSync({ database, config }),
-		),
+		await initializeProvider("createSync", () => factories.createSync({ database, config })),
 		"createSync",
 		["sync", "syncRuns"],
 	);
 	const reranker = await initializeReranker(config, factories.createReranker);
+	/** EV-3：评估仓储为可选 provider——既有测试与部署未提供 createEvaluation 时保持 503 语义。 */
+	const evaluation = factories.createEvaluation
+		? await initializeProvider("createEvaluation", () => factories.createEvaluation!({ database, config })).then(
+				(provider) => assertProviderFunction(provider, "createEvaluation", ["evaluationRuns", "evaluationRun"]),
+			)
+		: undefined;
 
 	const search = async (
 		query: string,
@@ -268,15 +256,12 @@ export async function createRagRuntimeContext(
 		},
 	) => {
 		const finalLimit = options.finalLimit ?? options.limit;
-		const candidateLimit =
-			options.candidateLimit ?? Math.max(finalLimit, options.limit);
+		const candidateLimit = options.candidateLimit ?? Math.max(finalLimit, options.limit);
 		const candidates = await hybridSearch(
 			query,
 			{
-				createEmbedding: (searchQuery) =>
-					embedding.createEmbedding(searchQuery),
-				lexicalSearch: (searchQuery, limit) =>
-					database.lexicalSearch(searchQuery, limit),
+				createEmbedding: (searchQuery) => embedding.createEmbedding(searchQuery),
+				lexicalSearch: (searchQuery, limit) => database.lexicalSearch(searchQuery, limit),
 				vectorSearch: (vector, limit) => database.vectorSearch(vector, limit),
 			},
 			{ candidateLimit, finalLimit: candidateLimit, k: options.k },
@@ -287,8 +272,7 @@ export async function createRagRuntimeContext(
 
 	return {
 		search,
-		retrieve: (message, options) =>
-			search(message, { limit: options.limit, k: 60 }),
+		retrieve: (message, options) => search(message, { limit: options.limit, k: 60 }),
 		stream: async (request) => {
 			// MS-2：按请求 provider 字段选择 adapter；缺省回退 activeProvider；
 			// 选中的 provider 若未在当前 runtime 构造（凭据缺失）则抛 RagProviderNotConfiguredError（500）。
@@ -301,6 +285,12 @@ export async function createRagRuntimeContext(
 		},
 		sync: (input) => sync.sync(input),
 		syncRuns: (options) => sync.syncRuns(options),
+		...(evaluation
+			? {
+					evaluationRuns: (options: { limit: number; cursor?: string }) => evaluation.evaluationRuns(options),
+					evaluationRun: (id: string) => evaluation.evaluationRun(id),
+				}
+			: {}),
 		config: Object.freeze({
 			apiBase: config.public.apiBase,
 			syncToken: config.knowledgeSyncToken || undefined,
@@ -327,8 +317,7 @@ async function initializeReranker(
 		(config.rerankerTimeoutMs ?? 0) > 0 &&
 		config.rerankerMaxCostUsd !== undefined &&
 		config.rerankerMaxCostUsd >= 0;
-	if (!completeConfig || !factory)
-		return createNoopReranker(mode === "llm" ? "incomplete-config" : mode);
+	if (!completeConfig || !factory) return createNoopReranker(mode === "llm" ? "incomplete-config" : mode);
 	return assertProviderFunction(
 		await initializeProvider("createReranker", () => factory({ config })),
 		"createReranker",

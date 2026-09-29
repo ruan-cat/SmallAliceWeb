@@ -27,6 +27,12 @@ export const syncRunsQuerySchema = z.object({
 	cursor: z.string().trim().min(1).optional(),
 });
 
+export const evaluationRunsQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(100).default(20),
+	cursor: z.string().trim().min(1).optional(),
+});
+
 export type SearchRequest = z.infer<typeof searchRequestSchema>;
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
 export type SyncRunsQuery = z.infer<typeof syncRunsQuerySchema>;
+export type EvaluationRunsQuery = z.infer<typeof evaluationRunsQuerySchema>;
