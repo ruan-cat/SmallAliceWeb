@@ -1,0 +1,43 @@
+name: RAG 知识库同步
+
+# SY-1（learn-agents-ui plan 18.3）：知识库同步 GA 调度承担方。
+# 规格依据：openspec/changes/2026-09-29-ga-knowledge-sync-schedule delta
+# Requirement 8（push 增量 + schedule 兜底 + workflow_dispatch 手动；
+# 管线复用 rag:sync 零代码改动；8 类 NITRO_ Secrets 前提；不可并发纪律）。
+# 注意：不在 Vercel 侧配置 Cron（2026-08-07 决策），本文件是唯一调度入口。
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**"]
+  schedule:
+    - cron: "30 18 * * *" # UTC 18:30 = 北京 02:30 低峰；增量轮仅哈希对比，成本极低
+  workflow_dispatch: {}
+
+concurrency:
+  group: rag-sync
+  cancel-in-progress: false # 同步不可并发（advisory lock 语义在 CI 外的兜底）
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5 # 读取根 package.json packageManager（pnpm@12.4.1）
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @ruan-cat-drill-doc/ai-rag-core build
+      - run: pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync
+        env:
+          NITRO_DATABASE_URL: ${{ secrets.NITRO_DATABASE_URL }}
+          NITRO_SYNC_DATABASE_URL: ${{ secrets.NITRO_SYNC_DATABASE_URL }} # 必须 non-pooled 直连串（advisory lock 正确性要求）
+          NITRO_EMBEDDING_MODEL: ${{ secrets.NITRO_EMBEDDING_MODEL }}
+          NITRO_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.NITRO_CLOUDFLARE_ACCOUNT_ID }}
+          NITRO_CLOUDFLARE_API_TOKEN: ${{ secrets.NITRO_CLOUDFLARE_API_TOKEN }}
+          NITRO_KNOWLEDGE_SYNC_TOKEN: ${{ secrets.NITRO_KNOWLEDGE_SYNC_TOKEN }} # 装配门禁变量，非空即可
+          NITRO_CRON_SECRET: ${{ secrets.NITRO_CRON_SECRET }} # 装配门禁变量，非空即可
+          NITRO_ANTHROPIC_API_KEY: ${{ secrets.NITRO_ANTHROPIC_API_KEY }} # 按激活 provider；切 OpenAI 时换 NITRO_OPENAI_API_KEY
