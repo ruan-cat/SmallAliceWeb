@@ -110,12 +110,21 @@ export function createKnowledgeSyncService(options: KnowledgeSyncOptions): Knowl
 			}),
 		syncRuns: async ({ limit }) => {
 			if (!Number.isInteger(limit) || limit < 1) throw new ApiHttpError(400, "INVALID_LIMIT", "limit 必须是正整数。");
-			return [
-				...(await options.executor.execute(
-					`SELECT id, status, scanned_file_count AS "scannedFileCount", unchanged_file_count AS "unchangedFileCount", created_file_count AS "createdFileCount", updated_file_count AS "updatedFileCount", deleted_file_count AS "deletedFileCount", written_chunk_count AS "writtenChunkCount", failed_files AS "failedFiles", started_at AS "startedAt", finished_at AS "finishedAt" FROM knowledge_sync_runs ORDER BY started_at DESC LIMIT $1`,
-					[limit],
-				)),
-			];
+			const statement = `SELECT id, status, scanned_file_count AS "scannedFileCount", unchanged_file_count AS "unchangedFileCount", created_file_count AS "createdFileCount", updated_file_count AS "updatedFileCount", deleted_file_count AS "deletedFileCount", written_chunk_count AS "writtenChunkCount", failed_files AS "failedFiles", started_at AS "startedAt", finished_at AS "finishedAt" FROM knowledge_sync_runs ORDER BY started_at DESC LIMIT $1`;
+			// reserved executor 的 execute 是显式抛错的 stub，只读查询同样必须经过保留会话。
+			if (typeof options.executor.reserve === "function") {
+				const session = await options.executor.reserve();
+				try {
+					return [...(await session.execute(statement, [limit]))];
+				} finally {
+					try {
+						await session.release();
+					} catch {
+						/** 释放失败不能覆盖查询结果或原始错误。 */
+					}
+				}
+			}
+			return [...(await options.executor.execute(statement, [limit]))];
 		},
 	};
 }

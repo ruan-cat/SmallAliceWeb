@@ -525,4 +525,67 @@ describe("createKnowledgeSyncService", () => {
 		expect(chunkInsert).toContain("search_text");
 		expect(state.mutationParameters?.some((parameters) => parameters.includes("rag-parent-title"))).toBe(true);
 	});
+
+	test("syncRuns 在 reserved executor 上通过保留会话查询并释放（生产 500 回归）", async () => {
+		let releaseCount = 0;
+		const session: SyncSqlExecutor & { release: () => Promise<void> } = {
+			execute: async (statement) =>
+				statement.includes("FROM knowledge_sync_runs") ? [{ id: "run-1", status: "succeeded" }] : [],
+			transaction: async (callback) => callback(session),
+			release: async () => {
+				releaseCount += 1;
+			},
+		};
+		const executor: SyncSqlExecutor = {
+			execute: async () => {
+				throw new Error("同步执行器必须先保留数据库会话。");
+			},
+			transaction: async () => {
+				throw new Error("同步执行器必须先保留数据库会话。");
+			},
+			reserve: async () => session,
+		};
+		const service = createKnowledgeSyncService({
+			executor,
+			profileVersion: "p",
+			embeddingModel: "m",
+			scanner: async () => [],
+			embedding: { createEmbedding: async () => [] },
+		});
+
+		const rows = await service.syncRuns({ limit: 5 });
+
+		expect(rows).toEqual([{ id: "run-1", status: "succeeded" }]);
+		expect(releaseCount).toBe(1);
+	});
+
+	test("syncRuns 在普通 executor 上保持直连查询", async () => {
+		const state: FakeState = {
+			documents: [],
+			mutations: [],
+			transactions: 0,
+			locked: true,
+			sessionCalls: [],
+		};
+		const service = makeService(state, []);
+
+		const rows = await service.syncRuns({ limit: 3 });
+
+		expect(state.sessionCalls?.some((statement) => statement.includes("FROM knowledge_sync_runs"))).toBe(true);
+		expect(rows).toEqual([]);
+	});
+
+	test("syncRuns 的 limit 必须是正整数", async () => {
+		const state: FakeState = {
+			documents: [],
+			mutations: [],
+			transactions: 0,
+			locked: true,
+		};
+		const service = makeService(state, []);
+
+		await expect(service.syncRuns({ limit: 0 })).rejects.toMatchObject({
+			status: 400,
+		});
+	});
 });
