@@ -268,6 +268,12 @@ metadata:
 - 适用场景：shadcn-docs-nuxt 站点 dev 启动即崩、SSR 全站 500/404-UI、客户端不水合且 console 无错；或 h3 v1/v2 混世、`.client` 插件依赖未被 optimizeDeps 预构建。
 - 关键约束：catch-all 路由会把 404 渲染成 HTTP 200，验证必须断言内容；h3 裸导入未声明用 `packageExtensions` 注入而非全局 override；`.client` 插件的依赖树用 `optimizeDeps.include`（嵌套 `>` 语法）显式纳入；浏览器无错不水合时用 `#__nuxt.__vue_app__` + 动态 import entry 抓真实 SyntaxError。
 
+### 13.13 ai-rag sync-runs 生产 500：reserved executor stub 与直连查询失配（2026-10-16）
+
+- 详细案例：`2026-10-16-ai-rag-sync-runs-reserved-executor-500.md`
+- 适用场景：给 `SyncSqlExecutor` 等带「显式抛错 stub」契约的执行器替换注入实现、或给同步服务新增查询方法时；也适用于「单测全绿但生产稳定 500」的排查分流。
+- 关键约束：reserved executor 契约是一切 SQL 必须先 `reserve()`，新增方法默认直连 `execute()` 必炸；真实服务与真实 executor 的组合必须有拼装级测试；503（未装配）与 500（执行抛错）的分界是首个可信分流信号。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
