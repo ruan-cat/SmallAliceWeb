@@ -20,13 +20,8 @@ export type SyncDocumentRow = {
 
 /** 同步服务需要的最小 PostgreSQL 执行边界；连接生命周期由调用方管理。 */
 export type SyncSqlExecutor = {
-	execute: (
-		statement: string,
-		parameters: readonly unknown[],
-	) => Promise<readonly Record<string, unknown>[]>;
-	transaction: <T>(
-		callback: (transaction: SyncSqlExecutor) => Promise<T>,
-	) => Promise<T>;
+	execute: (statement: string, parameters: readonly unknown[]) => Promise<readonly Record<string, unknown>[]>;
+	transaction: <T>(callback: (transaction: SyncSqlExecutor) => Promise<T>) => Promise<T>;
 	reserve?: () => Promise<SyncSqlSession>;
 };
 
@@ -36,9 +31,7 @@ export type SyncSqlSession = SyncSqlExecutor & { release: () => Promise<void> };
 /** embedding provider 的显式注入边界；批量能力是可选优化。 */
 export type SyncEmbeddingProvider = {
 	createEmbedding: (content: string) => Promise<readonly number[]>;
-	createEmbeddings?: (
-		contents: readonly string[],
-	) => Promise<readonly (readonly number[])[]>;
+	createEmbeddings?: (contents: readonly string[]) => Promise<readonly (readonly number[])[]>;
 };
 
 /** 扫描器可以返回完整扫描，也可以明确报告部分失败。 */
@@ -51,10 +44,7 @@ export type SyncSourceScan =
 			failedFiles?: readonly string[];
 	  };
 export type SyncSourceScanner = () => Promise<SyncSourceScan>;
-export type SyncChunker = (
-	content: string,
-	sourcePath: string,
-) => MarkdownChunk[];
+export type SyncChunker = (content: string, sourcePath: string) => MarkdownChunk[];
 
 /** 同步调用的输入。 */
 export type KnowledgeSyncInput = { dryRun: boolean };
@@ -88,11 +78,7 @@ type KnowledgeSyncOptions = {
 	embeddingModel: string;
 	preprocessingVersion?: string;
 	lockKey?: number;
-	idFactory?: (
-		kind: "run" | "document" | "chunk",
-		sourcePath?: string,
-		index?: number,
-	) => string;
+	idFactory?: (kind: "run" | "document" | "chunk", sourcePath?: string, index?: number) => string;
 	clock?: () => Date;
 	maxEmbeddingTexts?: number;
 };
@@ -100,19 +86,13 @@ type KnowledgeSyncOptions = {
 const DEFAULT_LOCK_KEY = 2_026_081_902;
 
 /** 创建真实同步服务；所有外部连接、扫描器和 embedding 均通过参数注入。 */
-export function createKnowledgeSyncService(
-	options: KnowledgeSyncOptions,
-): KnowledgeSyncService {
-	const chunker =
-		options.chunker ??
-		((content, sourcePath) => chunkMarkdown(content, sourcePath));
+export function createKnowledgeSyncService(options: KnowledgeSyncOptions): KnowledgeSyncService {
+	const chunker = options.chunker ?? ((content, sourcePath) => chunkMarkdown(content, sourcePath));
 	const idFactory = options.idFactory ?? defaultIdFactory;
 	const clock = options.clock ?? (() => new Date());
 	const lockKey = options.lockKey ?? DEFAULT_LOCK_KEY;
-	const maxEmbeddingTexts =
-		options.maxEmbeddingTexts ?? Number.MAX_SAFE_INTEGER;
-	const preprocessingVersion =
-		options.preprocessingVersion ?? MARKDOWN_PREPROCESSING_VERSION;
+	const maxEmbeddingTexts = options.maxEmbeddingTexts ?? Number.MAX_SAFE_INTEGER;
+	const preprocessingVersion = options.preprocessingVersion ?? MARKDOWN_PREPROCESSING_VERSION;
 	if (!Number.isInteger(maxEmbeddingTexts) || maxEmbeddingTexts < 1) {
 		throw new Error("maxEmbeddingTexts 必须是正整数。");
 	}
@@ -129,8 +109,7 @@ export function createKnowledgeSyncService(
 				preprocessingVersion,
 			}),
 		syncRuns: async ({ limit }) => {
-			if (!Number.isInteger(limit) || limit < 1)
-				throw new ApiHttpError(400, "INVALID_LIMIT", "limit 必须是正整数。");
+			if (!Number.isInteger(limit) || limit < 1) throw new ApiHttpError(400, "INVALID_LIMIT", "limit 必须是正整数。");
 			return [
 				...(await options.executor.execute(
 					`SELECT id, status, scanned_file_count AS "scannedFileCount", unchanged_file_count AS "unchangedFileCount", created_file_count AS "createdFileCount", updated_file_count AS "updatedFileCount", deleted_file_count AS "deletedFileCount", written_chunk_count AS "writtenChunkCount", failed_files AS "failedFiles", started_at AS "startedAt", finished_at AS "finishedAt" FROM knowledge_sync_runs ORDER BY started_at DESC LIMIT $1`,
@@ -154,8 +133,7 @@ async function runSync(
 	options: KnowledgeSyncOptions,
 	input: KnowledgeSyncInput & RunDependencies,
 ): Promise<KnowledgeSyncResult> {
-	if (typeof options.executor.transaction !== "function")
-		throw new Error("knowledge sync transaction 能力是必需的。");
+	if (typeof options.executor.transaction !== "function") throw new Error("knowledge sync transaction 能力是必需的。");
 	const session: SyncSqlSession = options.executor.reserve
 		? await options.executor.reserve()
 		: { ...options.executor, release: async () => undefined };
@@ -165,16 +143,9 @@ async function runSync(
 	const startedAt = input.clock();
 	let runInserted = false;
 	try {
-		const lock = await session.execute(
-			"SELECT pg_try_advisory_lock($1) AS acquired",
-			[input.lockKey],
-		);
+		const lock = await session.execute("SELECT pg_try_advisory_lock($1) AS acquired", [input.lockKey]);
 		if (lock[0]?.acquired !== true) {
-			throw new ApiHttpError(
-				409,
-				"KNOWLEDGE_SYNC_CONFLICT",
-				"已有同步任务正在运行。",
-			);
+			throw new ApiHttpError(409, "KNOWLEDGE_SYNC_CONFLICT", "已有同步任务正在运行。");
 		}
 		lockAcquired = true;
 		await session.execute(
@@ -197,25 +168,13 @@ async function runSync(
 			let chunkCount = 0;
 			for (const document of documents) {
 				try {
-					chunkCount += input.chunker(
-						document.content,
-						document.sourcePath,
-					).length;
+					chunkCount += input.chunker(document.content, document.sourcePath).length;
 				} catch {
 					failedFiles.push(document.sourcePath);
 				}
 			}
-			const status =
-				failedFiles.length > 0 || !scan.complete ? "partial" : "succeeded";
-			return makeResult(
-				runId,
-				status,
-				stats,
-				chunkCount,
-				failedFiles,
-				startedAt,
-				input.clock(),
-			);
+			const status = failedFiles.length > 0 || !scan.complete ? "partial" : "succeeded";
+			return makeResult(runId, status, stats, chunkCount, failedFiles, startedAt, input.clock());
 		}
 
 		await session.execute(
@@ -228,20 +187,11 @@ async function runSync(
 			`SELECT id, source_path AS "sourcePath", content_hash AS "contentHash", profile_version AS "profileVersion", embedding_model AS "embeddingModel", preprocessing_version AS "preprocessingVersion" FROM documents`,
 			[],
 		);
-		const existing = new Map(
-			existingRows.map((row) => [
-				String(row.sourcePath),
-				normalizeDocumentRow(row),
-			]),
-		);
+		const existing = new Map(existingRows.map((row) => [String(row.sourcePath), normalizeDocumentRow(row)]));
 		const seenSourcePaths = new Set<string>();
 		let embeddingTextCount = 0;
 
-		for (
-			let sourceIndex = 0;
-			sourceIndex < documents.length;
-			sourceIndex += 1
-		) {
+		for (let sourceIndex = 0; sourceIndex < documents.length; sourceIndex += 1) {
 			const source = documents[sourceIndex];
 			seenSourcePaths.add(source.sourcePath);
 			const contentHash = hashContent(source.content);
@@ -250,8 +200,7 @@ async function runSync(
 				previous?.contentHash === contentHash &&
 				previous.profileVersion === options.profileVersion &&
 				previous.embeddingModel === options.embeddingModel &&
-				(!previous.preprocessingVersion ||
-					previous.preprocessingVersion === input.preprocessingVersion)
+				(!previous.preprocessingVersion || previous.preprocessingVersion === input.preprocessingVersion)
 			) {
 				stats.unchangedFileCount += 1;
 				continue;
@@ -264,14 +213,10 @@ async function runSync(
 				failedFiles.push(source.sourcePath);
 				continue;
 			}
-			const remainingEmbeddingTexts =
-				input.maxEmbeddingTexts - embeddingTextCount;
+			const remainingEmbeddingTexts = input.maxEmbeddingTexts - embeddingTextCount;
 			const truncatedByLimit = chunks.length > remainingEmbeddingTexts;
 			if (truncatedByLimit && remainingEmbeddingTexts <= 0) {
-				failedFiles.push(
-					source.sourcePath,
-					...documents.slice(sourceIndex + 1).map((item) => item.sourcePath),
-				);
+				failedFiles.push(source.sourcePath, ...documents.slice(sourceIndex + 1).map((item) => item.sourcePath));
 				break;
 			}
 			if (truncatedByLimit) chunks = chunks.slice(0, remainingEmbeddingTexts);
@@ -291,22 +236,16 @@ async function runSync(
 			} catch {
 				failedFiles.push(
 					source.sourcePath,
-					...(truncatedByLimit
-						? documents.slice(sourceIndex + 1).map((item) => item.sourcePath)
-						: []),
+					...(truncatedByLimit ? documents.slice(sourceIndex + 1).map((item) => item.sourcePath) : []),
 				);
 				if (truncatedByLimit) break;
 				continue;
 			}
 
-			const documentId =
-				previous?.id ?? input.idFactory("document", source.sourcePath);
+			const documentId = previous?.id ?? input.idFactory("document", source.sourcePath);
 			try {
 				await withTransaction(session, async (transaction) => {
-					await transaction.execute(
-						"DELETE FROM chunks WHERE document_id = $1",
-						[documentId],
-					);
+					await transaction.execute("DELETE FROM chunks WHERE document_id = $1", [documentId]);
 					await transaction.execute(
 						`INSERT INTO documents (id, title, source_path, content_hash, profile_version, embedding_model, preprocessing_version, image_urls, last_synced_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (source_path) DO UPDATE SET title = EXCLUDED.title, content_hash = EXCLUDED.content_hash, profile_version = EXCLUDED.profile_version, embedding_model = EXCLUDED.embedding_model, preprocessing_version = EXCLUDED.preprocessing_version, image_urls = EXCLUDED.image_urls, last_synced_at = EXCLUDED.last_synced_at`,
 						[
@@ -317,9 +256,7 @@ async function runSync(
 							options.profileVersion,
 							options.embeddingModel,
 							input.preprocessingVersion,
-							JSON.stringify([
-								...new Set(chunks.flatMap((chunk) => chunk.imageUrls)),
-							]),
+							JSON.stringify([...new Set(chunks.flatMap((chunk) => chunk.imageUrls))]),
 							input.clock(),
 						],
 					);
@@ -360,18 +297,13 @@ async function runSync(
 			} catch {
 				failedFiles.push(
 					source.sourcePath,
-					...(truncatedByLimit
-						? documents.slice(sourceIndex + 1).map((item) => item.sourcePath)
-						: []),
+					...(truncatedByLimit ? documents.slice(sourceIndex + 1).map((item) => item.sourcePath) : []),
 				);
 				if (truncatedByLimit) break;
 				continue;
 			}
 			if (truncatedByLimit) {
-				failedFiles.push(
-					source.sourcePath,
-					...documents.slice(sourceIndex + 1).map((item) => item.sourcePath),
-				);
+				failedFiles.push(source.sourcePath, ...documents.slice(sourceIndex + 1).map((item) => item.sourcePath));
 				break;
 			}
 		}
@@ -380,30 +312,15 @@ async function runSync(
 			for (const previous of existing.values()) {
 				if (seenSourcePaths.has(previous.sourcePath)) continue;
 				await withTransaction(session, async (transaction) => {
-					await transaction.execute(
-						"DELETE FROM chunks WHERE document_id = $1",
-						[previous.id],
-					);
-					await transaction.execute(
-						"DELETE FROM documents WHERE source_path = $1",
-						[previous.sourcePath],
-					);
+					await transaction.execute("DELETE FROM chunks WHERE document_id = $1", [previous.id]);
+					await transaction.execute("DELETE FROM documents WHERE source_path = $1", [previous.sourcePath]);
 				});
 				stats.deletedFileCount += 1;
 			}
 		}
 
-		const status =
-			failedFiles.length > 0 || !scan.complete ? "partial" : "succeeded";
-		const result = makeResult(
-			runId,
-			status,
-			stats,
-			stats.writtenChunkCount,
-			failedFiles,
-			startedAt,
-			input.clock(),
-		);
+		const status = failedFiles.length > 0 || !scan.complete ? "partial" : "succeeded";
+		const result = makeResult(runId, status, stats, stats.writtenChunkCount, failedFiles, startedAt, input.clock());
 		await session.execute(
 			`UPDATE knowledge_sync_runs SET status = $2, scanned_file_count = $3, unchanged_file_count = $4, created_file_count = $5, updated_file_count = $6, deleted_file_count = $7, written_chunk_count = $8, failed_files = $9, finished_at = $10 WHERE id = $1`,
 			[
@@ -423,10 +340,10 @@ async function runSync(
 	} catch (error) {
 		if (runInserted) {
 			try {
-				await session.execute(
-					`UPDATE knowledge_sync_runs SET status = 'failed', finished_at = $2 WHERE id = $1`,
-					[runId, input.clock()],
-				);
+				await session.execute(`UPDATE knowledge_sync_runs SET status = 'failed', finished_at = $2 WHERE id = $1`, [
+					runId,
+					input.clock(),
+				]);
 			} catch {
 				/** 原始异常优先保留，失败记录更新失败不应覆盖根因。 */
 			}
@@ -434,8 +351,7 @@ async function runSync(
 		throw error;
 	} finally {
 		try {
-			if (lockAcquired)
-				await session.execute("SELECT pg_advisory_unlock($1)", [input.lockKey]);
+			if (lockAcquired) await session.execute("SELECT pg_advisory_unlock($1)", [input.lockKey]);
 		} catch {
 			/** 清理失败不能覆盖同步结果。 */
 		} finally {
@@ -448,17 +364,14 @@ async function runSync(
 	}
 }
 
-async function safeScan(
-	scanner: SyncSourceScanner,
-): Promise<{
+async function safeScan(scanner: SyncSourceScanner): Promise<{
 	documents: readonly SyncSourceDocument[];
 	complete: boolean;
 	failedFiles: string[];
 }> {
 	try {
 		const result = await scanner();
-		if (Array.isArray(result))
-			return { documents: result, complete: true, failedFiles: [] };
+		if (Array.isArray(result)) return { documents: result, complete: true, failedFiles: [] };
 		if ("documents" in result)
 			return {
 				documents: result.documents,
@@ -471,10 +384,7 @@ async function safeScan(
 	}
 }
 
-async function createEmbeddings(
-	provider: SyncEmbeddingProvider,
-	contents: readonly string[],
-) {
+async function createEmbeddings(provider: SyncEmbeddingProvider, contents: readonly string[]) {
 	if (contents.length === 0) return [];
 	const embeddings: (readonly number[])[] = [];
 	for (let start = 0; start < contents.length; start += 100) {
@@ -492,18 +402,11 @@ async function createEmbeddingBatch(
 	try {
 		const batchEmbeddings = provider.createEmbeddings
 			? await provider.createEmbeddings(batch)
-			: await Promise.all(
-					batch.map((content) => provider.createEmbedding(content)),
-				);
-		if (batchEmbeddings.length !== batch.length)
-			throw new Error("embedding 数量与 chunk 数不一致。");
+			: await Promise.all(batch.map((content) => provider.createEmbedding(content)));
+		if (batchEmbeddings.length !== batch.length) throw new Error("embedding 数量与 chunk 数不一致。");
 		return batchEmbeddings;
 	} catch (error) {
-		if (
-			!(error instanceof CloudflareEmbeddingError) ||
-			![400, 413].includes(error.status ?? 0) ||
-			batch.length < 2
-		) {
+		if (!(error instanceof CloudflareEmbeddingError) || ![400, 413].includes(error.status ?? 0) || batch.length < 2) {
 			throw error;
 		}
 		const midpoint = Math.ceil(batch.length / 2);
@@ -513,10 +416,7 @@ async function createEmbeddingBatch(
 	}
 }
 
-async function withTransaction<T>(
-	executor: SyncSqlExecutor,
-	callback: (transaction: SyncSqlExecutor) => Promise<T>,
-) {
+async function withTransaction<T>(executor: SyncSqlExecutor, callback: (transaction: SyncSqlExecutor) => Promise<T>) {
 	return executor.transaction(callback);
 }
 
@@ -527,9 +427,7 @@ function normalizeDocumentRow(row: Record<string, unknown>): SyncDocumentRow {
 		contentHash: String(row.contentHash),
 		profileVersion: String(row.profileVersion),
 		embeddingModel: String(row.embeddingModel),
-		preprocessingVersion: row.preprocessingVersion
-			? String(row.preprocessingVersion)
-			: undefined,
+		preprocessingVersion: row.preprocessingVersion ? String(row.preprocessingVersion) : undefined,
 	};
 }
 
@@ -541,15 +439,9 @@ function sha256Hex(content: string) {
 	return createHash("sha256").update(content, "utf8").digest("hex");
 }
 
-function defaultIdFactory(
-	kind: "run" | "document" | "chunk",
-	sourcePath = "",
-	index = 0,
-) {
+function defaultIdFactory(kind: "run" | "document" | "chunk", sourcePath = "", index = 0) {
 	if (kind === "run") return randomUUID();
-	return createHash("sha256")
-		.update(`${kind}\u0000${sourcePath}\u0000${index}`)
-		.digest("hex");
+	return createHash("sha256").update(`${kind}\u0000${sourcePath}\u0000${index}`).digest("hex");
 }
 
 function titleFromSourcePath(sourcePath: string) {
@@ -557,17 +449,10 @@ function titleFromSourcePath(sourcePath: string) {
 	return filename.replace(/\.md$/i, "");
 }
 
-function assertEmbeddings(
-	embeddings: readonly (readonly number[])[],
-	expected: number,
-) {
-	if (embeddings.length !== expected)
-		throw new Error("embedding 数量与 chunk 数不一致。");
+function assertEmbeddings(embeddings: readonly (readonly number[])[], expected: number) {
+	if (embeddings.length !== expected) throw new Error("embedding 数量与 chunk 数不一致。");
 	for (const embedding of embeddings) {
-		if (
-			embedding.length !== 1024 ||
-			embedding.some((value) => !Number.isFinite(value))
-		) {
+		if (embedding.length !== 1024 || embedding.some((value) => !Number.isFinite(value))) {
 			throw new Error("embedding 必须是 1024 维有限数值。");
 		}
 	}
@@ -580,15 +465,7 @@ function toVectorLiteral(embedding: readonly number[]) {
 function makeResult(
 	id: string,
 	status: KnowledgeSyncResult["status"],
-	stats: Omit<
-		KnowledgeSyncResult,
-		| "id"
-		| "status"
-		| "failedFiles"
-		| "startedAt"
-		| "finishedAt"
-		| "writtenChunkCount"
-	>,
+	stats: Omit<KnowledgeSyncResult, "id" | "status" | "failedFiles" | "startedAt" | "finishedAt" | "writtenChunkCount">,
 	writtenChunkCount: number,
 	failedFiles: readonly string[],
 	startedAt: Date,

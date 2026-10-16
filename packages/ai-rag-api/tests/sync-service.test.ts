@@ -21,13 +21,8 @@ function makeExecutor(state: FakeState): SyncSqlExecutor {
 	return {
 		async execute(statement, parameters) {
 			state.sessionCalls?.push(statement);
-			if (statement.includes("pg_try_advisory_lock"))
-				return [{ acquired: state.locked }];
-			if (
-				statement.trimStart().startsWith("SELECT") &&
-				statement.includes("FROM documents")
-			)
-				return state.documents;
+			if (statement.includes("pg_try_advisory_lock")) return [{ acquired: state.locked }];
+			if (statement.trimStart().startsWith("SELECT") && statement.includes("FROM documents")) return state.documents;
 			state.mutations.push(statement);
 			state.mutationParameters?.push([...parameters]);
 			return [];
@@ -39,11 +34,7 @@ function makeExecutor(state: FakeState): SyncSqlExecutor {
 	};
 }
 
-function makeService(
-	state: FakeState,
-	source: { content: string; sourcePath: string }[],
-	embeddings?: number[][],
-) {
+function makeService(state: FakeState, source: { content: string; sourcePath: string }[], embeddings?: number[][]) {
 	let embeddingIndex = 0;
 	return createKnowledgeSyncService({
 		executor: makeExecutor(state),
@@ -63,9 +54,7 @@ function makeService(
 			},
 		],
 		embedding: {
-			createEmbedding: async () =>
-				embeddings?.[embeddingIndex++] ??
-				Array.from({ length: 1024 }, () => 0.1),
+			createEmbedding: async () => embeddings?.[embeddingIndex++] ?? Array.from({ length: 1024 }, () => 0.1),
 		},
 		idFactory: () => "fixed-id",
 		clock: () => new Date("2026-08-19T00:00:00.000Z"),
@@ -80,9 +69,7 @@ describe("createKnowledgeSyncService", () => {
 			transactions: 0,
 			locked: true,
 		};
-		const service = makeService(state, [
-			{ sourcePath: "docs/docx/a.md", content: "# A\n\n内容" },
-		]);
+		const service = makeService(state, [{ sourcePath: "docs/docx/a.md", content: "# A\n\n内容" }]);
 
 		const result = await service.sync({ dryRun: false });
 
@@ -93,16 +80,8 @@ describe("createKnowledgeSyncService", () => {
 			status: "succeeded",
 		});
 		expect(state.transactions).toBe(1);
-		expect(
-			state.mutations.some((statement) =>
-				statement.includes("INSERT INTO knowledge_sync_runs"),
-			),
-		).toBe(true);
-		expect(
-			state.mutations.some((statement) =>
-				statement.includes("INSERT INTO chunks"),
-			),
-		).toBe(true);
+		expect(state.mutations.some((statement) => statement.includes("INSERT INTO knowledge_sync_runs"))).toBe(true);
+		expect(state.mutations.some((statement) => statement.includes("INSERT INTO chunks"))).toBe(true);
 	});
 
 	test("内容、profile 与模型均未变化时跳过 embedding", async () => {
@@ -111,8 +90,7 @@ describe("createKnowledgeSyncService", () => {
 				{
 					id: "doc-1",
 					sourcePath: "docs/docx/a.md",
-					contentHash:
-						"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+					contentHash: "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
 					profileVersion: "markdown-structure-v1",
 					embeddingModel: "text-embedding-test",
 				},
@@ -121,9 +99,7 @@ describe("createKnowledgeSyncService", () => {
 			transactions: 0,
 			locked: true,
 		};
-		const service = makeService(state, [
-			{ sourcePath: "docs/docx/a.md", content: "a" },
-		]);
+		const service = makeService(state, [{ sourcePath: "docs/docx/a.md", content: "a" }]);
 		const result = await service.sync({ dryRun: false });
 
 		expect(result.unchangedFileCount).toBe(1);
@@ -149,9 +125,7 @@ describe("createKnowledgeSyncService", () => {
 			executor: makeExecutor(state),
 			profileVersion: "new",
 			embeddingModel: "new",
-			scanner: async () => [
-				{ sourcePath: "docs/docx/a.md", content: "changed" },
-			],
+			scanner: async () => [{ sourcePath: "docs/docx/a.md", content: "changed" }],
 			chunker: () => [
 				{
 					content: "chunk",
@@ -175,11 +149,7 @@ describe("createKnowledgeSyncService", () => {
 
 		expect(result.status).toBe("partial");
 		expect(result.failedFiles).toEqual(["docs/docx/a.md"]);
-		expect(
-			state.mutations.some((statement) =>
-				statement.includes("DELETE FROM chunks"),
-			),
-		).toBe(false);
+		expect(state.mutations.some((statement) => statement.includes("DELETE FROM chunks"))).toBe(false);
 	});
 
 	test("扫描不完整时不删除缺失来源，完整扫描才删除", async () => {
@@ -210,11 +180,7 @@ describe("createKnowledgeSyncService", () => {
 			embedding: { createEmbedding: async () => [] },
 		});
 		await service.sync({ dryRun: false });
-		expect(
-			state.mutations.some((statement) =>
-				statement.includes("DELETE FROM documents"),
-			),
-		).toBe(false);
+		expect(state.mutations.some((statement) => statement.includes("DELETE FROM documents"))).toBe(false);
 
 		const completeService = createKnowledgeSyncService({
 			executor: makeExecutor(state),
@@ -225,11 +191,7 @@ describe("createKnowledgeSyncService", () => {
 			embedding: { createEmbedding: async () => [] },
 		});
 		await completeService.sync({ dryRun: false });
-		expect(
-			state.mutations.some((statement) =>
-				statement.includes("DELETE FROM documents"),
-			),
-		).toBe(true);
+		expect(state.mutations.some((statement) => statement.includes("DELETE FROM documents"))).toBe(true);
 	});
 
 	test("advisory lock 冲突返回 409", async () => {
@@ -367,9 +329,7 @@ describe("createKnowledgeSyncService", () => {
 			executor: makeExecutor(state),
 			profileVersion: "p",
 			embeddingModel: "m",
-			scanner: async () => [
-				{ sourcePath: "docs/docx/batch.md", content: "many" },
-			],
+			scanner: async () => [{ sourcePath: "docs/docx/batch.md", content: "many" }],
 			chunker: () => chunks,
 			embedding: {
 				createEmbeddings: async (contents) => {
@@ -410,9 +370,7 @@ describe("createKnowledgeSyncService", () => {
 			executor: makeExecutor(state),
 			profileVersion: "p",
 			embeddingModel: "m",
-			scanner: async () => [
-				{ sourcePath: "docs/docx/context-limit.md", content: "too much" },
-			],
+			scanner: async () => [{ sourcePath: "docs/docx/context-limit.md", content: "too much" }],
 			chunker: () => chunks,
 			embedding: {
 				createEmbeddings: async (contents) => {
@@ -458,9 +416,7 @@ describe("createKnowledgeSyncService", () => {
 			executor: makeExecutor(state),
 			profileVersion: "p",
 			embeddingModel: "m",
-			scanner: async () => [
-				{ sourcePath: "docs/docx/over-limit.md", content: "too much" },
-			],
+			scanner: async () => [{ sourcePath: "docs/docx/over-limit.md", content: "too much" }],
 			chunker: () => chunks,
 			embedding: {
 				createEmbeddings: async (contents) => {
@@ -513,9 +469,7 @@ describe("createKnowledgeSyncService", () => {
 			},
 		});
 
-		await expect(service.sync({ dryRun: false })).rejects.toThrow(
-			"transaction",
-		);
+		await expect(service.sync({ dryRun: false })).rejects.toThrow("transaction");
 		expect(state.mutations).toEqual([]);
 	});
 
@@ -565,16 +519,10 @@ describe("createKnowledgeSyncService", () => {
 		expect(embeddingInputs[0]).toContain("文档：docs/docx/title.md");
 		expect(embeddingInputs[0]).toContain("章节：标题 > 小节");
 		expect(embeddingInputs[0]).not.toContain("diagram.png");
-		const chunkInsert = state.mutations.find((statement) =>
-			statement.includes("INSERT INTO chunks"),
-		);
+		const chunkInsert = state.mutations.find((statement) => statement.includes("INSERT INTO chunks"));
 		expect(chunkInsert).toContain("parent_id");
 		expect(chunkInsert).toContain("preprocessing_version");
 		expect(chunkInsert).toContain("search_text");
-		expect(
-			state.mutationParameters?.some((parameters) =>
-				parameters.includes("rag-parent-title"),
-			),
-		).toBe(true);
+		expect(state.mutationParameters?.some((parameters) => parameters.includes("rag-parent-title"))).toBe(true);
 	});
 });
