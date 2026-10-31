@@ -206,6 +206,10 @@ function mockReducedMotionPreference(initialMatches: boolean) {
 afterEach(() => {
 	for (const app of mountedApps.splice(0)) app.unmount();
 	document.body.innerHTML = "";
+	// 清理宿主 html 元素上的暗色 class 与主题属性，避免跨用例污染 useThemeColor 的运行时读取。
+	document.documentElement.className = "";
+	document.documentElement.removeAttribute("theme-color");
+	document.documentElement.removeAttribute("data-theme");
 	if (originalMatchMediaDescriptor) Object.defineProperty(window, "matchMedia", originalMatchMediaDescriptor);
 	else Reflect.deleteProperty(window, "matchMedia");
 });
@@ -416,6 +420,18 @@ describe("AiChat library adapters", () => {
 
 			expect(section?.style.getPropertyValue("--ai-chat-primary")).toBe("#e11d48");
 			expect(provider?.dataset.themeOverrides).toContain("#e11d48");
+		});
+
+		test("html.dark 时 ConfigProvider 切换为 dark 主题并响应式同步", async () => {
+			document.documentElement.classList.add("dark");
+			const host = mountAiChat({ mode: "external", messages: [] });
+			const provider = host.querySelector<HTMLElement>('[data-library-component="ConfigProvider"]');
+
+			expect(provider?.dataset.theme).toBe("dark");
+
+			document.documentElement.classList.remove("dark");
+			await nextTick();
+			expect(provider?.dataset.theme).toBe("light");
 		});
 
 		test("AiChatFloatingButton 根部绑定品牌变量作用域并透传 brandTheme 给 AiChat", async () => {

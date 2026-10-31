@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useBrandTheme } from "../composables/useBrandTheme";
 import { deriveColorScheme } from "../theme/color-utils";
 import { DEFAULT_BRAND_COLOR, defaultTheme } from "../theme/default-theme";
@@ -9,19 +9,24 @@ function setThemeColorVariable(name: string, value: string) {
 }
 
 function clearThemeColorVariables() {
-	for (const name of ["--tk-theme-color", "--tk-color-primary", "--tk-el-color-primary", "--vp-c-brand-1"]) {
+	for (const name of ["--tk-theme-color", "--vp-c-brand-1"]) {
 		document.documentElement.style.removeProperty(name);
 	}
 }
 
 beforeEach(() => {
 	clearThemeColorVariables();
-	document.documentElement.classList.remove("dark");
+	document.documentElement.className = "";
+	document.documentElement.removeAttribute("theme-color");
+	document.documentElement.removeAttribute("data-theme");
 });
 
 afterEach(() => {
 	clearThemeColorVariables();
-	document.documentElement.classList.remove("dark");
+	document.documentElement.className = "";
+	document.documentElement.removeAttribute("theme-color");
+	document.documentElement.removeAttribute("data-theme");
+	vi.restoreAllMocks();
 });
 
 describe("useBrandTheme", () => {
@@ -118,17 +123,17 @@ describe("useBrandTheme 运行时主题色协同（P1.5）", () => {
 		expect(colorScheme.value.strong).not.toBe(deriveColorScheme("#ff0000").strong);
 	});
 
-	test("Teek 缺失但 VitePress brand-1 存在时降级使用 VitePress 色", () => {
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { seedColor, isReady } = useBrandTheme({ primaryBrandColor: "#ff0000" });
+	test("运行时宿主主题色就绪时优先于手动 primaryBrandColor", () => {
+		setThemeColorVariable("--vp-c-brand-1", "#0ea5e9");
+		const { seedColor, isReady } = useBrandTheme({ primaryBrandColor: "#e11d48" });
 		expect(isReady.value).toBe(true);
-		expect(seedColor.value).toBe("#16a34a");
+		expect(seedColor.value).toBe("#0ea5e9");
 	});
 
-	test("运行时变量缺失时手动 primaryBrandColor 仍优先于默认色", () => {
-		const { seedColor, isReady } = useBrandTheme({ primaryBrandColor: "#ff0000" });
+	test("运行时不可用时手动品牌色接管", () => {
+		const { seedColor, isReady } = useBrandTheme({ primaryBrandColor: "#e11d48" });
 		expect(isReady.value).toBe(false);
-		expect(seedColor.value).toBe("#ff0000");
+		expect(seedColor.value).toBe("#e11d48");
 	});
 
 	test("运行时变量与手动色均缺失时使用 DEFAULT_BRAND_COLOR", () => {

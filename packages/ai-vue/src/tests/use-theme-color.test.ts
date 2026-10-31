@@ -1,134 +1,134 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { createApp, defineComponent, nextTick, type App } from "vue";
+import { effectScope, nextTick, type EffectScope } from "vue";
 import { useThemeColor } from "../composables/useThemeColor";
 
-/** 通过 inline style 模拟 Teek / VitePress CSS 变量定义。jsdom 中 getComputedStyle 会读取 inline style。 */
-function setThemeColorVariable(name: string, value: string) {
-	document.documentElement.style.setProperty(name, value);
+/** 构造 getComputedStyle 的替身返回值：仅支持 getPropertyValue 查询，未声明变量返回空串。 */
+function mockComputedStyle(props: Record<string, string>) {
+	return { getPropertyValue: (name: string) => props[name] ?? "" };
 }
 
-/** 清除全部已设置的 Teek / VitePress 变量，避免测试间相互污染。 */
-function clearThemeColorVariables() {
-	for (const name of ["--tk-theme-color", "--tk-color-primary", "--tk-el-color-primary", "--vp-c-brand-1"]) {
-		document.documentElement.style.removeProperty(name);
-	}
+/** 注入 getComputedStyle mock；返回 props 引用，便于用例内动态修改计算值。 */
+function spyComputedStyle(initial: Record<string, string> = {}) {
+	const props: Record<string, string> = { ...initial };
+	const spy = vi
+		.spyOn(window, "getComputedStyle")
+		.mockReturnValue(mockComputedStyle(props) as unknown as CSSStyleDeclaration);
+	return { props, spy };
 }
 
-/** 捕获 setup 内 useThemeColor 返回的响应式状态；通过闭包读取真实引用。 */
-function captureState() {
-	const captured: { value: ReturnType<typeof useThemeColor> | null } = { value: null };
-	const Probe = defineComponent({
-		setup() {
-			captured.value = useThemeColor();
-			return () => null;
-		},
+/** 已创建待清理的 effectScope 集合，afterEach 统一 stop 以断开 observer。 */
+const activeScopes: EffectScope[] = [];
+
+/** 在活动 effectScope 内调用 useThemeColor，模拟组件 setup 场景；observer 会随 scope.stop() 断开。 */
+function useInScope(initial?: Record<string, string>) {
+	const { props } = spyComputedStyle(initial);
+	const scope = effectScope();
+	activeScopes.push(scope);
+	let state!: ReturnType<typeof useThemeColor>;
+	scope.run(() => {
+		state = useThemeColor();
 	});
-	return { Probe, captured };
+	return { props, state, scope };
 }
 
-const mountedApps: App[] = [];
-
-function mountProbe(): ReturnType<typeof captureState> {
-	const host = document.createElement("div");
-	document.body.append(host);
-	const { Probe, captured } = captureState();
-	const app = createApp(Probe);
-	app.mount(host);
-	mountedApps.push(app);
-	return { Probe, captured };
+/** 清空 documentElement 上可能影响读取的 class 与主题属性，避免用例间污染。 */
+function cleanDocumentElement() {
+	document.documentElement.className = "";
+	document.documentElement.removeAttribute("theme-color");
+	document.documentElement.removeAttribute("data-theme");
 }
 
 beforeEach(() => {
-	clearThemeColorVariables();
-	document.documentElement.classList.remove("dark");
-	document.documentElement.removeAttribute("theme-color");
-	document.documentElement.removeAttribute("data-theme");
+	cleanDocumentElement();
 });
 
 afterEach(() => {
-	for (const app of mountedApps.splice(0)) app.unmount();
-	document.body.innerHTML = "";
-	clearThemeColorVariables();
-	document.documentElement.classList.remove("dark");
+	for (const scope of activeScopes.splice(0)) scope.stop();
+	vi.restoreAllMocks();
+	vi.unstubAllGlobals();
+	cleanDocumentElement();
 });
 
-describe("useThemeColor（setup 内调用）", () => {
-	test("Teek 主色优先于 VitePress", async () => {
-		setThemeColorVariable("--tk-theme-color", "#3784ff");
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { captured } = mountProbe();
-		await nextTick();
+describe("useThemeColor 主题色读取", () => {
+	test("Teek 色优先于 VitePress 色", () => {
+		const { state } = useInScope({ "--tk-theme-color": "#3784ff", "--vp-c-brand-1": "#16a34a" });
 
-		expect(captured.value?.primary.value).toBe("#3784ff");
-		expect(captured.value?.isReady.value).toBe(true);
+		expect(state.primary.value).toBe("#3784ff");
+		expect(state.isReady.value).toBe(true);
 	});
 
-	test("Teek 缺失时降级到 VitePress brand-1", async () => {
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { captured } = mountProbe();
-		await nextTick();
+	test("Teek 缺失时降级 --vp-c-brand-1", () => {
+		const { state } = useInScope({ "--vp-c-brand-1": "#16a34a" });
 
-		expect(captured.value?.primary.value).toBe("#16a34a");
-		expect(captured.value?.isReady.value).toBe(true);
+		expect(state.primary.value).toBe("#16a34a");
+		expect(state.isReady.value).toBe(true);
 	});
 
-	test("Teek 主色变量缺失但 --tk-color-primary 别名存在时使用别名", async () => {
-		setThemeColorVariable("--tk-color-primary", "#abcdef");
-		const { captured } = mountProbe();
-		await nextTick();
+	test("两者缺失时 primary 保持默认且 isReady=false", () => {
+		const { state } = useInScope();
 
-		expect(captured.value?.primary.value).toBe("#abcdef");
-		expect(captured.value?.isReady.value).toBe(true);
+		expect(state.primary.value).toBe("#3b82f6");
+		expect(state.isReady.value).toBe(false);
 	});
 
-	test("Teek 与 VitePress 均缺失时保留默认色且 isReady=false", async () => {
-		const { captured } = mountProbe();
-		await nextTick();
+	test("值为未解析 var(...) token 时被忽略并降级到下一来源", () => {
+		const { state } = useInScope({ "--tk-theme-color": "var(--x)", "--vp-c-brand-1": "#16a34a" });
 
-		expect(captured.value?.primary.value).toBe("#3b82f6");
-		expect(captured.value?.isReady.value).toBe(false);
+		expect(state.primary.value).toBe("#16a34a");
+		expect(state.isReady.value).toBe(true);
 	});
 
-	test("html.dark 初始检测为 true", async () => {
+	test("html.dark 初始检测 isDark=true", () => {
 		document.documentElement.classList.add("dark");
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { captured } = mountProbe();
-		await nextTick();
+		const { state } = useInScope();
 
-		expect(captured.value?.isDark.value).toBe(true);
-	});
-
-	test("getComputedStyle 返回 var(...) token 时被过滤，降级到 VitePress", async () => {
-		// inline 写入原始 var(...) 字符串模拟未解析的 token。
-		setThemeColorVariable("--tk-theme-color", "var(--undefined)");
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { captured } = mountProbe();
-		await nextTick();
-
-		expect(captured.value?.primary.value).toBe("#16a34a");
-		expect(captured.value?.isReady.value).toBe(true);
-	});
-
-	test("组件卸载后 observer 已 disconnect，不再更新响应式状态", async () => {
-		setThemeColorVariable("--vp-c-brand-1", "#16a34a");
-		const { captured } = mountProbe();
-		await nextTick();
-
-		expect(captured.value?.primary.value).toBe("#16a34a");
-
-		// 卸载：onBeforeUnmount 已 disconnect observer，后续修改 html 属性不应再读取。
-		const lastApp = mountedApps[mountedApps.length - 1];
-		lastApp.unmount();
-
-		setThemeColorVariable("--vp-c-brand-1", "#22c55e");
-		// captured 保留卸载时的快照值；不再随后续 DOM 变化更新。
-		expect(captured.value?.primary.value).toBe("#16a34a");
+		expect(state.isDark.value).toBe(true);
 	});
 });
 
-describe("useThemeColor（setup 外调用）", () => {
-	test("无活动 Vue 实例时返回默认值且 isReady=false", () => {
+describe("useThemeColor 作用域内响应式同步", () => {
+	test("theme-color 属性变化后 primary 响应式更新", async () => {
+		const { props, state } = useInScope();
+		expect(state.isReady.value).toBe(false);
+
+		props["--tk-theme-color"] = "#0ea5e9";
+		document.documentElement.setAttribute("theme-color", "#0ea5e9");
+		await nextTick();
+
+		expect(state.primary.value).toBe("#0ea5e9");
+		expect(state.isReady.value).toBe(true);
+	});
+
+	test("class 属性变化后 isDark 响应式更新", async () => {
+		const { state } = useInScope();
+		expect(state.isDark.value).toBe(false);
+
+		document.documentElement.classList.add("dark");
+		await nextTick();
+		expect(state.isDark.value).toBe(true);
+
+		document.documentElement.classList.remove("dark");
+		await nextTick();
+		expect(state.isDark.value).toBe(false);
+	});
+
+	test("scope.stop() 之后 mutation 不再更新（observer 已断开）", async () => {
+		const { props, state, scope } = useInScope();
+		scope.stop();
+
+		props["--tk-theme-color"] = "#22c55e";
+		document.documentElement.setAttribute("theme-color", "#22c55e");
+		await nextTick();
+
+		expect(state.primary.value).toBe("#3b82f6");
+		expect(state.isReady.value).toBe(false);
+	});
+});
+
+describe("useThemeColor 作用域外与 SSR 环境", () => {
+	test("无活动作用域时返回默认值且不创建 observer", () => {
 		const state = useThemeColor();
+
 		expect(state.primary.value).toBe("#3b82f6");
 		expect(state.isDark.value).toBe(false);
 		expect(state.isReady.value).toBe(false);
@@ -136,13 +136,19 @@ describe("useThemeColor（setup 外调用）", () => {
 
 	test("多次调用不触发 Vue 警告（不注册无效生命周期钩子）", () => {
 		const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
 		useThemeColor();
 		useThemeColor();
+
 		expect(consoleWarnSpy).not.toHaveBeenCalledWith(expect.stringContaining("[Vue warn]"));
-		consoleWarnSpy.mockRestore();
 	});
 
-	test("SSR / 无 document 路径：直接调用不抛错", () => {
+	test("SSR：document 不存在时直接返回默认值且不抛错", () => {
+		vi.stubGlobal("document", undefined);
+
 		expect(() => useThemeColor()).not.toThrow();
+		const state = useThemeColor();
+		expect(state.primary.value).toBe("#3b82f6");
+		expect(state.isReady.value).toBe(false);
 	});
 });

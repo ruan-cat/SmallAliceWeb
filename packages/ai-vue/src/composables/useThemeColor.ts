@@ -1,4 +1,4 @@
-import { getCurrentScope, onBeforeUnmount, onMounted, ref, type Ref } from "vue";
+import { getCurrentScope, onScopeDispose, ref, type Ref } from "vue";
 
 /** useThemeColor 的返回结构 */
 export interface ThemeColorState {
@@ -14,34 +14,20 @@ export interface ThemeColorState {
 const DEFAULT_PRIMARY = "#3b82f6";
 
 /**
- * 从 getComputedStyle 读取 CSS 变量值，trim 后过滤空字符串与未解析的 `var(...)` token。
- *
- * @param root document.documentElement
- * @param variableName 形如 `--tk-theme-color` 的 CSS 变量名
- * @returns 已 trim 的有效值，或 null
- */
-function readCssVariable(root: HTMLElement, variableName: string): string | null {
-	const raw = getComputedStyle(root).getPropertyValue(variableName).trim();
-	if (!raw) return null;
-	// getComputedStyle 可能返回原始声明中的 `var(...)` 字符串（当变量未定义时），
-	// 这种值无法用于色板派生，需过滤掉避免把垃圾值传给下游。
-	if (raw.startsWith("var(")) return null;
-	return raw;
-}
-
-/**
- * 运行时获取 Teek/VitePress 主题色。
+ * 运行时获取 Teek/VitePress 宿主主题色。
  *
  * 通过 getComputedStyle 读取 CSS 变量的实际计算值，并通过 MutationObserver
- * 监听 html 元素的 class 和 attribute 变化，实现主题色切换时自动更新。
+ * 监听 html 元素的 class / theme-color / data-theme 属性变化，
+ * 实现宿主主题色与暗色模式切换时自动同步。
  *
  * 种子色优先级：**Teek `--tk-theme-color` → VitePress `--vp-c-brand-1` → 默认 `#3b82f6`**。
  *
- * SSR 安全：服务端渲染时不访问 window / document / MutationObserver，
+ * SSR 安全：服务端渲染时不访问 document / MutationObserver，
  * 所有响应式 ref 保持初始默认值，`isReady` 保持 false，使消费者可通过该标志
  * 决定是否使用运行时主题色或回退到手动 primaryBrandColor。
  *
- * 应在 Vue 组件 setup 内调用；observer 生命周期与当前组件一致。
+ * observer 仅在存在活动 Vue effect 作用域（组件 setup / effectScope）时创建，
+ * 并经 onScopeDispose 挂靠作用域清理；无活动作用域时不创建，避免泄漏。
  *
  * @example
  * ```ts
@@ -57,67 +43,47 @@ export function useThemeColor(): ThemeColorState {
 	const isDark = ref(false);
 	const isReady = ref(false);
 
-	let observer: MutationObserver | null = null;
-
-	/** 从 DOM 读取当前主题色。SSR 下空操作。 */
-	function readThemeColor() {
-		if (typeof document === "undefined") return;
+	/**
+	 * 从 DOM 读取当前主题色与暗色状态。
+	 *
+	 * @returns 是否解析到有效主题色（Teek / VitePress 任一来源命中即为 true）
+	 */
+	function readThemeColor(): boolean {
+		if (typeof document === "undefined") return false;
 
 		const root = document.documentElement;
-		const tkColor =
-			readCssVariable(root, "--tk-theme-color") ??
-			readCssVariable(root, "--tk-color-primary") ??
-			readCssVariable(root, "--tk-el-color-primary");
-		const vpColor = readCssVariable(root, "--vp-c-brand-1");
+		const computed = getComputedStyle(root);
+		const tkColor = computed.getPropertyValue("--tk-theme-color").trim();
+		const vpColor = computed.getPropertyValue("--vp-c-brand-1").trim();
 
-		const next = tkColor ?? vpColor;
-		if (next) {
-			primary.value = next;
+		// 每个来源独立校验：空值与未解析的 var(...) token 视为无效，
+		// 继续尝试下一来源，避免把垃圾值传给下游色板派生。
+		const candidate = [tkColor, vpColor].find((value) => value && !value.startsWith("var("));
+		if (candidate) {
+			primary.value = candidate;
 			isReady.value = true;
 		}
 
+		// 无论颜色是否解析成功，只要 document 存在就同步暗色状态。
 		isDark.value = root.classList.contains("dark");
+		return candidate !== undefined;
 	}
 
-	/** 注册 MutationObserver 监听主题色/暗色模式切换。 */
-	function installObserver() {
-		if (typeof document === "undefined" || observer) return;
+	// 调用时立即读取一次；SSR 下有 document 守卫，直接跳过。
+	readThemeColor();
 
-		observer = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				if (
-					mutation.type === "attributes" &&
-					(mutation.attributeName === "class" ||
-						mutation.attributeName === "theme-color" ||
-						mutation.attributeName === "data-theme")
-				) {
-					readThemeColor();
-					break;
-				}
-			}
-		});
-
+	// 仅在活动 effect 作用域内创建 observer，并经 onScopeDispose 挂靠清理；
+	// 无活动作用域（模块顶层、普通测试等）时不创建，避免 observer 泄漏。
+	if (typeof document !== "undefined" && typeof MutationObserver === "function" && getCurrentScope()) {
+		let observer: MutationObserver | null = new MutationObserver(() => readThemeColor());
 		observer.observe(document.documentElement, {
 			attributes: true,
 			attributeFilter: ["class", "theme-color", "data-theme"],
 		});
-	}
-
-	// 仅在 Vue effect 作用域内（组件 setup）注册生命周期钩子；
-	// 在 setup 外调用时 onMounted/onBeforeUnmount 会触发 Vue 警告，
-	// 此处跳过注册并直接一次性读取主题色，isReady 保持 false 使手动色仍可生效。
-	if (getCurrentScope()) {
-		onMounted(() => {
-			readThemeColor();
-			installObserver();
-		});
-
-		onBeforeUnmount(() => {
+		onScopeDispose(() => {
 			observer?.disconnect();
 			observer = null;
 		});
-	} else {
-		readThemeColor();
 	}
 
 	return { primary, isDark, isReady };
