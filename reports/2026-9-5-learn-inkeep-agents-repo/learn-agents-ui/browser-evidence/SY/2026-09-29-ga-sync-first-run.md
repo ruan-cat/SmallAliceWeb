@@ -52,3 +52,17 @@ postgres:// 明文: 0 / sk- key 明文: 0 / Bearer 明文: 0
 ## 6. 终局决策（2026-09-30 00:36）
 
 用户拍板**知识源分发选方案 C：本地 CLI 为主、手动低频更新**——GA 调度路线正式搁置（CI 内无知识源，push/schedule 均空转）。workflow 文件保留空转留档；SY-3 4.3 schedule 核对失去实际意义，由 automation（f0b99da9）代执行记录后关闭。本文件第 1/3 节的「SUCCESS」按第 5 节两层口径理解；本地 `rag:sync` 为唯一同步事实源。
+
+### 6.1 schedule 空转轮实证补记（2026-10-31）
+
+第 6 节原计划由一次性 automation（f0b99da9，2026-09-30 02:40 GMT+8 触发）代执行 schedule 核对并把结论追加到本节，但该 automation 历史已不可回收（2026-10-31 当前工作区自动化列表为空），核对结论从未落盘，形成证据链缺口。2026-10-31 改由主数据直查完成核对，闭环如下。
+
+**run list 取样结论**（`gh run list --workflow=rag-sync-schedule.yaml --limit 12`，取样口径为最近 12 次）：2026-10-19 ~ 2026-10-30 连续 12 次 schedule 触发，全部 workflow 层 success（每日一次；GitHub 调度存在 0~4 小时延迟，实际触发时刻 21:03~22:53 UTC）。
+
+**最新 schedule run 41138923320（2026-10-30 22:33 UTC，job sync 1m10s）的同步层真实统计**（Actions 日志原文提取）：
+
+```log
+{"id":"2427c5f2-3dcb-486d-b373-7169fe4f3513","status":"partial","scannedFileCount":0,"unchangedFileCount":0,"createdFileCount":0,"updatedFileCount":0,"deletedFileCount":0,"writtenChunkCount":0,"failedFiles":["docs/docx"],"startedAt":"2026-10-30T22:34:45.139Z","finishedAt":"2026-10-30T22:34:46.957Z"}
+```
+
+**结论**：与方案 C 预期完全一致——空转轮（workflow 层 success、sync 层 partial、扫 0 文件、failedFiles=[docs/docx]）；knowledge_sync_runs 审计记录持续产出。

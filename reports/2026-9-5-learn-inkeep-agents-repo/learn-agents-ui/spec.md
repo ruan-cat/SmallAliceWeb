@@ -682,18 +682,18 @@ CC 系列任务的请求验证遵守本仓既有「zod + contracts 薄路由」�
 
 **每个阶段的实测必做清单**（最少要做「正向流程 + 边界条件 + 关键错误」三态）：
 
-| 阶段          | 正向流程必测                                              | 边界条件必测                                              | 关键错误必测                                                    |
-| :------------ | :-------------------------------------------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------- |
-| P1.5 主题桥接  | 切换 Teek / VitePress / fallback 三模式                    | 主题色板颜色与 --ai-chat-primary 一致                     | html.dark 类移除后浅色 surface 不残留                          |
-| P2 Shadow DOM | 浮动 AI 面板打开后 .ai-chat 容器存在于 Shadow Root          | `attachShadow({ mode: 'closed' })` 容器外不可查内部节点   | brand primary color 缺失时不卡死                                |
-| P3 富聊天    | 真实发送一条问答触发流式渲染 + 反馈 + 消息操作 + 示例问题    | 反向反馈触发详情输入框 + 多条反馈互斥                       | onChatEvent 6 种事件类型都被正确 emit                            |
-| P3.5 卡片    | 含 itemType=search-result 的消息被 SearchResultCard 渲染   | 同名 itemType 走 customRenderers 覆盖内置                   | component 优先级高于 itemType 不被绕过                          |
-| P4 容器组件  | AiSidebarChat 抽屉开关 / AiModalChat 弹窗 / mountAiChat 挂载 | ESC 键关闭 modal / 非 Vue 宿主 mount 子入口               | unmount 后 host innerHTML 清空                                  |
-| FC-1 pageCtx | 文档页 A 提问「这个怎么配」回答针对页面 A                 | 缺失 pageContext 时后端降级到基础模板                     | 非法 pageContext 返回 400 与统一错误体                            |
-| FC-3 TTFT    | response-metadata 事件携带 ttftMs > 0                      | 慢速上游下 ttftMs 显著大于快速                            | 流不产生 chunk（mock 错误）时仍能 emit 一次 response-metadata     |
-| FC-4 反馈    | 反馈 payload 含 conversationId + messageId + rating       | 负面反馈触发详情输入框 + 提交后两条反馈互斥             | 反馈提交后 chat.errorMessage 不被污染                              |
-| FC-5 convId  | 默认 "knowledge-chat" 透传到请求体                        | 页面级 ID `docs/install#s-abc1` 完整透传                  | 跨页面切换时 conversationId 严格隔离                              |
-| MS-1 ~ MS-5 | 模型选择器 UI 渲染 + 切换后新请求 provider 字段更新        | responding 中切换不打断当前流 + 下一条消息用新模型        | 非法 provider 返回 400 + 缺失 provider 回退 activeProvider       |
+| 阶段          | 正向流程必测                                                 | 边界条件必测                                            | 关键错误必测                                                  |
+| :------------ | :----------------------------------------------------------- | :------------------------------------------------------ | :------------------------------------------------------------ |
+| P1.5 主题桥接 | 切换 Teek / VitePress / fallback 三模式                      | 主题色板颜色与 --ai-chat-primary 一致                   | html.dark 类移除后浅色 surface 不残留                         |
+| P2 Shadow DOM | 浮动 AI 面板打开后 .ai-chat 容器存在于 Shadow Root           | `attachShadow({ mode: 'closed' })` 容器外不可查内部节点 | brand primary color 缺失时不卡死                              |
+| P3 富聊天     | 真实发送一条问答触发流式渲染 + 反馈 + 消息操作 + 示例问题    | 反向反馈触发详情输入框 + 多条反馈互斥                   | onChatEvent 6 种事件类型都被正确 emit                         |
+| P3.5 卡片     | 含 itemType=search-result 的消息被 SearchResultCard 渲染     | 同名 itemType 走 customRenderers 覆盖内置               | component 优先级高于 itemType 不被绕过                        |
+| P4 容器组件   | AiSidebarChat 抽屉开关 / AiModalChat 弹窗 / mountAiChat 挂载 | ESC 键关闭 modal / 非 Vue 宿主 mount 子入口             | unmount 后 host innerHTML 清空                                |
+| FC-1 pageCtx  | 文档页 A 提问「这个怎么配」回答针对页面 A                    | 缺失 pageContext 时后端降级到基础模板                   | 非法 pageContext 返回 400 与统一错误体                        |
+| FC-3 TTFT     | response-metadata 事件携带 ttftMs > 0                        | 慢速上游下 ttftMs 显著大于快速                          | 流不产生 chunk（mock 错误）时仍能 emit 一次 response-metadata |
+| FC-4 反馈     | 反馈 payload 含 conversationId + messageId + rating          | 负面反馈触发详情输入框 + 提交后两条反馈互斥             | 反馈提交后 chat.errorMessage 不被污染                         |
+| FC-5 convId   | 默认 "knowledge-chat" 透传到请求体                           | 页面级 ID `docs/install#s-abc1` 完整透传                | 跨页面切换时 conversationId 严格隔离                          |
+| MS-1 ~ MS-5   | 模型选择器 UI 渲染 + 切换后新请求 provider 字段更新          | responding 中切换不打断当前流 + 下一条消息用新模型      | 非法 provider 返回 400 + 缺失 provider 回退 activeProvider    |
 
 **证据文件规范**（取代此前"截图+1 句话结论"的非正式做法）：
 
@@ -739,16 +739,18 @@ CC 系列任务的请求验证遵守本仓既有「zod + contracts 薄路由」�
 
 ### 11.9 知识库同步定时调度需求 [2026-09-05 决策]
 
+> **⚠️ 2026-09-30 00:36 用户决策（方案 C）：GA 调度路线正式搁置**——CI checkout 内无知识源（docs/docx 整目录 gitignored，.gitignore:55），push/schedule 触发均为空转轮（2026-09-29 首跑与 2026-10-30 schedule 轮实测：sync 层 partial、scannedFileCount=0）。当前唯一同步事实源为本地 CLI `rag:sync`（packages/ai-rag-api，手动低频更新）。本节 GA 双触发条款保留为重启蓝本，不作为现行需求。
+
 用户拍板采用 **GitHub Actions 方案**实现知识库同步自动化（背景：README 增强 9 触发系统；管线现状与 CI 核查见探索笔记 E）：
 
-1. **路线选定：GA 双触发**——`push main`（paths 过滤 `docs/**`）事件驱动增量同步 + `schedule` 每日兜底（UTC `30 18` = 北京 02:30 低峰）+ `workflow_dispatch` 手动入口。
+1. **路线选定：GA 双触发**（随方案 C 搁置，保留为重启蓝本）——`push main`（paths 过滤 `docs/**`）事件驱动增量同步 + `schedule` 每日兜底（UTC `30 18` = 北京 02:30 低峰）+ `workflow_dispatch` 手动入口。
 2. **Vercel Cron 路线放弃**：vercel.json 已删且 spec 禁止重建（多项目配置污染）、2026-08-07 设计文档已因套餐限制判定不配置、HTTP 同步等待模式在全量重建（290 文件串行 embedding）时有 serverless 超时风险。**Neon 自身不做调度**（pg_cron 只能跑 SQL，扛不动 TS 管线）。
 3. **CI 运行前提**（探索笔记 E 核查）：8 类非空 `NITRO_*` 环境变量进 GitHub Secrets——`NITRO_SYNC_DATABASE_URL` **必须 non-pooled**（advisory lock 依赖独占连接，spec.md:156-157）；workflow 先构建 `ai-rag-core`；凭据只走 Secrets，禁止出现在代码、日志与文档。
-4. **增量保证**：真增量已内置（sha256 + 四元组对比，`knowledge-sync.ts:248-258`），未变更轮零 embedding 调用、零写库——每日兜底的边际成本仅为读文件 + 哈希对比。
-5. **审计与同源性不变**：GA 触发与 CLI/HTTP 共用同一 `createKnowledgeSyncService`（HTTP/CLI 共用 `createRagRuntime`），`knowledge_sync_runs` 审计记录照常写入；`NITRO_REPOSITORY_ROOT` 由 `rag-sync.ts:4-5` 自动置为仓库根，GA checkout 后天然满足。
+4. **增量保证**：真增量已内置（sha256 + 四元组对比，`knowledge-sync.ts:248-258`），未变更轮零 embedding 调用、零写库——每日兜底的边际成本仅为读文件 + 哈希对比。（该论证随方案 C 搁置失效）
+5. **审计与同源性不变**：GA 触发与 CLI/HTTP 共用同一 `createKnowledgeSyncService`（HTTP/CLI 共用 `createRagRuntime`），`knowledge_sync_runs` 审计记录照常写入；`NITRO_REPOSITORY_ROOT` 由 `rag-sync.ts:4-5` 自动置为仓库根，GA checkout 后**并不满足**——知识源不入 git，CI checkout 内无任何知识源可扫（2026-09-29 首跑与 2026-10-30 schedule 轮实测 scannedFileCount=0），同步须在含知识源的环境（本地）执行。
 6. **spec 修订点**：knowledge-sync spec 需以 openspec change 新增「GA 触发路径」行为（双触发方式、Secrets 前提、non-pooled 连接串），并承接 2026-08-07「不配置 Cron」决策的修订说明——该决策否决的是 Vercel Cron（vercel.json crons），GA 路线不触碰 vercel.json，无配置污染问题。
 
-实施任务见 plan 第十八章（SY 任务组）。
+实施任务见 plan 第十八章（SY 任务组）（SY 组已按方案 C 收官，见 plan 19.6）。
 
 ### 11.10 执行保障声明 [2026-09-05 决策]
 

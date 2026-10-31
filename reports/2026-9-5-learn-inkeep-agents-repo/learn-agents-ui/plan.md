@@ -1258,12 +1258,12 @@ import { mountAiChat, AiChat } from "@ruan-cat-drill-doc/ai-vue";
 
 ### SY：同步调度任务（GitHub Actions，详见第十八章）
 
-| 编号 | 任务                                     | 产出                                       | 验收                                                                   |
-| :--- | :--------------------------------------- | :----------------------------------------- | :--------------------------------------------------------------------- |
-| SY-0 | openspec change 修订 knowledge-sync spec | openspec 变更包                            | GA 触发路径行为先行合入                                                |
-| SY-1 | GitHub Actions workflow                  | `.github/workflows/rag-sync-schedule.yaml` | 双触发配置就绪，首跑通过                                               |
-| SY-2 | Secrets 配置                             | 8 类 `NITRO_*` GitHub Secrets              | 脚本门禁核查通过，零泄漏                                               |
-| SY-3 | 首跑与增量验证                           | workflow 运行记录                          | 增量生效、审计记录完整（⚠️ 增量断言已于 2026-09-29 决策取消，见 18.5） |
+| 编号 | 任务                                     | 产出                                       | 验收                                                                                                                       |
+| :--- | :--------------------------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| SY-0 | openspec change 修订 knowledge-sync spec | openspec 变更包                            | GA 触发路径行为先行合入                                                                                                    |
+| SY-1 | GitHub Actions workflow                  | `.github/workflows/rag-sync-schedule.yaml` | 双触发配置就绪，首跑通过                                                                                                   |
+| SY-2 | Secrets 配置                             | 8 类 `NITRO_*` GitHub Secrets              | 脚本门禁核查通过，零泄漏                                                                                                   |
+| SY-3 | 首跑与增量验证                           | workflow 运行记录                          | 增量生效、审计记录完整（⚠️ 增量断言已于 2026-09-29 决策取消，见 18.5；schedule 核对项随 2026-09-30 方案 C 搁置（空转轮）） |
 
 ---
 
@@ -3336,11 +3336,11 @@ export const evaluationRuns = pgTable("evaluation_runs", {
 >
 > - 知识库更新 = 维护者本地执行 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run rag:sync`（直连 Neon 写入），这是唯一事实源；
 > - GA workflow（rag-sync-schedule.yaml）在 CI 内无知识源（docs/docx gitignored），push/schedule 触发均为空转（首跑实测 scannedFileCount=0），**调度路线正式搁置**；
-> - workflow 文件处置（删除 / 保留仅 workflow_dispatch 留档）为后续待确认项，当前保留不动；
+> - workflow 文件按 2026-09-30 方案 C 决策保留空转留档（不再待确认）；
 > - openspec delta spec（Requirement 8）已标注搁置前提，保留为未来知识源分发方案落地后的重启蓝本；
 > - SY-3 4.3 次日 schedule 核对随决策失去实际意义（空转轮），由 automation（f0b99da9）代执行记录后关闭。
 
-> 2026-09-05 新增。落地 spec 11.9：GA 双触发（push main 增量 + schedule 每日兜底）驱动现有 rag-sync 管线。依据：探索笔记 E（`research-notes/E-sync-pipeline.md`）——CI 无硬阻塞，需 8 类 `NITRO_*` Secrets、先构建 ai-rag-core、advisory lock 要求 non-pooled 连接串。
+> 2026-09-05 新增。落地 spec 11.9：GA 双触发（push main 增量 + schedule 每日兜底）驱动现有 rag-sync 管线。依据：探索笔记 E（`research-notes/E-sync-pipeline.md`）——CI 无硬阻塞，需 8 类 `NITRO_*` Secrets、先构建 ai-rag-core、advisory lock 要求 non-pooled 连接串（⚠️ 2026-09-30 方案 C 决策起该路线搁置，见下方决策块）。
 
 ### 18.1 文件变更预览
 
@@ -3352,7 +3352,7 @@ packages/ai-rag-api/*                         # 零代码改动——管线复�
 
 ### 18.2 SY-0：openspec change 修订 knowledge-sync spec
 
-- [ ] 新增「GA 触发路径」行为：触发方式（push main `paths: docs/**` + schedule + `workflow_dispatch`）、Secrets 前提（8 类 `NITRO_` 前缀环境变量）、`NITRO_SYNC_DATABASE_URL` 必须 non-pooled
+- [x] 新增「GA 触发路径」行为：触发方式（push main `paths: docs/**` + schedule + `workflow_dispatch`）、Secrets 前提（8 类 `NITRO_` 前缀环境变量）、`NITRO_SYNC_DATABASE_URL` 必须 non-pooled（已完成并归档，见 19.6；openspec 工件清退至 learn-agents-ui/openspec-archive/）
 - [ ] 承接 2026-08-07「不配置 Cron」决策修订：该决策否决的是 **Vercel Cron**（vercel.json crons 配置污染 + 套餐限制），GA 路线不触碰 vercel.json，与其无冲突；spec 中如有「不配置定时」表述需同步校准为「不在 Vercel 侧配置 Cron，调度由 GitHub Actions 承担」
 - 纪律：spec 修订合入后才允许合入 workflow 文件
 
@@ -3415,9 +3415,9 @@ jobs:
 - [x] ~~人为修改一个 md → push main → 触发增量：仅该文件重新 embedding + 写库，`knowledge_sync_runs` 新增一条审计记录~~（2026-09-29 决策取消，见下方批注）
 
 > **⚠️ 2026-09-29 22:10 用户决策：单文件增量断言正式取消，不再作为 SY-3 验收项。**
-> 执行实证：`docs/docx` 整目录 gitignored（.gitignore:55）、`origin/main` 不含知识源，push main 无法传递知识源变更，叠加 CI 内无知识源的同步层 partial 现状，该断言当前无实现路径。SY-3 剩余项仅剩次日 schedule 核对（automation 已承接）；知识源分发机制（进 git / CI 生成 / 本地 CLI 为主）为独立开放决策。
+> 执行实证：`docs/docx` 整目录 gitignored（.gitignore:55）、`origin/main` 不含知识源，push main 无法传递知识源变更，叠加 CI 内无知识源的同步层 partial 现状，该断言当前无实现路径。schedule 核对为空转轮，2026-10-31 已由主数据直查闭环（见 SY 证据文档 6.1）；知识源分发机制已于 2026-09-30 00:36 拍板方案 C（见本章决策块）。
 
-- [ ] 次日核对 schedule 自动运行成功（Actions 页面运行历史）
+- [x] 次日核对 schedule 自动运行成功（Actions 页面运行历史）（2026-09-30 方案 C 后为空转轮；2026-10-31 补验：schedule 触发正常、workflow 层 success，见 SY 证据文档 6.1）
 - [ ] 检查 workflow 日志无任何 Secret 值泄漏（`::add-mask::` 由 GitHub 自动处理，人工复核日志）
 
 ### 18.6 蓝军拷问记录（推荐默认已执行，均可推翻）
@@ -3438,7 +3438,7 @@ jobs:
 
 - [ ] openspec 修订先行合入，workflow 后合入
 - [x] 首跑成功（workflow 层；同步层 partial 见 18.5 批注）；~~变更 md 后增量生效~~（增量断言 2026-09-29 决策取消）
-- [ ] schedule 次日自动运行；`knowledge_sync_runs` 审计完整
+- [x] schedule 次日自动运行；`knowledge_sync_runs` 审计完整（空转轮随方案 C 搁置；审计记录持续产出，最新同步记录 id 2427c5f2 于 2026-10-30 schedule 轮）
 - [ ] Secrets 零泄漏；现有代码零改动（管线全复用）
 
 ---
@@ -3571,7 +3571,7 @@ pnpm run docs:build
 | SY   | SY-0 openspec 修订 knowledge-sync  | ✅   | fbb80b5；openspec validate --strict → Change is valid；Requirement 5 MODIFIED（触发方式扩为四路 + 「Vercel Cron 触发」场景表述校准：2026-08-07 否决的是 Vercel Cron 配置而非 HTTP 端点，调度由 GA 承担）+ Requirement 8 ADDED（双触发 + workflow*dispatch、8 类 NITRO* Secrets 前提、non-pooled 硬约束、concurrency 不可并发、vercel.json 部署边界）；校准记录：MODIFIED 块场景名必须逐字保留，openspec 校验器两轮拦截后修正                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | SY   | SY-1 GA workflow 文件              | ✅   | 05a0678；.github/workflows/rag-sync-schedule.yaml（43 行，唯一新增文件，包代码零改动）：push main paths docs/\*\* + schedule UTC 18:30 + workflow*dispatch 三触发；concurrency rag-sync + cancel-in-progress false；job 步骤 checkout@v6 → pnpm/action-setup@v5（读 packageManager pnpm@12.4.1）→ node 22 → frozen-lockfile → 构建 ai-rag-core → rag:sync 注入 8 类 NITRO* Secrets；pnpm dlx js-yaml 语法校验通过；凭据零明文、vercel.json 零触碰                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | SY   | SY-2 Secrets 配置                  | ✅   | gh secret set ×9（8 类必填 + NITRO_OPENAI_API_KEY 预置）；non-pooled 校验通过（SYNC 无 pooler 标记，值未回显）；gh secret list 实证 9 条全新时间戳；凭据纪律：全部走加密 Secrets，未回显任何值                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| SY   | SY-3 首跑与增量验证                | 🔄   | 4.1 手动首跑（run 36569710912，3m6s）+ push 触发路径（36569673693）均 workflow 层 exit 0；**⚠️ 口径修正（晚间补录）**：同步层真实统计 status=partial、scannedFileCount=0、failedFiles=[docs/docx]——docs/docx 整目录 gitignored（.gitignore:55），origin/main 不含知识源，CI checkout 无 md 可扫，「假绿」；research-notes/E「checkout 内天然有 docs/docx」为错误断言；4.4 泄漏复核 ✅（445 行日志三模式零命中）；4.2 单文件增量断言**用户决策正式取消**（2026-09-29 22:10，前提不成立已回滚，见 18.5 批注）；**知识源分发机制（进 git / CI 生成 DOCX 管线 / 维持本地 CLI 为主）待用户拍板后修订 spec 与 workflow**（详见 browser-evidence/SY/2026-09-29-ga-sync-first-run.md 第 5 节 + browser-evidence/EV/2026-09-29-remaining-items-plan.md 第 2.3 节）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SY   | SY-3 首跑与增量验证                | ✅   | 4.1 手动首跑（run 36569710912，3m6s）+ push 触发路径（36569673693）均 workflow 层 exit 0；**⚠️ 口径修正（晚间补录）**：同步层真实统计 status=partial、scannedFileCount=0、failedFiles=[docs/docx]——docs/docx 整目录 gitignored（.gitignore:55），origin/main 不含知识源，CI checkout 无 md 可扫，「假绿」；research-notes/E「checkout 内天然有 docs/docx」为错误断言；4.4 泄漏复核 ✅（445 行日志三模式零命中）；4.2 单文件增量断言**用户决策正式取消**（2026-09-29 22:10，前提不成立已回滚，见 18.5 批注）；**已于 2026-09-30 00:36 拍板方案 C（本地 CLI rag:sync 为唯一同步事实源，GA 路线搁置留档，决策入库 231de2b）；spec 11.9 搁置标注 + workflow 留档注释 + schedule 空转轮主数据闭环（run 41138923320 前后 12 次全 success、sync 层 partial 扫 0 文件）于 2026-10-31 补齐后关闭**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 > 注：P1.5/P3.5 以整体一行追踪（定义分别见 spec 11.2 目标形态与 plan 4.5.6 任务清单，均为**表格形态、无细分 checkbox**——完成时整行更新状态即可，19.4 第 3 步的「勾选 checkbox」对这两行不适用）；P2/P3 行内「~」表示组内按第六章编号顺序执行，状态列更新到组粒度即可。P1.5/P3.5 未在第六章设组表，其定义位置以本注为准。
 

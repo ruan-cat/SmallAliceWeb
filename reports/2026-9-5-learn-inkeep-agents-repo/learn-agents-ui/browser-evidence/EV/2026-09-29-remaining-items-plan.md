@@ -10,7 +10,7 @@
 | 2   | 三 CLI 脚本真实运行 + 查表 | 顺序：run-rag-evaluation(dry，零 provider 调用) → run-real-evaluation（检索评估）→ run-parameter-evaluation（临时知识库全量 embedding ×3 profile，成本最大放最后）；脚本自 parse .env.local 注入环境变量；每个脚本后连库 SELECT 断言新增行 | evaluation_runs 表按 kind 各新增一行（retrieval/promptfoo、real、parameter），metrics 非空 |
 | 3   | 与 SY-3 首跑联调同批补做   | 即事务 1+2 的执行批次                                                                                                                                                                                                                      | 同上                                                                                       |
 | 4   | 单文件增量断言             | **2026-09-29 22:10 用户决策正式取消**（执行中发现前提不成立，见 2.3）                                                                                                                                                                      | ~~knowledge_sync_runs 最新行 updated_file_count=1~~（取消）                                |
-| 5   | 次日 schedule 核对         | 一次性 automation（2026-09-30 02:40 GMT+8）核对 UTC 18:30 schedule run（Actions API），结论回填本文档第 3.5 节                                                                                                                             | schedule 触发的 run success                                                                |
+| 5   | 次日 schedule 核对         | 一次性 automation（2026-09-30 02:40 GMT+8）核对 UTC 18:30 schedule run（Actions API），结论已回填至 2.4 节与 SY 证据文档 6.1（2026-10-31）                                                                                                 | schedule 触发的 run success                                                                |
 
 ## 2. 执行记录（回填区）
 
@@ -70,6 +70,8 @@ research-notes/E-sync-pipeline.md「checkout 内天然有 docs/docx（290 个 md
 ### 2.4 事务 5：schedule 核对
 
 已创建一次性 automation（id f0b99da9-679f-4bd7-bdd7-5952e62e87dd，2026-09-30 02:40 GMT+8 触发）：核对 schedule run 状态并把结论追加到 SY 证据文档第 6 节。注意已知背景——CI 内无知识源，同步层预期 partial（不视为核对失败项）。
+
+**✅ 回填（2026-10-31）**：automation f0b99da9 历史不可回收（当前工作区自动化列表为空），schedule 轮核对改由主数据直查完成——2026-10-19~10-30 连续 12 次 schedule 触发全部 workflow 层 success，最新 run 41138923320 sync 层 partial、scannedFileCount=0（详见 SY 证据文档 6.1）；空转结论与方案 C 一致，事务 5 关闭。
 
 ## 3. 纪律说明
 
