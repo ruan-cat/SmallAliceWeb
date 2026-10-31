@@ -18,12 +18,15 @@
 	);
 
 	/* hover 色：Teek light-3 浅化色阶，降级到 VitePress brand-2 */
-	--ai-chat-primary-hover-color: var(--tk-color-primary-light-3, var(--tk-color-primary, var(--vp-c-brand-2, #60a5fa)));
+	--ai-chat-primary-hover-color: var(
+		--tk-color-primary-light-3,
+		var(--tk-el-color-primary-light-3, var(--vp-c-brand-2, #60a5fa))
+	);
 
 	/* soft 色：Teek light-9 最浅色阶，降级到 VitePress brand-soft */
 	--ai-chat-primary-soft-color: var(
 		--tk-color-primary-light-9,
-		var(--tk-color-primary, var(--vp-c-brand-soft, rgb(59 130 246 / 12%)))
+		var(--tk-el-color-primary-light-9, var(--vp-c-brand-soft, rgb(59 130 246 / 12%)))
 	);
 
 	/* 主色上的文字色：保持白色为安全 fallback */
@@ -45,7 +48,7 @@
 	/* 状态色：focus 取 Teek light-9 最浅，降级 VitePress brand-soft；success / danger 维持 VitePress 语义 */
 	--ai-chat-focus-color: var(
 		--tk-color-primary-light-9,
-		var(--tk-color-primary, var(--vp-c-brand-soft, rgb(59 130 246 / 32%)))
+		var(--tk-el-color-primary-light-9, var(--vp-c-brand-soft, rgb(59 130 246 / 32%)))
 	);
 	--ai-chat-shadow-color: var(--vp-shadow-3, rgb(0 0 0 / 18%));
 	--ai-chat-success-color: var(--vp-c-green-1, #16a34a);

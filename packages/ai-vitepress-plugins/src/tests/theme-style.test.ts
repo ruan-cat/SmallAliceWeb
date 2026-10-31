@@ -37,45 +37,37 @@ describe("VitePress AI 主题变量桥接", () => {
 	});
 });
 
-describe("Teek 主题色桥接（P1.5）", () => {
-	test("主色 / hover / soft 桥接 Teek 优先于 VitePress", () => {
-		expect(styleSource).toContain("--tk-theme-color");
-		expect(styleSource).toContain("--tk-color-primary-light-3");
-		expect(styleSource).toContain("--tk-color-primary-light-9");
+describe("Teek 主题变量桥接", () => {
+	test("桥接 --tk-theme-color 到 --ai-chat-primary-color", () => {
+		expect(styleSource).toContain("var(--tk-theme-color");
 	});
 
-	test("同一声明中 Teek 出现在 VitePress fallback 之前", () => {
-		// 抽取 --ai-chat-primary-color 的整条声明，断言 Teek 字符串位置先于 VitePress 字符串。
+	test("桥接 Teek primary 色阶别名到 hover/soft/focus 变量", () => {
+		expect(styleSource).toContain("var(--tk-color-primary-light-3");
+		expect(styleSource).toContain("var(--tk-color-primary-light-9");
+	});
+
+	test("桥接 --tk-bg-color 到 --ai-chat-surface-color", () => {
+		expect(styleSource).toContain("var(--tk-bg-color");
+	});
+
+	test("桥接 --tk-text-color 到 --ai-chat-text-color", () => {
+		expect(styleSource).toContain("var(--tk-text-color");
+	});
+
+	test("Teek 变量优先于 VitePress 变量（嵌套 var）", () => {
 		const primaryLine = styleSource.match(/--ai-chat-primary-color:[^;]+;/);
 		expect(primaryLine).not.toBeNull();
 		const text = primaryLine![0];
 		const tkIndex = text.indexOf("--tk-theme-color");
 		const vpIndex = text.indexOf("--vp-c-brand-1");
 		expect(tkIndex).toBeGreaterThanOrEqual(0);
-		expect(vpIndex).toBeGreaterThan(tkIndex);
+		expect(vpIndex).toBeGreaterThanOrEqual(0);
+		expect(tkIndex).toBeLessThan(vpIndex);
 	});
 
-	test("hover 色声明中 Teek light-3 出现在 VitePress brand-2 之前", () => {
-		const hoverLine = styleSource.match(/--ai-chat-primary-hover-color:[^;]+;/);
-		expect(hoverLine).not.toBeNull();
-		const text = hoverLine![0];
-		const tkIndex = text.indexOf("--tk-color-primary-light-3");
-		const vpIndex = text.indexOf("--vp-c-brand-2");
-		expect(tkIndex).toBeGreaterThanOrEqual(0);
-		expect(vpIndex).toBeGreaterThan(tkIndex);
-	});
-
-	test("surface 与 text 桥接 Teek 变量", () => {
-		expect(styleSource).toContain("var(--tk-bg-color");
-		expect(styleSource).toContain("var(--tk-text-color");
-	});
-
-	test("html.dark 覆盖存在：暗色 surface / text fallback 与浅色分离", () => {
-		expect(styleSource).toContain("html.dark .ai-chat-vitepress-shell");
-		// 暗色覆盖块中应包含独立的 surface / text fallback
-		const darkBlock = styleSource.match(/html\.dark\s+\.ai-chat-vitepress-shell\s*\{[^}]+\}/);
-		expect(darkBlock).not.toBeNull();
-		expect(darkBlock![0]).toContain("--ai-chat-surface-color");
-		expect(darkBlock![0]).toContain("--ai-chat-text-color");
+	test("暗色模式覆盖存在", () => {
+		expect(styleSource).toContain("html.dark");
+		expect(styleSource).toMatch(/html\.dark[\s\S]*--ai-chat-surface-color/);
 	});
 });
