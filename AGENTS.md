@@ -500,3 +500,27 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 |       `git commit`       |    10 秒     |
 | `pnpm run build / test`  |    30 秒     |
 |      `pnpm install`      |    60 秒     |
+
+## agent-browser 使用纪律（2026-10-31 起生效）
+
+依据：`reports/2026-10-31-agent-browser-mcp-error/2026-10-31-agent-browser-mcp-error.md`（MCP 全线 30 秒超时故障 RCA）。四层超时模型：宿主 MCP 工具调用 30s 硬顶（`timeoutMs` 参数无效）→ MCP server 每调用 120s → CLI→daemon 30s 下限 → 浏览器 action 默认 25s。
+
+### 1. open 前先探活
+
+对任何本地 dev server，先 `curl -s -m 5 http://127.0.0.1:PORT/` 确认首屏可快速返回，再 `agent-browser open`；冷启动页面先用 `wait --load networkidle` 接管等待。
+
+### 2. 并发会话一律隔离
+
+每个 ZCode 会话用独立标识（`--session sess-xxx` 或 `AGENT_BROWSER_NAMESPACE=<task>`），杜绝默认 `default` 会话全机共享导致的守护进程争用（CLI 自带 core 技能明言默认会话与机器上所有 agent 共享）。
+
+### 3. 故障三岔口分流顺序（MCP 全灭时按序执行）
+
+1. 只读取证：读 `~/.agent-browser/{session}.pid/.port`，`Get-NetTCPConnection` 查端口监听与归属 pid；
+2. CLI 直连探活：`agent-browser --help`（不依赖 daemon）→ `agent-browser get url`（走 daemon）；
+3. CDP 直连兜底：自起 headless Chrome（`--remote-debugging-port=固定端口`）+ Node 内置 WebSocket / `--cdp <port>` 接管；
+4. 不要在 MCP 全灭的会话里反复重试 MCP 调用（每次白耗 30s），也不要先杀 daemon——守护进程可能被并发会话使用且会被新实例接管。
+
+### 4. Chrome 复用与版本要求
+
+- 优先复用现成 Chrome，避免任务中途在线下载：`--executable-path <path>`（或 `AGENT_BROWSER_EXECUTABLE_PATH`）指定自定义浏览器、`--auto-connect` 接管运行中的 Chrome、`--profile <name>` 复用登录态；确需托管浏览器时，先确认 `~/.agent-browser/browsers/` 已缓存目标版本。
+- 全局版本要求 ≥ 0.41.0（跨上游"守护进程静默挂起"行为段）；任务开始前用 `agent-browser --version` 核查。
