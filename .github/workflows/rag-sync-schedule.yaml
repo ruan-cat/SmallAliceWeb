@@ -1,10 +1,14 @@
 name: RAG 知识库同步
 
+# ⚠️ 2026-09-30 方案 C 决策（commit 231de2b）：CI checkout 内无知识源（docs/docx gitignored），
+# 本 workflow 的 push / schedule 触发均为空转轮——workflow 层 success、sync 层 partial、scannedFileCount=0
+# （2026-09-29 首跑与 2026-10-30 schedule run 41138923320 实测一致）。
+# 按决策保留空转留档，不作为现行同步入口；唯一同步事实源 = 本地 CLI rag:sync（packages/ai-rag-api）。
 # SY-1（learn-agents-ui plan 18.3）：知识库同步 GA 调度承担方。
-# 规格依据：openspec/changes/2026-09-29-ga-knowledge-sync-schedule delta
+# 规格依据：openspec/changes/2026-09-29-ga-knowledge-sync-schedule delta（该路径已清退；归档件：reports/2026-9-5-learn-inkeep-agents-repo/learn-agents-ui/openspec-archive/2026-09-29-ga-knowledge-sync-schedule.md）
 # Requirement 8（push 增量 + schedule 兜底 + workflow_dispatch 手动；
 # 管线复用 rag:sync 零代码改动；8 类 NITRO_ Secrets 前提；不可并发纪律）。
-# 注意：不在 Vercel 侧配置 Cron（2026-08-07 决策），本文件是唯一调度入口。
+# 注意：不在 Vercel 侧配置 Cron（2026-08-07 决策）。（历史注释：方案 C 决策后本文件保留空转留档，唯一同步事实源为本地 rag:sync）
 
 on:
   push:
