@@ -274,6 +274,12 @@ metadata:
 - 适用场景：给 `SyncSqlExecutor` 等带「显式抛错 stub」契约的执行器替换注入实现、或给同步服务新增查询方法时；也适用于「单测全绿但生产稳定 500」的排查分流。
 - 关键约束：reserved executor 契约是一切 SQL 必须先 `reserve()`，新增方法默认直连 `execute()` 必炸；真实服务与真实 executor 的组合必须有拼装级测试；503（未装配）与 500（执行抛错）的分界是首个可信分流信号。
 
+### 13.14 bumpp --dry-run 不存在导致误发版并推送远端（2026-11-02）
+
+- 详细案例：`2026-11-02-bumpp-dry-run-not-a-dry-run.md`
+- 适用场景：执行发版工具链的"只读校验/dry-run"命令，尤其是引用技能文档里的 `bumpp --dry-run`；或工作树中存在他人并发改动时运行会提交全部跟踪文件的命令。
+- 关键约束：bumpp 没有 `--dry-run`/`--no-commit`/`--no-push`，未知 flag 被静默忽略且 `--commit`/`--push` 默认为 true，加 `--yes` 等于直接发布；发版命令前必须先 `--help` 核实 flag，只读校验统一用 `relizy-runner ... --dry-run`。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
