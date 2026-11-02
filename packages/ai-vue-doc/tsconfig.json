@@ -1,7 +1,12 @@
 {
 	"extends": "./.nuxt/tsconfig.json",
 	"compilerOptions": {
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+
+		// === 2026-11-02 init-tsconfig 形态E（extends 外部 preset，本地覆盖即生效）===
+		"incremental": true,
+		"tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
+		"assumeChangesOnlyAffectDirectDependencies": true
 	},
 	"vueCompilerOptions": {
 		"strictTemplates": false

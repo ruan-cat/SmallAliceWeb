@@ -109,7 +109,11 @@ export interface AiChatProps {
 	mockDelay?: number;
 	/** 品牌主题配置：驱动 --ai-chat-* CSS 变量派生与 vepx 品牌色覆盖；缺省时使用默认品牌色 #3b82f6。普通对象配置在挂载时按快照语义取值。 */
 	brandTheme?: BrandThemeConfig;
-	/** 样式隔离模式；container-with-shadow 时把内容渲染到 Shadow Root 内，宿主 CSS 不影响组件。SSR 下强制 no-shadow。 */
+	/**
+	 * 样式隔离模式；container-with-shadow 时把内容渲染到 Shadow Root 内，宿主 CSS 不影响组件。SSR 下强制 no-shadow。
+	 * container-with-shadow 与 XSender 不兼容：Shadow 内选区被 retarget 到宿主致输入 model 不更新、发送按钮恒 disabled，
+	 * 且库 CSS 与 `.ai-chat-floating-button__dock .ai-chat` 覆盖均命不中，工具条无样式并被 dock-shell 裁切。
+	 */
 	variant?: "no-shadow" | "container-with-shadow";
 	/** P3-2：自定义消息渲染器注册表（按 name 映射到 Vue 组件） */
 	customComponents?: Record<string, Component>;

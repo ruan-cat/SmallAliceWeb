@@ -3,7 +3,7 @@ import { AiChatFloatingButton } from "@ruan-cat-drill-doc/ai-vue";
 import { withBase } from "vitepress";
 import { onMounted, ref } from "vue";
 import { useChatCompletionAttention } from "../composables/useChatCompletionAttention";
-import { collectPageContext } from "../composables/collectPageContext";
+import { usePageContextCollector } from "../composables/collectPageContext";
 import { useKnowledgeChat } from "../composables/useKnowledgeChat";
 
 const isMounted = ref(false);
@@ -14,11 +14,13 @@ const attention = useChatCompletionAttention({
 	icon: withBase("/favicon.svg"),
 });
 const { permission, canRequestPermission, requestPermission } = attention;
+/** FC-1 接入：采集器必须在 setup 期建立（useRoute / useData 依赖 Vue inject），推迟到 send 回调内调用会抛 useRouter provider 错误 */
+const collectPageContext = usePageContextCollector();
 const { messages, isResponding, errorMessage, send, stop, clearError, models, selectedProvider, selectModel } =
 	useKnowledgeChat("knowledge-chat", {
 		onResponseComplete: attention.markCompleted,
-		/** FC-1 接入：每次 send 时按需采集最新 pageContext；SSR 阶段返回 undefined 不发该字段 */
-		getPageContext: () => collectPageContext(),
+		/** 每次 send 由闭包重新求值，采集最新 pagePath / title / keywords；SSR 阶段返回 undefined 不发该字段 */
+		getPageContext: collectPageContext,
 	});
 
 /** 在客户端挂载后渲染对话入口，保持 VitePress SSR 输出稳定。 */
@@ -34,7 +36,7 @@ onMounted(() => {
 			:messages="messages"
 			:is-responding="isResponding"
 			:error-message="errorMessage"
-			variant="container-with-shadow"
+			variant="no-shadow"
 			:models="models"
 			:selected-model-id="selectedProvider"
 			@send="send"

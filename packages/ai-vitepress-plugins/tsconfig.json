@@ -6,7 +6,13 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"noEmit": true,
+
+		// === 2026-11-02 init-tsconfig 形态D（monorepo 子包）===
+		"incremental": true,
+		"tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
+		"assumeChangesOnlyAffectDirectDependencies": true,
 		"types": ["vitest/globals"]
 	},
-	"include": ["src/**/*.ts", "src/**/*.vue", "src/tests/**/*.ts"]
+	"include": ["src/**/*.ts", "src/**/*.vue", "src/tests/**/*.ts"],
+	"exclude": ["node_modules", "dist", "coverage"]
 }

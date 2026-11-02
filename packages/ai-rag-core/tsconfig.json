@@ -5,7 +5,14 @@
 		"strict": true,
 		"target": "ES2022",
 		"noEmit": true,
+		"skipLibCheck": true,
+
+		// === 2026-11-02 init-tsconfig 形态D（monorepo 子包）===
+		"incremental": true,
+		"tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
+		"assumeChangesOnlyAffectDirectDependencies": true,
 		"types": ["node"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts"]
+	"include": ["src/**/*.ts", "tests/**/*.ts"],
+	"exclude": ["node_modules", "dist", "coverage"]
 }

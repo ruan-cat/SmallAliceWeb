@@ -7,6 +7,9 @@ const chatMocks = vi.hoisted(() => ({
 }));
 const vitepressMocks = vi.hoisted(() => ({
 	withBase: vi.fn((path: string) => `/docs${path}`),
+	// shell 经 usePageContextCollector 在 setup 期取 VitePress 注入，桩需提供 route 与 data refs
+	useRoute: vi.fn(() => ({ path: "/guide/intro" })),
+	useData: vi.fn(() => ({ title: { value: "指南" }, frontmatter: { value: {} } })),
 }));
 
 vi.mock("@ruan-cat-drill-doc/ai-vue", async () => {
@@ -22,7 +25,11 @@ vi.mock("@ruan-cat-drill-doc/ai-vue", async () => {
 	};
 });
 
-vi.mock("vitepress", () => ({ withBase: vitepressMocks.withBase }));
+vi.mock("vitepress", () => ({
+	withBase: vitepressMocks.withBase,
+	useRoute: vitepressMocks.useRoute,
+	useData: vitepressMocks.useData,
+}));
 
 vi.mock("../client/composables/useKnowledgeChat", async () => {
 	const { ref } = await import("vue");

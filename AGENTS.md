@@ -1,3 +1,7 @@
+---
+template-version: "2.0.0"
+---
+
 ## 本项目的技能表
 
 - `record-bug-fix-memory` — `.agents/skills/fix-bug/record-bug-fix-memory/SKILL.md` — bug 修复后的经验与事故记录沉淀（非调试流程本身）。
@@ -9,57 +13,129 @@
   - 路径：`.agents/skills/openspec-apply-change/SKILL.md`
   - 用途：Implement tasks from an OpenSpec change.
   - 触发时机：当用户要求开始实施、继续实施或处理 OpenSpec 变更中的任务时使用。
+  - 参考作用：以 change 内 proposal / design / tasks 三件套作为实施与验收口径。
+  - 约束：只推进 tasks 中未勾选项；发现实现与 spec 冲突时，先回到 change 修订，不得改代码绕过 spec。
 
 - `openspec-archive-change`
   - 路径：`.agents/skills/openspec-archive-change/SKILL.md`
   - 用途：Archive a completed change in the experimental workflow.
   - 触发时机：当用户要求归档已完成的变更时使用。
+  - 参考作用：归档目录是本仓库变更的最终留档位置。
+  - 约束：只有实施完成且验证通过后才归档；未通过验证的 change 禁止归档。
 
 - `openspec-bulk-archive-change`
   - 路径：`.agents/skills/openspec-bulk-archive-change/SKILL.md`
   - 用途：Archive multiple completed changes at once.
   - 触发时机：当用户要求批量归档多个已完成的变更时使用。
+  - 参考作用：多 change 并行开发时用于集中收口。
+  - 约束：逐个确认每个 change 都已通过验证，禁止把"未确认完成"的 change 混入批量归档。
 
 - `openspec-continue-change`
   - 路径：`.agents/skills/openspec-continue-change/SKILL.md`
   - 用途：Continue working on an OpenSpec change by creating the next artifact.
   - 触发时机：当用户要求推进变更、创建下一个制品或继续工作流时使用。
+  - 参考作用：制品依赖顺序由 schema 决定，用于判断下一步该产出什么。
+  - 约束：一次只推进一个制品；产出后等待用户确认再进入下一个。
 
 - `openspec-explore`
   - 路径：`.agents/skills/openspec-explore/SKILL.md`
   - 用途：Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements.
   - 触发时机：当用户想要在变更前或变更中思考问题时使用。
+  - 参考作用：把模糊需求逼成可写进 proposal 的明确需求。
+  - 约束：探索模式不写实现代码，只产出结论与待确认项。
 
 - `openspec-ff-change`
   - 路径：`.agents/skills/openspec-ff-change/SKILL.md`
   - 用途：Fast-forward through OpenSpec artifact creation.
   - 触发时机：当用户要求快速创建所有实施所需制品而不逐步确认时使用。
+  - 参考作用：需求已经对齐时压缩逐制品确认的往返成本。
+  - 约束：仅在用户明确要求快进时使用；默认走逐个确认。
 
 - `openspec-new-change`
   - 路径：`.agents/skills/openspec-new-change/SKILL.md`
   - 用途：Start a new OpenSpec change using the experimental artifact workflow.
   - 触发时机：当用户要求创建新功能、修复或结构化变更时使用。
+  - 参考作用：change 目录结构与命名约定的起点。
+  - 约束：先对齐 proposal 再建制品，避免边写边改方向。
 
 - `openspec-onboard`
   - 路径：`.agents/skills/openspec-onboard/SKILL.md`
   - 用途：Guided onboarding for OpenSpec.
   - 触发时机：当用户首次使用 OpenSpec 或需要引导式教学时使用。
+  - 参考作用：完整走一遍工作流并讲解每一步的意义。
+  - 约束：教学过程中产生的 change 需要用户确认后才进入实施。
 
 - `openspec-sync-specs`
   - 路径：`.agents/skills/openspec-sync-specs/SKILL.md`
   - 用途：Sync delta specs from a change to main specs.
   - 触发时机：当用户要求将变更中的 delta spec 同步到主 spec 时使用。
+  - 参考作用：保持主 spec 与已确认变更一致。
+  - 约束：只同步已验证通过的 delta；归档前的同步不得覆盖主 spec 中仍有效的条目。
 
 - `openspec-verify-change`
   - 路径：`.agents/skills/openspec-verify-change/SKILL.md`
   - 用途：Verify implementation matches change artifacts.
   - 触发时机：当用户要求验证实施是否完整、正确且一致时使用。
+  - 参考作用：作为归档前的最后一道一致性检查。
+  - 约束：验证结论必须有命令输出或 diff 作为证据，不得凭实现印象判定通过。
+
+- `ask-matt`
+  - 路径：`.agents/skills/ask-matt/SKILL.md`
+  - 用途：在当前仓库技能集里做技能路由，判断该用哪个技能。
+  - 触发时机：用户描述模糊、不确定用哪个技能，或询问"有没有对应技能"时使用。
+  - 参考作用：`mattpocock/skills` 系列的入口索引。
+  - 约束：只做路由，不替代被选中技能自身的流程。
+
+- `domain-modeling`
+  - 路径：`.agents/skills/domain-modeling/SKILL.md`
+  - 用途：构建并校准项目的领域模型与统一语言。
+  - 触发时机：用户要固化领域术语、记录架构决策，或其他技能需要维护领域模型时使用。
+  - 参考作用：为 AI 记忆文档和 spec 提供一致的术语基线。
+  - 约束：模型变更要同步到既有词汇表，禁止只改代码而留下术语漂移。
+
+- `setup-matt-pocock-skills`
+  - 路径：`.agents/skills/setup-matt-pocock-skills/SKILL.md`
+  - 用途：为本仓库配置 issue tracker、triage 标签与领域文档布局。
+  - 触发时机：首次使用 mattpocock 系工程技能前的一次性配置。
+  - 参考作用：定义这些技能读写 issue 与领域文档的位置约定。
+  - 约束：已配置过则不重复执行；改动约定前先确认现有技能依赖。
+
+- `to-spec`
+  - 路径：`.agents/skills/to-spec/SKILL.md`
+  - 用途：把当前对话沉淀成 spec 并发布到项目 issue tracker。
+  - 触发时机：用户明确要求"把本轮讨论变成规格"时使用。
+  - 参考作用：无需二次访谈，直接综合已达成的共识。
+  - 约束：只固化已经确认过的结论；未确认的假设必须显式标注。
+
+- `wayfinder`
+  - 路径：`.agents/skills/wayfinder/SKILL.md`
+  - 用途：把超出单次会话容量的大工程拆成 issue tracker 上的决策票地图并逐张推进。
+  - 触发时机：任务规模明显超过一个会话、需要跨 checkpoint 决策时使用。
+  - 参考作用：与本仓库 `do-long-task` 长任务约定配套使用。
+  - 约束：每张决策票都要有可验证的完成判据；禁止一次性铺开全部票而失去焦点。
 
 ## 简单任务的高效执行原则
 
 当用户交代的任务范围明确清晰时，必须**直接行动**，禁止进行不必要的大范围侦察。
 
-### 1. 判断任务规模，选择正确的行动姿态
+### 1. 不要创建任务列表
+
+简单任务不需要任务管理。只有当任务满足以下条件时才使用任务列表：
+
+- 3 个或以上独立步骤
+- 需要多轮决策
+- 涉及多个文件或模块
+- 用户明确要求跟踪进度
+
+### 2. 不要写报告
+
+除非用户明确要求，否则不要为简单任务生成报告、总结文档或变更说明。
+
+### 3. 不要过度确认
+
+在信息充足时直接执行，不要反复询问用户已经明确的内容。
+
+### 4. 判断任务规模，选择正确的行动姿态
 
 |             任务信号             |        正确行动        |
 | :------------------------------: | :--------------------: |
@@ -69,16 +145,22 @@
 
 **核心原则**：用户提供的上下文（@文件引用、对话内容、当前打开文件）就是最直接的线索，优先使用，不要用命令重新发现已知信息。
 
-### 2. 禁止行为清单
+### 5. 完整命令型简单任务优先级
 
-以下行为在**简单任务**（单文件改动、写 changeset、写提交信息等）中是被禁止的：
+当用户已经给出完整 `skills add ... --skill ... -g -y -a ...`、`npx skills add ...` 等可执行命令时，优先级是：用户明确命令 > 简单任务短路 > skill 触发 > 历史记忆/事故经验。首个实质动作应是执行原命令，或在存在明显语义风险时按用户语义确认原命令；失败后再按错误类型分流。
+
+历史事故和 skill 只用于风险提示、失败分流和后置验证，不能抢占当前命令，也不能把安装命令提前扩展成同步、发布、fallback、agent team 或长计划。
+
+### 6. 禁止行为清单
+
+以下行为在**简单任务**（单文件改动、登记更新日志、写提交信息等）中是被禁止的：
 
 - 禁止连续执行超过 3 次 `git log` 来"了解全貌"
 - 禁止在明确知道目标文件的情况下，仍去扫描整个项目目录
 - 禁止把"读遍所有相关文档"当作行动前置条件
 - 禁止在用户已给出 @文件 的情况下，用命令重新搜索文件位置
 
-### 3. 对用户纠偏提示立即响应
+### 7. 对用户纠偏提示立即响应
 
 当用户发出以下信号时，必须**立即停止对当前路径的死磕**，回归最小行动路径：
 
@@ -86,16 +168,27 @@
 - "不要反复查询"
 - "直接做就行"
 - "按要求做即可"
+- "不对"
+- "不是"
+- "换种方式"
 
 正确反应：停止当前侦察行为 → 明确当前已知信息 → 直接执行最核心的操作步骤。
 
-### 4. 简单任务的标准执行路径
+### 8. 标准执行路径
 
-以"为某文件修改编写更新日志"为例，正确路径只有 3 步：
+|   用户请求    |     直接执行     |
+| :-----------: | :--------------: |
+|   安装依赖    |  `pnpm install`  |
+|   运行测试    |   `pnpm test`    |
+|  格式化代码   |  `pnpm format`   |
+| 查看 git 状态 |   `git status`   |
+|   类型检查    | `pnpm typecheck` |
+
+以"为某文件修改登记更新日志"为例，本仓库的正确路径只有 3 步：
 
 1. 读目标文件，理解改了什么
-2. 执行 `pnpm dlx @changesets/cli add --empty`，重命名文件，写入内容
-3. 提交
+2. 用 `git-commit` 技能写出符合 commitlint 的提交信息（更新日志由 `relizy-runner` 从提交信息聚合，不存在 changeset 文件）
+3. 需要预览时执行 `pnpm run changelog:dry`，确认条目归属正确
 
 不需要查 git log，不需要扫描全部 tags，不需要对比所有包的版本号。
 
@@ -114,6 +207,31 @@
 3. 测试用例的目录一般情况下为 `**/tests/` ，`**/src/tests/` 格式。
 4. 在对应 monorepo 的 tests 目录内，编写测试用例。如果你无法独立识别清楚到底在那个具体的 monorepo 子包内编写测试用例，请直接咨询我应该在那个目录下编写测试用例。
 
+## 生成发版日志的操作规范
+
+本仓库**不使用 changesets**：仓库内不存在 `.changeset` / `.changesets` 目录，也没有 `@changesets/cli` 依赖。更新日志与版本由下面的工具链生成，登记发版日志时按这套规范执行。
+
+1. 提交信息就是更新日志来源：`relizy-runner` 从符合 Conventional Commits 的提交信息聚合生成 `CHANGELOG.md`；`commitlint.config.cjs` 与 `.czrc` 负责校验，`simple-git-hooks` 的 `commit-msg` 钩子强制执行。
+2. 子包发版：`pnpm run release:sub`（`relizy-runner release --no-publish --no-provider-release --no-push --yes`）提升子包版本并写各自 `CHANGELOG.md`。
+3. 根包发版：`pnpm run release:root`（`bumpp --no-push --yes --release patch`）。
+4. 只预览不写盘：`pnpm run changelog:dry` 与 `pnpm run release:dry` 不产生 tag、不产生提交，用于确认条目归属。
+5. 生成后的格式化：`pnpm run format:changelog` 只格式化根与 `scripts/*` 的 `CHANGELOG.md`。
+6. 条目行文规范：
+   - 禁止使用任何等级的 markdown 标题：编写任何`发版标签`的更新日志时，不允许使用一级、二级等标题，否则会污染自动合并的 `CHANGELOG.md`；必须使用 markdown 的序号语法。
+   - major：详细、清晰，说明清楚重大变更与破坏面。
+   - minor：用有序序号，简明扼要地说明清楚更新内容。
+   - patch：用有序序号，简明扼要地说明清楚修复与微调。
+7. 私有包不产出更新日志：`ai-vue-doc`、`ai-rag-api`、`@ruan-cat-temp/*` 与根包继续保持 private；只有带 `exports` 的 `ai-vue`、`ai-vitepress-plugins`、`ai-rag-core` 移除了 private。
+
+## 术语说明
+
+在我和你沟通时，我会使用以下术语，便于你理解。
+
+### 发版日志相关术语
+
+- `生成更新日志` ： 在本仓库指写出符合 Conventional Commits 的提交信息，由 `relizy-runner` 聚合进 `CHANGELOG.md`；**不是**在 `.changeset` 目录里新建文件。其`发版标签`分为 `major` `minor` `patch` 三个档次。如果我在要求你生成更新日志时没有说明清楚`发版标签`具体发到哪个等级，请及时询问我，要求我给你说明清楚。
+- `生成发版日志` ： `生成更新日志` 的别名，是同一个意思。
+
 ## 沟通协作要求
 
 ### `计划模式`
@@ -125,6 +243,11 @@
 3. 完成任务后，请告知我你做了那些破坏性变更。
 
 请注意，在绝大多数情况下，我不会要求你以这种 `计划模式` 来和我协作。
+
+### 避免越权修改
+
+- 避免出现直接修改全局 skills 技能目录的情况。注意时刻明确自己所在的任务工作目录，没有明确的允许时，不允许直接修改全局技能目录。
+- 同理，没有明确允许时不改动用户级配置（`~/.claude`、`~/.codex`、`~/.cursor`、`~/.gemini` 的 hooks 与 settings）与云端资源；工作区里已存在的用户改动一律保护，不撤销、不覆盖、不代为提交。
 
 ## 获取技术栈对应的上下文
 
@@ -426,6 +549,8 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
   ````
 
 - 报告语言： 默认用简体中文。
+- 报告所使用的 agent 工具说明： 在报告的最前面增加说明，说明清楚当前报告是由哪个 agent 工具完成的。
+- 报告所使用的 AI 模型说明： 在报告的最前面增加说明，说明清楚当前报告是由哪个 AI 模型完成的。
 
 ## Neon 与 Vercel 固定资源记忆
 
@@ -500,6 +625,29 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 |       `git commit`       |    10 秒     |
 | `pnpm run build / test`  |    30 秒     |
 |      `pnpm install`      |    60 秒     |
+
+## 文档读取策略
+
+初始化或更新项目内的 AI 记忆文档时，必须遵循渐进式读取，先建立结构认知，再读取任务所需内容。
+
+- 第一次只读目录和标题结构。Markdown 文档先执行 `grep "^##" file`，不要一开始读取全文。
+- 根据任务需要，使用 `offset` / `limit` 只读取相关章节；无关章节不加载到上下文中。
+- 读取 JSON、YAML、TOML 等结构化文件时，先查看顶层键、数组项和相关字段，再按字段范围读取，禁止为了确认一个字段倾倒整个文件。
+- 更新文档时使用 `Edit` 做精准替换或定点插入，不要先 `Read` 全文再整体 `Write`，避免覆盖项目已有内容。
+- 编辑后只复读修改位置，并用差异检查确认没有误改、漏改或破坏原有格式。
+
+## 配置基线对齐记录（2026-11-02）
+
+本节记录 `init-*` 全局技能对本仓库的配置基线，用于防止后续 agent 把好意"对齐"成坏路径。
+
+1. AI 记忆文件：`AGENTS.md` 是唯一事实来源；根 `CLAUDE.md` 与根 `GEMINI.md` 只保留指向 `AGENTS.md` 的一行索引，不得往里写正文。「获取技术栈对应的上下文」「代码/编码格式要求」「Neon 与 Vercel 固定资源记忆」「Vercel 双项目部署架构」「agent-browser 使用纪律」属于本仓库自定义章节，模板对齐时**必须保留**。
+2. `typescript.tsdk` **有意不落地**到 `.vscode/settings.json`：本仓库是 pnpm 隔离结构，根目录不存在 `node_modules/typescript`（只有 `.pnpm/typescript@5.9.3` 与各子包各一份），模板值在此是坏路径；类型检查统一走 `vue-tsc`（`pnpm typecheck`）。
+3. `i18n-ally` 配置已整段移除：本仓库不存在任何 `locales` / `i18n` / `lang` 目录，保留只会让扩展报错刷屏。
+4. `.vscode/extensions.json` 中 `Gruntfuggly.todo-tree` 已换成 `FanaticPythoner.better-todo-tree`，并把旧 ID 写入 `unwantedRecommendations`；这只表示工作区不再推荐，不代表卸载或禁用。
+5. Prettier 基线：`prettier-plugin-lint-md` 必须精确锁定 `1.0.1`（禁 `^`/`~`），且 `prettier.config.mjs` 顶层 `plugins` 保持字符串数组形式；`lint-staged.config.js` 与 `.github/workflows/cloud-pr-prettier.yaml` 保持现有 `.js` / `.yaml` 命名，不要新增第二份配置来源或并行工作流。
+6. 本仓库**不使用 Playwright**：未安装 `@playwright/test`，不得创建根 `.mcp.json`，不得下载 chromium 二进制；历史上有 headless 反复截图导致 CPU 100%、工具链被全量删除的事故，浏览器验收一律走 `agent-browser` 并遵守上文使用纪律。
+7. EOL 基线四方同步：`.gitattributes`（`* text=auto eol=lf`）、`.editorconfig`、`prettier.config.mjs`（`endOfLine: "lf"`）、`.vscode/settings.json`（`files.eol`）；改动任一处必须同批核对其余三处，且未经授权不执行 `prettier --write .` 与 `git add --renormalize .`。
+8. 记忆库基线：Memorix 在 `.claude.json` / `.codex/config.toml` / `.workbuddy/mcp.json` / `.qoder/mcp.json` 四处统一为 `--mode micro`，全局 hooks 精简为 `SessionStart`/`UserPromptSubmit`/`PreCompact`/`Stop` 四个生命周期事件；`init-simple-memorix` 重跑的正确结果是 0 diff。
 
 ## agent-browser 使用纪律（2026-10-31 起生效）
 
