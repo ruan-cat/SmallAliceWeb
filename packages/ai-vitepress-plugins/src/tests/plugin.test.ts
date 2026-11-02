@@ -4,6 +4,7 @@ import { createApp, nextTick, type App } from "vue";
 
 const chatMocks = vi.hoisted(() => ({
 	onResponseComplete: undefined as undefined | (() => void),
+	getPageContext: undefined as undefined | (() => unknown),
 }));
 const vitepressMocks = vi.hoisted(() => ({
 	withBase: vi.fn((path: string) => `/docs${path}`),
@@ -35,8 +36,12 @@ vi.mock("../client/composables/useKnowledgeChat", async () => {
 	const { ref } = await import("vue");
 
 	return {
-		useKnowledgeChat(_conversationId = "knowledge-chat", options: { onResponseComplete?: () => void } = {}) {
+		useKnowledgeChat(
+			_conversationId = "knowledge-chat",
+			options: { onResponseComplete?: () => void; getPageContext?: () => unknown } = {},
+		) {
 			chatMocks.onResponseComplete = options.onResponseComplete;
+			chatMocks.getPageContext = options.getPageContext;
 			return {
 				messages: ref([]),
 				isResponding: ref(false),
@@ -142,6 +147,25 @@ describe("ai-vitepress client plugin", () => {
 
 		expect(useCalls).toEqual([]);
 		expect(componentCalls).toEqual([]);
+	});
+
+	test("FC-1：pageContext 在 setup 期取用注入，send 时只读值不重新 inject", async () => {
+		vitepressMocks.useRoute.mockClear();
+		vitepressMocks.useData.mockClear();
+		chatMocks.getPageContext = undefined;
+
+		mountShell();
+		await nextTick();
+
+		// useRoute / useData 依赖 Vue inject，只有 setup 调用栈里拿得到；
+		// 旧实现把它们推迟到 send() 回调，运行时抛 "useRouter() is called without provider."
+		expect(vitepressMocks.useRoute).toHaveBeenCalledTimes(1);
+		expect(vitepressMocks.useData).toHaveBeenCalledTimes(1);
+		expect(typeof chatMocks.getPageContext).toBe("function");
+
+		const injectCalls = vitepressMocks.useRoute.mock.calls.length;
+		expect(chatMocks.getPageContext?.()).toEqual({ pagePath: "/guide/intro", title: "指南" });
+		expect(vitepressMocks.useRoute.mock.calls.length).toBe(injectCalls);
 	});
 
 	test("用户授权成功后将回复通知入口更新为已开启状态", async () => {
