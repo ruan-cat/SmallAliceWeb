@@ -29,7 +29,7 @@
 
 - 生产部署前（故障态取证）：agent-browser 单次 batch 实测 `shadowHosts=DIV.ai-shadow-root`、`sender-in-shadow`；截图显示模型选择器覆盖输入区、输入框被裁切。
 - 本地：真人物理键盘输入后 `senderState.isEmpty=false`、`btnDisabled=false`，Enter 发出请求并回传服务端响应；`pnpm --filter @ruan-cat-drill-doc/ai-vue run test` 17 文件 134 用例全绿。
-- 生产部署后（修复态取证）：同批次重新实测 `shadowHosts=0`、`sender-in-light`，并确认输入区可见、不被裁切。
+- 生产部署后（修复态取证）：Vercel `dpl_CZbFWswHdQMBVDEmjQzJHv8E3xJF` 在 commit `feee565` 上 READY，别名含 `drill.ruan-cat.com`。同批次 agent-browser 实测 `no-shadow-host`、`sender-in-light`、`btnDisabled=false`；再由真人物理键盘输入「测试」并回车，面板出现用户气泡与带来源标注的真实 RAG 回答，模型选择器位于输入框上方且输入区完整可见。
 
 ## 6. 后续约束
 
