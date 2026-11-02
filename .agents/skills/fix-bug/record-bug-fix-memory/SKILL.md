@@ -280,6 +280,12 @@ metadata:
 - 适用场景：执行发版工具链的"只读校验/dry-run"命令，尤其是引用技能文档里的 `bumpp --dry-run`；或工作树中存在他人并发改动时运行会提交全部跟踪文件的命令。
 - 关键约束：bumpp 没有 `--dry-run`/`--no-commit`/`--no-push`，未知 flag 被静默忽略且 `--commit`/`--push` 默认为 true，加 `--yes` 等于直接发布；发版命令前必须先 `--help` 核实 flag，只读校验统一用 `relizy-runner ... --dry-run`。
 
+### 13.15 AI 聊天面板发送按钮 disabled：生产 Shadow DOM 真故障与本地合成输入假信号（2026-11-02）
+
+- 详细案例：`2026-11-02-chat-sender-shadow-dom-disabled.md`
+- 适用场景：`container-with-shadow` 变体下 XSender 输入失效/按钮恒 disabled；或只在本地已修复配置上验证就判定生产现象真假；或依赖合成输入判断输入类故障。
+- 关键约束：本地验收必须对齐生产 variant 与构建产物；判定输入故障前先做真人物理键盘基线；探针用 `getSender().constructor.version` 与 `senderState.isEmpty`，`exposed.getPlugin()` 恒返回内联副本不能用来证伪；agent-browser 必须在单次 `batch` 内完成 open→交互→取证，跨命令标签页会漂移成 `about:blank`。
+
 ## 14. 本仓库落点覆盖
 
 - 本仓库的 bug 经验优先记录在当前技能目录：`.agents/skills/fix-bug/record-bug-fix-memory/*.md`
