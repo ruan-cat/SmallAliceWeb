@@ -38,7 +38,17 @@ const userConfig = setUserConfig(
 		description: "天才小爱丽丝，冲鸭！",
 		lang: "zh",
 
-		head: [["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }]],
+		head: [
+			["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+			// dev-only：元素指认拾取器（点选 DOM 生成引用卡给 AI agent），build 产物不含
+			// 内联项先置 AUTO 标志，拾取器脚本据此在本地域名下自动点亮
+			...(process.env.NODE_ENV === "development"
+				? [
+						["script", { innerHTML: "window.__ELEMENT_PICKER_AUTO__ = true;" }],
+						["script", { src: "/element-picker.js" }],
+					]
+				: []),
+		],
 
 		themeConfig: {
 			socialLinks: [
