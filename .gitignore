@@ -69,3 +69,6 @@ drill-docx
 
 # TypeScript 增量构建缓存
 *.tsbuildinfo
+
+# skills CLI 派生的本地 symlink（本体已在 .agents/skills，不入库）
+.claude/skills/

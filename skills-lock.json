@@ -1,40 +1,52 @@
 {
-	"version": 1,
-	"skills": {
-		"ask-matt": {
-			"source": "mattpocock/skills",
-			"sourceType": "github",
-			"skillPath": "skills/engineering/ask-matt/SKILL.md",
-			"computedHash": "0f843160e34a24f5bd12cdc7de7d40951e77fbdc05ce8f891b37ca32eac2c44d"
-		},
-		"domain-modeling": {
-			"source": "mattpocock/skills",
-			"sourceType": "github",
-			"skillPath": "skills/engineering/domain-modeling/SKILL.md",
-			"computedHash": "363cb0f53b0b431e7c00086ad1f823500b7e1b70b5616ee969c979f0934e9e6e"
-		},
-		"git-commit": {
-			"source": "ruan-cat/monorepo",
-			"sourceType": "github",
-			"computedHash": "91448e241fab46bcb5ec012ca19aca6ef2312074417e5d8f2b3ec86de750267b"
-		},
-		"setup-matt-pocock-skills": {
-			"source": "mattpocock/skills",
-			"sourceType": "github",
-			"skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
-			"computedHash": "74e894a3509e2676d4cdb771c8eace087092430635e845e02a9cc2f757c552a4"
-		},
-		"to-spec": {
-			"source": "mattpocock/skills",
-			"sourceType": "github",
-			"skillPath": "skills/engineering/to-spec/SKILL.md",
-			"computedHash": "0f544cd0c099c06f0dd0b7b9ee98b4237218e7e95fd3d3c02e791efbaf74bacb"
-		},
-		"wayfinder": {
-			"source": "mattpocock/skills",
-			"sourceType": "github",
-			"skillPath": "skills/engineering/wayfinder/SKILL.md",
-			"computedHash": "c9e18cefd77b6b5b0ee35f59ce2fd96359aa2d2f02e3479e12c873c5402d9d43"
-		}
-	}
+  "version": 1,
+  "skills": {
+    "21st-ui": {
+      "source": "21st-dev/magic-mcp",
+      "sourceType": "github",
+      "skillPath": "skills/21st-ui/SKILL.md",
+      "computedHash": "9821c076881b19fe173eb789ed5b0acc7939251ce08875333b9fc1370c1a1526"
+    },
+    "ask-matt": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/ask-matt/SKILL.md",
+      "computedHash": "0f843160e34a24f5bd12cdc7de7d40951e77fbdc05ce8f891b37ca32eac2c44d"
+    },
+    "domain-modeling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/domain-modeling/SKILL.md",
+      "computedHash": "363cb0f53b0b431e7c00086ad1f823500b7e1b70b5616ee969c979f0934e9e6e"
+    },
+    "git-commit": {
+      "source": "ruan-cat/monorepo",
+      "sourceType": "github",
+      "computedHash": "91448e241fab46bcb5ec012ca19aca6ef2312074417e5d8f2b3ec86de750267b"
+    },
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "computedHash": "74e894a3509e2676d4cdb771c8eace087092430635e845e02a9cc2f757c552a4"
+    },
+    "superdesign": {
+      "source": "superdesigndev/superdesign-skill",
+      "sourceType": "github",
+      "skillPath": "skills/superdesign/SKILL.md",
+      "computedHash": "e98daea73371b2cdcc333025a993f6b0c2781c692382a9dcf132c7094a014fdf"
+    },
+    "to-spec": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-spec/SKILL.md",
+      "computedHash": "0f544cd0c099c06f0dd0b7b9ee98b4237218e7e95fd3d3c02e791efbaf74bacb"
+    },
+    "wayfinder": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/wayfinder/SKILL.md",
+      "computedHash": "c9e18cefd77b6b5b0ee35f59ce2fd96359aa2d2f02e3479e12c873c5402d9d43"
+    }
+  }
 }
