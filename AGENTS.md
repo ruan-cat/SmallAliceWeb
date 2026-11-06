@@ -190,6 +190,21 @@ template-version: "2.0.0"
   - 参考作用：在真实浏览器环境中验证 UI 渲染与交互流程。
   - 约束：自动化操作前须确认不会产生不可逆的云端副作用。
 
+## 元素指认工作流（用户粘贴引用卡时）
+
+用户会通过元素拾取器（`docs/public/element-picker.js`，bookmarklet 或 dev 自动注入点亮）点选页面元素，
+并把剪贴板中的引用卡 JSON 粘贴给你。收到形如下述结构的 JSON 时，按以下流程处理：
+
+- 特征：JSON 含 `schemaVersion: "1.0"`、`selector`、`fallbackPath`、`styles`、`box`、`sourceHint` 字段。
+- 流程：
+  1. 解析 `selector`（失效则用 `fallbackPath`）；`sourceHint` 指向本仓库源码时优先打开对应文件确认组件。
+  2. 用 chrome-devtools MCP 或 agent-browser 按 selector 定位元素，执行取证（computedStyle / boxModel / console），与引用卡数据交叉验证。
+  3. 结合用户描述的问题给出修复方案；修复后按 `docs/plan`（common 仓库）的 Phase 1 验证闭环做 diff 验证。
+- 约束：
+  - `selector` 是点选时刻的快照，页面可能已变化；定位失败先重新快照再匹配，不要盲目改代码。
+  - `sourceHint` 是线索不是契约（映射表可能过期）；以实际 grep 结果为准。
+  - `elx-*` 类名的元素属于 `vue-element-plus-x` 第三方库内部，修复手段是本仓库的样式覆盖或包装层，不要试图改库源码。
+
 ## 简单任务的高效执行原则
 
 当用户交代的任务范围明确清晰时，必须**直接行动**，禁止进行不必要的大范围侦察。
