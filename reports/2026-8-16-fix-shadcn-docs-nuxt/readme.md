@@ -38,15 +38,15 @@ E1 删除 graph amplifier 后，server transformed modules：
 
 ```json
 {
-  "scripts": {
-    "dev": "nuxt dev",
-    "predev": "nuxt prepare",
-    "prebuild": "nuxt prepare",
-    "build": "nuxt build",
-    "typecheck": "nuxt typecheck",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  }
+	"scripts": {
+		"dev": "nuxt dev",
+		"predev": "nuxt prepare",
+		"prebuild": "nuxt prepare",
+		"build": "nuxt build",
+		"typecheck": "nuxt typecheck",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare"
+	}
 }
 ```
 
@@ -127,20 +127,20 @@ packages/ai-vue-doc postinstall$ nuxt prepare
 
 ## 4. 实验矩阵
 
-| 实验 | 变量 | 结果 | 当前结论 |
-| --- | --- | --- | --- |
-| E0 | 8 GiB 控制 | ✅ | 只能控制症状。 |
-| E1 | 删除 source alias + blanket noExternal/inline；默认 heap | ❌ final Nitro OOM；graph -39% | graph amplifier 被证实。 |
-| E2-A | Linux `trace=false` | ❌ | 不采用。 |
-| E2-B | legacy externals | ❌ | 不采用。 |
-| E3 | server sourcemap off | ❌ | 不采用。 |
-| E4 | treeshake off | ❌ | 不采用。 |
-| E5 | 4608 / 5120 / 6144 | ❌ / ✅ / ✅ | 5120 为最低已测试通过档。 |
-| E6-A | app-local Popper alias dependency | ✅ build + runtime | **采用。** |
-| E6-B | inline Element Plus | ❌ 5120 OOM | forced bundling 回归。 |
-| E6-C | `traceAlias` | ✅ build / ❌ runtime | 当前组合无效。 |
-| E7-A | `nodeLinker: hoisted` | ❌ 5120 OOM | 全局拓扑改动爆炸半径过大。 |
-| E7-B | targeted public hoist | ✅ build + runtime | 仅作为 fallback。 |
+| 实验 | 变量                                                     | 结果                           | 当前结论                   |
+| ---- | -------------------------------------------------------- | ------------------------------ | -------------------------- |
+| E0   | 8 GiB 控制                                               | ✅                             | 只能控制症状。             |
+| E1   | 删除 source alias + blanket noExternal/inline；默认 heap | ❌ final Nitro OOM；graph -39% | graph amplifier 被证实。   |
+| E2-A | Linux `trace=false`                                      | ❌                             | 不采用。                   |
+| E2-B | legacy externals                                         | ❌                             | 不采用。                   |
+| E3   | server sourcemap off                                     | ❌                             | 不采用。                   |
+| E4   | treeshake off                                            | ❌                             | 不采用。                   |
+| E5   | 4608 / 5120 / 6144                                       | ❌ / ✅ / ✅                   | 5120 为最低已测试通过档。  |
+| E6-A | app-local Popper alias dependency                        | ✅ build + runtime             | **采用。**                 |
+| E6-B | inline Element Plus                                      | ❌ 5120 OOM                    | forced bundling 回归。     |
+| E6-C | `traceAlias`                                             | ✅ build / ❌ runtime          | 当前组合无效。             |
+| E7-A | `nodeLinker: hoisted`                                    | ❌ 5120 OOM                    | 全局拓扑改动爆炸半径过大。 |
+| E7-B | targeted public hoist                                    | ✅ build + runtime             | 仅作为 fallback。          |
 
 实验文件见 [`experiments/`](./experiments/)。
 
@@ -179,8 +179,8 @@ CI 的真实 HTTP smoke 是本轮最重要的长期测试升级之一。
 
 - [`dependency-externalization-policy.md`](./dependency-externalization-policy.md)：`noExternal` / `inline` 专项边界。
 - [`complex-dependency-troubleshooting-methodology.md`](./complex-dependency-troubleshooting-methodology.md)：复杂依赖、证据采集、临时工具退役通用方法。
-- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`：standalone alias 事故经验。
-- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-20-temporary-build-wrapper-diagnostics-retirement.md`：临时 wrapper 与错误取证退役经验。
+- `.agents/skills/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`：standalone alias 事故经验。
+- `.agents/skills/record-bug-fix-memory/2026-08-20-temporary-build-wrapper-diagnostics-retirement.md`：临时 wrapper 与错误取证退役经验。
 
 ### 后续技术加固
 

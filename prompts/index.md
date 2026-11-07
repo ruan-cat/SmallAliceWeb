@@ -335,7 +335,7 @@ embedding 限制：最多 100 个文本，费用上限 不懂，允许的模型 
    - 其中，openspec\changes\ai-rag-phase2\all-memorix 目录有更多关于该 AI 化 rag 任务的历史信息。
 2. 结合 memorix 的历史信息，按照二期、AI 化改造这些关键词，去找本项目近期的记忆存储内容，确保不要出现失忆的情况。
 3. 我们的最终目的是彻底取代 2026-07-29-ai-rag-phase2-design.md 和 2026-07-29-ai-rag-phase2-plan.md 文件，把里面的全部细节都做到精准的 openspec 任务规格迁移。做成基于 do-long-task 技能的长任务规格，你很容易出现理解失忆的情况，你必须非常谨慎的，逐步的完成内容迁移和改造。
-4. 迁移改造时，务必要看清楚历史的 `.agents\skills\fix-bug\record-bug-fix-memory` 错误，不要出现错误遗漏和失忆。
+4. 迁移改造时，务必要看清楚历史的 `.agents\skills\record-bug-fix-memory` 错误，不要出现错误遗漏和失忆。
 
 请注意，现在在 `openspec\changes\ai-rag-phase2` 目录内已经有其他 AI 模型率先完成一部分迁移改造任务，但是我非常担心害怕其他模型的做法不合适，有欠缺，理解不够透彻，导致重要的格式迁移任务，出现严重的理解偏差和缺漏。因此我需要你来完成复核，兜底，补强。确保这个任务工件迁移任务，你顺利的完成迁移改造。
 
@@ -410,7 +410,7 @@ PNG IHDR 大端序：测试首轮 LE 误读假失败
 
 既然你已经找到问题了，就用 jsdoc 注释的形式来补充这些东西。
 
-2. 用 `.agents\skills\fix-bug\record-bug-fix-memory\SKILL.md` 项目级技能，增加经验教训。
+2. 用 `.agents\skills\record-bug-fix-memory\SKILL.md` 项目级技能，增加经验教训。
 3. 及时去看看本项目其他的 readme 文档，为本次重大变更做出及时的文档更新，我们成功实现了 emf 矢量图变成可阅读的 png 图片了！重大技术突破，应该要在 readme 文档内说明这个情况。过往的很多 markdown 肯定记录不准确，需要你做出更新的。
 4. 用 memorix 做好记录。
 

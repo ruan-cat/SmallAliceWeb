@@ -140,16 +140,16 @@ safe-delete shim 的 genie-trash 失败会输出 fail-closed stderr，但实际�
 
 ## 6. 修复清单（文件级）
 
-| 文件                                                                                               | 改动                                                                                                                                       | 提交      |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
-| `package.json`（根）                                                                               | `pnpm.packageExtensions` 5 项注入 h3@1.15.11、`overrides` 固定 nuxt-og-image 5.1.9、`patchedDependencies` 登记 fork 补丁                   | `5e5fda1` |
-| `patches/@ztl-uwu__nuxt-content@2.13.9.patch`                                                      | 新增：修正 fork 硬编码的 optimizeDeps 旧前缀                                                                                               | `5e5fda1` |
-| `packages/ai-vue-doc/plugins/ai-vue.ts → ai-vue.client.ts`                                         | rename：客户端专属插件，规避 SSR DOM API 崩溃                                                                                              | `c7980d8` |
-| `packages/ai-vue-doc/nuxt.config.ts`                                                               | `vite.optimizeDeps.include`（element-plus + mermaid）；nitro win32 保持 `trace: false` 并注释文档化，非 win32 补 `traceInclude: ["sharp"]` | `c7980d8` |
-| `packages/ai-vue-doc/app.config.ts`                                                                | `header.logo` 指向 `/favicon.svg`（明暗共用）                                                                                              | `c7980d8` |
-| `packages/ai-vue-doc/components/content/AiChatBasicDemo.vue`                                       | AiChat 改 `defineAsyncComponent` 客户端懒加载                                                                                              | `c7980d8` |
-| `packages/ai-vue-doc/package.json`                                                                 | build 脚本固化 `cross-env NODE_OPTIONS=--max-old-space-size=8192`；devDeps +`cross-env`、+`sharp@0.33.5`                                   | `c3db7bf` |
-| `.agents/skills/fix-bug/record-bug-fix-memory/2026-09-05-ai-vue-doc-local-dev-fix.md` + `SKILL.md` | 事故案例沉淀（12 条经验 + 索引）                                                                                                           | `a4d60fb` |
+| 文件                                                                                       | 改动                                                                                                                                       | 提交      |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `package.json`（根）                                                                       | `pnpm.packageExtensions` 5 项注入 h3@1.15.11、`overrides` 固定 nuxt-og-image 5.1.9、`patchedDependencies` 登记 fork 补丁                   | `5e5fda1` |
+| `patches/@ztl-uwu__nuxt-content@2.13.9.patch`                                              | 新增：修正 fork 硬编码的 optimizeDeps 旧前缀                                                                                               | `5e5fda1` |
+| `packages/ai-vue-doc/plugins/ai-vue.ts → ai-vue.client.ts`                                 | rename：客户端专属插件，规避 SSR DOM API 崩溃                                                                                              | `c7980d8` |
+| `packages/ai-vue-doc/nuxt.config.ts`                                                       | `vite.optimizeDeps.include`（element-plus + mermaid）；nitro win32 保持 `trace: false` 并注释文档化，非 win32 补 `traceInclude: ["sharp"]` | `c7980d8` |
+| `packages/ai-vue-doc/app.config.ts`                                                        | `header.logo` 指向 `/favicon.svg`（明暗共用）                                                                                              | `c7980d8` |
+| `packages/ai-vue-doc/components/content/AiChatBasicDemo.vue`                               | AiChat 改 `defineAsyncComponent` 客户端懒加载                                                                                              | `c7980d8` |
+| `packages/ai-vue-doc/package.json`                                                         | build 脚本固化 `cross-env NODE_OPTIONS=--max-old-space-size=8192`；devDeps +`cross-env`、+`sharp@0.33.5`                                   | `c3db7bf` |
+| `.agents/skills/record-bug-fix-memory/2026-09-05-ai-vue-doc-local-dev-fix.md` + `SKILL.md` | 事故案例沉淀（12 条经验 + 索引）                                                                                                           | `a4d60fb` |
 
 全部通过 pre-commit（lint-staged）、commit-msg（commitlint）钩子，未使用 `--no-verify`。
 
@@ -173,7 +173,7 @@ safe-delete shim 的 genie-trash 失败会输出 fail-closed stderr，但实际�
 ## 8. 知识沉淀
 
 - **memorix**：obs #5881（dev 四层修复）、#5885（sharp 警告根因 + logo 陷阱修正）、#5886（shim 拦截 pnpm add）、#5887（fork patch）、#5888（AiChat defineAsyncComponent + build/dev 冲突）。
-- **案例文件**：`.agents/skills/fix-bug/record-bug-fix-memory/2026-09-05-ai-vue-doc-local-dev-fix.md`（12 条经验）。
+- **案例文件**：`.agents/skills/record-bug-fix-memory/2026-09-05-ai-vue-doc-local-dev-fix.md`（12 条经验）。
 - **技能升级**：`init-shadcn-docs-nuxt` 事故记忆 14 → 20 条，版本 1.3.0 → 1.4.0（ai-plugins 源与 WorkBuddy 副本已对齐）；`nitro-api-development` 经评估**不升级**——本次 nitro 知识点属 Nuxt 内嵌 Nitro 构建层，写入会污染其"独立 API 编写"的范围。
 - **工作日志**：`.workbuddy/memory/2026-09-05.md` 续 1-7 段。
 

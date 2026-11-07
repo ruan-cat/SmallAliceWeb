@@ -144,7 +144,7 @@ pnpm run changelog:dry → ✔ [dry run] Changelog generation completed!
 pnpm run release:dry   → Tag(s): None / Pushed: Disabled / Published packages: Disabled
 ```
 
-**失败项**：`pnpm exec bumpp --dry-run --release patch --yes` 不是 dry-run，真实发版并推送。详见第 3 节与 `.agents/skills/fix-bug/record-bug-fix-memory/2026-11-02-bumpp-dry-run-not-a-dry-run.md`。
+**失败项**：`pnpm exec bumpp --dry-run --release patch --yes` 不是 dry-run，真实发版并推送。详见第 3 节与 `.agents/skills/record-bug-fix-memory/2026-11-02-bumpp-dry-run-not-a-dry-run.md`。
 
 ## 3. 事故：误发版 v3.7.4 并已推送 origin/dev
 
@@ -206,16 +206,16 @@ git push origin dev → 4fc87d2..4b0aa2c  dev -> dev
 
 ## 5. 交付清单
 
-|                                                   文件                                                   |                          变更                           |
-| :------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------: |
-|                                         `.vscode/settings.json`                                          |  三层排除补齐 + 4 策略键 + 嵌套根迁移 + 移除 i18n-ally  |
-|                                        `.vscode/extensions.json`                                         |         todo-tree → better-todo-tree + unwanted         |
-|                                `packages/ai-rag-{core,api}/tsconfig.json`                                |                      形态 D 追加键                      |
-|                              `packages/ai-vitepress-plugins/tsconfig.json`                               |                      形态 D 追加键                      |
-|                                   `packages/ai-vue-doc/tsconfig.json`                                    |                     形态 E 本地覆盖                     |
-|                                               `AGENTS.md`                                                | 526→674 行，11 记忆项齐备 + template-version + 基线记录 |
-|                                               `CLAUDE.md`                                                |             526 行副本 → 一行索引（破坏性）             |
-|                                               `GEMINI.md`                                                |                 新建索引指针（未跟踪）                  |
-|                       `docs/superpowers/plans/2026-11-02-init-skills-alignment.md`                       |                   执行清单（未跟踪）                    |
-| `.agents/skills/fix-bug/record-bug-fix-memory/2026-11-02-bumpp-dry-run-not-a-dry-run.md` + SKILL.md 索引 |                   事故沉淀（未跟踪）                    |
-|                              `reports/2026-11-02-init-skills-alignment.md`                               |                    本报告（未跟踪）                     |
+|                                               文件                                               |                          变更                           |
+| :----------------------------------------------------------------------------------------------: | :-----------------------------------------------------: |
+|                                     `.vscode/settings.json`                                      |  三层排除补齐 + 4 策略键 + 嵌套根迁移 + 移除 i18n-ally  |
+|                                    `.vscode/extensions.json`                                     |         todo-tree → better-todo-tree + unwanted         |
+|                            `packages/ai-rag-{core,api}/tsconfig.json`                            |                      形态 D 追加键                      |
+|                          `packages/ai-vitepress-plugins/tsconfig.json`                           |                      形态 D 追加键                      |
+|                               `packages/ai-vue-doc/tsconfig.json`                                |                     形态 E 本地覆盖                     |
+|                                           `AGENTS.md`                                            | 526→674 行，11 记忆项齐备 + template-version + 基线记录 |
+|                                           `CLAUDE.md`                                            |             526 行副本 → 一行索引（破坏性）             |
+|                                           `GEMINI.md`                                            |                 新建索引指针（未跟踪）                  |
+|                   `docs/superpowers/plans/2026-11-02-init-skills-alignment.md`                   |                   执行清单（未跟踪）                    |
+| `.agents/skills/record-bug-fix-memory/2026-11-02-bumpp-dry-run-not-a-dry-run.md` + SKILL.md 索引 |                   事故沉淀（未跟踪）                    |
+|                          `reports/2026-11-02-init-skills-alignment.md`                           |                    本报告（未跟踪）                     |

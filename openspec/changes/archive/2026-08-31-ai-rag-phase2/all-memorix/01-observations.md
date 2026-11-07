@@ -254,7 +254,7 @@ Windows 上 neonctl@2.30.1 的一次性命令（包括 dist/cli.js --help）可�
 - 验证已通过：pnpm run neon:guard、pnpm exec tsx --check scripts/guard-neon-cli.ts、Turbo docs dry-run。
 - 真实云端 Neon 验证、迁移、同步与 RAG 集成仍需外部授权和逐项证据，不能因守卫完成而宣称二期 RAG 已完成。
 
-**Files**：`scripts/guard-neon-cli.ts`、`turbo.json`、`package.json`、`CLAUDE.md`、`AGENTS.md`、`.agents/skills/fix-bug/record-bug-fix-memory/SKILL.md`、`.agents/skills/fix-bug/record-bug-fix-memory/2026-07-31-windows-neonctl-cpu-spin.md`、`dist/cli.js`
+**Files**：`scripts/guard-neon-cli.ts`、`turbo.json`、`package.json`、`CLAUDE.md`、`AGENTS.md`、`.agents/skills/record-bug-fix-memory/SKILL.md`、`.agents/skills/record-bug-fix-memory/2026-07-31-windows-neonctl-cpu-spin.md`、`dist/cli.js`
 
 ### 2.4 #5514 Vercel git-push 远程构建 ERR_PNPM_META_FETCH_FAIL
 

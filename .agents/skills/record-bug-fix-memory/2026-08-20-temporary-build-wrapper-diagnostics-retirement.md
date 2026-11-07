@@ -171,7 +171,7 @@ E5-B SHA：
 88d17073a5937cb17c992b1940404034152ea2e0
 ```
 
-当时 package scripts 同样是原生 Nuxt 命令，GitHub build 仅由 workflow 设置 5120 MiB并成功。
+当时 package scripts 同样是原生 Nuxt 命令，GitHub build 仅由 workflow 设置 5120 MiB 并成功。
 
 Vercel deployment：
 

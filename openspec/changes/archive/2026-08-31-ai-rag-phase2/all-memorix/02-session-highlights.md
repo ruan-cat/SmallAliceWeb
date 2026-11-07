@@ -92,7 +92,7 @@
 
 - scripts/guard-neon-cli.ts — Windows 专用 neonctl 严格守卫。
 - turbo.json — 守卫任务依赖编排。
-- .agents/skills/fix-bug/record-bug-fix-memory/2026-07-31-windows-neonctl-cpu-spin.md — 事故细节。
+- .agents/skills/record-bug-fix-memory/2026-07-31-windows-neonctl-cpu-spin.md — 事故细节。
 - CLAUDE.md / AGENTS.md — 全仓库 Neon CLI 禁令。
 
 ## 2. 其余会话（空壳会话，一行摘要，按时间倒序）

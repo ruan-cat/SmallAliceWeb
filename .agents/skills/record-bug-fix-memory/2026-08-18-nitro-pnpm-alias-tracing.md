@@ -132,9 +132,9 @@ publicHoistPattern:
 
 ```json
 {
-  "dependencies": {
-    "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.7"
-  }
+	"dependencies": {
+		"@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.7"
+	}
 }
 ```
 

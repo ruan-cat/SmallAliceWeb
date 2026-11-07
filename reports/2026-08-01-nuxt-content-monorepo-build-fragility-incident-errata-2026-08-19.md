@@ -78,7 +78,7 @@ Vite SSR transform 与 Nitro final server bundling/tracing 是不同生命周期
 - [`2026-8-16-fix-shadcn-docs-nuxt/complex-dependency-troubleshooting-methodology.md`](./2026-8-16-fix-shadcn-docs-nuxt/complex-dependency-troubleshooting-methodology.md)
 - [`2026-8-16-fix-shadcn-docs-nuxt/experiments/e1-default-heap-minimal-bundle.md`](./2026-8-16-fix-shadcn-docs-nuxt/experiments/e1-default-heap-minimal-bundle.md)
 - [`2026-8-16-fix-shadcn-docs-nuxt/experiments/e6-runtime-output-package-alias.md`](./2026-8-16-fix-shadcn-docs-nuxt/experiments/e6-runtime-output-package-alias.md)
-- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`
-- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-20-temporary-build-wrapper-diagnostics-retirement.md`
+- `.agents/skills/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`
+- `.agents/skills/record-bug-fix-memory/2026-08-20-temporary-build-wrapper-diagnostics-retirement.md`
 
 旧报告继续作为历史证据，不作为当前 externalization 配置模板。

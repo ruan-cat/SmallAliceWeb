@@ -39,12 +39,12 @@ entities
 
 ## 3. 两个配置真正负责什么
 
-| 配置 | 职责 | 合理场景 | 不负责 |
-| --- | --- | --- | --- |
-| `vite.ssr.noExternal` | 让依赖进入 Vite SSR transform/build | externalized Node 路径无法直接消费发布物，而 Vite transform 能正确处理 | 安装缺包、Nitro standalone copy、npm alias identity |
-| `nitro.externals.inline` | 让代码进入 Nitro/Rollup server bundle | 精确依赖必须由 Nitro bundle 才能解析应用 alias/转换 | lockfile、manifest、所有 runtime dependency tracing |
-| `package.json dependencies` | 声明真实 runtime contract | 部署 package 运行时需要逻辑包名 | 控制 Vite/Nitro transform |
-| Nitro/NFT tracing | 为 external dependency 生成 standalone closure | `.output`/函数依赖复制 | 不能依赖一张 bundling 清单替代正确 package identity |
+| 配置                        | 职责                                           | 合理场景                                                               | 不负责                                              |
+| --------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
+| `vite.ssr.noExternal`       | 让依赖进入 Vite SSR transform/build            | externalized Node 路径无法直接消费发布物，而 Vite transform 能正确处理 | 安装缺包、Nitro standalone copy、npm alias identity |
+| `nitro.externals.inline`    | 让代码进入 Nitro/Rollup server bundle          | 精确依赖必须由 Nitro bundle 才能解析应用 alias/转换                    | lockfile、manifest、所有 runtime dependency tracing |
+| `package.json dependencies` | 声明真实 runtime contract                      | 部署 package 运行时需要逻辑包名                                        | 控制 Vite/Nitro transform                           |
+| Nitro/NFT tracing           | 为 external dependency 生成 standalone closure | `.output`/函数依赖复制                                                 | 不能依赖一张 bundling 清单替代正确 package identity |
 
 因此：一个包需要 Vite transform，不代表需要 Nitro inline；一个 runtime package 在 `.output` 缺失，也不代表需要 Vite noExternal。
 
@@ -212,7 +212,7 @@ final Nitro build OOM？
 - [`experiments/e5-minimal-heap-headroom.md`](./experiments/e5-minimal-heap-headroom.md)
 - [`experiments/e6-runtime-output-package-alias.md`](./experiments/e6-runtime-output-package-alias.md)
 - [`next-steps/r05-production-bundling-regression-guard.md`](./next-steps/r05-production-bundling-regression-guard.md)
-- `.agents/skills/fix-bug/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`
+- `.agents/skills/record-bug-fix-memory/2026-08-18-nitro-pnpm-alias-tracing.md`
 
 ## 14. 最终原则
 
