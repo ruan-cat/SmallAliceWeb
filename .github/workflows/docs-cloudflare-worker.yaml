@@ -44,6 +44,8 @@ jobs:
       - name: 生产构建
         env:
           NODE_OPTIONS: --max-old-space-size=5120
+          # 文档站 Worker 不提供 /v1；由 ai-vitepress-plugins 库构建与 VitePress 构建注入客户端绝对 API 基址
+          VITE_RAG_API_BASE: https://smallalice-docs-ai-nitro-api.ruan-cat.com
         run: pnpm run build
       - name: 上传 Worker
         env:
