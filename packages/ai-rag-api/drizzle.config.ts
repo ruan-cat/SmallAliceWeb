@@ -6,7 +6,7 @@ import { defineConfig } from "drizzle-kit";
 
 const packageRoot = dirname(fileURLToPath(import.meta.url));
 
-/** 仓库根目录的本地 development 环境文件。连接串从 Neon 控制台复制到这里，不再用 `vercel env pull`。 */
+/** 仓库根目录 `.env.local`。范本是根目录 `.env.example`，获取步骤见 AGENTS.md「本地环境变量」。 */
 export const drizzleDevelopmentEnvPath = join(packageRoot, "..", "..", ".env.local");
 
 /** Drizzle migration 只允许使用此非 pooled 数据库连接变量。 */

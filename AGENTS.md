@@ -611,7 +611,17 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 - Neon 项目 ID：`patient-cloud-43432277`
 - Vercel 已关联的 Neon 数据库名称：`neon-smallalice-ai-rag`
 
-禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。2026-11-11 已删除 Vercel 项目 `small-alice-web-odse` 与 `smallalice-docs-ai-nitro-api`，不能再从这两个项目拉取环境变量。数据库连接前从 Cloudflare Workers 密钥、GitHub Actions secrets 或 Neon 控制台获取。连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
+禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。2026-11-11 已删除 Vercel 项目 `small-alice-web-odse` 与 `smallalice-docs-ai-nitro-api`，不能再执行 `vercel env pull`。连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
+
+### 1. 本地环境变量
+
+仓库根目录 `.env.example` 是可提交的范本，只保留键名和可公开的默认值。本机真实值放在同目录 `.env.local`，该文件被 git 忽略。Drizzle migration 从 `.env.local` 读取 `POSTGRES_URL_NON_POOLING`。新机器或文件丢失时按下面的顺序补，不要再找 Vercel。
+
+1. 复制 `.env.example` 为 `.env.local`。本机已经有 `.env.local` 时继续用它，不要覆盖。
+2. 数据库连接串只用 `neon connection-string` 重新生成。先确认 `neon` 已登录。不带 `--pooled` 的结果同时写入 `POSTGRES_URL_NON_POOLING` 和 `NITRO_SYNC_DATABASE_URL`。带 `--pooled` 的结果写入 `NITRO_DATABASE_URL`。项目 ID 用上面的 `patient-cloud-43432277`。数据库名以 `neon databases list --project-id patient-cloud-43432277` 为准，不要新建项目。命令输出只写入 `.env.local`，不要贴进对话、提交或报告。
+3. `NITRO_ANTHROPIC_API_KEY`、`NITRO_OPENAI_API_KEY`、`NITRO_CLOUDFLARE_API_TOKEN` 从对应控制台复制。GitHub Actions secrets 和 Worker secrets 只能看到名字，不能把值拉回来。
+4. `NITRO_CRON_SECRET` 与 `NITRO_KNOWLEDGE_SYNC_TOKEN` 是自造密钥。本地副本丢失时重新生成，并同时更新 GitHub secrets 与 Worker `small-alice-web-api`。
+5. 不要把 `VERCEL_OIDC_TOKEN`、`VERCEL_DEEP_CLONE` 或 Vercel Neon 集成带出的 `DATABASE_URL`、`POSTGRES_HOST` 等重复键写回范本。现行代码不读这些键。
 
 ## Vercel 双项目部署架构（2026-08-07 起生效）
 
