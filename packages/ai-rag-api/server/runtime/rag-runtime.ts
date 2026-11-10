@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import postgres from "postgres";
+import { createNeonQueryClient, type QuerySqlClient } from "./neon-query";
 import { resolveActiveRagLlmConfig } from "../../src/llm-config";
 import { createEvaluationRunsRepository } from "../evaluation/runs-repository";
 import { createCloudflareEmbeddingProvider } from "../providers/cloudflare-embedding";
@@ -19,6 +20,20 @@ const requiredConfigFields = [
 	"knowledgeSyncToken",
 	"cronSecret",
 ] as const;
+
+const cloudflareQueryFields = ["databaseUrl", "embeddingModel", "cloudflareAccountId", "cloudflareApiToken"] as const;
+
+function runtimeDirectory(): string {
+	if (typeof process.cwd === "function") return process.cwd();
+	return "/";
+}
+
+/** Worker 的 process.cwd 可能不存在；绝对路径不再交给会调用 cwd 的 path.resolve。 */
+function resolveDirectory(...parts: string[]): string {
+	if (typeof process.cwd === "function") return resolve(...parts);
+	const joined = parts.filter(Boolean).join("/").replaceAll(/\/+/g, "/");
+	return joined.startsWith("/") ? joined : `/${joined}`;
+}
 
 /** Nitro 与本地 CLI 共享的已解析 RAG 私有配置。 */
 export type ResolvedRagConfig = {
@@ -147,15 +162,19 @@ export function createReservedSyncExecutor(createClient: () => ReservableSyncSql
 /** 创建 HTTP plugin 与本地 CLI 共用的真实 RAG runtime。 */
 export async function createRagRuntime(
 	config: ResolvedRagConfig,
+	options: { queryDriver?: "postgres" | "neon" } = {},
 ): Promise<RagRuntimeContext & { close: () => Promise<void> }> {
-	const missing = requiredConfigFields.filter((field) => !config[field].trim());
+	const queryDriver = options.queryDriver ?? "postgres";
+	const requiredFields = queryDriver === "neon" ? cloudflareQueryFields : requiredConfigFields;
+	const missing = requiredFields.filter((field) => !config[field].trim());
 	if (missing.length) throw new Error(`RAG 运行时配置不完整，缺失字段: ${missing.join(", ")}`);
 	resolveActiveRagLlmConfig(config);
-	const repositoryRoot = resolve(config.repositoryRoot || process.cwd());
-	const sourceRoot = resolve(config.knowledgeSourceRoot || resolve(repositoryRoot, "docs", "docx"));
-	if (sourceRoot !== resolve(repositoryRoot, "docs", "docx"))
+	const repositoryRoot = resolveDirectory(config.repositoryRoot || runtimeDirectory());
+	const sourceRoot = resolveDirectory(config.knowledgeSourceRoot || resolveDirectory(repositoryRoot, "docs", "docx"));
+	if (sourceRoot !== resolveDirectory(repositoryRoot, "docs", "docx"))
 		throw new Error("NITRO_KNOWLEDGE_SOURCE_ROOT 必须指向 repositoryRoot/docs/docx。");
-	const sql = postgres(config.databaseUrl);
+	const sql: QuerySqlClient =
+		queryDriver === "neon" ? createNeonQueryClient(config.databaseUrl) : postgres(config.databaseUrl);
 	const embedding = createCloudflareEmbeddingProvider({
 		accountId: config.cloudflareAccountId,
 		apiToken: config.cloudflareApiToken,

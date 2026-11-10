@@ -57,4 +57,12 @@ export default defineConfig({
 			supportsCancellation: true,
 		},
 	},
+	cloudflare: {
+		wrangler: {
+			name: "smallalice-docs-ai-nitro-api",
+			vars: {
+				NITRO_DATABASE_DRIVER: "neon",
+			},
+		},
+	},
 });

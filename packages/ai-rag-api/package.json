@@ -10,6 +10,7 @@
 		"prebuild": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
 		"build": "nitro build",
 		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel && move-vercel-output-to-root --dereference",
+		"build:cloudflare": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset cloudflare_module",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"knowledge:prepare:dry-run": "tsx scripts/knowledge-prepare-dry-run.ts --dry-run",
@@ -26,6 +27,7 @@
 	"dependencies": {
 		"@ai-sdk/anthropic": "1.2.12",
 		"@ai-sdk/openai": "^1.3.22",
+		"@neondatabase/serverless": "^1.2.0",
 		"@ruan-cat-drill-doc/ai-rag-core": "workspace:*",
 		"ai": "^4.3.16",
 		"drizzle-orm": "^0.44.7",
