@@ -8,6 +8,8 @@ on:
       - "docs/**"
       - "scripts/build-doc-in-vercel/**"
       - "packages/ai-rag-core/**"
+      - "packages/ai-vitepress-plugins/**"
+      - "packages/ai-vue/**"
       - "workers/**"
       - "wrangler.docs.jsonc"
       - "package.json"
