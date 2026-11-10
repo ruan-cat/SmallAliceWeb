@@ -4,7 +4,7 @@ import { effectScope, nextTick, type EffectScope } from "vue";
 import type { ChatEvent } from "@ruan-cat-drill-doc/ai-vue";
 import { collectSourceFrames, useKnowledgeChat } from "../client/composables/useKnowledgeChat";
 
-type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first" | "error-frame";
+type StreamMode = "complete" | "abort" | "nested-source" | "many-sources" | "source-first" | "error-frame" | "http-405";
 type RequestRecord = { body: string; aborted: boolean };
 
 type TestServer = {
@@ -46,6 +46,12 @@ async function createTestServer(mode: StreamMode): Promise<TestServer> {
 		req.on("end", () => {
 			record.body = body;
 			resolveRequest(record);
+			if (mode === "http-405") {
+				// 错误处理增强：模拟框架级 405（非 2xx、非 data stream 合同体）
+				res.writeHead(405, { "Content-Type": "text/plain; charset=utf-8" });
+				res.end("Method Not Allowed: /v1/chat 仅接受 POST 请求");
+				return;
+			}
 			res.writeHead(200, {
 				"Content-Type": "text/plain; charset=utf-8",
 				"Cache-Control": "no-cache",
@@ -283,6 +289,39 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		expect(chat.messages.value.at(-1)?.sources).toBeUndefined();
 	});
 
+	test("POST /v1/chat 非 2xx（405）：errorMessage 携带状态码与正文摘要，chat_error 进事件管线", async () => {
+		const server = await createTestServer("http-405");
+		servers.push(server);
+		if (!globalThis.fetch) throw new Error("当前测试运行时缺少 fetch");
+
+		const scope = effectScope();
+		scopes.push(scope);
+		const events: ChatEvent[] = [];
+		const chat = scope.run(() =>
+			useKnowledgeChat("http-chat-405", {
+				api: server.url,
+				fetch: globalThis.fetch,
+				onChatEvent: (event) => events.push(event),
+			}),
+		)!;
+
+		await chat.send({ id: "user-405", role: "user", content: "非 2xx 状态码测试" });
+		await waitFor(() => Boolean(chat.errorMessage.value));
+
+		// errorMessage 由码表合成：含 HTTP 状态码语境 + 原始正文摘要（不再是裸 raw body）
+		expect(chat.errorMessage.value).toContain("HTTP 405");
+		expect(chat.errorMessage.value).toContain("Method Not Allowed");
+		expect(chat.isResponding.value).toBe(false);
+
+		// chat_error 事件进入 onChatEvent 埋点管线，携带 statusCode（来自 sourceAwareFetch 拦截点）
+		const chatError = events.find((event) => event.type === "chat_error");
+		expect(chatError).toBeDefined();
+		const errorPayload = (chatError as { error?: { code?: string; statusCode?: number; scope?: string } }).error;
+		expect(errorPayload?.code).toBe("CHAT_HTTP_ERROR");
+		expect(errorPayload?.statusCode).toBe(405);
+		expect(errorPayload?.scope).toBe("chat");
+	});
+
 	test("clearError 后可继续发送新消息，errorMessage 清空", async () => {
 		const server = await createTestServer("error-frame");
 		servers.push(server);
@@ -365,9 +404,7 @@ describe("useKnowledgeChat 真实 @ai-sdk/vue HTTP 合同", () => {
 		scopes.push(scope);
 		const chat = scope.run(() => useKnowledgeChat("http-fc3-noop", { api: server.url, fetch: globalThis.fetch }))!;
 
-		await expect(
-			chat.send({ id: "user-fc3-noop", role: "user", content: "无回调" }),
-		).resolves.not.toThrow();
+		await expect(chat.send({ id: "user-fc3-noop", role: "user", content: "无回调" })).resolves.not.toThrow();
 		expect(chat.messages.value.at(-1)?.content).toContain("第一段");
 	});
 

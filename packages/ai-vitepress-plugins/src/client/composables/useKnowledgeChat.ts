@@ -25,6 +25,25 @@ type ActiveRequest = {
  *  仅存 UI 偏好，不携带会话语义；恢复时若不在当前列表则回退默认（plan 16.5 验证点）。 */
 const PROVIDER_STORAGE_KEY = "ai-chat-provider";
 
+/**
+ * 错误处理增强：宿主统一错误模型（spec 2026-11-11 第三节）。
+ * 仅在宿主捕获层内部合成，不导出到 ai-vue 的类型文件——UI 只收展示所需子集。
+ */
+export interface AiChatUiError {
+	/** 稳定机器码（见 spec 3.1 错误码表） */
+	code: string;
+	/** 可读中文，含状态码语境 */
+	message: string;
+	/** HTTP 状态码（拿到才填，绝不臆造） */
+	statusCode?: number;
+	/** 原始正文摘要（截断 500 字符） */
+	detail?: string;
+	scope: "models" | "chat";
+}
+
+/** 错误处理增强：原始正文摘要的截断上限（spec 第四节）。 */
+const ERROR_DETAIL_MAX_LENGTH = 500;
+
 export type KnowledgeChatOptions = {
 	/** 覆盖默认的本地聊天 API，便于文档站或本地集成测试使用。 */
 	api?: string;
@@ -155,6 +174,16 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	}
 	const selectedProvider = ref<string>(initialSelected);
 
+	/** 错误处理增强：模型列表加载失败的结构化错误；成功加载后清空（spec 第四节第 3 点）。 */
+	const modelsError = ref<AiChatUiError | undefined>();
+	/**
+	 * 错误处理增强：sourceAwareFetch 拦截到的非 2xx 语境（statusCode + 正文摘要）。
+	 * statusCode 的唯一可靠来源——AI SDK 对非 2xx 会吞掉 fetch 层 Error 自建 `Error(body)`（无 statusCode）。
+	 */
+	const chatHttpError = ref<{ statusCode: number; detail: string } | undefined>();
+	/** 错误处理增强：onError 合成的最近一次 chat 错误（供 errorMessage computed 按码表展示）。 */
+	const lastChatError = ref<AiChatUiError | undefined>();
+
 	/**
 	 * MS-3: 选择当前 provider。校验 id 必须在 models 列表内（白名单语义），
 	 * 写入选中态 + localStorage。responding 中切换仅改下一请求的 provider，
@@ -169,14 +198,15 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	}
 
 	/**
-	 * MS-3: 客户端挂载后拉取 /v1/models；失败静默（models 保持空数组，
-	 * AiChat 选择器不渲染——向后兼容）；成功后用 list + localStorage 恢复 selectedProvider。
+	 * MS-3: 客户端挂载后拉取 /v1/models；失败时 modelsError 结构化上报（错误处理增强，不再静默吞掉），
+	 * models 保持现状（初始加载失败即为空数组——降级不冒充「无可用模型」业务结论）；
+	 * 成功后清空 modelsError 并用 list + localStorage 恢复 selectedProvider。
 	 *
 	 * - 优先级：initialProvider > localStorage 存储值（仍需在 list 内）> list 首项
 	 * - localStorage 脏值（注册表变更后残留 id 不在 list）回退默认，防漂移
 	 * - SSR 安全：typeof window 守卫，避免 VitePress 构建时 fetch 报错
 	 */
-	function loadModels() {
+	async function loadModels() {
 		if (typeof window === "undefined" || typeof fetch === "undefined") return;
 		const fetcher = options.fetch ?? globalThis.fetch;
 		const chatApi = resolveKnowledgeChatApi(options.api);
@@ -193,25 +223,79 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		 */
 		if (options.api !== undefined) return;
 		const modelsUrl = chatApi.replace(/\/chat$/, "/models");
-		void fetcher(modelsUrl)
-			.then((response) => (response.ok ? response.json() : undefined))
-			.then((payload) => {
-				const list: AiChatModelOption[] = Array.isArray(payload?.data?.models) ? payload.data.models : [];
-				models.value = list;
-				if (options.initialProvider && list.some((item) => item.id === options.initialProvider)) {
-					selectedProvider.value = options.initialProvider;
-					return;
-				}
-				const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
-				selectedProvider.value = list.some((item) => item.id === stored) ? stored! : (list[0]?.id ?? "");
-			})
-			.catch(() => {});
+		let response: Response;
+		try {
+			response = await fetcher(modelsUrl);
+		} catch (error) {
+			modelsError.value = {
+				code: "MODELS_NETWORK_ERROR",
+				message: "模型列表加载失败（网络异常）",
+				detail: error instanceof Error ? error.message.slice(0, ERROR_DETAIL_MAX_LENGTH) : undefined,
+				scope: "models",
+			};
+			return;
+		}
+		if (!response.ok) {
+			let detail = "";
+			try {
+				detail = await response.text();
+			} catch {}
+			modelsError.value = {
+				code: "MODELS_LOAD_FAILED",
+				message: `模型列表加载失败（HTTP ${response.status}）`,
+				statusCode: response.status,
+				detail: detail ? detail.slice(0, ERROR_DETAIL_MAX_LENGTH) : undefined,
+				scope: "models",
+			};
+			return;
+		}
+		let payload: { data?: { models?: unknown } } | undefined;
+		try {
+			payload = (await response.json()) as { data?: { models?: unknown } };
+		} catch (error) {
+			modelsError.value = {
+				code: "MODELS_LOAD_FAILED",
+				message: "模型列表加载失败（响应解析异常）",
+				detail: error instanceof Error ? error.message.slice(0, ERROR_DETAIL_MAX_LENGTH) : undefined,
+				scope: "models",
+			};
+			return;
+		}
+		const list: AiChatModelOption[] = Array.isArray(payload?.data?.models) ? payload.data.models : [];
+		modelsError.value = undefined;
+		models.value = list;
+		if (options.initialProvider && list.some((item) => item.id === options.initialProvider)) {
+			selectedProvider.value = options.initialProvider;
+			return;
+		}
+		const stored = localStorage.getItem(PROVIDER_STORAGE_KEY);
+		selectedProvider.value = list.some((item) => item.id === stored) ? stored! : (list[0]?.id ?? "");
 	}
 
 	const sourceAwareFetch: typeof fetch = async (input, init) => {
 		const fetcher = options.fetch ?? globalThis.fetch;
 		const requestStart = Date.now();
 		const response = await fetcher(input, init);
+		if (!response.ok) {
+			/**
+			 * 错误处理增强（spec 第四节第 1 点）：非 2xx 时在此拦截读正文存档——这是 statusCode
+			 * 的唯一可靠来源（AI SDK 随后会自建无 statusCode 的 `Error(body)`）。读完后让 AI SDK
+			 * 走既有 error 路径，status="error" 语义不变。
+			 */
+			let detail = "";
+			try {
+				detail = await response.text();
+			} catch {}
+			chatHttpError.value = { statusCode: response.status, detail: detail.slice(0, ERROR_DETAIL_MAX_LENGTH) };
+			// 204/205/304 无 body：原样返回（重建 Response 带 body 会抛 TypeError）
+			if (response.status === 204 || response.status === 205 || response.status === 304) return response;
+			// body 已被本次 text() 消费：重建等价 Response（同 status/headers/正文），AI SDK 的 response.text() 仍可读到原文
+			return new Response(detail, {
+				status: response.status,
+				statusText: response.statusText,
+				headers: response.headers,
+			});
+		}
 		if (!response.body) return response;
 		const [rawCapture, responseStream] = response.body.tee();
 		/**
@@ -250,6 +334,43 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		api: resolveKnowledgeChatApi(options.api),
 		id: conversationId,
 		fetch: sourceAwareFetch,
+		/**
+		 * 错误处理增强（spec 第四节第 2 点）：AI SDK 报错时合成统一错误模型并 emit chat_error 进埋点管线。
+		 * 优先消费 chatHttpError（CHAT_HTTP_ERROR，含 statusCode）；无 HTTP 语境时按 error 内容
+		 * 合成 CHAT_STREAM_ERROR / UNKNOWN。合成后清空 chatHttpError 防跨请求残留。
+		 */
+		onError(error) {
+			const http = chatHttpError.value;
+			chatHttpError.value = undefined;
+			const raw = error.message.trim();
+			lastChatError.value = http
+				? {
+						code: "CHAT_HTTP_ERROR",
+						message: `请求失败（HTTP ${http.statusCode}）`,
+						statusCode: http.statusCode,
+						detail: http.detail || undefined,
+						scope: "chat",
+					}
+				: raw
+					? {
+							code: "CHAT_STREAM_ERROR",
+							message: "对话处理失败",
+							detail: raw.slice(0, ERROR_DETAIL_MAX_LENGTH),
+							scope: "chat",
+						}
+					: { code: "UNKNOWN", message: "发生未知错误", scope: "chat" };
+			emit?.({
+				type: "chat_error",
+				conversationId,
+				tags: ["chat", "error"],
+				error: {
+					code: lastChatError.value.code,
+					message: lastChatError.value.message,
+					statusCode: lastChatError.value.statusCode,
+					scope: "chat",
+				},
+			});
+		},
 		experimental_prepareRequestBody({ messages }) {
 			const latestMessage = messages.at(-1);
 			/**
@@ -272,13 +393,13 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 	/**
 	 * MS-3: 立即异步拉取 /v1/models（满足 plan 16.5「void 立即调用」示意）。
 	 * - 宿主已传 initialModels 时跳过自动拉取（测试与受控场景）。
-	 * - 失败静默：models 保持空数组 / selectedProvider 保持空串，选择器不渲染。
+	 * - 失败不再静默：modelsError 结构化上报（models 保持空数组 / selectedProvider 保持空串）。
 	 *
 	 * 注：仍保留由宿主主动控制的能力——返回 refreshModels 函数，宿主可按需手动触发
 	 * （如 SSR 阶段延迟到 onMounted、注册表变更后刷新等场景）。
 	 */
 	if (!options.initialModels) {
-		loadModels();
+		void loadModels();
 	}
 	const activeRequest = ref<ActiveRequest>();
 	let nextRequestId = 0;
@@ -330,12 +451,22 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		}),
 	);
 	const isResponding = computed(() => chat.status.value === "submitted" || chat.status.value === "streaming");
+	/**
+	 * 错误处理增强（spec 第四节第 4 点）：按 3.1 码表合成完整展示串。
+	 * 优先级：RAG_NOT_CONFIGURED 友好文案（既有特判保留）> onError 合成错误（含 HTTP {statusCode} 与正文摘要）> 原始 message 兜底。
+	 * 保持 string 类型向后兼容（Shell / 三容器零改动）。
+	 */
 	const errorMessage = computed(() => {
 		if (!chat.error.value) return;
-		return chat.error.value.message.includes("RAG_NOT_CONFIGURED")
-			? "知识库服务尚未配置，请稍后再试。"
-			: chat.error.value.message;
+		const raw = chat.error.value.message;
+		if (raw.includes("RAG_NOT_CONFIGURED")) return "知识库服务尚未配置，请稍后再试。";
+		const synthesized = lastChatError.value;
+		if (!synthesized) return raw;
+		return synthesized.detail ? `${synthesized.message}：${synthesized.detail}` : synthesized.message;
 	});
+
+	/** 错误处理增强（spec 第四节第 5 点）：header 状态位——chat 失败期间显示「连接异常」，恢复后回「本地助手」。 */
+	const headerStatus = computed(() => (chat.error.value ? "连接异常" : "本地助手"));
 
 	/** 发送一条非空用户消息。 */
 	async function send(message: AiChatMessage) {
@@ -392,6 +523,8 @@ export function useKnowledgeChat(conversationId = "knowledge-chat", options: Kno
 		stop,
 		clearError,
 		models,
+		modelsError,
+		headerStatus,
 		selectedProvider,
 		selectModel,
 		refreshModels: loadModels,

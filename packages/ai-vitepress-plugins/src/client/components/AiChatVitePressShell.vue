@@ -16,12 +16,24 @@ const attention = useChatCompletionAttention({
 const { permission, canRequestPermission, requestPermission } = attention;
 /** FC-1 接入：采集器必须在 setup 期建立（useRoute / useData 依赖 Vue inject），推迟到 send 回调内调用会抛 useRouter provider 错误 */
 const collectPageContext = usePageContextCollector();
-const { messages, isResponding, errorMessage, send, stop, clearError, models, selectedProvider, selectModel } =
-	useKnowledgeChat("knowledge-chat", {
-		onResponseComplete: attention.markCompleted,
-		/** 每次 send 由闭包重新求值，采集最新 pagePath / title / keywords；SSR 阶段返回 undefined 不发该字段 */
-		getPageContext: collectPageContext,
-	});
+const {
+	messages,
+	isResponding,
+	errorMessage,
+	send,
+	stop,
+	clearError,
+	models,
+	modelsError,
+	headerStatus,
+	selectedProvider,
+	selectModel,
+	refreshModels,
+} = useKnowledgeChat("knowledge-chat", {
+	onResponseComplete: attention.markCompleted,
+	/** 每次 send 由闭包重新求值，采集最新 pagePath / title / keywords；SSR 阶段返回 undefined 不发该字段 */
+	getPageContext: collectPageContext,
+});
 
 /** 在客户端挂载后渲染对话入口，保持 VitePress SSR 输出稳定。 */
 onMounted(() => {
@@ -39,10 +51,13 @@ onMounted(() => {
 			variant="no-shadow"
 			:models="models"
 			:selected-model-id="selectedProvider"
+			:models-error="modelsError"
+			:header-status="headerStatus"
 			@send="send"
 			@stop="stop"
 			@clear-error="clearError"
 			@select-model="selectModel"
+			@retry-models="refreshModels"
 		>
 			<template #notification-control>
 				<button

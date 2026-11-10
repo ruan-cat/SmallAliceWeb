@@ -12,7 +12,7 @@ import { useKnowledgeChat } from "../client/composables/useKnowledgeChat";
  * - experimental_prepareRequestBody 携带 provider 字段（缺省/合法/未设）
  * - localStorage 脏值回退默认；valid 命中恢复
  * - initialProvider 优先级高于 localStorage
- * - /v1/models 拉取失败（fetch reject）时聊天功能不受影响
+ * - /v1/models 拉取失败（fetch reject / 非法 JSON / 非 2xx）时 modelsError 结构化上报（错误处理增强）
  * - 调用方显式传 api 时跳过自动 loadModels（受控测试场景）
  * - 不传 api（生产场景 / VITE_RAG_API_BASE 派生）时强制发起 loadModels
  * - refreshModels 暴露给宿主手动调用
@@ -165,7 +165,7 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		scope.stop();
 	});
 
-	test("models 拉取失败（fetch reject）时聊天功能完全不受影响", async () => {
+	test("models 拉取失败（fetch reject）时 modelsError 上报且 models 保持空数组", async () => {
 		const fetchMock = vi.fn(async () => {
 			throw new Error("network down");
 		});
@@ -181,14 +181,16 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		await flushMicrotasks();
 		await flushMicrotasks();
 
-		// 失败静默：models 与 selectedProvider 保持空
+		// 错误处理增强：失败不再静默，modelsError 结构化上报（网络异常）
+		expect(chat.modelsError?.value?.code).toBe("MODELS_NETWORK_ERROR");
+		// 不冒充：models 保持空数组（初始加载失败 ≠ 无可用模型的业务结论）
 		expect(chat.models.value).toEqual([]);
 		expect(chat.selectedProvider.value).toBe("");
 
 		scope.stop();
 	});
 
-	test("models 拉取返回 200 但 body 非法 JSON 时失败静默", async () => {
+	test("models 拉取返回 200 但 body 非法 JSON 时 modelsError 上报 MODELS_LOAD_FAILED", async () => {
 		const fetchMock = vi.fn(async () => ({
 			ok: true,
 			json: async () => {
@@ -205,15 +207,16 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		await flushMicrotasks();
 		await flushMicrotasks();
 
-		// 失败静默：models 仍为空
+		expect(chat.modelsError?.value?.code).toBe("MODELS_LOAD_FAILED");
 		expect(chat.models.value).toEqual([]);
 		scope.stop();
 	});
 
-	test("models 拉取返回非 ok 状态码时失败静默", async () => {
+	test("models 拉取返回非 ok 状态码时 modelsError 携带 statusCode", async () => {
 		const fetchMock = vi.fn(async () => ({
 			ok: false,
 			status: 503,
+			text: async () => "service unavailable",
 		}));
 		const scope = effectScope();
 		const chat = scope.run(() =>
@@ -225,6 +228,10 @@ describe("MS-3 useKnowledgeChat /v1/models 拉取行为", () => {
 		await flushMicrotasks();
 		await flushMicrotasks();
 
+		expect(chat.modelsError?.value?.code).toBe("MODELS_LOAD_FAILED");
+		expect(chat.modelsError?.value?.statusCode).toBe(503);
+		expect(chat.modelsError?.value?.message).toContain("HTTP 503");
+		expect(chat.modelsError?.value?.detail).toContain("service unavailable");
 		expect(chat.models.value).toEqual([]);
 		scope.stop();
 	});
