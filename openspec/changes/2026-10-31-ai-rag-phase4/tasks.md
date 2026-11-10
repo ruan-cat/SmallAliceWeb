@@ -28,7 +28,7 @@
 - 每完成一个 checkpoint：覆盖更新 `agent-progress.md`，并对 `agent-findings.md` 去重清理；失败路径、连续失败、已排除方案必须写入 `agent-findings.md`。
 - 连续 3 次同类失败、权限问题、破坏性风险、产品决策问题或需求冲突：停止并输出 BLOCKED 报告（当前任务 / 已尝试路径 / 失败证据 / 需要用户决策什么）。
 - 标注【需授权】/【需授权+额度检查】的任务必须先获用户显式授权并核对 Cloudflare 额度余量，禁止擅自执行。
-- 未经用户授权不执行 `git commit` / `vercel deploy`；Production 只由用户合并 remote main 触发 Git Integration（见 6.4 与 design §3.6 边界 4）。
+- 未经用户授权不执行 `git commit` / 本地 `wrangler deploy` / `vercel deploy`；Production 只由用户合并 remote `main` 后由 GitHub Actions 构建并部署 Cloudflare Workers（见 6.4 与 design §3.6 边界 4）。
 
 ### 0.5 停止条件
 
@@ -120,7 +120,7 @@
 - [ ] 6.1 [验证] openspec/changes/2026-10-31-ai-rag-phase4/evidence/ - 审计各阶段验证记录均已落 evidence/YYYY-MM-DD-\*.json|.log（U0 基线/复现、U1 回归/对照、U2 回归/对照、U3 对照、U4 核实/重同步/生产验证/收敛），并在 agent-progress.md 登记最新 ≤3 个证据索引。验收：任一已勾选任务都能在 evidence/ 或 agent-findings.md 找到对应产物。
 - [ ] 6.2 [验证] openspec/changes/2026-10-31-ai-rag-phase4/tasks.md - 对照 openspec/changes/2026-10-31-ai-rag-phase4/specs/ 与 design.md 逐项审计勾选状态：无证据的任务不得勾选，发现遗漏先补任务再继续。验收：每个已勾选条目有可追溯证据，specs/design 的 Requirement 与决策点均有对应任务或明确豁免记录。
 - [ ] 6.3 [验证] openspec/changes/2026-10-31-ai-rag-phase4 - 运行 `openspec validate 2026-10-31-ai-rag-phase4 --strict`，修复全部 ERROR 后才认定规划/实施工件一致。验收：命令 exit code 0、无 ERROR。
-- [ ] 6.4 [验证] openspec/changes/2026-10-31-ai-rag-phase4/agent-findings.md - 生产上线说明：Production 唯一由用户合并 remote main 触发 Git Integration 完成，agent 不执行本地 vercel deploy、不重建 vercel.json；写入上线检查单（合并前 U0~U4 证据齐备、validate --strict 通过、生产 smoke 已留档）。验收：findings 含上线边界条目，且全任务周期无 vercel deploy 执行记录、无 vercel.json 改动。
+- [ ] 6.4 [验证] openspec/changes/2026-10-31-ai-rag-phase4/agent-findings.md - 生产上线说明：Production 唯一由用户合并 remote `main` 后触发 GitHub Actions 完成 Workers 部署，agent 不执行本地 `wrangler deploy` / `vercel deploy`、不重建 vercel.json；写入上线检查单（合并前 U0~U4 证据齐备、validate --strict 通过、生产 smoke 已留档）。验收：findings 含上线边界条目，且全任务周期无未授权部署执行记录、无 vercel.json 改动。
 
 ## 7. 非本期设计输入（不属于本 change 执行范围）
 

@@ -10,7 +10,7 @@
 
 已完成的阶段成果包括：中文文字不再因容器缺字而整段空白、`offDx` 文本不再被整串重叠绘制、mapping-mode 与 glyph-index 的已知回归已被 fixture 覆盖、EMF+ Dual 双层重放导致的错位已修复，以及地图活动镜头的 SVG 框体点阵已在本地 GDI+/Chrome 对照中消失。
 
-这不代表所有 EMF 图形已经逐像素等同于 Windows GDI。复杂裁剪、未知 ROP3、递归 metafile 等类别仍要逐样本复核；本轮点阵补丁尚需通过 Git Integration 发布，由维护者在生产页面做人工验收。
+这不代表所有 EMF 图形已经逐像素等同于 Windows GDI。复杂裁剪、未知 ROP3、递归 metafile 等类别仍要逐样本复核；本轮点阵补丁尚需经 `main`/CI 部署到 Worker `small-alice-web-docs`，由维护者在 `https://drill.ruan-cat.com` 生产页面做人工验收。
 
 ## 2. 为什么不能直接把 EMF 当普通图片
 
@@ -63,7 +63,7 @@ EMF/WMF 单张失败只记录错误并继续处理其他文档；它不应让整
 - 注册 `NotoSansSC-Regular.ttf`，为宋体、黑体、Calibri、Tahoma、Segoe UI 等已观测字体提供映射。
 - 未知 `faceName` 统一回退到已注册的中文字体别名，优先保证可读性。
 - 从实际 `Canvas.fillText` 文本提取字符集，并以 TTF cmap 测试约束字体子集。
-- 用生产 Git Integration 构建日志和可见 Chrome 抽样验证“没有整段空白/豆腐块”。
+- 用生产 GitHub Actions 构建日志和可见 Chrome 在 `https://drill.ruan-cat.com` 抽样验证“没有整段空白/豆腐块”。
 
 ### 4.2 第二阶段：文本布局、mapping-mode 与 glyph-index
 
@@ -126,9 +126,9 @@ pnpm run build:doc-in-vercel
 
 ### 5.3 生产验收的正确含义
 
-正式发布必须由 `main` 的有意义 Git commit 触发 Vercel Git Integration，不能以本地 `vercel deploy` 或本地构建代替。验证时应查看 Git checkout SHA、构建日志、目标资源和目标图视口；`naturalWidth`、MIME、资源加载数或单张缩略图都不足以证明布局正确。
+正式发布必须由 `main` 的有意义 Git commit 触发 GitHub Actions 构建并 wrangler 上传到 Worker `small-alice-web-docs`，不能以本地 `vercel deploy`、未上传 wrangler 的产物或仅凭本地构建代替。验证时应查看 Git checkout SHA、Actions 构建日志、目标资源和在 `https://drill.ruan-cat.com` 的目标图视口；`naturalWidth`、MIME、资源加载数或单张缩略图都不足以证明布局正确。
 
-截至本文更新，地图活动镜头点阵修复已完成本地 GDI+/Chrome 验证，尚待本轮 Production Git Integration 发布后的维护者人工确认。
+截至本文更新，地图活动镜头点阵修复已完成本地 GDI+/Chrome 验证，尚待本轮 `main`/CI Worker 部署后的维护者人工确认。
 
 ## 6. 仍未关闭的风险
 

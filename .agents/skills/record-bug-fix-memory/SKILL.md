@@ -212,7 +212,7 @@ metadata:
 
 - 详细案例：`2026-08-09-vercel-git-changelog-config-failed.md`
 - 适用场景：Vercel CLI 上传部署（非 Git 集成克隆）时，构建目录无 `.git`，`@nolebase/vitepress-plugin-git-changelog` 在 `buildStart` 无条件执行 `git config --local core.quotepath false` 失败（exit 128）。
-- 关键约束：`setUserConfig` 的 `gitChangelog` 配置必须保留 `shouldDisableGitChangelog()` 检测逻辑；Vercel production 部署优先使用 Git 集成方式避免丢失 `.git` 目录。
+- 关键约束：`setUserConfig` 的 `gitChangelog` 配置必须保留 `shouldDisableGitChangelog()` 检测逻辑；Vercel production 部署优先使用 Git 集成方式避免丢失 `.git` 目录。**2026-11-11 起文档站现行生产为 Worker `small-alice-web-docs`（GitHub Actions + wrangler），本条 Git 集成约束仅适用于 Vercel 回滚场景。**
 
 ### 13.4 Vercel 自定义 pnpm 安装未启用 Corepack（2026-08-10）
 
@@ -254,7 +254,7 @@ metadata:
 
 - 详细案例：`2026-09-01-vercel-project-binding-production-browser-closure.md`
 - 适用场景：多 Vercel 项目 monorepo 中，数据库环境变量被误判为缺失，或只完成本地/Preview/API 验证而未完成 Git-triggered Production 与真实浏览器验收。
-- 关键约束：先核对 `.vercel/project.json` 和目标项目，再执行 `vercel env ls`；以同一 Git SHA 的 Production Ready 日志和有头 Agent Browser 的页面/API/来源/停止证据组成闭环，禁止把部分流式状态包装成完整回答成功。
+- 关键约束：先核对 `.vercel/project.json` 和目标项目，再执行 `vercel env ls`；以同一 Git SHA 的 Production Ready 日志和有头 Agent Browser 的页面/API/来源/停止证据组成闭环，禁止把部分流式状态包装成完整回答成功。**2026-11-11 起文档站现行生产为 Worker `small-alice-web-docs`；Vercel Git-triggered Production 与 `vercel env` 核对仅适用于回滚，现行应以 GitHub Actions 日志与 `https://drill.ruan-cat.com` 验收闭环。**
 
 ### 13.11 冗余 main-sync worktree 遗留事故与纠偏（2026-09-02）
 

@@ -18,7 +18,7 @@
 - Neon 项目 ID：`patient-cloud-43432277`
 - Vercel 已关联的 Neon 数据库名称：`neon-smallalice-ai-rag`
 
-数据库连接前，先从 Vercel 拉取当前环境变量；连接串和其他凭据不得提交到仓库。所有 Neon CLI 操作统一使用 `neon`，其安装与认证由用户完成。
+数据库连接前，生产密钥在 Cloudflare Worker 与 GitHub Actions 中配置，勿将 Vercel 当作现行取值处；连接串和其他凭据不得提交到仓库。所有 Neon CLI 操作统一使用 `neon`，其安装与认证由用户完成。
 
 ## 3. 二期 AI RAG 知识库作品
 
@@ -51,13 +51,13 @@ docs/docx
 |    向量与检索    | Cloudflare Workers AI `@cf/baai/bge-m3`、Neon PostgreSQL、pgvector、HNSW、FTS、RRF |
 |      服务端      |               Nitro v3、Drizzle ORM、Zod、AI SDK、Anthropic Messages               |
 |     对话界面     |          VitePress、`vue-element-plus-x`、`markstream-vue`、`@ai-sdk/vue`          |
-| 部署与运行时验证 |            Vercel Git Integration、Vercel CLI、Chrome/CDP Agent Browser            |
+| 部署与运行时验证 |      GitHub Actions 构建与 wrangler 上传（Workers）、Chrome/CDP Agent Browser      |
 
 ### 3.4 已验证的生产链路
 
 - `POST https://smallalice-docs-ai-nitro-api.ruan-cat.com/v1/search` 已在真实浏览器上下文返回 HTTP 200 和来源 DTO。
 - `POST /v1/chat` 已验证流式回答、停止生成后内容和来源保留，以及来源跳转。
-- `drill.ruan-cat.com` 的 Git Integration Production deployment 已通过 Vercel CLI 按 main SHA 监听到 READY，再使用 Chrome/CDP 验收。
+- `https://drill.ruan-cat.com` 由 Worker `small-alice-web-docs` 承载；`main` 推送触发 GitHub Actions 构建并 wrangler 上传后，按 checkout SHA 与 Actions 日志收敛，再使用 Chrome/CDP 验收。
 - 真实参数评测覆盖 `300/30/5`、`500/50/10`、`800/100/15`：`800/100/15` 在固定题集上的 vector/hybrid 命中率为 8/10、关键词覆盖率为 0.70；HNSW/exact Top-5 一致率分别为 8/10、9/10、9/10。
 
 生产浏览器验收截图：
@@ -80,14 +80,29 @@ docs/docx
 - 早期学习计划曾出现 Chroma 本地练习，但它从未进入正式实现，也不属于当前二期交付；正式向量主线唯一是 Neon + pgvector。
 - 作品说明以 README 和可复核生产证据为交付物；不再要求录制或外部上传演示视频。
 
-## vercel 项目名称
+## Cloudflare Workers 与历史 Vercel 项目名
 
-- 核心 vitepress 文档项目： small-alice-web-odse
-- rag nitro 接口项目： smallalice-docs-ai-nitro-api
+**现行生产（2026-11-11 起）**
 
-## 4. Vercel 双项目部署架构
+|      Worker 名称       |       用途       |                               生产域名                               |
+| :--------------------: | :--------------: | :------------------------------------------------------------------: |
+| `small-alice-web-docs` | VitePress 文档站 | `https://drill.ruan-cat.com`、`https://small-alice-web.ruan-cat.com` |
+| `small-alice-web-api`  |  Nitro API 接口  |         `https://smallalice-docs-ai-nitro-api.ruan-cat.com/`         |
 
-本仓库同时绑定两个 Vercel 项目，采用统一的**仓库根安装 + 产物搬运**模式（`use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A）。
+**历史 Vercel 项目名（仅回滚对照；对应 Worker 已删除同名占位，不得当作现行 Worker 名）**
+
+- 核心 VitePress 文档项目：`small-alice-web-odse`
+- RAG Nitro 接口项目：`smallalice-docs-ai-nitro-api`
+
+## 4. 现行 Worker 生产与 Vercel 历史/回滚架构
+
+2026-11-11 起，文档站与 API 的自定义域名由 Cloudflare Workers 承载：`git push`（经 `dev` → `main` 纪律）触发 **GitHub Actions** 构建，并用 **wrangler** 上传到上表两个 Worker。知识库同步仍在 GitHub Actions（`.github/workflows/rag-sync-schedule.yaml`），不在 Worker 内调度。
+
+**DNS 回滚目标（仅在用户授权回滚 Vercel 时使用）**：文档站 `cname.vercel-dns.com`；API `ad1c0a65577b8811.vercel-dns-017.com`。设计记录见 `reports/2026-11-10-vercel-to-cloudflare/`。
+
+### 4.0 历史：Vercel 双项目配置（回滚参考）
+
+切流前本仓库同时绑定两个 Vercel 项目，采用统一的**仓库根安装 + 产物搬运**模式（`use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A）。下表**不是现行生产入口**。
 
 |          Vercel 项目           |       用途       | Root Directory | Framework |                          Build Command                          |    Output Directory    | Install Command | Node |
 | :----------------------------: | :--------------: | :------------: | :-------: | :-------------------------------------------------------------: | :--------------------: | :-------------: | :--: |
@@ -100,38 +115,30 @@ docs/docx
 
 `vercel.old.json` 是更早期 VuePress 的遗留配置，仍指向 `vuepress-vite build docs` 与 `docs/.vuepress/dist`。当前文档站已经使用 VitePress，其构建入口和输出目录分别为 `pnpm run build` 与 `docs/.vitepress/dist`；因此移除该旧文件属于清理过期配置，不会改变当前两个 Vercel 项目的云端 Project Settings，也不得将其恢复为有效部署配置。
 
-### 4.2 CLI 单槽绑定纪律
+### 4.2 历史：CLI 单槽绑定纪律（Vercel 回滚/诊断）
 
-`.vercel/project.json` 是单槽绑定。**仅当用户明确要求本地 CLI 诊断、应急部署或操作 Nitro API 项目时**，才先 `vercel link --project <name> --yes` 切换到目标项目，再执行本地 `vercel deploy`。`small-alice-web-odse` 的常规文档站 Production 由 Git Integration 触发，不需要也不得借此改走本地上传。
+`.vercel/project.json` 是单槽绑定。**仅当用户明确要求 Vercel 回滚、本地 CLI 诊断或应急部署时**，才先 `vercel link --project <name> --yes` 切换到历史 Vercel 项目，再执行 `vercel deploy`。现行文档站生产不由 Vercel Git Integration 触发。
 
-### 4.3 `small-alice-web-odse` 文档站生产发布纪律
+### 4.3 文档站 Worker 生产发布纪律
 
-文档站的正式生产链路唯一使用 **Git Integration**，不是本地 CLI 上传。开发始终在 `dev` 分支完成；仅当需要真实生产部署和验收时，才按以下顺序执行：
+文档站现行生产由 **`small-alice-web-docs`** 承载；正式链路为 **GitHub Actions + wrangler**，不是本地 CLI 直传。开发始终在 `dev` 分支完成；仅当需要真实生产部署和验收时，才按以下顺序执行：
 
 1. 使用全局 `git-commit` 技能审查工作区、按功能/文件类型分组创建有意义的提交。提交前确认 `.gitattributes` 保持二进制文件属性，`.gitignore` 没有遗漏本地生成物或调试垃圾。
-2. `git push origin dev`，让 Preview/CI 消费开发提交。
+2. `git push origin dev`，让 CI 消费开发提交。
 3. 工作树干净后，将 `dev` rebase 到本地 `main`，普通 `git push origin main` 推送 remote `main`，最后切回 `dev`。禁止 force push；不得在 `main` 直接开发。
-4. `main` 出现有意义提交即自动触发 `small-alice-web-odse` 的真实 Vercel Production deployment。随后只用 Vercel CLI/MCP 读取 deployment 状态、Git SHA 和构建日志。
-5. Production Ready 后，使用本机 Google Chrome 的 Agent Browser 完成功能和视觉验收；先本地转换/本地页面验收，再复测同一生产 URL。
+4. `main` 推送后，等待 GitHub Actions 完成构建与 wrangler 上传；用 Actions 日志核对 checkout SHA、EMF/WMF 转换统计与部署结果。不得把本地 build 或未上传 wrangler 的产物当作生产证据。
+5. 部署收敛后，在 `https://drill.ruan-cat.com`（及需要的 `small-alice-web.ruan-cat.com` 路径）用本机 Google Chrome 的 Agent Browser 完成功能和视觉验收；先本地转换/本地页面验收，再复测同一生产 URL。
 
-#### 4.3.1 使用 `vercel inspect` 监听 Git Integration 部署
+#### 4.3.1 历史：Vercel Git Integration 与 `vercel inspect`（回滚场景）
 
-推送 `main` 后，先用目标 deployment ID 或 URL 等待部署收敛，再读取构建日志；不要只看 Dashboard 的瞬时状态，也不要把 `QUEUED` 或 `BUILDING` 当作完成。
+回滚到 Vercel 时，推送 `main` 后可按 deployment ID 或 URL 用 `vercel inspect --wait` / `--logs` 监听 Git Integration 部署收敛；现行 Worker 生产以 GitHub Actions 运行记录为准。
 
-```powershell
-vercel --version
-vercel inspect <deployment-id-or-url> --wait --timeout 3m
-vercel inspect <deployment-id-or-url> --logs
-```
+**禁止**以 `pnpm run deploy-vercel` 或未经授权的本地 `vercel deploy` 替代上述 `main`/CI 纪律。Vercel CLI 仅用于已授权的回滚、诊断或应急操作。
 
-只有 `inspect --wait` 返回 `status Ready`，且 `inspect --logs` 显示 Git checkout SHA、构建完成与部署完成，才进入 Production URL 的 Google Chrome 验收。命令输出不得包含 API key、数据库连接串或其他凭据。
+### 4.4 Nitro API 生产域名（Worker `small-alice-web-api`）
 
-**禁止**以 `pnpm run deploy-vercel` 或本地 `vercel deploy` 替代上述正式发布链路。CLI `vercel link`/`vercel deploy` 仅适用于另一个项目的显式诊断或已授权应急操作，不是文档站的常规发布动作。
-
-### 4.4 Nitro API 生产域名
-
-- 生产：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`
-- Vercel 默认地址（不使用）：`https://smallalice-docs-ai-nitro-api.vercel.app`
+- 生产：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`（Cloudflare Worker，非 Vercel 默认域）
+- 历史 Vercel 默认地址（回滚对照，现行不使用）：`https://smallalice-docs-ai-nitro-api.vercel.app`
 - 路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`
 
 ### 4.5 Nitro RAG 环境变量
@@ -140,7 +147,7 @@ vercel inspect <deployment-id-or-url> --logs
 
 - `NITRO_CLOUDFLARE_ACCOUNT_ID`：`3412269ab0def154c8806e38acd1b493`
 - `NITRO_EMBEDDING_MODEL`：`@cf/baai/bge-m3`
-- `NITRO_CLOUDFLARE_API_TOKEN`：Cloudflare Workers AI 专用 API token，必须保密；Vercel 的 Production / Preview 使用 Sensitive，Development 受平台限制只能用 Non-sensitive
+- `NITRO_CLOUDFLARE_API_TOKEN`：Cloudflare Workers AI 专用 API token，必须保密；现行存放在 Worker `small-alice-web-api` 与 GitHub Actions secrets；回滚 Vercel 时仍在对应 Vercel 项目的 Sensitive 环境变量中维护
 
 其中 `ACCOUNT_ID` 可以公开写入文档，`API_TOKEN` 不能提交到仓库。你贴出的 R2/S3 兼容密钥属于另一组云存储凭证，不参与 embedding 接入，也不应写入 README。
 
@@ -151,8 +158,8 @@ docx 源（drill-docx）中的 EMF（Enhanced Metafile）矢量图——主要�
 ### 5.1 能力说明
 
 - **转换链路**：`scripts/build-doc-in-vercel/transformers.ts` 的 `docx2html()` 图片回调中，`x-emf` / `emf` / `wmf` 不再走占位图，而是经 `emf-converter`（EMF+/EMF+ dual 记录集完整解析）+ `@napi-rs/canvas`（Skia 渲染）转换为 PNG 落盘，链接显式使用 `.png` 扩展名。
-- **覆盖率**：drill-docx 全量 382（GitHub 仓库 403）个 EMF 均为 EMF+（含 dual），转换成功率 100%（本地管线、CI ubuntu、Vercel 生产容器三方验证一致）。
-- **中文渲染**：Vercel 容器无任何中文字体，随包携带 OFL 授权的 Noto Sans SC 子集字体（约 199KB）经 `GlobalFonts.registerFromPath` 注册，配合 `fontFamilyMap` 小写键映射（宋体/SimSun/Calibri/Cambria 等 → NotoSansSC），避免文字豆腐块。
+- **覆盖率**：drill-docx 全量 382（GitHub 仓库 403）个 EMF 均为 EMF+（含 dual），转换成功率 100%（本地管线、GitHub Actions ubuntu 构建与生产站点产物三方验证一致）。
+- **中文渲染**：Linux 构建环境（CI/容器）无系统中文字体，随包携带 OFL 授权的 Noto Sans SC 子集字体（约 199KB）经 `GlobalFonts.registerFromPath` 注册，配合 `fontFamilyMap` 小写键映射（宋体/SimSun/Calibri/Cambria 等 → NotoSansSC），避免文字豆腐块。
 - **失败兜底**：转换失败仅影响单张图片（回退占位图 + 记入错误清单 + 计入成功/失败统计），不中断构建。
 - **已知限制**：输出为 PNG 光栅（非矢量 SVG）；个别 EMF+ 记录类型（如 record type 90）会被库跳过但仍成功输出；渲染质量受 Canvas 引擎字体度量影响。
 
@@ -164,4 +171,4 @@ docx 源（drill-docx）中的 EMF（Enhanced Metafile）矢量图——主要�
 
 ### 5.3 历史背景
 
-2025-02 曾尝试纯 Node 处理 EMF 失败（sharp/libvips 无 EMF 解码器、浏览器不渲染 `image/x-emf`、npm 生态当时无 EMF+ 渲染实现）；2026 年 `emf-converter`（Apache-2.0）+ `@napi-rs/canvas`（零系统依赖预编译二进制）组合落地，实现 Windows 本地与 Vercel 容器同一套代码的运行形态。
+2025-02 曾尝试纯 Node 处理 EMF 失败（sharp/libvips 无 EMF 解码器、浏览器不渲染 `image/x-emf`、npm 生态当时无 EMF+ 渲染实现）；2026 年 `emf-converter`（Apache-2.0）+ `@napi-rs/canvas`（零系统依赖预编译二进制）组合落地，实现 Windows 本地与 CI Linux 构建环境同一套代码的运行形态。

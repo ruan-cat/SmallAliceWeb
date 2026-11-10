@@ -41,12 +41,12 @@
 - Windows 平台禁止 `neonctl`（已复现 CPU 自旋事故）；Neon 操作统一使用官方 `neon` CLI 且先跑 `pnpm run neon:guard`。
 - 禁止 Python/FastAPI、Java/Spring 体系、多向量库混用、一期 MCP 工具网关；OCR/多模态属于三期。
 - 未锁版本并完成 API spike 前，禁止接入 `@shikijs/stream` 代码高亮；不得以 `vue-element-plus-x` 的 Typewriter 包裹 Markdown 正文。
-- 仓库根 `vercel.json` 已删除；Vercel 双项目配置维护在云端 Project Settings；部署前必须先 `vercel link --project <name> --yes` 切换单槽绑定。
+- 自 2026-11-11 起正式 Production 为 Cloudflare Workers（GitHub Actions 构建后 wrangler 部署）；仓库根 `vercel.json` 已删除；`vercel link --project <name> --yes` 仅用于用户授权的 Vercel 遗留诊断或应急回滚，不得作为常规生产发布步骤。
 - Windows 下 `pnpm run docs:build` 需 `NODE_OPTIONS=--max-old-space-size=8192` 且串行执行（峰值约 7 GiB）。
 
 ## 外部依赖
 
 - Neon：组织 `org-super-fog-48541962`、项目 `patient-cloud-43432277`、Vercel 关联数据库 `neon-smallalice-ai-rag`（项目内实际数据库名 `neondb`）；禁止新建同用途资源。
-- Vercel 双项目：`small-alice-web-odse`（文档站）、`smallalice-docs-ai-nitro-api`（Nitro API，生产域名 https://smallalice-docs-ai-nitro-api.ruan-cat.com/）。
-- Vercel 三环境需维护 `ENABLE_EXPERIMENTAL_COREPACK=1`（自定义 pnpm install 时）。
+- Cloudflare Workers 生产：`small-alice-web-docs`（文档站，https://drill.ruan-cat.com/、https://small-alice-web.ruan-cat.com/）、`small-alice-web-api`（Nitro API，https://smallalice-docs-ai-nitro-api.ruan-cat.com/，构建 `build:cloudflare`；`build:vercel` 保留应急回滚）。
+- 历史 Vercel 项目名（非现行 Production）：`small-alice-web-odse`、`smallalice-docs-ai-nitro-api`；应急回滚时 Vercel 三环境 MAY 维护 `ENABLE_EXPERIMENTAL_COREPACK=1`（自定义 pnpm install 时）。
 - 连接串、密码、token 属敏感信息，禁止写入仓库、报告、测试快照或终端记录。

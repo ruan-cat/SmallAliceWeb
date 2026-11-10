@@ -1,12 +1,12 @@
 # 2026-11-10 Vercel 到 Cloudflare Workers 外部证据
 
-本报告由 Cursor 主代理使用 Grok 4.7 写成。它只记录已经用 CLI、官方文档和项目记忆核对过的事实。仓库源码盘点仍在进行，本文件不宣布迁移完成，也不改现行生产配置。
+本报告由 Cursor 主代理使用 Grok 4.7 写成。它只记录已经用 CLI、官方文档和项目记忆核对过的事实。仓库源码盘点仍在进行。自 **2026-11-11** 起生产域名已切到 Workers（见 `AGENTS.md` 与 §3 切流后注记）；下文 §2–§3 中 Vercel/DNS 表项为**切流前快照**，供对照与回滚，不代表现行生产路由。
 
 ## 1. 客户要的结果
 
 推送到 `dev` 或 `main` 时，不再因为 Vercel Hobby 的 Deployment Storage 和构建额度而刻意少推。文档站和 Nitro API 仍要能从 Git 发布，自定义域名保持可用，Neon 数据库不新建第二套。
 
-## 2. 现行 Vercel 项目
+## 2. 切流前快照：Vercel 项目（2026-11-10）
 
 账号 `ruan-cat`，团队 `ruancat-vercel-team`，团队 ID `team_cUeGw4TtOCLp0bbuH8kA7BYH`。2026-09-08 的记忆记录该团队当时是 Hobby plan：部署从 845 个清到 27 个，retention 上限是 1 个月。两个目标项目都连着 GitHub `ruan-cat/SmallAliceWeb`，生产分支都是 `main`。
 
@@ -19,9 +19,9 @@
 
 本地工作区当前在 `dev`，相对 `origin/dev` 超前 1 个提交，且 `prompts/01.prompts.md` 有未提交修改。这些改动不属于本次迁移，不能纳入、不能回滚。
 
-## 3. DNS 已经在 Cloudflare
+## 3. 切流前快照：DNS 在 Cloudflare（2026-11-10）
 
-2026-11-10 通过 `1.1.1.1` 查询：
+2026-11-10 通过 `1.1.1.1` 查询（**切流前**；2026-11-11 起三条生产主机名改由 Worker 托管，对外 AAAA `100::`，见 `2026-11-10-handoff.md` §1）：
 
 ```log
 ruan-cat.com NS = vick.ns.cloudflare.com
@@ -44,7 +44,7 @@ API 项目额外有这些名字：`NITRO_DATABASE_URL`、`NITRO_SYNC_DATABASE_UR
 
 ## 5. 已有的 Cloudflare 与同步边界
 
-Cloudflare 今天已经是 embedding 供应商，不是计算宿主。OpenSpec 部署规格要求 Nitro 调用 `api.cloudflare.com` 的 Workers AI `@cf/baai/bge-m3`。Vercel Cron 已经被否决。`.github/workflows/rag-sync-schedule.yaml` 第 1–11 行写明：2026-09-30 的方案 C 之后，这份 GitHub Actions 是空转留档，因为 `docs/docx` 被 `.gitignore` 第 54–55 行忽略，CI checkout 里没有知识源。2026-11-10 用户决定：同步调度继续留在这份 GitHub Actions，不迁进 Worker。workflow 当前会空转，这次迁移不修改它。同步连接仍必须使用 non-pooled 直连，否则 session advisory lock 失效。
+下列一句是 2026-11-10 切流前快照：当时 Cloudflare 已是 embedding 供应商，不是计算宿主。2026-11-11 起文档站与 API 的计算宿主已是 Cloudflare Workers。OpenSpec 部署规格要求 Nitro 调用 `api.cloudflare.com` 的 Workers AI `@cf/baai/bge-m3`。Vercel Cron 已经被否决。`.github/workflows/rag-sync-schedule.yaml` 第 1–11 行写明：2026-09-30 的方案 C 之后，这份 GitHub Actions 是空转留档，因为 `docs/docx` 被 `.gitignore` 第 54–55 行忽略，CI checkout 里没有知识源。2026-11-10 用户决定：同步调度继续留在这份 GitHub Actions，不迁进 Worker。workflow 当前会空转，这次迁移不修改它。同步连接仍必须使用 non-pooled 直连，否则 session advisory lock 失效。
 
 本地 `docs/.vitepress/dist` 现有 7354 个文件、约 400 MB，没有单文件超过 25 MiB。Workers Free 的静态资产上限是 20000 个文件，Paid 是 100000 个。当前产物数量在 Free 上限之内。这是本地产物快照，生产构建可能更多。
 

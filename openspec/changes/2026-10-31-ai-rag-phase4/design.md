@@ -107,7 +107,7 @@
 | 1   | 方案 C：本地 CLI rag:sync 直连 Neon 是唯一同步事实源，禁止 CI/GitHub Actions 侧同步（docs/docx 被 .gitignore，CI 扫 0 文件是已踩坑教训）。            | 全计划零同步逻辑改动；U4 重同步走既有 rag:sync 本地 CLI；评估为只读检索 + 本地脚本，不引入 CI 评估门禁。           |
 | 2   | 多模态/视觉检索推第三期；图片仅 URL 元数据。                                                                                                          | 不含任何图片内容处理；U4 chunk 复核仅覆盖文本/表格。                                                               |
 | 3   | 禁用 neonctl（统一官方 neon CLI）；Neon 资源固定 org-super-fog-48541962 / patient-cloud-43432277 / neon-smallalice-ai-rag，禁止新建第二个同用途资源。 | 不新建任何 Neon 资源；评估与重同步复用现有连接配置。                                                               |
-| 4   | 禁止重建 vercel.json；文档站 Production 唯一由 remote main Git Integration 触发。                                                                     | 不创建/修改 vercel.json；上线动作 = 合并 main，由用户执行。                                                        |
+| 4   | 禁止重建 vercel.json；正式 Production 唯一由 remote `main` 合并后 GitHub Actions 构建并部署 Cloudflare Workers。                                      | 不创建/修改 vercel.json；上线动作 = 合并 `main` 并等待 Workers CI 收敛，由用户执行合并。                           |
 | 5   | NITRO_SYNC_DATABASE_URL 必须 non-pooled（advisory lock 依赖独占连接）；同步不可并发。                                                                 | U4 重同步串行执行、non-pooled 连接串、执行前确认无并发同步。                                                       |
 | 6   | 术语红线：PostgreSQL FTS 不得表述为 BM25，统一「词法全文检索 / PostgreSQL FTS」。                                                                     | 全文统一表述；实现层保持 ts_rank_cd 真实能力标注，不冒充 BM25。                                                    |
 | 7   | 凡涉 Cloudflare 额度消耗的步骤，必须以「用户授权 + 额度检查」为前置。                                                                                 | U0 评估运行、U1 对照实验、U2 reranker 调用、U3 改写调用均标注【需授权+额度检查】，见第 4 节风险与第 5 节迁移计划。 |
@@ -131,7 +131,7 @@
 4. **U3**：生成评估就绪后按判据引入 Multi-Query（默认关，需授权+额度检查）。回滚：env 关闭即回 U2 行为。
 5. **U4**：chunk 适性只读核实 → （仅当结论要求）改切分 + 全量重同步（串行、non-pooled、无并发，需用户授权窗口）→ 前后对照定去留 → 参数固化收敛。回滚：参数类 env 还原；chunk 类 revert + 再次全量重同步。
 
-上线方式：各阶段代码经用户确认后合并 remote main，由 Git Integration 触发生产部署；agent 不执行本地 vercel deploy，不触碰 vercel.json（硬边界 4）。
+上线方式：各阶段代码经用户确认后合并 remote `main`，由 GitHub Actions 构建并部署 Cloudflare Workers；agent 不执行本地 `wrangler deploy` / `vercel deploy`，不触碰 vercel.json（硬边界 4）。
 
 ## 6. Open Questions
 

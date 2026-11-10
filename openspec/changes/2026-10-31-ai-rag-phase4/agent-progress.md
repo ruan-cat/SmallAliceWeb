@@ -15,7 +15,7 @@
 ## 3. 阻塞点与边界
 
 - 标注【需授权】/【需授权+额度检查】的任务（1.7/1.8/2.9/3.1/3.7/4.6/5.3/5.4 等）必须先获用户显式授权并核对 Cloudflare 额度余量。
-- 未经用户授权不执行 `git commit` / `vercel deploy`；Production 只由用户合并 remote main 触发 Git Integration（tasks 6.4 / design §3.6 边界 4）。
+- 未经用户授权不执行 `git commit` / 本地 `wrangler deploy` / `vercel deploy`；Production 只由用户合并 remote `main` 后由 GitHub Actions 部署 Cloudflare Workers（tasks 6.4 / design §3.6 边界 4）。
 
 ## 4. 下一步
 

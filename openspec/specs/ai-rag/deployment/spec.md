@@ -2,41 +2,48 @@
 
 ## Purpose
 
-定义二期 AI RAG 的部署与资源契约：Vercel 双项目架构、Neon 固定资源复用、环境变量接线、官方 neon CLI 强制、生产同步触发与固定生产域名，保证云端部署行为可复核、可回滚且不泄露密钥。
+定义二期 AI RAG 的部署与资源契约：Cloudflare Workers 现行生产架构、Neon 固定资源复用、环境变量接线、官方 neon CLI 强制、GitHub Actions 同步调度与固定生产域名，保证云端部署行为可复核、可回滚且不泄露密钥；Vercel 双项目仅作应急回滚附录。
 
 ## Requirements
 
-### Requirement: 1. Vercel 双项目架构
+### Requirement: 1. Cloudflare Workers 生产架构
 
-仓库 MUST 同时绑定两个 Vercel 项目：small-alice-web-odse（VitePress 文档站，Root Directory 为 "."、Framework 为 Other、Build 为 "pnpm run build"、Output Directory 为 "docs/.vitepress/dist"、Install 为 "pnpm install"、Node 22.x）与 smallalice-docs-ai-nitro-api（Nitro API，Root 为 "."、Build 为 "pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel"、Output 为 ".vercel/output"、Install 为 "pnpm install"、Node 22.x）；仓库根 vercel.json MUST NOT 存在（已删除的破坏性变更），双项目配置 MUST 维护在云端 Project Settings；部署任一项目前 MUST 先执行 "vercel link --project <name> --yes" 切换单槽绑定。
+自 2026-11-11 起，正式 Production MUST 由 GitHub Actions 构建后经 wrangler 部署到 Cloudflare Workers，MUST NOT 将 Vercel Git Integration 作为常规生产入口。
 
-#### Scenario: 文档站项目配置
+文档站 Worker 名称 MUST 为 `small-alice-web-docs`，自定义域名 MUST 包含 https://drill.ruan-cat.com/ 与 https://small-alice-web.ruan-cat.com/；生产部署 MUST 经 workflow `.github/workflows/docs-cloudflare-worker.yaml` 构建 VitePress 并 `wrangler deploy`（配置 `wrangler.docs.jsonc`）。
 
-- **WHEN** 构建并部署 VitePress 文档站
-- **THEN** MUST 使用 small-alice-web-odse 项目（Root 为 "."、Framework 为 Other、Node 22.x）
-- **AND** Build MUST 为 "pnpm run build"
-- **AND** Output MUST 为 "docs/.vitepress/dist"
-- **AND** Install MUST 为 "pnpm install"
+Nitro API Worker 名称 MUST 为 `small-alice-web-api`，生产自定义域名 MUST 为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/；生产构建命令 MUST 为 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:cloudflare`，部署 MUST 经 workflow `.github/workflows/api-cloudflare-worker.yaml` 执行 wrangler 上传（配置 `wrangler.json`）。
 
-#### Scenario: Nitro API 项目配置
+`build:vercel` 与附录「Vercel 双项目回滚路径」中的历史双项目配置 MUST 保留作应急回滚，不得以回滚路径覆盖本 Requirement 的 Workers Production 契约。
 
-- **WHEN** 构建并部署 Nitro API
-- **THEN** MUST 使用 smallalice-docs-ai-nitro-api 项目（Root 为 "."、Node 22.x）
-- **AND** Build MUST 为 "pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel"
-- **AND** Output MUST 为 ".vercel/output"
-- **AND** Install MUST 为 "pnpm install"
+仓库根 `vercel.json` MUST NOT 存在（已删除的破坏性变更）。仅当用户授权进行 Vercel 遗留诊断或应急回滚时，MAY 执行 `vercel link --project <name> --yes` 切换单槽绑定；该操作 MUST NOT 被记录为常规 Production 发布步骤。
 
-#### Scenario: 根 vercel.json 已删除且配置维护在云端
+#### Scenario: 文档站 Worker 生产部署
+
+- **WHEN** remote `main` 触发文档站生产部署
+- **THEN** MUST 经 `.github/workflows/docs-cloudflare-worker.yaml` 完成构建与 wrangler 部署
+- **AND** Worker 名称 MUST 为 `small-alice-web-docs`
+- **AND** 生产域名 MUST 包含 https://drill.ruan-cat.com/ 与 https://small-alice-web.ruan-cat.com/
+
+#### Scenario: Nitro API Worker 生产部署
+
+- **WHEN** remote `main` 触发 API 生产部署
+- **THEN** MUST 经 `.github/workflows/api-cloudflare-worker.yaml` 完成部署
+- **AND** Build MUST 为 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:cloudflare`
+- **AND** Worker 名称 MUST 为 `small-alice-web-api`
+- **AND** 生产域名 MUST 为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/
+
+#### Scenario: 根 vercel.json 不得存在于仓库
 
 - **WHEN** 检查部署配置
 - **THEN** 仓库根 vercel.json MUST NOT 存在
-- **AND** 双项目配置 MUST 维护在各自云端 Project Settings
 
-#### Scenario: 部署前切换单槽绑定
+#### Scenario: vercel link 仅限遗留诊断或回滚
 
-- **WHEN** 部署任一项目
-- **THEN** MUST 先执行 "vercel link --project <name> --yes" 切换绑定
+- **WHEN** 需要 Vercel 遗留诊断或用户授权的应急回滚
+- **THEN** MAY 执行 `vercel link --project <name> --yes` 切换绑定
 - **AND** .vercel/project.json 是单槽绑定，不得假定其仍指向上一项目
+- **AND** MUST NOT 将上述操作记为常规 Production 发布验收证据
 
 ### Requirement: 2. Neon 固定资源
 
@@ -89,7 +96,7 @@
 
 ### Requirement: 4. Cloudflare embedding provider 接线
 
-Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/embeddings` endpoint 使用 Cloudflare Workers AI `@cf/baai/bge-m3` 作为 embedding 模型；请求 MUST 包含 `model` 与 `input`，MUST NOT 依赖不支持的 dimensions 参数；provider MUST 校验每个返回的 `data[].embedding` 都按输入顺序包含 1024 个有限数值。所有运行真实 RAG 的 Vercel 环境 MUST 以服务端环境变量配置 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN` 与 `NITRO_EMBEDDING_MODEL`；凭据 MUST NOT 暴露到浏览器代码或提交文件。
+Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/embeddings` endpoint 使用 Cloudflare Workers AI `@cf/baai/bge-m3` 作为 embedding 模型；请求 MUST 包含 `model` 与 `input`，MUST NOT 依赖不支持的 dimensions 参数；provider MUST 校验每个返回的 `data[].embedding` 都按输入顺序包含 1024 个有限数值。所有运行真实 RAG 的生产 Worker 与授权预览环境 MUST 以服务端环境变量配置 `NITRO_CLOUDFLARE_ACCOUNT_ID`、`NITRO_CLOUDFLARE_API_TOKEN` 与 `NITRO_EMBEDDING_MODEL`；凭据 MUST NOT 暴露到浏览器代码或提交文件。
 
 #### Scenario: Cloudflare embedding 请求形态
 
@@ -107,7 +114,7 @@ Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/
 
 #### Scenario: Cloudflare 凭据保持服务端私有
 
-- **WHEN** Vercel 运行 Nitro API
+- **WHEN** 生产 Worker 运行 Nitro API
 - **THEN** API token MUST 仅由服务端 provider 装配读取
 - **AND** token MUST NOT 出现在浏览器响应、bundle、日志、报告或仓库文件中
 
@@ -137,35 +144,46 @@ Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/
 
 ### Requirement: 6. 生产同步触发与构建输入
 
-生产环境在上游 DOCX 转换写入 Markdown 后 MUST 调用携带 NITRO_KNOWLEDGE_SYNC_TOKEN 的 POST /v1/knowledge/sync；Vercel Cron 调用 GET /v1/knowledge/sync 时由平台注入 Authorization: Bearer $CRON_SECRET；鉴权 MUST 兼容这两种受控凭据；生产 API 构建 MUST 显式把 docs/docx 纳入函数可读的部署输入，MUST NOT 假定 Vercel 运行目录保留完整 Git 工作区；Nitro 的 Vercel 兼容日期 MUST 锁定为 2024-09-19。
+生产环境在上游 DOCX 转换写入 Markdown 后 MUST 调用携带 NITRO_KNOWLEDGE_SYNC_TOKEN 的 POST /v1/knowledge/sync；知识库定时同步调度 MUST 由 GitHub Actions workflow `.github/workflows/rag-sync-schedule.yaml` 承担，MUST NOT 将 Vercel Cron 作为生产调度源；对 GET /v1/knowledge/sync 的受控调用鉴权 MUST 兼容 `NITRO_KNOWLEDGE_SYNC_TOKEN` 与 `CRON_SECRET`（或等效 `NITRO_CRON_SECRET`）；生产 API 构建 MUST 显式把 `docs/docx` 纳入 Worker 可读的部署输入，MUST NOT 假定云端运行目录保留完整 Git 工作区；应急回滚至 Vercel 时 Nitro 的 Vercel 兼容日期 MUST 锁定为 2024-09-19。
 
 #### Scenario: 上游 DOCX 转换后触发同步
 
 - **WHEN** 上游 DOCX 转换写入 Markdown 后
 - **THEN** MUST 调用携带 NITRO_KNOWLEDGE_SYNC_TOKEN 的 POST /v1/knowledge/sync
 
-#### Scenario: Vercel Cron 触发同步
+#### Scenario: GitHub Actions 定时同步调度
 
-- **WHEN** Vercel Cron 调用 GET /v1/knowledge/sync
-- **THEN** 平台 MUST 注入 Authorization: Bearer $CRON_SECRET
-- **AND** 鉴权 MUST 同时兼容 NITRO_KNOWLEDGE_SYNC_TOKEN 与 CRON_SECRET 两种受控凭据
+- **WHEN** 核对生产知识库同步调度来源
+- **THEN** MUST 以 `.github/workflows/rag-sync-schedule.yaml` 为权威调度入口
+- **AND** MUST NOT 依赖 Vercel Cron 触发生产同步
+- **AND** workflow 运行所需密钥 MUST 经 GitHub Actions Secrets 注入
+
+#### Scenario: GET 同步端点鉴权兼容
+
+- **WHEN** 受控主体调用 GET /v1/knowledge/sync
+- **THEN** 鉴权 MUST 同时兼容 NITRO_KNOWLEDGE_SYNC_TOKEN 与 CRON_SECRET（或等效 NITRO_CRON_SECRET）
 
 #### Scenario: docs/docx 纳入部署输入
 
-- **WHEN** 生产 API 构建
-- **THEN** MUST 显式将 docs/docx 纳入函数可读的部署输入
-- **AND** MUST NOT 假定 Vercel 运行目录保留完整 Git 工作区
+- **WHEN** 生产 API Worker 构建
+- **THEN** MUST 显式将 docs/docx 纳入 Worker 可读的部署输入
+- **AND** MUST NOT 假定云端运行目录保留完整 Git 工作区
 
-#### Scenario: 锁定 Vercel 兼容日期
+#### Scenario: 应急回滚锁定 Vercel 兼容日期
 
-- **WHEN** 配置 Nitro
-- **THEN** compatibilityDate MUST 锁定为 2024-09-19
+- **WHEN** 应急回滚构建使用 `build:vercel`
+- **THEN** Nitro compatibilityDate MUST 锁定为 2024-09-19
 
 ### Requirement: 7. 生产域名
 
-Nitro API 的生产域名 MUST 固定为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/，其下 MUST 提供 /v1/chat、/v1/search、/v1/knowledge/sync 与 /v1/knowledge/sync-runs 路由前缀。
+VitePress 文档站生产域名 MUST 包含 https://drill.ruan-cat.com/ 与 https://small-alice-web.ruan-cat.com/（Worker `small-alice-web-docs`）。Nitro API 的生产域名 MUST 固定为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/（Worker `small-alice-web-api`），其下 MUST 提供 /v1/chat、/v1/search、/v1/knowledge/sync 与 /v1/knowledge/sync-runs 路由前缀。
 
-#### Scenario: 固定生产域名
+#### Scenario: 固定文档站生产域名
+
+- **WHEN** 访问生产文档站
+- **THEN** 域名 MUST 包含 https://drill.ruan-cat.com/ 与 https://small-alice-web.ruan-cat.com/
+
+#### Scenario: 固定 API 生产域名
 
 - **WHEN** 访问生产 Nitro API
 - **THEN** 域名 MUST 为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/
@@ -203,9 +221,15 @@ Nitro API MUST 在代码内保存类型化聊天 provider 注册表，注册 Ope
 - **AND** 120 秒为慢响应观察点，420 秒为单次请求硬上限
 - **AND** HTTP 200、来源帧或仅 headers 到达均不得单独证明模型请求成功
 
-#### Scenario: Git Integration 部署监听
+#### Scenario: main 合并后 Workers 生产部署验收
 
-- **WHEN** `main` 提交触发 Vercel Production deployment
-- **THEN** 验收 MUST 使用 `vercel inspect <deployment-id-or-url> --wait --timeout 3m` 等待状态收敛
-- **AND** 验收 MUST 使用 `vercel inspect <deployment-id-or-url> --logs` 读取 Git checkout SHA、构建完成与部署完成证据
-- **AND** `QUEUED` 或 `BUILDING` 状态 MUST NOT 被记录为 Production Ready
+- **WHEN** 用户将变更合并入 remote `main` 并触发 GitHub Actions 生产部署工作流（`.github/workflows/docs-cloudflare-worker.yaml` 与 `.github/workflows/api-cloudflare-worker.yaml`）
+- **THEN** 验收 MUST 核对 workflow run 成功、checkout SHA 与 `main` 一致、wrangler 部署步骤完成
+- **AND** 验收 MUST 对 Requirement 7 固定生产域名执行 smoke（文档站首屏与 API 路由前缀）
+- **AND** 进行中或未成功的 workflow run MUST NOT 被记录为 Production Ready
+
+## 附录：Vercel 双项目回滚路径（非现行 Production）
+
+> 历史记录：切流前 Production 曾由 Vercel Git Integration 承担；2026-11-11 起自定义域名已指向 Cloudflare Workers。下列条目仅用于应急回滚与遗留诊断，不构成现行生产 MUST。
+
+仓库 MAY 同时绑定两个历史 Vercel 项目：`small-alice-web-odse`（VitePress 文档站，Root Directory 为 "."、Framework 为 Other、Build 为 `pnpm run build`、Output Directory 为 `docs/.vitepress/dist`、Install 为 `pnpm install`、Node 22.x）与 `smallalice-docs-ai-nitro-api`（Nitro API，Root 为 "."、Build 为 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel`、Output 为 `.vercel/output`、Install 为 `pnpm install`、Node 22.x）；双项目配置维护在各自云端 Project Settings。回滚部署任一项目前 SHOULD 先执行 `vercel link --project <name> --yes` 切换单槽绑定。应急回滚验收 MAY 使用 `vercel inspect <deployment-id-or-url> --wait --timeout 3m` 与 `vercel inspect <deployment-id-or-url> --logs` 读取 checkout SHA 与构建日志，但 MUST NOT 将上述证据替代现行 Workers Production 验收。
