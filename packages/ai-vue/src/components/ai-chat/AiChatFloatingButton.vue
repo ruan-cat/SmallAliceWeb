@@ -21,6 +21,9 @@ const props =
 			| "onChatEvent"
 			| "models"
 			| "selectedModelId"
+			| "modelsError"
+			| "headerTitle"
+			| "headerStatus"
 		>
 	>();
 const emit = defineEmits<AiChatEmits>();
@@ -63,10 +66,11 @@ function closeDock() {
 				<header class="ai-chat-floating-button__header">
 					<div class="ai-chat-floating-button__brand" aria-hidden="true">AI</div>
 					<div class="ai-chat-floating-button__title-group">
-						<h2 class="ai-chat-floating-button__title">AI 对话</h2>
+						<!-- 错误处理增强：标题与状态位可由宿主注入（headerStatus 错误期间为「连接异常」）；缺省文案与改造前一致（向后兼容） -->
+						<h2 class="ai-chat-floating-button__title">{{ props.headerTitle ?? "AI 对话" }}</h2>
 						<p class="ai-chat-floating-button__status">
 							<span class="ai-chat-floating-button__status-dot" aria-hidden="true"></span>
-							本地助手
+							{{ props.headerStatus ?? "本地助手" }}
 						</p>
 					</div>
 					<button type="button" class="ai-chat-floating-button__close" aria-label="关闭 AI 对话" @click="closeDock">
@@ -88,11 +92,13 @@ function closeDock() {
 					:on-chat-event="props.onChatEvent"
 					:models="props.models"
 					:selected-model-id="props.selectedModelId"
+					:models-error="props.modelsError"
 					@send="emit('send', $event)"
 					@stop="emit('stop')"
 					@clear-error="emit('clear-error')"
 					@feedback="emit('feedback', $event)"
 					@select-model="emit('select-model', $event)"
+					@retry-models="emit('retry-models')"
 				>
 					<template #notification-control>
 						<slot name="notification-control" />

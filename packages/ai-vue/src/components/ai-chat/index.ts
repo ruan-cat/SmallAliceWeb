@@ -9,10 +9,12 @@ export { default as SourceListCard } from "./cards/SourceListCard.vue";
 export type {
 	AiChatEmits,
 	AiChatMessage,
+	AiChatModelOption,
 	AiChatProps,
 	AiChatRole,
 	AiChatSource,
 	BuiltinItemType,
+	ChatErrorPayload,
 	ChatEvent,
 	ChatEventHandler,
 	CustomComponentDirective,

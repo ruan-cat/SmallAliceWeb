@@ -75,6 +75,18 @@ export interface FeedbackOptions {
 	onSubmit?: (feedback: FeedbackPayload) => void;
 }
 
+/** chat_error 事件载荷：统一错误模型子集（错误处理增强 spec 第四节第 6 点），进入 onChatEvent 埋点管线 */
+export interface ChatErrorPayload {
+	/** 稳定机器码（如 MODELS_LOAD_FAILED / CHAT_HTTP_ERROR / CHAT_STREAM_ERROR / UNKNOWN） */
+	code: string;
+	/** 可读中文描述，含状态码语境 */
+	message: string;
+	/** HTTP 状态码（拿到才填，绝不臆造） */
+	statusCode?: number;
+	/** 错误作用域：模型列表加载 / 对话请求 */
+	scope: "models" | "chat";
+}
+
 /** AI 对话事件回调（4.6 事件系统的统一回调载荷） */
 export interface ChatEvent {
 	/** 事件类型 */
@@ -85,7 +97,8 @@ export interface ChatEvent {
 		| "feedback_submitted"
 		| "example_question_selected"
 		| "message_action_clicked"
-		| "response-metadata";
+		| "response-metadata"
+		| "chat_error";
 	/** 会话 ID（暂未启用，留作多会话扩展） */
 	conversationId?: string;
 	/** 触发消息 ID（适用于反馈 / 操作 / 用户消息事件） */
@@ -94,6 +107,8 @@ export interface ChatEvent {
 	tags: string[];
 	/** 自定义附加字段 */
 	properties?: Record<string, unknown>;
+	/** chat_error 事件的错误载荷（仅 type="chat_error" 时携带） */
+	error?: ChatErrorPayload;
 }
 
 /** 事件回调签名 */
@@ -139,6 +154,19 @@ export interface AiChatProps {
 	 * 仅控制 el-segmented 的视觉选中态，实际 provider 切换由宿主通过 select-model 事件接收后回写到下一次请求。
 	 */
 	selectedModelId?: string;
+	/**
+	 * 错误处理增强接入：模型列表加载失败的结构化错误（宿主 useKnowledgeChat 合成，ai-vue 零 fetch 纯呈现）。
+	 * 存在且 models 为空时渲染模型加载失败条（不冒充「无可用模型」业务结论）；缺省时维持原 UI。
+	 */
+	modelsError?: { message: string; statusCode?: number };
+	/**
+	 * 错误处理增强接入：dock header 主标题；缺省「AI 对话」（向后兼容）。
+	 */
+	headerTitle?: string;
+	/**
+	 * 错误处理增强接入：dock header 状态位文案；缺省「本地助手」，chat 失败期间宿主下发「连接异常」。
+	 */
+	headerStatus?: string;
 }
 
 /**
@@ -163,4 +191,8 @@ export type AiChatEmits = {
 	 * 仅改下一条消息的 provider；responding 中切换不打断当前流（plan 16.8 Q1 拍板）。
 	 */
 	(event: "select-model", id: string): void;
+	/**
+	 * 错误处理增强接入：用户点击模型加载失败条的「重试」；宿主收到后接 useKnowledgeChat 的 refreshModels。
+	 */
+	(event: "retry-models"): void;
 };

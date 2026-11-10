@@ -95,6 +95,57 @@ export const AI_CHAT_SHADOW_STYLES = `
   border-radius: 0.375rem;
 }
 
+/* 错误处理增强：模型加载失败条（spec 2026-11-11 第五节；models 为空且 modelsError 存在时渲染） */
+.ai-chat__models-error {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.375rem 0.625rem;
+  color: var(--ai-chat-text);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  background: color-mix(in srgb, var(--ai-chat-danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ai-chat-danger) 38%, transparent);
+  border-radius: 0.5rem;
+}
+
+.ai-chat__models-error-dot {
+  flex: 0 0 auto;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: var(--ai-chat-danger);
+  border-radius: 999px;
+  box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--ai-chat-danger) 14%, transparent);
+}
+
+.ai-chat__models-error-message {
+  min-width: 0;
+  margin-right: auto;
+  overflow-wrap: anywhere;
+}
+
+.ai-chat__models-error-retry {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.5rem;
+  color: var(--ai-chat-danger);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ai-chat-danger) 38%, transparent);
+  border-radius: 0.375rem;
+}
+
+.ai-chat__models-error-retry:hover {
+  color: var(--ai-chat-text);
+  border-color: var(--ai-chat-danger);
+}
+
+.ai-chat__models-error-retry:focus-visible {
+  outline: 2px solid var(--ai-chat-danger);
+  outline-offset: 2px;
+}
+
 .ai-chat__stop {
   align-self: flex-end;
   margin: 0 0.75rem 0.625rem;

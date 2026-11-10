@@ -401,6 +401,91 @@ describe("AiChat library adapters", () => {
 		expect(onClearError).toHaveBeenCalledOnce();
 	});
 
+	describe("错误处理增强：模型加载失败条与 header 状态位", () => {
+		const sampleModelsError = { message: "模型列表加载失败（HTTP 405）", statusCode: 405 };
+
+		test("light 分支：传 modelsError 时渲染 role=alert 错误条且含 message 与「重试」", () => {
+			const host = mountAiChat({ mode: "external", messages: [], modelsError: sampleModelsError });
+			const banner = host.querySelector<HTMLElement>(".ai-chat__models-error");
+
+			expect(banner?.getAttribute("role")).toBe("alert");
+			expect(banner?.textContent).toContain("模型列表加载失败（HTTP 405）");
+			expect(banner?.textContent).toContain("重试");
+		});
+
+		test("shadow 分支：传 modelsError 时 Shadow Root 内同样渲染错误条（双分支纪律）", () => {
+			const host = mountAiChat({
+				mode: "external",
+				messages: [],
+				modelsError: sampleModelsError,
+				variant: "container-with-shadow",
+			});
+			const shadowBanner = host
+				.querySelector<HTMLElement>(".ai-shadow-root")
+				?.shadowRoot?.querySelector<HTMLElement>(".ai-chat__models-error");
+
+			expect(shadowBanner?.getAttribute("role")).toBe("alert");
+			expect(shadowBanner?.textContent).toContain("模型列表加载失败（HTTP 405）");
+			expect(shadowBanner?.textContent).toContain("重试");
+		});
+
+		test("点击「重试」emit retry-models", async () => {
+			const onRetryModels = vi.fn();
+			const host = mountAiChat({
+				mode: "external",
+				messages: [],
+				modelsError: sampleModelsError,
+				onRetryModels,
+			});
+			host.querySelector<HTMLButtonElement>(".ai-chat__models-error-retry")?.click();
+			await nextTick();
+
+			expect(onRetryModels).toHaveBeenCalledOnce();
+		});
+
+		test("modelsError 存在且 models 为空时不得出现「无可用模型」类文案（降级不冒充）", () => {
+			const host = mountAiChat({ mode: "external", messages: [], modelsError: sampleModelsError });
+
+			expect(host.textContent).not.toContain("无可用模型");
+			expect(host.textContent).not.toContain("暂无模型");
+			// 无 modelsError 且无 models 时维持现状：不渲染任何模型区域
+		});
+
+		test("不传 modelsError 且无 models 时维持现状（不渲染错误条）", () => {
+			const host = mountAiChat({ mode: "external", messages: [] });
+
+			expect(host.querySelector(".ai-chat__models-error")).toBeNull();
+		});
+
+		test("FloatingButton 不传 headerTitle/headerStatus 时文案为「AI 对话/本地助手」（向后兼容）", async () => {
+			const host = mountFloatingButtonWithNotificationControl({ messages: [] });
+			await nextTick();
+			host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__trigger")?.click();
+			await nextTick();
+
+			expect(host.querySelector<HTMLElement>(".ai-chat-floating-button__title")?.textContent?.trim()).toBe("AI 对话");
+			expect(host.querySelector<HTMLElement>(".ai-chat-floating-button__status")?.textContent?.trim()).toContain(
+				"本地助手",
+			);
+		});
+
+		test("FloatingButton 传 headerTitle/headerStatus 时显示注入文案（错误状态位）", async () => {
+			const host = mountFloatingButtonWithNotificationControl({
+				messages: [],
+				headerTitle: "知识问答",
+				headerStatus: "连接异常",
+			});
+			await nextTick();
+			host.querySelector<HTMLButtonElement>(".ai-chat-floating-button__trigger")?.click();
+			await nextTick();
+
+			expect(host.querySelector<HTMLElement>(".ai-chat-floating-button__title")?.textContent?.trim()).toBe("知识问答");
+			expect(host.querySelector<HTMLElement>(".ai-chat-floating-button__status")?.textContent?.trim()).toContain(
+				"连接异常",
+			);
+		});
+	});
+
 	describe("品牌主题接入", () => {
 		test("AiChat 根部绑定派生品牌 CSS 变量，缺省主色为默认品牌色", () => {
 			const host = mountAiChat({ mode: "external", messages: [] });

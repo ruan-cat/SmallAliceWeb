@@ -322,6 +322,12 @@ defineSlots<{
 						@update:model-value="emit('select-model', String($event))"
 					/>
 				</div>
+				<!-- 错误处理增强：模型加载失败条——仅 models 为空且 modelsError 存在时渲染（不冒充「无可用模型」），「重试」emit retry-models 由宿主接 refreshModels -->
+				<div v-else-if="props.modelsError" class="ai-chat__models-error" role="alert">
+					<span class="ai-chat__models-error-dot" aria-hidden="true"></span>
+					<span class="ai-chat__models-error-message">{{ props.modelsError.message }}</span>
+					<button type="button" class="ai-chat__models-error-retry" @click="emit('retry-models')">重试</button>
+				</div>
 
 				<XSender
 					ref="senderRef"
@@ -440,6 +446,12 @@ defineSlots<{
 					title="切换后下一条消息生效"
 					@update:model-value="emit('select-model', String($event))"
 				/>
+			</div>
+			<!-- 错误处理增强：模型加载失败条——仅 models 为空且 modelsError 存在时渲染（不冒充「无可用模型」），「重试」emit retry-models 由宿主接 refreshModels -->
+			<div v-else-if="props.modelsError" class="ai-chat__models-error" role="alert">
+				<span class="ai-chat__models-error-dot" aria-hidden="true"></span>
+				<span class="ai-chat__models-error-message">{{ props.modelsError.message }}</span>
+				<button type="button" class="ai-chat__models-error-retry" @click="emit('retry-models')">重试</button>
 			</div>
 
 			<XSender
