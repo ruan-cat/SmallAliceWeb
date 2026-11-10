@@ -59,7 +59,7 @@ export default defineConfig({
 	},
 	cloudflare: {
 		wrangler: {
-			name: "smallalice-docs-ai-nitro-api",
+			name: "small-alice-web-api",
 			vars: {
 				NITRO_DATABASE_DRIVER: "neon",
 			},
