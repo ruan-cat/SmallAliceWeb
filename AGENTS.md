@@ -615,6 +615,8 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 ## Vercel 双项目部署架构（2026-08-07 起生效）
 
+2026-11-10 的 Cloudflare Workers 迁移设计还没有生效。现行 Production 仍是本节的 Vercel 双项目。设计、阻断项和未执行计划在 `reports/2026-11-10-vercel-to-cloudflare/`。在那份设计被明确批准并完成切流之前，不要改发布命令、DNS，也不要按 Workers 改写本节。
+
 本仓库同时绑定两个 Vercel 项目，统一采用 `use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A（仓库根安装 + 产物搬运到仓库根 `.vercel/output`）。
 
 |          Vercel 项目           |       用途       | Root Directory | Framework |                          Build Command                          |    Output Directory    | Install Command | Node |

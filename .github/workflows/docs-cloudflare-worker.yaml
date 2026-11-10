@@ -1,0 +1,53 @@
+name: 文档站发布到 Cloudflare Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev, main]
+    paths:
+      - "docs/**"
+      - "scripts/build-doc-in-vercel/**"
+      - "packages/ai-rag-core/**"
+      - "workers/**"
+      - "wrangler.docs.jsonc"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".github/workflows/docs-cloudflare-worker.yaml"
+
+concurrency:
+  group: docs-cloudflare-worker-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: 构建并上传文档站
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v6
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          runtime: node@22
+          cache: true
+          install: false
+      - name: 安装依赖
+        run: pnpm install --no-frozen-lockfile
+      - name: 生产构建
+        env:
+          NODE_OPTIONS: --max-old-space-size=5120
+        run: pnpm run build
+      - name: 上传 Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: "3412269ab0def154c8806e38acd1b493"
+          command: deploy -c wrangler.docs.jsonc
+        env:
+          CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: "false"
