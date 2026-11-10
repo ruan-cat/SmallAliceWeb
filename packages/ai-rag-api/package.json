@@ -9,7 +9,6 @@
 		"dev": "nitro dev",
 		"prebuild": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
 		"build": "nitro build",
-		"build:vercel": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel && move-vercel-output-to-root --dereference",
 		"build:cloudflare": "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset cloudflare_module",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",

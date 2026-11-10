@@ -48,8 +48,8 @@ describe("ai-rag-api package boundary", () => {
 			dev: "nitro dev",
 			prebuild: "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build",
 			build: "nitro build",
-			"build:vercel":
-				"pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset vercel && move-vercel-output-to-root --dereference",
+			"build:cloudflare":
+				"pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && nitro build --preset cloudflare_module",
 			preview: "nitro preview",
 			test: "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && vitest run",
 			typecheck: "pnpm --filter @ruan-cat-drill-doc/ai-rag-core build && tsc --noEmit",
