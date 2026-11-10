@@ -47,6 +47,6 @@
 ## 外部依赖
 
 - Neon：组织 `org-super-fog-48541962`、项目 `patient-cloud-43432277`、Vercel 关联数据库 `neon-smallalice-ai-rag`（项目内实际数据库名 `neondb`）；禁止新建同用途资源。
-- Cloudflare Workers 生产：`small-alice-web-docs`（文档站，https://drill.ruan-cat.com/、https://small-alice-web.ruan-cat.com/）、`small-alice-web-api`（Nitro API，https://smallalice-docs-ai-nitro-api.ruan-cat.com/，构建 `build:cloudflare`；`build:vercel` 保留应急回滚）。
-- 历史 Vercel 项目名（非现行 Production）：`small-alice-web-odse`、`smallalice-docs-ai-nitro-api`；应急回滚时 Vercel 三环境 MAY 维护 `ENABLE_EXPERIMENTAL_COREPACK=1`（自定义 pnpm install 时）。
+- Cloudflare Workers 生产：`small-alice-web-docs`（文档站，https://drill.ruan-cat.com/、https://small-alice-web.ruan-cat.com/）、`small-alice-web-api`（Nitro API，https://smallalice-docs-ai-nitro-api.ruan-cat.com/，构建 `build:cloudflare`）。
+- 2026-11-11 已删除 Vercel 项目 `small-alice-web-odse`、`smallalice-docs-ai-nitro-api`，并删除 `build:vercel`。这两个名字只留在历史报告里。
 - 连接串、密码、token 属敏感信息，禁止写入仓库、报告、测试快照或终端记录。

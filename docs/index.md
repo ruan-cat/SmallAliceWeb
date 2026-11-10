@@ -29,7 +29,7 @@
 | `small-alice-web-docs`（Worker） | VitePress 文档站 |                          `pnpm run build`                           | 生产由 `main`/CI + wrangler 上传；不由本页或本地构建结果证明 |
 | `small-alice-web-api`（Worker）  |  Nitro RAG API   | `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:cloudflare` |              API 包存在；真实 RAG 装配仍待完成               |
 
-Nitro API 包名为 `@ruan-cat-drill-doc/ai-rag-api`，提供本地 `dev`、`build`、`build:cloudflare`、`build:vercel`、`test` 与 `typecheck` 脚本；`build:cloudflare` 是现行生产构建，`build:vercel` 保留作 Vercel 回滚。Development Neon schema/index 迁移已有证据，但真实 PostgreSQL provider/查询链路及业务装配仍未完成；同步链路要在装配 provider 后推进。
+Nitro API 包名为 `@ruan-cat-drill-doc/ai-rag-api`，提供本地 `dev`、`build`、`build:cloudflare`、`test` 与 `typecheck` 脚本。`build:cloudflare` 是现行生产构建。`build:vercel` 已于 2026-11-11 删除。Development Neon schema/index 迁移已有证据，但真实 PostgreSQL provider/查询链路及业务装配仍未完成；同步链路要在装配 provider 后推进。
 
 ## 4. 开发约束
 

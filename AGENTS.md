@@ -611,13 +611,13 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 - Neon 项目 ID：`patient-cloud-43432277`
 - Vercel 已关联的 Neon 数据库名称：`neon-smallalice-ai-rag`
 
-禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。数据库连接前从 Cloudflare Workers 密钥、GitHub Actions secrets、Neon 控制台获取当前环境变量；**回滚 Vercel** 时仍可从未删除的历史 Vercel 项目拉取。连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
+禁止因示例名称或资源查询不完整而创建第二个同用途 Neon project 或 database。2026-11-11 已删除 Vercel 项目 `small-alice-web-odse` 与 `smallalice-docs-ai-nitro-api`，不能再从这两个项目拉取环境变量。数据库连接前从 Cloudflare Workers 密钥、GitHub Actions secrets 或 Neon 控制台获取。连接串、密码和 token 仍是敏感信息，禁止写入仓库或终端记录。所有 CLI 操作统一使用 `neon`，并且仅在用户已安装、认证并明确允许后执行资源查询、迁移或其他云端操作。
 
 ## Vercel 双项目部署架构（2026-08-07 起生效）
 
-2026-11-11 起，**现行生产**为 Cloudflare Workers：`drill.ruan-cat.com` 与 `small-alice-web.ruan-cat.com` 指向 Worker `small-alice-web-docs`，`smallalice-docs-ai-nitro-api.ruan-cat.com` 指向 Worker `small-alice-web-api`。`git push`（经 `dev` → `main` 纪律）触发 **GitHub Actions** 构建并用 **wrangler** 上传；**Vercel Git Integration 不是现行生产入口**。知识库同步调度仍是 `.github/workflows/rag-sync-schedule.yaml`，不要改这个文件。设计记录在 `reports/2026-11-10-vercel-to-cloudflare/`。**DNS 回滚目标**：文档站 `cname.vercel-dns.com`；API `ad1c0a65577b8811.vercel-dns-017.com`。
+2026-11-11 起，**现行生产**为 Cloudflare Workers：`drill.ruan-cat.com` 与 `small-alice-web.ruan-cat.com` 指向 Worker `small-alice-web-docs`，`smallalice-docs-ai-nitro-api.ruan-cat.com` 指向 Worker `small-alice-web-api`。`git push`（经 `dev` → `main` 纪律）触发 **GitHub Actions** 构建并用 **wrangler** 上传。同日用户授权后，Vercel 项目 `small-alice-web-odse` 与 `smallalice-docs-ai-nitro-api` 已用本机 `vercel remove` 删除，部署一并删除。不要再 `vercel link`、`vercel deploy` 或按 Git Integration 操作这两个名字。知识库同步调度仍是 `.github/workflows/rag-sync-schedule.yaml`，不要改这个文件。设计记录在 `reports/2026-11-10-vercel-to-cloudflare/`。
 
-切流前本仓库同时绑定两个 Vercel 项目（下表为**历史/回滚参考**），统一采用 `use-vercel-deploy-in-monorepo` 技能的形态 1 模式 A（仓库根安装 + 产物搬运到仓库根 `.vercel/output`）。
+下表只保留删除前的构建参数，便于读旧报告。项目本身已经不存在，不能当作回滚目标。
 
 |          Vercel 项目           |       用途       | Root Directory | Framework |                          Build Command                          |    Output Directory    | Install Command | Node |
 | :----------------------------: | :--------------: | :------------: | :-------: | :-------------------------------------------------------------: | :--------------------: | :-------------: | :--: |
@@ -626,7 +626,7 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 
 **破坏性变更**：仓库根 `vercel.json` 已于 2026-08-07 删除。原因：`vercel.json` 覆盖云端 Project Settings，多项目 monorepo 中会造成跨项目配置污染。原文档中 `small-alice-web-odse` 的配置已迁移到该项目云端 Project Settings，值完全一致。
 
-**CLI 单槽绑定纪律（历史 Vercel）**：`.vercel/project.json` 是单槽绑定。仅在用户明确要求 **Vercel 回滚**、本地 CLI 诊断或应急部署时，才先 `vercel link --project <name> --yes` 切换到历史 Vercel 项目，再执行 `vercel deploy`。现行文档站生产不由 Vercel Git Integration 触发。
+**CLI 单槽**：根目录 `.vercel/project.json` 若仍指向已删除的 Nitro 项目，不要再对它执行 `vercel deploy`。现行文档站和 API 都不走 Vercel。
 
 ### 1. 文档站 Worker（`small-alice-web-docs`）现行生产发布纪律
 
@@ -638,9 +638,7 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 4. `main` 推送后，等待 GitHub Actions 完成构建与 wrangler 上传；用 Actions 日志核对 checkout SHA、EMF/WMF 转换统计与部署结果。不得把本地 build、Preview 或 CLI upload 当作生产证据。
 5. 先完成本地 `drill-docx` 转换与本机 Google Chrome 验收，再在 `https://drill.ruan-cat.com` 用同一浏览器完成用户给定 URL 的视觉/功能复验。资源加载计数只证明加载，目标图视口截图和人工判读才证明布局通过。
 
-**历史 Vercel Git Integration（回滚）**：回滚到 `small-alice-web-odse` 时，`main` 推送可再触发 Vercel Git Integration；`vercel link`/`vercel deploy` 仅用于已授权的回滚、诊断或应急操作，不是现行 Worker 发布入口。
-
-**Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`（Worker `small-alice-web-api`，实际使用此地址）。历史 Vercel 默认地址 `https://smallalice-docs-ai-nitro-api.vercel.app` 仅作回滚对照。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。
+**Nitro API 生产域名**：`https://smallalice-docs-ai-nitro-api.ruan-cat.com/`（Worker `small-alice-web-api`）。路由前缀：`/v1/chat`、`/v1/search`、`/v1/knowledge/sync`、`/v1/knowledge/sync-runs`。同名 Vercel 项目和 `*.vercel.app` 地址已随项目删除。
 
 ## 终端操作注意事项（防卡住）
 

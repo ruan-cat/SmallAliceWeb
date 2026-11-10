@@ -133,7 +133,7 @@ docs/docx
 
 回滚到 Vercel 时，推送 `main` 后可按 deployment ID 或 URL 用 `vercel inspect --wait` / `--logs` 监听 Git Integration 部署收敛；现行 Worker 生产以 GitHub Actions 运行记录为准。
 
-**禁止**以 `pnpm run deploy-vercel` 或未经授权的本地 `vercel deploy` 替代上述 `main`/CI 纪律。Vercel CLI 仅用于已授权的回滚、诊断或应急操作。
+`pnpm run deploy-vercel` 与 `vercel-deploy-tool.config.ts` 已于 2026-11-11 删除。不要再用本地 `vercel deploy` 发布这两个已删除的项目。
 
 ### 4.4 Nitro API 生产域名（Worker `small-alice-web-api`）
 

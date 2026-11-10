@@ -14,7 +14,7 @@
 
 Nitro API Worker 名称 MUST 为 `small-alice-web-api`，生产自定义域名 MUST 为 https://smallalice-docs-ai-nitro-api.ruan-cat.com/；生产构建命令 MUST 为 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:cloudflare`，部署 MUST 经 workflow `.github/workflows/api-cloudflare-worker.yaml` 执行 wrangler 上传（配置 `wrangler.json`）。
 
-`build:vercel` 与附录「Vercel 双项目回滚路径」中的历史双项目配置 MUST 保留作应急回滚，不得以回滚路径覆盖本 Requirement 的 Workers Production 契约。
+`build:vercel` 已于 2026-11-11 删除。附录里的 Vercel 双项目只作为已删除项目的历史记录，MUST NOT 再当作可执行的回滚路径。
 
 仓库根 `vercel.json` MUST NOT 存在（已删除的破坏性变更）。仅当用户授权进行 Vercel 遗留诊断或应急回滚时，MAY 执行 `vercel link --project <name> --yes` 切换单槽绑定；该操作 MUST NOT 被记录为常规 Production 发布步骤。
 
@@ -169,10 +169,10 @@ Nitro API MUST 通过 OpenAI-compatible `POST https://api.cloudflare.com/client/
 - **THEN** MUST 显式将 docs/docx 纳入 Worker 可读的部署输入
 - **AND** MUST NOT 假定云端运行目录保留完整 Git 工作区
 
-#### Scenario: 应急回滚锁定 Vercel 兼容日期
+#### Scenario: 已删除的 Vercel 构建不再作为回滚入口
 
-- **WHEN** 应急回滚构建使用 `build:vercel`
-- **THEN** Nitro compatibilityDate MUST 锁定为 2024-09-19
+- **WHEN** 查找 `build:vercel`
+- **THEN** 该脚本 MUST NOT 存在。`nitro.config.ts` 里的 `vercel.functions.supportsCancellation` 只保留作退役参考
 
 ### Requirement: 7. 生产域名
 
@@ -230,6 +230,6 @@ Nitro API MUST 在代码内保存类型化聊天 provider 注册表，注册 Ope
 
 ## 附录：Vercel 双项目回滚路径（非现行 Production）
 
-> 历史记录：切流前 Production 曾由 Vercel Git Integration 承担；2026-11-11 起自定义域名已指向 Cloudflare Workers。下列条目仅用于应急回滚与遗留诊断，不构成现行生产 MUST。
+> 历史记录：切流前 Production 曾由 Vercel Git Integration 承担。2026-11-11 自定义域名已指向 Cloudflare Workers，并且 Vercel 项目 `small-alice-web-odse` 与 `smallalice-docs-ai-nitro-api` 已删除。不要再 `vercel link` 这两个名字。
 
-仓库 MAY 同时绑定两个历史 Vercel 项目：`small-alice-web-odse`（VitePress 文档站，Root Directory 为 "."、Framework 为 Other、Build 为 `pnpm run build`、Output Directory 为 `docs/.vitepress/dist`、Install 为 `pnpm install`、Node 22.x）与 `smallalice-docs-ai-nitro-api`（Nitro API，Root 为 "."、Build 为 `pnpm --filter @ruan-cat-drill-doc/ai-rag-api run build:vercel`、Output 为 `.vercel/output`、Install 为 `pnpm install`、Node 22.x）；双项目配置维护在各自云端 Project Settings。回滚部署任一项目前 SHOULD 先执行 `vercel link --project <name> --yes` 切换单槽绑定。应急回滚验收 MAY 使用 `vercel inspect <deployment-id-or-url> --wait --timeout 3m` 与 `vercel inspect <deployment-id-or-url> --logs` 读取 checkout SHA 与构建日志，但 MUST NOT 将上述证据替代现行 Workers Production 验收。
+删除前的构建参数只留在 `reports/2026-11-10-vercel-to-cloudflare/`。`build:vercel` 与根脚本 `deploy-vercel` 已删除。
