@@ -33,7 +33,7 @@
 |  2  |       init-vscode（v2.0.0）        |   模板迁移    |                    三层排除补齐、5 个 TS/搜索策略键、嵌套根迁移、扩展替换迁移                     |
 |  3  |           init-tsconfig            | 矩阵复核+追加 |              形态判定、子包追加键、`.gitignore` 补 `*.tsbuildinfo`、改前后错误数对照              |
 |  4  |             init-ai-md             |  补全+索引化  | 补 2 缺失项、更新 4 需更新项、技能表补齐、`template-version` 锚点；CLAUDE.md/GEMINI.md 改索引指针 |
-|  5  |        init-simple-memorix         |    dry-run    |                        `install-mcp.ts --dry-run`，预期全 skipped、0 写入                         |
+|  5  |            use-memorix             |    dry-run    |                        `install-mcp.ts --dry-run`，预期全 skipped、0 写入                         |
 |  6  |    init-claude-code-statusline     |   逐字比对    |                      `.claude/settings.json` + `statusline.sh` 与模板一致性                       |
 |  7  | init-release-base-relizy-and-bumpp | dry-run 矩阵  |     `pnpm why` 预检 + `relizy-runner --help` + changelog/release dry-run + `bumpp --dry-run`      |
 
@@ -69,7 +69,7 @@
 |  2   |            init-vscode             |             A 层已通过；**B/C 层 pending**（需用户 GUI 验收 better-todo-tree、折叠与性能）             |
 |  3   |           init-tsconfig            |                          已通过（4 包追加键，改前/改后错误数 0/0/10/0 相等）                           |
 |  4   |             init-ai-md             |                已通过（11 记忆项齐备、5 自定义章节保留；CLAUDE.md 索引化为破坏性变更）                 |
-|  5   |        init-simple-memorix         |                dry-run 已通过（本仓库 0 写入）；Cursor/Kiro 两处全局缺口按禁止项未处理                 |
+|  5   |            use-memorix             |                dry-run 已通过（本仓库 0 写入）；Cursor/Kiro 两处全局缺口按禁止项未处理                 |
 |  6   |    init-claude-code-statusline     |                             判定跳过覆盖（仓库版含模板没有的成本显示定制）                             |
 |  7   | init-release-base-relizy-and-bumpp | ⛔ **部分失败并造成事故**：只读预检与 relizy dry-run 通过；`bumpp --dry-run` 实际发版并推送 origin/dev |
 |  8   |           报告与记忆沉淀           |              已完成（`reports/2026-11-02-init-skills-alignment.md` + 事故案例 + memorix）              |

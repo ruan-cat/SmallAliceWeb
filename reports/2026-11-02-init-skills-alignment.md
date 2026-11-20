@@ -108,7 +108,7 @@ AGENTS.md 由 526 行增至 674 行，11 个模板记忆项全部就位：
 - 章节顺序未重排：AGENTS.md 现状顺序与模板编号顺序不同，为把 diff 控制在任务范围内，新章节按就近原则插入（04/术语说明插在 02 之后，11 与基线记录插在末尾），已在 plan 留痕。
 - `.claude/skills/` 不存在 → 无旧格式迁移动作；`record-bug-fix-memory` 已是 `template-version: 2.0.0`（13 个案例 + 本轮新增 1 个）。
 
-### 2.5 init-simple-memorix — 已通过（dry-run，本仓库 0 写入）
+### 2.5 use-memorix — 已通过（dry-run，本仓库 0 写入）
 
 ```log
 {"platform":"codex","configFile":".../.codex/config.toml","status":"skipped","previousArgs":["/c","memorix.cmd","serve","--mode","micro"]}

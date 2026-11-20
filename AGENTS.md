@@ -706,7 +706,7 @@ export function successResponse<T>(data: T, message: string = "操作成功") {
 5. Prettier 基线：`prettier-plugin-lint-md` 必须精确锁定 `1.0.1`（禁 `^`/`~`），且 `prettier.config.mjs` 顶层 `plugins` 保持字符串数组形式；`lint-staged.config.js` 与 `.github/workflows/cloud-pr-prettier.yaml` 保持现有 `.js` / `.yaml` 命名，不要新增第二份配置来源或并行工作流。
 6. 本仓库**不使用 Playwright**：未安装 `@playwright/test`，不得创建根 `.mcp.json`，不得下载 chromium 二进制；历史上有 headless 反复截图导致 CPU 100%、工具链被全量删除的事故，浏览器验收一律走 `agent-browser` 并遵守上文使用纪律。
 7. EOL 基线四方同步：`.gitattributes`（`* text=auto eol=lf`）、`.editorconfig`、`prettier.config.mjs`（`endOfLine: "lf"`）、`.vscode/settings.json`（`files.eol`）；改动任一处必须同批核对其余三处，且未经授权不执行 `prettier --write .` 与 `git add --renormalize .`。
-8. 记忆库基线：Memorix 在 `.claude.json` / `.codex/config.toml` / `.workbuddy/mcp.json` / `.qoder/mcp.json` 四处统一为 `--mode micro`，全局 hooks 精简为 `SessionStart`/`UserPromptSubmit`/`PreCompact`/`Stop` 四个生命周期事件；`init-simple-memorix` 重跑的正确结果是 0 diff。
+8. 记忆库基线：Memorix 在 `.claude.json` / `.codex/config.toml` / `.workbuddy/mcp.json` / `.qoder/mcp.json` 四处统一为 `--mode micro`，全局 hooks 精简为 `SessionStart`/`UserPromptSubmit`/`PreCompact`/`Stop` 四个生命周期事件；`use-memorix` 重跑的正确结果是 0 diff。
 
 ## agent-browser 使用纪律（2026-10-31 起生效）
 
